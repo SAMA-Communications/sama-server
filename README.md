@@ -181,11 +181,9 @@ Will support it on a later stage
 * List chats
 * Edit chat
 * List chat messages
-* (Send chat message)
-* (Delete chat message)
-* (Edit chat mesage)
 * Upload attachment
 * Get attachment by url
 * Block user
 * Unblock user
 * List blocked users
+* Upload complete/changes address book
