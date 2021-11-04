@@ -1,9 +1,9 @@
 # SAMA - Simple but Advanced Messaging Alternative
 
 ## Overview
-The intention of another messging protocol is to provide an alternative solution to the wide spread XMPP messaging protocol (and to be honest - the only one wide spread 'stabdard' these days). 
+The intention of another messging protocol is to provide an alternative solution to the wide spread XMPP messaging protocol (and to be honest - the only one wide spread 'standard' these days). 
 
-XMPP is big. XMPP covers pretty much every possible use case. These 2 things at the same time is main advantage and disvantage of it. 
+XMPP is huge. XMPP covers pretty much every possible use case. These 2 things at the same time is main advantage and disvantage of it. 
 
 Disclaimer: the origin author has 10+ years experience in building messaging apps and services based on top of XMPP. 
 
@@ -29,7 +29,7 @@ Login+pwd initially
 ## Transport
 
 * WSS
-* TLS socket (for what use cases we need it?)
+* TLS socket (for later purpose ?)
 
 ## Send/Receive messages
 
@@ -52,7 +52,7 @@ Login+pwd initially
 
 ## Sent status
 
-On each message sent to server - a server will deliver back to client a simple packet with message id and timestamp at which the message was stored in DB:
+On each message sent to server - a server will deliver back to client a simple packet with message id and timestamp at which the message was stored in DB sp both sender & recipient will have same date sent time stored:
 
 `{'ack': {'mid': 'xyz', 't': 15673838833}}`
 
@@ -106,7 +106,11 @@ A user either can send typing or stop typing packets:
 
 ## Delete message
 
+TBA
+
 ## Edit message
+
+TBA
 
 ## Carbons
 
@@ -143,7 +147,7 @@ I see 2 potential solutions here:
 * No offline storage at all
 * Offline messages delivery is supported for all types of messages, but there is a TTL at server side
 
-TBD
+so TBD
 
 ## Contacts list
 
@@ -152,6 +156,8 @@ Via REST API.
 * CRUD on contacts
 
 ## Last activity
+
+TBA
 
 ## Attachments
 
