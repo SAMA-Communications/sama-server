@@ -117,12 +117,14 @@ A `t` param should be omit at sender's side. Server will add it by itself in a m
 
 ```
 {
-  'message_delete': {
-    'id': 'xyz', 
-    't': 15673838833,
-    'to': '',
-    'from': '',
-    'cid': 'xcv'
+  'delete': {
+    'message': {
+      'id': 'xyz', 
+      't': 15673838833,
+      'to': '',
+      'from': '',
+      'cid': 'xcv'
+    }
   }
 }
 ```
@@ -133,13 +135,15 @@ A `t` param should be omit at sender's side. Server will add it by itself in a m
 
 ```
 {
-  'message_edit': {
-    'id': 'xyz', 
-    'body': 'updated message body'
-    't': 15673838833,
-    'to': '',
-    'from': '',
-    'cid': 'xcv'
+  'edit': {
+    'message': {
+      'id': 'xyz', 
+      'body': 'updated message body'
+      't': 15673838833,
+      'to': '',
+      'from': '',
+      'cid': 'xcv'
+     }
   }
 }
 ```
@@ -172,13 +176,13 @@ The packet is a simple 'carbon' wrapper around original message.
 
 ## Chat history storage
 
-All the messages are automatically stored in DB and then can be retrieved via REST API
+All the messages are automatically stored in DB and then can be retrieved via REST API (see below)
 
 ## Offline message delivery
 
 I see 2 potential solutions here:
 
-* No offline storage at all
+* No offline storage at all (I prefer this)
 * Offline messages delivery is supported for all types of messages, but there is a TTL at server side
 
 so TBD
@@ -191,7 +195,26 @@ Via REST API.
 
 ## Last activity
 
-TBA
+### Request 
+
+```
+{
+  'last_activity': {
+    'to': '',
+  }
+}
+```
+
+### Response 
+
+```
+{
+  'last_activity': {
+    'from': '',
+    'last_activity_ago': 'num_of_seconds'
+  }
+}
+```
 
 ## Attachments
 
