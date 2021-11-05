@@ -174,6 +174,27 @@ The packet is a simple 'carbon' wrapper around original message.
 }
 ```
 
+
+## System messages
+
+```
+{
+  'system_message': {
+    'id': 'xyz', 
+    't': 15673838833,
+    'to': '',
+    'from': '',
+    'x': {
+      'param1': 'value',
+      'param2': 'value'
+    }
+  }
+}
+```
+
+A system message is a message w/o body, but with a set of params. The intention to have system mesasges is to exchange non human content.
+These mesasge will never be saved into history.
+
 ## Chat history storage
 
 All the messages are automatically stored in DB and then can be retrieved via REST API (see below)
