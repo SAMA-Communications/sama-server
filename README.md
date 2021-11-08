@@ -26,6 +26,12 @@ With SAMA our goal is the following:
 
 Login + pwd initially
 
+The login part is used the following format:
+
+```
+<username>@<server_domain_dot_com>
+```
+
 ## Transport
 
 * WSS
