@@ -265,3 +265,4 @@ Will support it on a later stage
 * Unblock user
 * List blocked users
 * Upload complete/changes address book
+* Subscribe to push notifications 
