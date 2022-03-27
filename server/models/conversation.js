@@ -1,7 +1,7 @@
 import BaseModel from './base/base.js';
 
 export default class Conversation extends BaseModel {
-  static get collection() {
+  get collection() {
     return 'conversations'
   }
 }

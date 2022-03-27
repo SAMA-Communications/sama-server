@@ -1,9 +1,5 @@
 import { MongoClient } from "mongodb";
-const connectionString = process.env.MONGODB_URI;
-const client = new MongoClient(connectionString, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+const client = new MongoClient(process.env.MONGODB_URI);
 
 let dbConnection;
 
@@ -13,9 +9,10 @@ export function connectToDB(callback) {
       return callback(err);
     }
 
-    // dbConnection = db.db("sample_db");
-    dbConnection = db;
-    console.log("Successfully connected to MongoDB.");
+    const mongoURISplit = process.env.MONGODB_URI.split("/");
+    const dbName = mongoURISplit[mongoURISplit.length - 1];
+
+    dbConnection = db.db(dbName);
 
     return callback();
   });

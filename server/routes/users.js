@@ -7,12 +7,13 @@ export default function routes(app) {
   app.post('/users', async (res, req) => {
 
     const obj = await readJson(res);
-    const userParams = slice(obj, User.ALLOWED_API_REQ_FIELDS);
+    const allowedFields = ['login', 'password'];
+    const userParams = slice(obj, allowedFields);
 
-    // const user = new User(userParams);
-    // await user.save();
+    const user = new User(userParams);
+    await user.save();
 
-    res.writeStatus('201 OK').writeHeader("Content-Type", "application/json").end(JSON.stringify({user: {login: "1111"}}));
+    res.writeStatus('201 OK').writeHeader("Content-Type", "application/json").end(user.toJSON());
   }).post('/users/login', (res, req) => {
 
   }).post('/users/logout', (res, req) => {
