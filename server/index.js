@@ -1,7 +1,12 @@
 /* Simplified stock exchange made with uWebSockets.js pub/sub */
-const uWS = require('uWebSockets.js');
-const { StringDecoder } = require('string_decoder');
+import uWS from 'uWebSockets.js';
+import { StringDecoder } from 'string_decoder';
 const decoder = new StringDecoder('utf8');
+
+import User from './models/user.js';
+
+// get MongoDB driver connection
+import { connectToDB } from './lib/db.js';
 
 const APP_OPTIONS = {
 
@@ -16,13 +21,21 @@ const WS_OPTIONS = {
   maxBackpressure: 1024,
 }
 
+const ACTIVE_SESSIONS = {};
+
 uWS.App(APP_OPTIONS).ws('/*', {
   ...WS_OPTIONS,
 
   open: (ws) => {
     console.log('[open]', `IP: ${Buffer.from(ws.getRemoteAddressAsText()).toString()}`);
 
+    ACTIVE_SESSIONS[ws] = {};
+
     ws.send('connected');
+  },
+
+  close: (ws, code, message) => {
+    delete ACTIVE_SESSIONS[ws];
   },
 
 	message: (ws, message, isBinary) => {
@@ -36,3 +49,17 @@ uWS.App(APP_OPTIONS).ws('/*', {
 		console.log('Listening to port 9001');
 	}
 });
+
+
+// perform a database connection when the server starts
+connectToDB(err => {
+  if (err) {
+    console.error('[connectToDB] Error', err);
+    process.exit();
+  } else {
+    console.log('[connectToDB] Ok');
+  }
+});
+
+
+// https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph
