@@ -3,7 +3,7 @@ import uWS from 'uWebSockets.js';
 import { StringDecoder } from 'string_decoder';
 const decoder = new StringDecoder('utf8');
 
-import User from './models/user.js';
+import {default as buildUsersRoutes} from './routes/users.js';
 
 // get MongoDB driver connection
 import { connectToDB } from './lib/db.js';
@@ -23,7 +23,8 @@ const WS_OPTIONS = {
 
 const ACTIVE_SESSIONS = {};
 
-uWS.App(APP_OPTIONS).ws('/*', {
+const APP = uWS.App(APP_OPTIONS)
+APP.ws('/*', {
   ...WS_OPTIONS,
 
   open: (ws) => {
@@ -49,6 +50,7 @@ uWS.App(APP_OPTIONS).ws('/*', {
 		console.log('Listening to port 9001');
 	}
 });
+buildUsersRoutes(APP);
 
 
 // perform a database connection when the server starts
