@@ -4,6 +4,7 @@ import { slice } from '../../utils/req_res_utils.js';
 export default class BaseModel {
   constructor(params) {
     this.params = params;
+    this.hooks = {};
   }
 
   get collection() {
@@ -15,7 +16,11 @@ export default class BaseModel {
   }
 
   async save() {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
+
+      if (this.hooks.beforeSave) {
+        await this.hooks.beforeSave();
+      }
 
       const currentDate = new Date();
       const insertParams = {...this.params, created_at: currentDate, updated_at: currentDate};
