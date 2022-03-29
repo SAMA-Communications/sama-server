@@ -1,4 +1,5 @@
 import User from '../models/user.js';
+import UserSession from '../models/user_session.js';
 import { slice } from '../utils/req_res_utils.js';
 import { readJson } from './helpers/json_helper.js';
 
@@ -31,8 +32,11 @@ export default function routes(app) {
       return;
     }
 
+    const userSession = new UserSession();
+    await userSession.save();
+
     const respData = {
-      token: "",
+      token: userSession.params._id,
       user: user.visibleParams()
     }
 
