@@ -1,5 +1,5 @@
 import BaseModel from './base/base.js';
-import { hashPassword } from '../utils/сrypto_utils.js';
+import { hashPassword } from '../utils/crypto_utils.js';
 
 export default class User extends BaseModel {
   constructor(params) {
