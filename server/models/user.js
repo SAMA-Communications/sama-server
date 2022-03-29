@@ -1,5 +1,5 @@
 import BaseModel from './base/base.js';
-import { hashPassword } from '../utils/crypto_utils.js';
+import { hashPassword, verifyPassword } from '../utils/crypto_utils.js';
 
 export default class User extends BaseModel {
   constructor(params) {
@@ -9,11 +9,11 @@ export default class User extends BaseModel {
 
   }
 
-  get collection() {
+  static get collection() {
     return 'users'
   }
 
-  get visibleFields() {
+  static get visibleFields() {
     return ['_id', 'created_at', 'updated_at', 'login'];
   }
 
@@ -31,4 +31,13 @@ export default class User extends BaseModel {
     this.params['password_salt'] = salt;
     this.params['encrypted_password'] = encryptedPassword;
   }
+
+  async isValidPassword(plainPassword) {
+    const passwordSalt = this.params.password_salt;
+    const passwordEncrypted = this.params.encrypted_password;
+
+    const isSame = await verifyPassword(plainPassword, passwordEncrypted, passwordSalt)
+    return isSame
+  }
+
 }

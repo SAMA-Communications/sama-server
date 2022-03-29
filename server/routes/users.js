@@ -3,7 +3,7 @@ import { slice } from '../utils/req_res_utils.js';
 import { readJson } from './helpers/json_helper.js';
 
 export default function routes(app) {
-  // curl -X POST http://localhost:9001/users -H 'Content-Type: application/json' -d '{"login":"my_login","password":"my_password"}'
+  // curl -X POST http://localhost:9001/users -H 'Content-Type: application/json' -d '{"login":"my_login","password":"my_password"}' -v
   app.post('/users', async (res, req) => {
 
     const obj = await readJson(res);
@@ -13,10 +13,33 @@ export default function routes(app) {
     const user = new User(userParams);
     await user.save();
 
-    res.writeStatus('201 OK').writeHeader("Content-Type", "application/json").end(user.toJSON());
-  }).post('/users/login', (res, req) => {
+    res.writeStatus('201 Created').writeHeader("Content-Type", "application/json").end(user.toJSON());
 
-  }).post('/users/logout', (res, req) => {
+  // curl -X POST http://localhost:9001/users/login -H 'Content-Type: application/json' -d '{"login":"my_login","password":"my_password"}' -v
+  }).post('/users/login', async (res, req) => {
+
+    const obj = await readJson(res);
+
+    const user = await User.findOne({ login: obj.login });
+    if (!user) {
+      res.writeStatus('401 Unauthorized').end();
+      return;
+    }
+
+    if (!await user.isValidPassword(res.password)) {
+      res.writeStatus('401 Unauthorized').end();
+      return;
+    }
+
+    const respData = {
+      token: "",
+      user
+    }
+
+    res.writeStatus('200 OK').writeHeader("Content-Type", "application/json").end(JSON.stringify(respData));
+
+  // curl -X POST http://localhost:9001/users/logout -H 'Content-Type: application/json; token: 123' -v
+  }).post('/users/logout', async (res, req) => {
   
   });
 }

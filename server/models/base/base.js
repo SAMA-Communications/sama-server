@@ -1,5 +1,6 @@
 import { getDb } from '../../lib/db.js';
 import { slice } from '../../utils/req_res_utils.js';
+import User from '../user.js';
 
 export default class BaseModel {
   constructor(params) {
@@ -7,36 +8,41 @@ export default class BaseModel {
     this.hooks = {};
   }
 
-  get collection() {
+  static get collection() {
     throw new Error('Not implemented');
   } 
 
-  get visibleFields() {
+  static get visibleFields() {
     throw new Error('Not implemented');
   }
 
   async save() {
-    return new Promise(async (resolve, reject) => {
+    if (this.hooks.beforeSave) {
+      await this.hooks.beforeSave();
+    }
 
-      if (this.hooks.beforeSave) {
-        await this.hooks.beforeSave();
-      }
+    const currentDate = new Date();
+    const insertParams = {...this.params, created_at: currentDate, updated_at: currentDate};
 
-      const currentDate = new Date();
-      const insertParams = {...this.params, created_at: currentDate, updated_at: currentDate};
+    try {
+      console.log('this.constructor1',this.constructor)
+      const result = await getDb().collection(this.constructor.collection).insertOne(insertParams);
+      this.params = {_id: result.insertedId, ...insertParams};
+    } catch (e) {
+      return e;
+    }   
+  }
 
-      getDb().collection(this.collection).insertOne(insertParams, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          this.params = {_id: result.insertedId, ...insertParams};
-          resolve();
-        }
-      });
-    });
+  static async findOne(query) {
+    try {
+      const record = await getDb().collection(this.collection).findOne(query);
+      return record ? new this(record) : null;
+    } catch (e) {
+      return e;
+    }  
   }
 
   toJSON() {
-    return JSON.stringify(slice(this.params, this.visibleFields));
+    return JSON.stringify(slice(this.params, this.constructor.visibleFields));
   }
 }

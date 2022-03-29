@@ -26,6 +26,6 @@ export async function hashPassword(plainPassword, salt = generateSalt()) {
 }
 
 export async function verifyPassword(plainPassword, encryptedPassword, salt) {
-  const res = await this.hashPassword(plainPassword, salt)
+  const res = await hashPassword(plainPassword, salt)
   return encryptedPassword === res.encryptedPassword
 }
