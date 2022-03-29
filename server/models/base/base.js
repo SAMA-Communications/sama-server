@@ -25,7 +25,6 @@ export default class BaseModel {
     const insertParams = {...this.params, created_at: currentDate, updated_at: currentDate};
 
     try {
-      console.log('this.constructor1',this.constructor)
       const result = await getDb().collection(this.constructor.collection).insertOne(insertParams);
       this.params = {_id: result.insertedId, ...insertParams};
     } catch (e) {
@@ -34,15 +33,16 @@ export default class BaseModel {
   }
 
   static async findOne(query) {
-    try {
-      const record = await getDb().collection(this.collection).findOne(query);
-      return record ? new this(record) : null;
-    } catch (e) {
-      return e;
-    }  
+    const record = await getDb().collection(this.collection).findOne(query);
+    const obj = (record ? new this(record) : null);
+    return obj; 
   }
 
   toJSON() {
-    return JSON.stringify(slice(this.params, this.constructor.visibleFields));
+    return JSON.stringify(this.visibleParams());
+  }
+
+  visibleParams() {
+    return slice(this.params, this.constructor.visibleFields);
   }
 }

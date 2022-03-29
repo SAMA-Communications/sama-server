@@ -3,37 +3,37 @@ import { slice } from '../utils/req_res_utils.js';
 import { readJson } from './helpers/json_helper.js';
 
 export default function routes(app) {
-  // curl -X POST http://localhost:9001/users -H 'Content-Type: application/json' -d '{"login":"my_login","password":"my_password"}' -v
+  // curl -X POST http://localhost:9001/users -H 'Content-Type: application/json' -d '{"login":"my_login2","password":"my_password"}' -v
   app.post('/users', async (res, req) => {
 
-    const obj = await readJson(res);
+    const reqParams = await readJson(res);
     const allowedFields = ['login', 'password'];
-    const userParams = slice(obj, allowedFields);
+    const userParams = slice(reqParams, allowedFields);
 
     const user = new User(userParams);
     await user.save();
 
     res.writeStatus('201 Created').writeHeader("Content-Type", "application/json").end(user.toJSON());
 
-  // curl -X POST http://localhost:9001/users/login -H 'Content-Type: application/json' -d '{"login":"my_login","password":"my_password"}' -v
+  // curl -X POST http://localhost:9001/users/login -H 'Content-Type: application/json' -d '{"login":"my_login2","password":"my_password"}' -v
   }).post('/users/login', async (res, req) => {
 
-    const obj = await readJson(res);
+    const reqParams = await readJson(res);
 
-    const user = await User.findOne({ login: obj.login });
+    const user = await User.findOne({ login: reqParams.login });
     if (!user) {
       res.writeStatus('401 Unauthorized').end();
       return;
     }
 
-    if (!await user.isValidPassword(res.password)) {
+    if (!await user.isValidPassword(reqParams.password)) {
       res.writeStatus('401 Unauthorized').end();
       return;
     }
 
     const respData = {
       token: "",
-      user
+      user: user.visibleParams()
     }
 
     res.writeStatus('200 OK').writeHeader("Content-Type", "application/json").end(JSON.stringify(respData));
