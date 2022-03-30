@@ -1,6 +1,5 @@
-import { getDb } from '../../lib/db.js';
+import { getDb, ObjectId } from '../../lib/db.js';
 import { slice } from '../../utils/req_res_utils.js';
-import User from '../user.js';
 
 export default class BaseModel {
   constructor(params) {
@@ -33,9 +32,20 @@ export default class BaseModel {
   }
 
   static async findOne(query) {
-    const record = await getDb().collection(this.collection).findOne(query);
-    const obj = (record ? new this(record) : null);
-    return obj; 
+    try {
+      if (query._id) {
+        query._id = new ObjectId(query._id);
+      }
+      const record = await getDb().collection(this.collection).findOne(query);
+      const obj = (record ? new this(record) : null);
+      return obj; 
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async delete() {
+    await getDb().collection(this.constructor.collection).deleteOne({_id: this.params._id});
   }
 
   toJSON() {

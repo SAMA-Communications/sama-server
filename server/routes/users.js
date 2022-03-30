@@ -16,7 +16,7 @@ export default function routes(app) {
 
     res.writeStatus('201 Created').writeHeader("Content-Type", "application/json").end(user.toJSON());
 
-  // curl -X POST http://localhost:9001/users/login -H 'Content-Type: application/json' -d '{"login":"my_login2","password":"my_password"}' -v
+  // curl -X POST http://localhost:9001/users/login -H 'Content-Type: application/json' -d '{"login":"my_login23","password":"my_password"}' -v
   }).post('/users/login', async (res, req) => {
 
     const reqParams = await readJson(res);
@@ -42,8 +42,21 @@ export default function routes(app) {
 
     res.writeStatus('200 OK').writeHeader("Content-Type", "application/json").end(JSON.stringify(respData));
 
-  // curl -X POST http://localhost:9001/users/logout -H 'Content-Type: application/json; token: 123' -v
+  // curl -X POST http://localhost:9001/users/logout -H 'Content-Type: application/json' -H 'token: 624458cb784b8fbddda25564' -v
   }).post('/users/logout', async (res, req) => {
-  
+    res.onAborted(() => {
+      res.aborted = true;
+    });
+
+    const token = req.getHeader("token");
+
+    const userSession = await UserSession.findOne({ _id: token});
+    if (userSession) {
+      await userSession.delete();
+    }
+
+    if (!res.aborted) {
+      res.writeStatus('200 OK').end();
+    }
   });
 }

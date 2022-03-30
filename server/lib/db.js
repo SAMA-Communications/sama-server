@@ -1,4 +1,4 @@
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId as OID } from "mongodb";
 const client = new MongoClient(process.env.MONGODB_URI);
 
 let dbConnection;
@@ -21,3 +21,5 @@ export function connectToDB(callback) {
 export function getDb () {
   return dbConnection;
 };
+
+export const ObjectId = OID;

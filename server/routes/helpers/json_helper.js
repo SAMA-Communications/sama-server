@@ -35,6 +35,7 @@ export function readJson(res) {
       }
     });
     res.onAborted(() => {
+      res.aborted = true;
       reject("aborted");
     });
   }); 
