@@ -4,7 +4,7 @@ import { slice } from '../utils/req_res_utils.js';
 import { readJson } from './helpers/json_helper.js';
 
 export default function routes(app) {
-  // curl -X POST http://localhost:9001/users -H 'Content-Type: application/json' -d '{"login":"my_login2","password":"my_password"}' -v
+  // curl -X POST http://localhost:9001/users -H 'Content-Type: application/json' -d '{"login":"my_login22","password":"my_password"}' -v
   app.post('/users', async (res, req) => {
 
     const reqParams = await readJson(res);
@@ -16,7 +16,7 @@ export default function routes(app) {
 
     res.writeStatus('201 Created').writeHeader("Content-Type", "application/json").end(user.toJSON());
 
-  // curl -X POST http://localhost:9001/users/login -H 'Content-Type: application/json' -d '{"login":"my_login23","password":"my_password"}' -v
+  // curl -X POST http://localhost:9001/users/login -H 'Content-Type: application/json' -d '{"login":"my_login22","password":"my_password"}' -v
   }).post('/users/login', async (res, req) => {
 
     const reqParams = await readJson(res);
@@ -32,7 +32,7 @@ export default function routes(app) {
       return;
     }
 
-    const userSession = new UserSession();
+    const userSession = new UserSession({user_id: user.params._id});
     await userSession.save();
 
     const respData = {

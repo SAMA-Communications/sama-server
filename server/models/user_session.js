@@ -6,6 +6,6 @@ export default class UserSession extends BaseModel {
   }
 
   static get visibleFields() {
-    return ['_id', 'created_at', 'updated_at'];
+    return ['_id', 'user_id', 'created_at', 'updated_at'];
   }
 }
