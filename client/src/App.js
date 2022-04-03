@@ -3,6 +3,7 @@ import './styles/App.css';
 import React, { useState, useEffect } from 'react';
 
 import Main from './components/Main'
+import Login from './components/Login'
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -12,10 +13,11 @@ function App() {
     setIsLoggedIn(!!token);
   }, []);
 
-  return (
-    <Main>
-    </Main>
-  );
+  if (!isLoggedIn) {
+    return <Login />;
+  }
+
+  return <Main />;
 }
 
 export default App;
