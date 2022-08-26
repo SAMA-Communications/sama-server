@@ -24,12 +24,68 @@ With SAMA our goal is the following:
 
 ## Authentication
 
-Login + pwd initially
+Login + pwd 
 
-The login part is used the following format:
+### Create user
 
 ```
-<username>@<server_domain_dot_com>
+{
+  request: {
+    user_create: {
+      login: "user_1",
+      password: "user_paswword_1",
+    },
+    id: "1",
+  },
+};
+
+{ response: { id: "1", user: {...} }
+```
+
+### Login user
+
+```
+{
+  request: {
+    user_login: {
+      login: "user_1",
+      password: "user_paswword_1",
+    },
+    id: "2",
+  },
+};
+
+{ response: { id: "2", user: {token: "..", user: {}} }
+```
+
+### Logout user
+
+```
+{
+  request: {
+    user_logout: {
+      token: "...",
+    },
+    id: "3",
+  },
+};
+
+{ response: { id: "3", success: true } }
+```
+
+### Logout delete
+
+```
+{
+  request: {
+    user_delete: {
+      id: "63077ad836b78c3d82af0866",
+    },
+    id: "3",
+  },
+};
+
+{ response: { id: "3", success: true } }
 ```
 
 ## Transport
