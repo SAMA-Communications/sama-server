@@ -73,7 +73,7 @@ Login + pwd
 { response: { id: "3", success: true } }
 ```
 
-### Logout delete
+### User delete
 
 ```
 {
