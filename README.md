@@ -22,6 +22,11 @@ With SAMA our goal is the following:
 * as much as possible simple API
 * clustering support out of the box - to cover cases with big MAU easily from day 1.
 
+## Transport
+
+* WSS
+* TLS socket (for later purpose ?)
+
 ## Authentication
 
 Login + pwd 
@@ -87,11 +92,6 @@ Login + pwd
 
 { response: { id: "3", success: true } }
 ```
-
-## Transport
-
-* WSS
-* TLS socket (for later purpose ?)
 
 ## Send/Receive messages
 
