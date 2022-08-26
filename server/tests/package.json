@@ -1,0 +1,12 @@
+{
+  "name": "tests",
+  "version": "1.0.0",
+  "description": "",
+  "main": "ws.js",
+  "type": "module",
+  "scripts": {
+    "start": "node ws.js"
+  },
+  "author": "",
+  "license": "ISC"
+}

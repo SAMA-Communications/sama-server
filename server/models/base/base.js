@@ -1,5 +1,5 @@
-import { getDb, ObjectId } from '../../lib/db.js';
-import { slice } from '../../utils/req_res_utils.js';
+import { getDb, ObjectId } from "../../lib/db.js";
+import { slice } from "../../utils/req_res_utils.js";
 
 export default class BaseModel {
   constructor(params) {
@@ -8,11 +8,11 @@ export default class BaseModel {
   }
 
   static get collection() {
-    throw new Error('Not implemented');
-  } 
+    throw new Error("Not implemented");
+  }
 
   static get visibleFields() {
-    throw new Error('Not implemented');
+    throw new Error("Not implemented");
   }
 
   async save() {
@@ -21,14 +21,20 @@ export default class BaseModel {
     }
 
     const currentDate = new Date();
-    const insertParams = {...this.params, created_at: currentDate, updated_at: currentDate};
+    const insertParams = {
+      ...this.params,
+      created_at: currentDate,
+      updated_at: currentDate,
+    };
 
     try {
-      const result = await getDb().collection(this.constructor.collection).insertOne(insertParams);
-      this.params = {_id: result.insertedId, ...insertParams};
+      const result = await getDb()
+        .collection(this.constructor.collection)
+        .insertOne(insertParams);
+      this.params = { _id: result.insertedId, ...insertParams };
     } catch (e) {
       return e;
-    }   
+    }
   }
 
   static async findOne(query) {
@@ -37,15 +43,29 @@ export default class BaseModel {
         query._id = new ObjectId(query._id);
       }
       const record = await getDb().collection(this.collection).findOne(query);
-      const obj = (record ? new this(record) : null);
-      return obj; 
+      const obj = record ? new this(record) : null;
+      return obj;
+    } catch (e) {
+      return null;
+    }
+  }
+  static async findUserSession(query) {
+    try {
+      if (query.user_id) {
+        query.user_id = new ObjectId(query.user_id);
+      }
+      const record = await getDb().collection(this.collection).findOne(query);
+      const obj = record ? new this(record) : null;
+      return obj;
     } catch (e) {
       return null;
     }
   }
 
   async delete() {
-    await getDb().collection(this.constructor.collection).deleteOne({_id: this.params._id});
+    await getDb()
+      .collection(this.constructor.collection)
+      .deleteOne({ _id: this.params._id });
   }
 
   toJSON() {
