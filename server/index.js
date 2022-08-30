@@ -29,9 +29,6 @@ APP.listen(APP_PORT, (listenSocket) => {
   }
 });
 
-buildUsersRoutes(APP);
-buildWSRoutes(APP, WS_OPTIONS);
-
 // perform a database connection when the server starts
 connectToDB((err) => {
   if (err) {

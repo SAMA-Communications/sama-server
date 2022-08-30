@@ -42,6 +42,13 @@ export default class BaseModel {
       if (query._id) {
         query._id = new ObjectId(query._id);
       }
+      if (query.user_id) {
+        query.user_id = new ObjectId(query.user_id);
+      }
+      if (query.conversation_id) {
+        query.conversation_id = new ObjectId(query.conversation_id);
+      }
+
       const record = await getDb().collection(this.collection).findOne(query);
       const obj = record ? new this(record) : null;
       return obj;
@@ -49,13 +56,30 @@ export default class BaseModel {
       return null;
     }
   }
-  static async findUserSession(query) {
+
+  static async update(query, update) {
+    if (query._id) {
+      query._id = new ObjectId(query._id);
+    }
+    console.log(this.collection, query, update);
+    await getDb().collection(this.collection).updateOne(query, update);
+  }
+
+  static async getAllIdsBy(query) {
     try {
-      if (query.user_id) {
-        query.user_id = new ObjectId(query.user_id);
+      if (query) {
+        for (let i = 0; i < query._id.$in.length; i++) {
+          query._id.$in[i] = new ObjectId(query._id.$in[i]);
+        }
       }
-      const record = await getDb().collection(this.collection).findOne(query);
-      const obj = record ? new this(record) : null;
+      const obj = [];
+      await getDb()
+        .collection(this.collection)
+        .find(query)
+        .project({ _id: 1 })
+        .forEach((el) => {
+          obj.push(el._id);
+        });
       return obj;
     } catch (e) {
       return null;

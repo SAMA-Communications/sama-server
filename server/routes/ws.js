@@ -1,5 +1,8 @@
 import User from "../models/user.js";
+import { ObjectId } from "../lib/db.js";
 import UserSession from "../models/user_session.js";
+import Conversation from "../models/conversation.js";
+import ConversationParticipant from "../models/conversation_participant.js";
 import { slice } from "../utils/req_res_utils.js";
 
 import { StringDecoder } from "string_decoder";
@@ -27,6 +30,7 @@ export default function routes(app, wsOptions) {
       sendErrorResponse(ws, requestId, 404, "Unauthorized");
     }
   }
+
   app.ws("/*", {
     ...wsOptions,
 
@@ -46,6 +50,15 @@ export default function routes(app, wsOptions) {
       const json = JSON.parse(decoder.write(Buffer.from(message)));
       const requestId = json.request.id;
       console.log("[message]", json);
+
+      if (
+        !json.request.user_create &&
+        !json.request.user_login &&
+        !ACTIVE_SESSIONS[ws]
+      ) {
+        sendErrorResponse(ws, requestId, 404, "Unauthorized");
+        return;
+      }
 
       if (json.request.user_create) {
         //Create
@@ -110,7 +123,7 @@ export default function routes(app, wsOptions) {
         }
 
         const userId = json.request.user_delete.id;
-        const currentUserSession = await UserSession.findUserSession({
+        const currentUserSession = await UserSession.findOne({
           user_id: userId,
         });
 
@@ -125,6 +138,94 @@ export default function routes(app, wsOptions) {
         } else {
           sendErrorResponse(ws, requestId, 404, "Unauthorized");
         }
+      } else if (json.request.conversation_create) {
+        //Create conversation
+        console.log("Create conversation...");
+
+        const [allowedFields, participantsFields] = [
+          ["name", "description"],
+          ["participants"],
+        ];
+        const participantsParams = slice(
+          json.request.conversation_create,
+          participantsFields
+        );
+        participantsParams.participants = await User.getAllIdsBy({
+          _id: { $in: participantsParams.participants },
+        });
+
+        if (participantsParams.participants?.length === 0) {
+          sendErrorResponse(ws, requestId, 422, "Select at least one user");
+          return;
+        }
+
+        const conversationParams = slice(
+          json.request.conversation_create,
+          allowedFields
+        );
+        conversationParams.owner_id = ACTIVE_SESSIONS[ws].userSession.user_id;
+        const conversationObj = new Conversation(conversationParams);
+        await conversationObj.save();
+
+        participantsParams.participants.forEach(async (user) => {
+          const participantObj = new ConversationParticipant({
+            user_id: user,
+            conversation_id: conversationObj.params._id,
+          });
+          await participantObj.save();
+        });
+
+        ws.send(
+          JSON.stringify({
+            response: {
+              id: requestId,
+              conversation: conversationObj,
+            },
+          })
+        );
+      } else if (json.request.conversation_delete) {
+        //Delete conversation
+        console.log("Delete conversation...");
+
+        const conversationId = json.request.conversation_delete.id;
+        const conversation = await Conversation.findOne({
+          _id: conversationId,
+        });
+
+        if (!conversation) {
+          sendErrorResponse(ws, requestId, 404, "Conversation not found");
+          return;
+        }
+
+        const conversationParticipant = await ConversationParticipant.findOne({
+          user_id: ACTIVE_SESSIONS[ws].userSession.user_id,
+          conversation_id: conversationId,
+        });
+        if (!conversationParticipant) {
+          sendErrorResponse(
+            ws,
+            requestId,
+            404,
+            "ConversationParticipant not found"
+          );
+          return;
+        }
+        await conversationParticipant.delete();
+        const isUserInConvesation = await ConversationParticipant.findOne({
+          conversation_id: conversationId,
+        });
+        if (!isUserInConvesation) {
+          await conversation.delete();
+        } else if (
+          conversation.params.owner_id.toString() ===
+          ACTIVE_SESSIONS[ws].userSession.user_id.toString()
+        ) {
+          Conversation.update(
+            { _id: conversationId },
+            { $set: { owner_id: isUserInConvesation.params.user_id } }
+          );
+        }
+        ws.send(JSON.stringify({ response: { id: requestId, success: true } }));
       }
     },
   });

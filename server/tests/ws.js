@@ -3,8 +3,8 @@ import WebSocket from "ws";
 const userCreate = {
   request: {
     user_create: {
-      login: "user_1",
-      password: "user_paswword_1",
+      login: "user_3",
+      password: "user_paswword_3",
     },
     id: "1",
   },
@@ -18,7 +18,7 @@ const userLogin = {
     id: "2",
   },
 };
-let currentUserToken = "63077b407f8a5d9470d5e6e0";
+let currentUserToken = "630c7abc9f8699cccb6eda98";
 let userLogout = {
   request: {
     user_logout: {
@@ -30,9 +30,27 @@ let userLogout = {
 const userDelete = {
   request: {
     user_delete: {
-      id: "63077ad836b78c3d82af0866",
+      id: "630cc582a9bd13ced3cdeefc",
     },
     id: "4",
+  },
+};
+const conversationsCreate = {
+  request: {
+    conversation_create: {
+      name: "chat_1",
+      description: "for admin and users",
+      participants: ["6308c177b2c69c02e27e9686", "630c7abc9f8699cccb6eda98"],
+    },
+    id: "5",
+  },
+};
+const conversationsDelete = {
+  request: {
+    conversation_delete: {
+      id: "630dde18623f25670a6bba2c",
+    },
+    id: "5",
   },
 };
 
@@ -45,13 +63,21 @@ ws.on("open", () => {
 
   test_function(userLogin);
 
+  // setTimeout(() => {
+  //   test_function(userDelete);
+  // }, 7000);
+
+  // setTimeout(() => {
+  //   test_function(conversationsCreate);
+  // }, 2000);
+
   setTimeout(() => {
-    test_function(userDelete);
-  }, 7000);
+    test_function(conversationsDelete);
+  }, 2000);
 
   // setTimeout(() => {
   //   test_function(userLogout);
-  // }, 2000);
+  // }, 5000);
 });
 
 ws.on("message", (message) => {
