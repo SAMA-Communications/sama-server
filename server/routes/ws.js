@@ -226,6 +226,96 @@ export default function routes(app, wsOptions) {
           );
         }
         ws.send(JSON.stringify({ response: { id: requestId, success: true } }));
+      } else if (json.request.conversation_update) {
+        //Update conversation
+        console.log("Update conversation...");
+        const requestData = json.request.conversation_update;
+
+        const conversation = await Conversation.findOne({ _id: requestData });
+        if (!requestData.id || !conversation) {
+          sendErrorResponse(ws, requestId, 400, "Bad Request");
+          return;
+        }
+
+        if (
+          conversation.params.owner_id.toString() !==
+          ACTIVE_SESSIONS[ws].userSession.user_id.toString()
+        ) {
+          sendErrorResponse(ws, requestId, 403, "Forbidden");
+          return;
+        }
+        const conversationId = requestData.id;
+        delete requestData.id;
+
+        let isOwnerChange = false;
+        if (
+          requestData.participants &&
+          Object.keys(requestData.participants) != 0
+        ) {
+          const participantsToUpdate = requestData.participants;
+          delete requestData.participants;
+
+          const addUsers = participantsToUpdate.add;
+          const removeUsers = participantsToUpdate.remove;
+          if (addUsers) {
+            for (let i = 0; i < addUsers.length; i++) {
+              const obj = new ConversationParticipant({
+                user_id: ObjectId(addUsers[i]),
+                conversation_id: ObjectId(conversationId),
+              });
+              if (
+                !(await ConversationParticipant.findOne({
+                  user_id: addUsers[i],
+                  conversation_id: conversationId,
+                }))
+              ) {
+                await obj.save();
+              }
+            }
+          }
+          if (removeUsers) {
+            for (let i = 0; i < removeUsers.length; i++) {
+              const obj = await ConversationParticipant.findOne({
+                user_id: removeUsers[i],
+                conversation_id: conversationId,
+              });
+              if (!!obj) {
+                if (
+                  conversation.params.owner_id.toString() ===
+                  obj.params.user_id.toString()
+                ) {
+                  isOwnerChange = true;
+                }
+                await obj.delete();
+              }
+            }
+          }
+        }
+        if (isOwnerChange) {
+          const isUserInConvesation = await ConversationParticipant.findOne({
+            conversation_id: conversationId,
+          });
+          requestData.owner_id = isUserInConvesation.params.user_id;
+        }
+        isOwnerChange = false;
+        if (Object.keys(requestData) != 0) {
+          await Conversation.update(
+            { _id: conversationId },
+            { $set: requestData }
+          );
+        }
+
+        const returnConversation = await Conversation.findOne({
+          _id: conversationId,
+        });
+        ws.send(
+          JSON.stringify({
+            response: {
+              id: requestId,
+              conversation: returnConversation,
+            },
+          })
+        );
       }
     },
   });

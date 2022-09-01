@@ -37,6 +37,18 @@ export default class BaseModel {
     }
   }
 
+  static async findAll(query) {
+    try {
+      const arr = [];
+      await getDb()
+        .collection(this.collection)
+        .find(query)
+        .forEach((el) => {});
+    } catch (e) {
+      return null;
+    }
+  }
+
   static async findOne(query) {
     try {
       if (query._id) {
@@ -58,11 +70,14 @@ export default class BaseModel {
   }
 
   static async update(query, update) {
-    if (query._id) {
-      query._id = new ObjectId(query._id);
+    try {
+      if (query._id) {
+        query._id = new ObjectId(query._id);
+      }
+      await getDb().collection(this.collection).updateOne(query, update);
+    } catch (e) {
+      return null;
     }
-    console.log(this.collection, query, update);
-    await getDb().collection(this.collection).updateOne(query, update);
   }
 
   static async getAllIdsBy(query) {
