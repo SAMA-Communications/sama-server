@@ -9,6 +9,7 @@ import { StringDecoder } from "string_decoder";
 const decoder = new StringDecoder("utf8");
 
 const ACTIVE_SESSIONS = {};
+const LIMIT_MAX = 100;
 
 export default function routes(app, wsOptions) {
   function sendErrorResponse(ws, requestId, errorStatus, errorMessage) {
@@ -313,6 +314,45 @@ export default function routes(app, wsOptions) {
             response: {
               id: requestId,
               conversation: returnConversation,
+            },
+          })
+        );
+      } else if (json.request.conversation_list) {
+        console.log("List of conversation...");
+        //List of conversation
+
+        const currentUser = ACTIVE_SESSIONS[ws].userSession.user_id;
+        const limit =
+          json.request.conversation_list.limit > LIMIT_MAX
+            ? LIMIT_MAX
+            : json.request.conversation_list.limit || LIMIT_MAX;
+        const userConversationsId = await ConversationParticipant.findAll(
+          {
+            user_id: currentUser,
+          },
+          "conversation_id"
+        );
+
+        const query = {
+          _id: {
+            $in: userConversationsId,
+          },
+        };
+        const timeFromUpdate = json.request.conversation_list.updated_at;
+        if (timeFromUpdate) {
+          query.updated_at = { $gt: new Date(timeFromUpdate.gt) };
+        }
+        const userConversations = await Conversation.findAll(
+          query,
+          null,
+          limit
+        );
+
+        ws.send(
+          JSON.stringify({
+            response: {
+              id: requestId,
+              conversations: userConversations,
             },
           })
         );

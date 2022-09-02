@@ -73,10 +73,10 @@ const conversationUpdate = {
 const conversationList = {
   request: {
     conversation_list: {
-      limit: 100,
+      limit: 2,
       // updated_at: {
-      //   gt: timestamp1
-      // }
+      //   gt: "2022-09-01T07:06:02.715+00:00",
+      // },
     },
     id: "7",
   },
@@ -107,13 +107,13 @@ ws.on("open", () => {
   //   test_function(userLogout);
   // }, 5000);
 
-  setTimeout(() => {
-    test_function(conversationUpdate);
-  }, 3000);
-
   // setTimeout(() => {
-  //   test_function(conversationList);
+  //   test_function(conversationUpdate);
   // }, 3000);
+
+  setTimeout(() => {
+    test_function(conversationList);
+  }, 3000);
 });
 
 ws.on("message", (message) => {

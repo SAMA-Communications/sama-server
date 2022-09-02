@@ -37,13 +37,16 @@ export default class BaseModel {
     }
   }
 
-  static async findAll(query) {
+  static async findAll(query, returnParam, limit) {
     try {
-      const arr = [];
+      const arr = new Set();
       await getDb()
         .collection(this.collection)
-        .find(query)
-        .forEach((el) => {});
+        .find(query, { limit: limit })
+        .forEach((el) => {
+          arr.add(returnParam ? el[returnParam] : el);
+        });
+      return Array.from(arr);
     } catch (e) {
       return null;
     }
