@@ -31,6 +31,8 @@ With SAMA our goal is the following:
 
 Login + pwd 
 
+## API
+
 ### Create user
 
 ```
@@ -92,6 +94,35 @@ Login + pwd
 
 { response: { id: "3", success: true } }
 ```
+
+### Conversation create 
+
+```
+
+```
+
+### Conversation update
+
+```
+
+```
+
+### Conversation delete
+
+```
+
+```
+
+### List conversations 
+
+```
+
+```
+
+
+
+
+
 
 ## Send/Receive messages
 
