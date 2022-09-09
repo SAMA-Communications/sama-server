@@ -120,11 +120,7 @@ Login + pwd
 ```
 
 
-
-
-
-
-## Send/Receive messages
+### Send/Receive messages
 
 ```
 {
@@ -147,9 +143,9 @@ A `t` param should be omit at sender's side. Server will add it by itself in a m
 To make sure both sender and recipient have same message timestamp - see belowe about `Sent status`
 
 
-## Sent status
+### Sent status
 
-On each message sent to server - a server will deliver back to client a simple packet with message id and timestamp at which the message was stored in DB sp both sender & recipient will have same date sent time stored:
+On each message sent to server - a server will deliver back to client a simple packet with message id and timestamp at which the message was stored in DB so both sender & recipient will have same date sent time stored:
 
 `{'ack': {'mid': 'xyz', 't': 15673838833}}`
 
