@@ -98,25 +98,72 @@ Login + pwd
 ### Conversation create 
 
 ```
+{
+  request: {
+    conversation_create: {
+      name: "ChantName",
+      description: "Description",
+      participants: [ "63077ad836b78c3d82af0812", "63077ad836b78c3d82af0866" ],
+    },
+    id: "4",
+   },
+};
 
+{ response: { id: "4", conversation: {...} } }
 ```
 
 ### Conversation update
 
 ```
+{
+  request: {
+    conversation_update: {
+      id: currentConversationId,
+      name: "name2",
+      description: "description_tes22",
+      participants: {
+        add: [ "63077ad836b78c3d82af0812", "63077ad836b78c3d82af0832" ],
+        remove: [ "63077ad836b78c3d82af0816" ],
+      },
+    },
+    id: "5",
+  },
+};
 
+{ response: { id: "5", conversation: {...} } }
 ```
 
 ### Conversation delete
 
 ```
+{
+  request: {
+    conversation_delete: {
+      id: "63077ad836b78c3d82af0812",
+    },
+    id: "4",
+  },
+};
 
+{ response: { id: "4", success: true } }
 ```
 
 ### List conversations 
 
 ```
+{
+  request: {
+    conversation_list: {
+      limit: 67,
+      updated_at: {
+        gt: timestamp1,
+      },
+    },
+    id: "7",
+  },
+};
 
+{ response: { id: "7", conversations: [ ... ] } }
 ```
 
 
