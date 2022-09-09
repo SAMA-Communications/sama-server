@@ -119,8 +119,8 @@ Login + pwd
   request: {
     conversation_update: {
       id: currentConversationId,
-      name: "name2",
-      description: "description_tes22",
+      name: "NewName",
+      description: "NewDescription",
       participants: {
         add: [ "63077ad836b78c3d82af0812", "63077ad836b78c3d82af0832" ],
         remove: [ "63077ad836b78c3d82af0816" ],
