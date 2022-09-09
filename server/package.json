@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "nodemon -r dotenv/config index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": " mocha -r dotenv/config"
   },
   "repository": {
     "type": "git",
@@ -17,11 +17,14 @@
   "dependencies": {
     "crypto": "^1.0.1",
     "dotenv": "^16.0.1",
-    "mongodb": "^4.4.1",
+    "mongodb": "4.9.1",
     "nodemon": "^2.0.19",
     "string_decoder": "^1.3.0",
-    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.6.0",
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.10.0",
     "websocket": "^1.0.34",
     "ws": "^8.8.1"
+  },
+  "devDependencies": {
+    "mocha": "^10.0.0"
   }
 }

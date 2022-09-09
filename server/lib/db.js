@@ -18,6 +18,15 @@ export function connectToDB(callback) {
   });
 };
 
+export async function connectToDBPromise() {
+  const db = await client.connect()
+
+  const mongoURISplit = process.env.MONGODB_URI.split("/");
+  const dbName = mongoURISplit[mongoURISplit.length - 1];
+
+  dbConnection = db.db(dbName);
+};
+
 export function getDb () {
   return dbConnection;
 };
