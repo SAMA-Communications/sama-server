@@ -342,7 +342,7 @@ Via REST API. Can block, unblock and list blocked users.
 
 Will support it on a later stage
 
-## REST API
+## API (todo)
 
 * User signup
 * User signin
