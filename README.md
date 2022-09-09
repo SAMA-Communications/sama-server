@@ -149,7 +149,13 @@ On each message sent to server - a server will deliver back to client a simple p
 
 `{'ack': {'mid': 'xyz', 't': 15673838833}}`
 
-## Delivered status
+### List messages 
+
+```
+
+```
+
+### Delivered message status
 
 ```
 {
@@ -166,7 +172,7 @@ On each message sent to server - a server will deliver back to client a simple p
 
 A `t` param should be omit at sender's side. Server will add it by itself in a message to recipient. 
 
-## Read status
+### Read message status
 
 ```
 {
@@ -183,7 +189,7 @@ A `t` param should be omit at sender's side. Server will add it by itself in a m
 
 A `t` param should be omit at sender's side. Server will add it by itself in a message to recipient. 
 
-## Typing
+### Message typing
 
 A user either can send typing or stop typing packets:
 
@@ -202,7 +208,7 @@ A user either can send typing or stop typing packets:
 
 A `t` param should be omit at sender's side. Server will add it by itself in a message to recipient. 
 
-## Delete message
+### Delete message
 
 ```
 {
@@ -220,7 +226,7 @@ A `t` param should be omit at sender's side. Server will add it by itself in a m
 
 A `t` param should be omit at sender's side. Server will add it by itself in a message to recipient. 
 
-## Edit message
+### Edit message
 
 ```
 {
@@ -239,7 +245,7 @@ A `t` param should be omit at sender's side. Server will add it by itself in a m
 
 A `t` param should be omit at sender's side. Server will add it by itself in a message to recipient. 
 
-## Carbons
+### Carbons
 
 Carbons is enabled by default.  On send - a message will be delivered back to all active sender's devices except the current one.  
 
@@ -264,7 +270,7 @@ The packet is a simple 'carbon' wrapper around original message.
 ```
 
 
-## System messages
+### System messages
 
 ```
 {
