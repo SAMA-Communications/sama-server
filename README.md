@@ -346,13 +346,16 @@ Will support it on a later stage
 
 ## API (todo)
 
-* [x] User signup
-* [x] User signin
+* [x] User create
+* [x] User login
+* [x] User logout
+* [x] User delete
 * User edit
 * Search user
-* [x] Create chat
-* [x] List chats
-* [x] Edit chat
+* [x] Create conversation
+* [x] List conversations
+* [x] Edit conversation
+* [x] Delete conversation
 * List chat messages
 * Upload attachment
 * Get attachment by url
