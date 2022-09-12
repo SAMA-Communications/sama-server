@@ -103,6 +103,7 @@ Login + pwd
     conversation_create: {
       name: "ChantName",
       description: "Description",
+      type: "g"
       participants: [ "63077ad836b78c3d82af0812", "63077ad836b78c3d82af0866" ],
     },
     id: "4",
