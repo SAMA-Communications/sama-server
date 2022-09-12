@@ -113,7 +113,12 @@ Login + pwd
 { response: { id: "4", conversation: {...} } }
 ```
 
+A `type` param must have only one of two values:
+* `u` - (user) - a private conversations for two people only
+* `g` - (group) - conversations for a group of users, two or more.
+
 ### Conversation update
+
 
 ```
 {
