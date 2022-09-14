@@ -31,4 +31,8 @@ export function getDb () {
   return dbConnection;
 };
 
+export function getClient () {
+  return client;
+};
+
 export const ObjectId = OID;

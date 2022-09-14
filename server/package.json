@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "nodemon -r dotenv/config index.js",
-    "test": " mocha -r dotenv/config"
+    "test": "nyc mocha -r dotenv/config"
   },
   "repository": {
     "type": "git",
@@ -25,6 +25,7 @@
     "ws": "^8.8.1"
   },
   "devDependencies": {
-    "mocha": "^10.0.0"
+    "mocha": "^10.0.0",
+    "nyc": "^15.1.0"
   }
 }

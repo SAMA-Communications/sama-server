@@ -1,5 +1,5 @@
 import { processJsonMessage } from "../routes/ws.js";
-import { connectToDBPromise } from "../lib/db.js";
+import { connectToDBPromise, getClient } from "../lib/db.js";
 import assert from "assert";
 import User from "../models/user.js";
 
@@ -12,6 +12,8 @@ describe("User cycle", async () => {
   before(async () => {
     await connectToDBPromise();
   });
+
+  after(async () => { await getClient().close()})
 
   describe("Create User", async () => {
     it("should work", async () => {
