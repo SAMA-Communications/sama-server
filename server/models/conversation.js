@@ -15,8 +15,10 @@ export default class Conversation extends BaseModel {
       "created_at",
       "updated_at",
       "name",
+      "type",
       "description",
       "owner_id",
+      "recipient",
     ];
   }
 }

@@ -1,8 +1,8 @@
-import { StringDecoder } from "string_decoder";
-import { ERROR_STATUES } from "../constants/http_constants.js";
-import ACTIVE_SESSIONS from "../models/active_sessions.js";
-import UsersController from "../controllers/users.js";
+import ACTIVE from "../models/active.js";
 import ConversationController from "../controllers/conversations.js";
+import UsersController from "../controllers/users.js";
+import { ERROR_STATUES } from "../constants/http_constants.js";
+import { StringDecoder } from "string_decoder";
 
 const decoder = new StringDecoder("utf8");
 
@@ -13,7 +13,7 @@ export async function processJsonMessage(ws, json) {
   if (
     !json.request.user_create &&
     !json.request.user_login &&
-    !ACTIVE_SESSIONS[ws]
+    !ACTIVE.SESSIONS[ws]
   ) {
     return {
       response: {
@@ -54,7 +54,7 @@ export default function routes(app, wsOptions) {
     },
 
     close: (ws, code, message) => {
-      delete ACTIVE_SESSIONS[ws];
+      delete ACTIVE.SESSIONS[ws];
     },
 
     message: async (ws, message, isBinary) => {

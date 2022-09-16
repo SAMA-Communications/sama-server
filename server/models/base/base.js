@@ -72,6 +72,14 @@ export default class BaseModel {
     }
   }
 
+  static async clearCollection() {
+    try {
+      return await getDb().collection(this.collection).deleteMany({});
+    } catch (e) {
+      return null;
+    }
+  }
+
   static async update(query, update) {
     try {
       if (query._id) {

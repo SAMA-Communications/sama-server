@@ -1,9 +1,9 @@
-import ACTIVE_SESSIONS from "../models/active_sessions.js";
-import { slice } from "../utils/req_res_utils.js";
-import { ALLOW_FIELDS } from "../constants/fields_constants.js";
-import { ERROR_STATUES } from "../constants/http_constants.js";
+import ACTIVE from "../models/active.js";
 import User from "../models/user.js";
 import UserSession from "../models/user_session.js";
+import { ALLOW_FIELDS } from "../constants/fields_constants.js";
+import { ERROR_STATUES } from "../constants/http_constants.js";
+import { slice } from "../utils/req_res_utils.js";
 
 export default class UsersController {
   async create(ws, data) {
@@ -56,13 +56,21 @@ export default class UsersController {
     const userSession = new UserSession({ user_id: user.params._id });
     await userSession.save();
 
-    ACTIVE_SESSIONS[ws] = { userSession: userSession.params };
+    // if (ACTIVE.SESSIONS[ws]) {
+    //   const currentSession = await UserSession.findOne({
+    //     user_id: ACTIVE.SESSIONS[ws].userSession.user_id,
+    //   });
+    //   if (currentSession) {
+    //     await currentSession.delete();
+    //   }
+    // }
+    ACTIVE.SESSIONS[ws] = { userSession: userSession.params };
+    ACTIVE.CONNECTIONS[userSession.params.user_id] = ws;
 
     const respData = {
       token: userSession.params._id,
       user: user.visibleParams(),
     };
-
     return { response: { id: requestId, user: respData } };
   }
 
@@ -72,8 +80,9 @@ export default class UsersController {
     const sessionId = data.request.user_logout.token;
     const currentUserSession = await UserSession.findOne({ _id: sessionId });
     if (currentUserSession) {
+      delete ACTIVE.CONNECTIONS[currentUserSession.params.user_id];
+      delete ACTIVE.SESSIONS[ws];
       await currentUserSession.delete();
-      delete ACTIVE_SESSIONS[ws];
       return { response: { id: requestId, success: true } };
     } else {
       return {
@@ -88,7 +97,7 @@ export default class UsersController {
   async delete(ws, data) {
     const requestId = data.request.id;
 
-    const userSession = ACTIVE_SESSIONS[ws].userSession;
+    const userSession = ACTIVE.SESSIONS[ws].userSession;
     if (userSession.user_id.toString() !== data.request.user_delete.id) {
       return {
         response: {
@@ -104,8 +113,9 @@ export default class UsersController {
     });
 
     if (currentUserSession) {
+      delete ACTIVE.CONNECTIONS[currentUserSession.params.user_id];
+      delete ACTIVE.SESSIONS[ws];
       await currentUserSession.delete();
-      delete ACTIVE_SESSIONS[ws];
     }
 
     const user = await User.findOne({ _id: userId });

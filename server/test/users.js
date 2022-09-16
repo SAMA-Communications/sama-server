@@ -1,7 +1,7 @@
-import { processJsonMessage } from "../routes/ws.js";
-import { connectToDBPromise, getClient } from "../lib/db.js";
-import assert from "assert";
 import User from "../models/user.js";
+import assert from "assert";
+import { connectToDBPromise, getClient } from "../lib/db.js";
+import { processJsonMessage } from "../routes/ws.js";
 
 const userLogin = [...Array(30)]
   .map(() => Math.random().toString(36)[2])
@@ -13,7 +13,9 @@ describe("User cycle", async () => {
     await connectToDBPromise();
   });
 
-  after(async () => { await getClient().close()})
+  after(async () => {
+    await getClient().close();
+  });
 
   describe("Create User", async () => {
     it("should work", async () => {
@@ -95,7 +97,7 @@ describe("User cycle", async () => {
       });
     });
 
-    it("should work'", async () => {
+    it("should work", async () => {
       const requestData = {
         request: {
           user_login: {
@@ -115,7 +117,7 @@ describe("User cycle", async () => {
   });
 
   describe("Logout User", async () => {
-    it("should work'", async () => {
+    it("should work", async () => {
       const requestData = {
         request: {
           user_logout: {

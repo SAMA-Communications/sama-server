@@ -1,10 +1,14 @@
-import { processJsonMessage } from "../routes/ws.js";
-import { connectToDBPromise } from "../lib/db.js";
+import Conversation from "../models/conversation.js";
+import ConversationParticipant from "../models/conversation_participant.js";
+import User from "../models/user.js";
+import UserSession from "../models/user_session.js";
 import assert from "assert";
+import { connectToDBPromise } from "../lib/db.js";
+import { processJsonMessage } from "../routes/ws.js";
 
 let currentUserToken = "";
 let userId = [];
-let filterUpdateAt = "";
+let filterUpdatedAt = "";
 let currentConversationId = "";
 let ArrayOfTmpConversaionts = [];
 
@@ -21,7 +25,7 @@ async function sendLogin(ws, login) {
   const response = await processJsonMessage(ws, requestData);
   return response;
 }
-async function sendLogut(ws, currentUserToken) {
+async function sendLogout(ws, currentUserToken) {
   const requestData = {
     request: {
       user_logout: {
@@ -59,6 +63,7 @@ describe("Conversation functions", async () => {
           conversation_create: {
             name: "chat5",
             description: "for admin and users",
+            type: "g",
             participants: [userId[0], userId[1]],
           },
           id: "5_1",
@@ -72,7 +77,7 @@ describe("Conversation functions", async () => {
       assert.notEqual(responseData.response.conversation, undefined);
       assert.equal(responseData.response.error, undefined);
 
-      await sendLogut("test", currentUserToken);
+      await sendLogout("test", currentUserToken);
       currentUserToken = "";
     });
 
@@ -83,6 +88,7 @@ describe("Conversation functions", async () => {
             id: currentConversationId,
             name: "123123",
             description: "asdbzxc1",
+            type: "g",
             participants: [userId[0]],
           },
           id: "5_2",
@@ -146,6 +152,7 @@ describe("Conversation functions", async () => {
             id: currentConversationId,
             name: "123123",
             description: "asdbzxc1",
+            type: "g",
             participants: [userId[1]],
           },
           id: "5_5",
@@ -208,6 +215,7 @@ describe("Conversation functions", async () => {
           conversation_create: {
             name: "chat5",
             description: "for admin and users",
+            type: "g",
             participants: [userId[0], userId[1]],
           },
           id: "1_1",
@@ -228,6 +236,7 @@ describe("Conversation functions", async () => {
           conversation_create: {
             name: "testing",
             description: "test1",
+            type: "g",
             participants: [userId[1]],
           },
           id: "1_2",
@@ -249,6 +258,7 @@ describe("Conversation functions", async () => {
           conversation_create: {
             name: "testing",
             description: "for admin and users",
+            type: "g",
             participants: [],
           },
           id: "1_3",
@@ -270,6 +280,7 @@ describe("Conversation functions", async () => {
           conversation_create: {
             name: "chat1",
             description: "for admin and users",
+            type: "g",
           },
           id: "1_4",
         },
@@ -290,6 +301,7 @@ describe("Conversation functions", async () => {
           conversation_create: {
             description: "for admin and users",
             participants: [userId[0]],
+            type: "g",
           },
           id: "1_5",
         },
@@ -301,6 +313,71 @@ describe("Conversation functions", async () => {
       assert.deepEqual(responseData.response.error, {
         status: 422,
         message: "No conversation name specified",
+      });
+    });
+
+    it("should fail because conversation's type is missed", async () => {
+      const requestData = {
+        request: {
+          conversation_create: {
+            name: "chat5",
+            description: "for admin and users",
+            participants: [userId[0], userId[1]],
+          },
+          id: "1_6",
+        },
+      };
+      const responseData = await processJsonMessage("test", requestData);
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(responseData.response.conversation, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "Incorrect type of conversation",
+      });
+    });
+
+    it("should fail because incorrect type of conversation", async () => {
+      const requestData = {
+        request: {
+          conversation_create: {
+            name: "chat5",
+            description: "for admin and users",
+            type: "k",
+            participants: [userId[0], userId[1]],
+          },
+          id: "1_7",
+        },
+      };
+      const responseData = await processJsonMessage("test", requestData);
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(responseData.response.conversation, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "Incorrect type of conversation",
+      });
+    });
+
+    it("should fail because conversation's type is 'u', but more than two users are selected", async () => {
+      const requestData = {
+        request: {
+          conversation_create: {
+            name: "chat5",
+            description: "for admin and users",
+            type: "u",
+            participants: [userId[0], userId[1], userId[2], userId[3]],
+          },
+          id: "1_8",
+        },
+      };
+      const responseData = await processJsonMessage("test", requestData);
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(responseData.response.conversation, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "Too many users in private conversation",
       });
     });
   });
@@ -393,6 +470,7 @@ describe("Conversation functions", async () => {
             conversation_create: {
               name: `chat_${i + 1}`,
               description: `conversation_${i + 1}`,
+              type: "g",
               participants: [userId[3]],
             },
             id: "0",
@@ -400,19 +478,18 @@ describe("Conversation functions", async () => {
         };
         const responseData = (await processJsonMessage("test", requestData))
           .response.conversation;
-        i == 0 ? (filterUpdateAt = responseData.params.updated_at) : true;
+        i == 0 ? (filterUpdatedAt = responseData.params.updated_at) : true;
         ArrayOfTmpConversaionts.push(responseData.params._id.toString());
       }
     });
 
     it("should work with a time parameter", async () => {
-      //sometimes it doesn't work because several chats can be created at the same time, so the number of chats may differ from the expected
       const numberOf = 2;
       const requestData = {
         request: {
           conversation_list: {
             updated_at: {
-              gt: filterUpdateAt,
+              gt: filterUpdatedAt,
             },
           },
           id: "3_1",
@@ -423,7 +500,7 @@ describe("Conversation functions", async () => {
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.conversations, undefined);
-      assert.strictEqual(count, numberOf);
+      assert(count <= numberOf, "limit filter does not work");
       assert.equal(responseData.response.error, undefined);
     });
 
@@ -451,7 +528,7 @@ describe("Conversation functions", async () => {
           conversation_list: {
             limit: numberOf,
             updated_at: {
-              gt: filterUpdateAt,
+              gt: filterUpdatedAt,
             },
           },
           id: "3_3",
@@ -460,7 +537,7 @@ describe("Conversation functions", async () => {
       const responseData = await processJsonMessage("test", requestData);
       const count = responseData.response.conversations.length;
       const checkDate =
-        responseData.response.conversations[0].updated_at > filterUpdateAt;
+        responseData.response.conversations[0].updated_at > filterUpdatedAt;
 
       assert(checkDate, "date is false");
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -487,34 +564,11 @@ describe("Conversation functions", async () => {
       assert.strictEqual(count, numberOf);
       assert.equal(responseData.response.error, undefined);
     });
-
-    after(async () => {
-      function ClearArray() {
-        ArrayOfTmpConversaionts.forEach(async (id) => {
-          const requestData = {
-            request: {
-              conversation_delete: {
-                id: id,
-              },
-              id: "00",
-            },
-          };
-          await processJsonMessage("test", requestData);
-        });
-      }
-      ClearArray();
-      await sendLogut("test", currentUserToken);
-      currentUserToken = (await sendLogin("test", "user_4")).response.user
-        .token;
-
-      ClearArray();
-      ArrayOfTmpConversaionts = [];
-    });
   });
 
   describe("Delete Conversation", async () => {
     before(async () => {
-      await sendLogut("test", currentUserToken);
+      await sendLogout("test", currentUserToken);
       currentUserToken = (await sendLogin("test", "user_1")).response.user
         .token;
     });
@@ -553,37 +607,13 @@ describe("Conversation functions", async () => {
       assert.notEqual(responseData.response.success, undefined);
       assert.equal(responseData.response.error, undefined);
     });
-
-    after(async () => {
-      await sendLogut("test", currentUserToken);
-      currentUserToken = (await sendLogin("test", "user_2")).response.user
-        .token;
-      const requestData = {
-        request: {
-          conversation_delete: {
-            id: currentConversationId,
-          },
-          id: "00",
-        },
-      };
-      await processJsonMessage("test", requestData);
-    });
   });
 
   after(async () => {
-    await sendLogut("test", currentUserToken);
-    for (let i = 0; i < userId.length; i++) {
-      await sendLogin("test", `user_${i + 1}`);
-      const requestData = {
-        request: {
-          user_delete: {
-            id: userId[i],
-          },
-          id: "00",
-        },
-      };
-      await processJsonMessage("test", requestData);
-    }
+    await User.clearCollection();
+    await UserSession.clearCollection();
+    await Conversation.clearCollection();
+    await ConversationParticipant.clearCollection();
     userId = [];
   });
 });

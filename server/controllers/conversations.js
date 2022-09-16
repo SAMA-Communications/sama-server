@@ -1,10 +1,10 @@
-import ACTIVE_SESSIONS from "../models/active_sessions.js";
 import { slice } from "../utils/req_res_utils.js";
 import { ObjectId } from "mongodb";
 import { CONSTANTS } from "../constants/constants.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import User from "../models/user.js";
+import ACTIVE from "../models/active.js";
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 
@@ -20,7 +20,20 @@ export default class ConversationController {
       _id: { $in: participantsParams.participants },
     });
 
-    // participantsParams.participants?.length === 0
+    const conversationParams = slice(
+      data.request.conversation_create,
+      ALLOW_FIELDS.ALLOWED_FIELDS_CONVERSATION_CREATE
+    );
+
+    if (!CONSTANTS.CONVERSATION_TYPES.includes(conversationParams.type)) {
+      return {
+        response: {
+          id: requestId,
+          error: ERROR_STATUES.INCORRECT_TYPE,
+        },
+      };
+    }
+
     if (
       !participantsParams.participants ||
       participantsParams.participants.length === 0
@@ -33,11 +46,26 @@ export default class ConversationController {
       };
     }
 
-    const conversationParams = slice(
-      data.request.conversation_create,
-      ALLOW_FIELDS.ALLOWED_FIELDS_CONVERSATION_CREATE
-    );
-    if (!conversationParams.name) {
+    if (conversationParams.type == "u") {
+      if (participantsParams.participants.length >= 3) {
+        return {
+          response: {
+            id: requestId,
+            error: ERROR_STATUES.TOO_MANY_USERS,
+          },
+        };
+      }
+      if (!conversationParams.recipient) {
+        return {
+          response: {
+            id: requestId,
+            error: ERROR_STATUES.RECIPIENT_NOT_FOUND,
+          },
+        };
+      }
+    }
+
+    if (!conversationParams.name && conversationParams.type == "g") {
       return {
         response: {
           id: requestId,
@@ -45,7 +73,7 @@ export default class ConversationController {
         },
       };
     }
-    conversationParams.owner_id = ACTIVE_SESSIONS[ws].userSession.user_id;
+    conversationParams.owner_id = ACTIVE.SESSIONS[ws].userSession.user_id;
 
     let isOwnerInArray = false;
     participantsParams.participants.forEach((el) => {
@@ -108,7 +136,7 @@ export default class ConversationController {
 
     if (
       conversation.params.owner_id.toString() !==
-      ACTIVE_SESSIONS[ws].userSession.user_id.toString()
+      ACTIVE.SESSIONS[ws].userSession.user_id.toString()
     ) {
       return {
         response: {
@@ -189,7 +217,7 @@ export default class ConversationController {
   async list(ws, data) {
     const requestId = data.request.id;
 
-    const currentUser = ACTIVE_SESSIONS[ws].userSession.user_id;
+    const currentUser = ACTIVE.SESSIONS[ws].userSession.user_id;
     const limit =
       data.request.conversation_list.limit > CONSTANTS.LIMIT_MAX
         ? CONSTANTS.LIMIT_MAX
@@ -238,7 +266,7 @@ export default class ConversationController {
     }
 
     const conversationParticipant = await ConversationParticipant.findOne({
-      user_id: ACTIVE_SESSIONS[ws].userSession.user_id,
+      user_id: ACTIVE.SESSIONS[ws].userSession.user_id,
       conversation_id: conversationId,
     });
     if (!conversationParticipant) {
@@ -257,7 +285,7 @@ export default class ConversationController {
       await conversation.delete();
     } else if (
       conversation.params.owner_id.toString() ===
-      ACTIVE_SESSIONS[ws].userSession.user_id.toString()
+      ACTIVE.SESSIONS[ws].userSession.user_id.toString()
     ) {
       Conversation.update(
         { _id: conversationId },

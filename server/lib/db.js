@@ -16,23 +16,23 @@ export function connectToDB(callback) {
 
     return callback();
   });
-};
+}
 
 export async function connectToDBPromise() {
-  const db = await client.connect()
+  const db = await client.connect();
 
   const mongoURISplit = process.env.MONGODB_URI.split("/");
   const dbName = mongoURISplit[mongoURISplit.length - 1];
 
   dbConnection = db.db(dbName);
-};
+}
 
-export function getDb () {
+export function getDb() {
   return dbConnection;
-};
+}
 
-export function getClient () {
+export function getClient() {
   return client;
-};
+}
 
 export const ObjectId = OID;
