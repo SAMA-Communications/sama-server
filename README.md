@@ -295,8 +295,6 @@ If use "all", then other users who is online will receive the following message:
 };
 ```
 
-A `t` param should be omit at sender's side. Server will add it by itself in a message to recipient. 
-
 ### Edit message
 
 ```
