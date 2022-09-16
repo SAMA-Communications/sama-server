@@ -263,18 +263,36 @@ A `t` param should be omit at sender's side. Server will add it by itself in a m
 
 ### Delete message
 
+Delete multiple messages in conversation.
+
+Can delete for current user or for all users in a conversation.
+
 ```
 {
-  'delete': {
-    'message': {
-      'id': 'xyz', 
-      't': 15673838833,
-      'to': '',
-      'from': '',
-      'cid': 'xcv'
-    }
-  }
-}
+  request: {
+    message_delete: {
+      cid: "63077ad836b78c3d82af0812"
+      ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
+      type: "myself" | "all"
+    },
+    id: "4",
+  },
+};
+
+{ response: { id: "4", success: true } }
+```
+
+If use "all", then other users who is online will receive the following message:
+
+```
+{
+  message_delete: {
+    cid: "63077ad836b78c3d82af0812"
+    ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
+    type: "all",
+    from: "..."
+  },
+};
 ```
 
 A `t` param should be omit at sender's side. Server will add it by itself in a message to recipient. 
