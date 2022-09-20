@@ -294,7 +294,7 @@ Can delete for current user or for all users in a conversation.
 { response: { id: "4", success: true } }
 ```
 
-If use "all", then other users who is online will receive the following message:
+If use "all", then other users in this conversation who is online will receive the following message:
 
 ```
 {
@@ -309,22 +309,32 @@ If use "all", then other users who is online will receive the following message:
 
 ### Edit message
 
+A message sender can edit own message.
+
 ```
 {
-  'edit': {
-    'message': {
-      'id': 'xyz', 
-      'body': 'updated message body'
-      't': 15673838833,
-      'to': '',
-      'from': '',
-      'cid': 'xcv'
-     }
-  }
-}
+  request: {
+    message_edit: {
+      id: "63077ad836b78c3d82af0812",
+      body: 'updated message body'
+    },
+    id: "4",
+  },
+};
+
+{ response: { id: "4", success: true } }
 ```
 
-A `t` param should be omit at sender's side. Server will add it by itself in a message to recipient. 
+Then other users in this conversation who is online will receive the following message:
+
+```
+{
+  message_edit: {
+    id: "63077ad836b78c3d82af0812",
+    body: 'updated message body'
+    from: "..."
+  },
+};
 
 ### Carbons
 
