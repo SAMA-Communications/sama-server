@@ -105,7 +105,9 @@ export default class MessagesController {
     }
 
     messageParams.from = ACTIVE.SESSIONS[ws].userSession.user_id.toString();
-
+    if (!messageParams.deleted_for) {
+      messageParams.deleted_for = [];
+    }
     const message = new Messages(messageParams);
     const currentTs = Math.round(parseFloat(Date.now()) / 10000);
     message.params.t = parseInt(currentTs);
@@ -146,29 +148,80 @@ export default class MessagesController {
 
   async delete(ws, data) {
     const requestId = data.request.id;
-
-    const messageId = data.request.message_delete.id;
-    const messageFrom = data.request.message_delete.from;
-    const message = await Messages.findOne({
-      id: messageId,
-      from: messageFrom,
-    });
-
-    if (message) {
-      await message.delete();
+    const requestType = data.request.message_delete.type;
+    if (
+      !requestType ||
+      !CONSTANTS.MESSADEGE_DELETE_TYPES.includes(requestType)
+    ) {
       return {
-        message: {
+        response: {
           id: requestId,
-          success: true,
-        },
-      };
-    } else {
-      return {
-        message: {
-          id: requestId,
-          error: ERROR_STATUES.BAD_REQUEST,
+          error: ERROR_STATUES.INCORRECT_TYPE,
         },
       };
     }
+
+    const conversationId = data.request.message_delete.cid;
+    if (
+      !conversationId ||
+      !(await Conversation.findOne({ _id: conversationId }))
+    ) {
+      return {
+        response: {
+          id: requestId,
+          error: ERROR_STATUES.CONVERSATION_NOT_FOUND,
+        },
+      };
+    }
+
+    const messagesIds = data.request.message_delete.ids;
+    if (!messagesIds || messagesIds.length == 0) {
+      return {
+        response: {
+          id: requestId,
+          error: ERROR_STATUES.MESSAGE_ID_MISSED,
+        },
+      };
+    }
+
+    if (requestType == "all") {
+      const participants = await ConversationParticipant.findAll(
+        {
+          conversation_id: conversationId,
+        },
+        "user_id",
+        100
+      );
+
+      participants.forEach((user) => {
+        if (ACTIVE.CONNECTIONS[user]) {
+          ACTIVE.CONNECTIONS[user].send({
+            message_delete: {
+              cid: conversationId,
+              ids: messagesIds,
+              type: "all",
+              from: ACTIVE.SESSIONS[ws].userSession.user_id,
+            },
+          });
+        }
+      });
+      await Messages.deleteAllById(messagesIds);
+    } else {
+      await Messages.updateMany(
+        { id: { $in: messagesIds } },
+        {
+          $addToSet: {
+            deleted_for: ACTIVE.SESSIONS[ws].userSession.user_id.toString(),
+          },
+        }
+      );
+    }
+
+    return {
+      response: {
+        id: requestId,
+        success: true,
+      },
+    };
   }
 }

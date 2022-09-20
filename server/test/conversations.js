@@ -274,7 +274,7 @@ describe("Conversation functions", async () => {
       });
     });
 
-    it("should fail because paticipents is missed", async () => {
+    it("should fail because paticipents missed", async () => {
       const requestData = {
         request: {
           conversation_create: {
@@ -295,7 +295,7 @@ describe("Conversation functions", async () => {
       });
     });
 
-    it("should fail because conversation's name is missed", async () => {
+    it("should fail because conversation's name missed", async () => {
       const requestData = {
         request: {
           conversation_create: {
@@ -316,7 +316,7 @@ describe("Conversation functions", async () => {
       });
     });
 
-    it("should fail because conversation's type is missed", async () => {
+    it("should fail because conversation's type missed", async () => {
       const requestData = {
         request: {
           conversation_create: {
@@ -333,7 +333,7 @@ describe("Conversation functions", async () => {
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Incorrect type of conversation",
+        message: "Incorrect type",
       });
     });
 
@@ -355,7 +355,7 @@ describe("Conversation functions", async () => {
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Incorrect type of conversation",
+        message: "Incorrect type",
       });
     });
 

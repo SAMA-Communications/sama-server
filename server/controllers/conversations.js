@@ -200,7 +200,10 @@ export default class ConversationController {
     }
     isOwnerChange = false;
     if (Object.keys(requestData) != 0) {
-      await Conversation.update({ _id: conversationId }, { $set: requestData });
+      await Conversation.updateOne(
+        { _id: conversationId },
+        { $set: requestData }
+      );
     }
 
     const returnConversation = await Conversation.findOne({
@@ -287,7 +290,7 @@ export default class ConversationController {
       conversation.params.owner_id.toString() ===
       ACTIVE.SESSIONS[ws].userSession.user_id.toString()
     ) {
-      Conversation.update(
+      Conversation.updateOne(
         { _id: conversationId },
         { $set: { owner_id: isUserInConvesation.params.user_id } }
       );

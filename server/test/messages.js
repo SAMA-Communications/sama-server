@@ -174,7 +174,8 @@ describe("Message function", async () => {
         requestData
       );
       await sendLogout(mockedWS, currentUserToken);
-      await sendLogin(mockedWS, "um_1");
+      currentUserToken = (await sendLogin(mockedWS, "um_1")).response.user
+        .token;
 
       assert.strictEqual(requestData.message.id, responseData.message.id);
       assert.equal(responseData.ask, undefined);
@@ -386,7 +387,8 @@ describe("Message function", async () => {
         const requestData = {
           request: {
             message_delete: {
-              id: `messageID_${i + 1}`,
+              cid: currentConversationId,
+              ids: [`messageID_${i + 1}`],
               from: userId[0],
             },
             id: "00",
@@ -398,14 +400,30 @@ describe("Message function", async () => {
   });
 
   describe("Delete Message", async () => {
-    it("should work", async () => {
+    before(async () => {
+      await Messages.clearCollection();
+      for (let i = 0; i < 4; i++) {
+        const requestData = {
+          message: {
+            id: `include_${i + 1}`,
+            body: "hey how is going?",
+            cid: currentConversationId,
+            deleted_for: [userId[2]],
+          },
+        };
+        await new MessagesController().create(mockedWS, requestData);
+      }
+    });
+
+    it("should work all", async () => {
       const requestData = {
         request: {
           message_delete: {
-            id: "xyz",
-            from: userId[0],
+            cid: currentConversationId,
+            ids: ["include_1", "63077ad836b78c3d82af0813"],
+            type: "all",
           },
-          id: "7",
+          id: "1",
         },
       };
       const responseData = await new MessagesController().delete(
@@ -413,16 +431,155 @@ describe("Message function", async () => {
         requestData
       );
 
-      assert.strictEqual(requestData.request.id, responseData.message.id);
-      assert.notEqual(responseData.message.success, undefined);
-      assert.equal(responseData.message.error, undefined);
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.notEqual(responseData.response.success, undefined);
+      assert.equal(responseData.response.error, undefined);
+    });
+
+    it("should work deleted_for", async () => {
+      const requestData = {
+        request: {
+          message_delete: {
+            cid: currentConversationId,
+            ids: ["include_2", "include_3"],
+            type: "me",
+          },
+          id: "2",
+        },
+      };
+      const responseData = await new MessagesController().delete(
+        mockedWS,
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.notEqual(responseData.response.success, undefined);
+      assert.equal(responseData.response.error, undefined);
+    });
+
+    it("should fail incorrect type", async () => {
+      const requestData = {
+        request: {
+          message_delete: {
+            cid: "xyz",
+            ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
+            type: "allasdas",
+          },
+          id: "1",
+        },
+      };
+      const responseData = await new MessagesController().delete(
+        mockedWS,
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.equal(responseData.response.success, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "Incorrect type",
+      });
+    });
+
+    it("should fail type missed", async () => {
+      const requestData = {
+        request: {
+          message_delete: {
+            cid: currentConversationId,
+            ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
+          },
+          id: "1",
+        },
+      };
+      const responseData = await new MessagesController().delete(
+        mockedWS,
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.equal(responseData.response.success, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "Incorrect type",
+      });
+    });
+
+    it("should fail incorrect cid", async () => {
+      const requestData = {
+        request: {
+          message_delete: {
+            cid: "abs",
+            ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
+            type: "all",
+          },
+          id: "1",
+        },
+      };
+      const responseData = await new MessagesController().delete(
+        mockedWS,
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.equal(responseData.response.success, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 404,
+        message: "Conversation not found",
+      });
+    });
+
+    it("should fail cid not found", async () => {
+      const requestData = {
+        request: {
+          message_delete: {
+            ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
+            type: "all",
+          },
+          id: "1",
+        },
+      };
+      const responseData = await new MessagesController().delete(
+        mockedWS,
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.equal(responseData.response.success, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 404,
+        message: "Conversation not found",
+      });
+    });
+
+    it("should fail message id missed", async () => {
+      const requestData = {
+        request: {
+          message_delete: {
+            cid: currentConversationId,
+            ids: [],
+            type: "all",
+          },
+          id: "1",
+        },
+      };
+      const responseData = await new MessagesController().delete(
+        mockedWS,
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.equal(responseData.response.success, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "Message ID missed",
+      });
     });
   });
 
   after(async () => {
     await User.clearCollection();
     await UserSession.clearCollection();
-    await Messages.clearCollection();
+    // await Messages.clearCollection();
     await Conversation.clearCollection();
     await ConversationParticipant.clearCollection();
     userId = [];

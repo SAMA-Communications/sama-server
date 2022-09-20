@@ -74,18 +74,26 @@ export default class BaseModel {
 
   static async clearCollection() {
     try {
-      return await getDb().collection(this.collection).deleteMany({});
+      await getDb().collection(this.collection).deleteMany({});
     } catch (e) {
       return null;
     }
   }
 
-  static async update(query, update) {
+  static async updateOne(query, update) {
     try {
       if (query._id) {
         query._id = new ObjectId(query._id);
       }
       await getDb().collection(this.collection).updateOne(query, update);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static async updateMany(query, update) {
+    try {
+      await getDb().collection(this.collection).updateMany(query, update);
     } catch (e) {
       return null;
     }
@@ -116,6 +124,21 @@ export default class BaseModel {
     await getDb()
       .collection(this.constructor.collection)
       .deleteOne({ _id: this.params._id });
+  }
+
+  static async deleteAllById(ids) {
+    try {
+      ids.forEach(async (id) => {
+        const obj = await getDb().collection(this.collection).findOne({
+          id: id,
+        });
+        if (obj) {
+          await getDb().collection(this.collection).deleteMany(obj);
+        }
+      });
+    } catch (e) {
+      return null;
+    }
   }
 
   toJSON() {
