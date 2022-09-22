@@ -330,6 +330,7 @@ Then other users in this conversation who is online will receive the following m
 ```
 {
   message_edit: {
+    cid: "63077ad836b78c3d82af0812",
     id: "63077ad836b78c3d82af0812",
     body: 'updated message body'
     from: "..."
