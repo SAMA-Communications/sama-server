@@ -20,9 +20,17 @@ export const ERROR_STATUES = {
     status: 422,
     message: "No conversation name specified",
   },
+  PARTICIPANTS_NOT_PROVIDED: {
+    status: 422,
+    message: "Participants not provided",
+  },
   PARTICIPANT_NOT_FOUND: {
     status: 404,
     message: "ConversationParticipant not found",
+  },
+  PARTICIPANTS_LIMIT: {
+    status: 422,
+    message: "Max participants limit reached",
   },
   RECIPIENT_NOT_FOUND: { status: 422, message: "Recipient not found" },
   // Message -->

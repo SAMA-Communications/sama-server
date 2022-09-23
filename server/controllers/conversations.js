@@ -1,12 +1,12 @@
-import { slice } from "../utils/req_res_utils.js";
-import { ObjectId } from "mongodb";
-import { CONSTANTS } from "../constants/constants.js";
-import { ALLOW_FIELDS } from "../constants/fields_constants.js";
-import { ERROR_STATUES } from "../constants/http_constants.js";
-import User from "../models/user.js";
 import ACTIVE from "../models/active.js";
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
+import User from "../models/user.js";
+import { ALLOW_FIELDS } from "../constants/fields_constants.js";
+import { CONSTANTS } from "../constants/constants.js";
+import { ERROR_STATUES } from "../constants/http_constants.js";
+import { ObjectId } from "mongodb";
+import { slice } from "../utils/req_res_utils.js";
 
 export default class ConversationController {
   async create(ws, data) {
@@ -45,7 +45,6 @@ export default class ConversationController {
         },
       };
     }
-
     if (conversationParams.type == "u") {
       if (participantsParams.participants.length >= 3) {
         return {
@@ -83,34 +82,39 @@ export default class ConversationController {
       }
     });
     if (!isOwnerInArray) {
-      if (conversationParams.owner_id) {
-        participantsParams.participants.push(
-          ObjectId(conversationParams.owner_id.toString())
-        );
-      } else {
-        return;
-      }
-    } else {
-      if (participantsParams.participants.length === 1) {
-        return {
-          response: {
-            id: requestId,
-            error: ERROR_STATUES.USER_SELECTED,
-          },
-        };
-      }
+      participantsParams.participants.push(
+        ObjectId(conversationParams.owner_id.toString())
+      );
+    } else if (participantsParams.participants.length === 1) {
+      return {
+        response: {
+          id: requestId,
+          error: ERROR_STATUES.PARTICIPANTS_NOT_PROVIDED,
+        },
+      };
+    }
+    if (
+      participantsParams.participants.length >=
+      process.env.CONVERSATION_MAX_PARTICIPANTS
+    ) {
+      return {
+        response: {
+          id: requestId,
+          error: ERROR_STATUES.PARTICIPANTS_LIMIT,
+        },
+      };
     }
 
     const conversationObj = new Conversation(conversationParams);
     await conversationObj.save();
 
-    participantsParams.participants.forEach(async (user) => {
-      const participantObj = new ConversationParticipant({
-        user_id: user,
+    for (let userId of participantsParams.participants) {
+      const participant = new ConversationParticipant({
+        user_id: userId,
         conversation_id: conversationObj.params._id,
       });
-      await participantObj.save();
-    });
+      await participant.save();
+    }
 
     return {
       response: {
@@ -158,7 +162,22 @@ export default class ConversationController {
 
       const addUsers = participantsToUpdate.add;
       const removeUsers = participantsToUpdate.remove;
+      const countParticipants = await ConversationParticipant.count({
+        conversation_id: ObjectId(conversationId),
+      });
       if (addUsers) {
+        if (
+          countParticipants + addUsers.length >
+          process.env.CONVERSATION_MAX_PARTICIPANTS
+        ) {
+          return {
+            response: {
+              id: requestId,
+              error: ERROR_STATUES.PARTICIPANTS_LIMIT,
+            },
+          };
+        }
+
         for (let i = 0; i < addUsers.length; i++) {
           const obj = new ConversationParticipant({
             user_id: ObjectId(addUsers[i]),
@@ -174,6 +193,7 @@ export default class ConversationController {
           }
         }
       }
+
       if (removeUsers) {
         for (let i = 0; i < removeUsers.length; i++) {
           const obj = await ConversationParticipant.findOne({

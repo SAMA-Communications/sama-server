@@ -39,6 +39,9 @@ export default class BaseModel {
 
   static async findAll(query, returnParam, limit) {
     try {
+      if (query.conversation_id) {
+        query.conversation_id = new ObjectId(query.conversation_id);
+      }
       const arr = new Set();
       await getDb()
         .collection(this.collection)
@@ -75,6 +78,14 @@ export default class BaseModel {
   static async clearCollection() {
     try {
       await getDb().collection(this.collection).deleteMany({});
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static async count(query) {
+    try {
+      return await getDb().collection(this.collection).count(query);
     } catch (e) {
       return null;
     }
@@ -126,16 +137,9 @@ export default class BaseModel {
       .deleteOne({ _id: this.params._id });
   }
 
-  static async deleteAllById(ids) {
+  static async deleteMany(query) {
     try {
-      ids.forEach(async (id) => {
-        const obj = await getDb().collection(this.collection).findOne({
-          id: id,
-        });
-        if (obj) {
-          await getDb().collection(this.collection).deleteMany(obj);
-        }
-      });
+      await getDb().collection(this.collection).deleteMany(query);
     } catch (e) {
       return null;
     }

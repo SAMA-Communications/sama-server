@@ -3,12 +3,23 @@ import Conversation from "../models/conversation.js";
 import ConversationController from "./conversations.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import Messages from "../models/message.js";
-import User from "../models/user.js";
+import OfflineQueue from "../models/offline_queue.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
-import { slice } from "../utils/req_res_utils.js";
 import { ObjectId } from "mongodb";
+import { slice } from "../utils/req_res_utils.js";
+
+async function deliverToUser(userId, request) {
+  const wsRecipient = ACTIVE.CONNECTIONS[userId];
+
+  if (wsRecipient) {
+    wsRecipient.send({ message: request });
+  } else {
+    request = new OfflineQueue({ user_id: userId, request: request });
+    await request.save();
+  }
+}
 
 export default class MessagesController {
   async create(ws, data) {
@@ -108,16 +119,98 @@ export default class MessagesController {
     if (!messageParams.deleted_for) {
       messageParams.deleted_for = [];
     }
+
     const message = new Messages(messageParams);
-    const currentTs = Math.round(parseFloat(Date.now()) / 10000);
+    const currentTs = Math.round(parseFloat(Date.now()) / 1000);
     message.params.t = parseInt(currentTs);
+
     await message.save();
 
-    const wsRecipient = ACTIVE.CONNECTIONS[messageParams.to];
-    if (wsRecipient) {
-      wsRecipient.send({ message: message });
+    if (messageParams.to) {
+      await deliverToUser(ObjectId(messageParams.to), message);
+    } else if (messageParams.cid) {
+      const participants = await ConversationParticipant.findAll(
+        {
+          conversation_id: messageParams.cid,
+        },
+        "user_id",
+        100
+      );
+      participants.forEach(async (userId) => {
+        await deliverToUser(userId, message);
+      });
     }
     return { ask: { mid: messageId, t: currentTs } };
+  }
+
+  async edit(ws, data) {
+    const requestId = data.request.id;
+    const messageParams = data.request.message_edit;
+
+    if (!messageParams.id) {
+      return {
+        response: {
+          id: requestId,
+          error: ERROR_STATUES.MESSAGE_ID_MISSED,
+        },
+      };
+    }
+    const messageId = messageParams.id;
+    let message = await Messages.findOne({ id: messageId });
+    if (!message) {
+      return {
+        response: {
+          id: requestId,
+          error: ERROR_STATUES.MESSAGE_ID_NOT_FOUND,
+        },
+      };
+    }
+
+    if (
+      ACTIVE.SESSIONS[ws].userSession.user_id.toString() != message.params.from
+    ) {
+      return {
+        response: {
+          id: requestId,
+          error: ERROR_STATUES.FORBIDDEN,
+        },
+      };
+    }
+    if (!messageParams.body) {
+      return {
+        response: {
+          id: requestId,
+          error: ERROR_STATUES.BODY_IS_EMPTY,
+        },
+      };
+    }
+    await Messages.updateOne(
+      { id: messageId },
+      { $set: { body: messageParams.body } }
+    );
+    const request = {
+      message_edit: {
+        id: messageId,
+        body: messageParams.body,
+        from: ACTIVE.SESSIONS[ws].userSession.user_id,
+      },
+    };
+    if (message.params.cid) {
+      const conversationParticipants = await ConversationParticipant.findAll(
+        {
+          conversation_id: message.params.cid,
+        },
+        "user_id",
+        100
+      );
+      conversationParticipants.forEach(async (user) => {
+        deliverToUser(user, request);
+      });
+    } else if (message.params.to) {
+      deliverToUser(message.params.to, request);
+    }
+
+    return { response: { id: requestId, success: true } };
   }
 
   async list(ws, data) {
@@ -192,20 +285,18 @@ export default class MessagesController {
         "user_id",
         100
       );
-
       participants.forEach((user) => {
-        if (ACTIVE.CONNECTIONS[user]) {
-          ACTIVE.CONNECTIONS[user].send({
-            message_delete: {
-              cid: conversationId,
-              ids: messagesIds,
-              type: "all",
-              from: ACTIVE.SESSIONS[ws].userSession.user_id,
-            },
-          });
-        }
+        const request = {
+          message_delete: {
+            cid: conversationId,
+            ids: messagesIds,
+            type: "all",
+            from: ACTIVE.SESSIONS[ws].userSession.user_id,
+          },
+        };
+        deliverToUser(user, request);
       });
-      await Messages.deleteAllById(messagesIds);
+      await Messages.deleteMany({ id: { $in: messagesIds } });
     } else {
       await Messages.updateMany(
         { id: { $in: messagesIds } },

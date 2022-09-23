@@ -576,10 +576,124 @@ describe("Message function", async () => {
     });
   });
 
+  describe("Edit Message", async () => {
+    it("should work", async () => {
+      const requestData = {
+        request: {
+          message_edit: {
+            id: "include_2",
+            body: "updated message body (UPDATED)",
+          },
+          id: "1",
+        },
+      };
+      const responseData = await new MessagesController().edit(
+        mockedWS,
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.notEqual(responseData.response.success, undefined);
+      assert.equal(responseData.response.error, undefined);
+    });
+
+    it("should fail id incorrect", async () => {
+      const requestData = {
+        request: {
+          message_edit: {
+            id: "include_123123advdzvzdgsd2",
+            body: "updated message body (UPDATED)",
+          },
+          id: "1",
+        },
+      };
+      const responseData = await new MessagesController().edit(
+        mockedWS,
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.equal(responseData.response.success, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "Message ID not found",
+      });
+    });
+
+    it("should fail id not found", async () => {
+      const requestData = {
+        request: {
+          message_edit: {
+            body: "updated message body (UPDATED123)",
+          },
+          id: "2",
+        },
+      };
+      const responseData = await new MessagesController().edit(
+        mockedWS,
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.equal(responseData.response.success, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "Message ID missed",
+      });
+    });
+
+    it("should fail body is empty", async () => {
+      const requestData = {
+        request: {
+          message_edit: {
+            id: "include_2",
+            body: "",
+          },
+          id: "1",
+        },
+      };
+      const responseData = await new MessagesController().edit(
+        mockedWS,
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.equal(responseData.response.success, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "Body of message is empty",
+      });
+    });
+
+    it("should fail active_user is not owner message", async () => {
+      await sendLogin(mockedWS, "um_3");
+      const requestData = {
+        request: {
+          message_edit: {
+            id: "include_2",
+            body: "updated message body (UPDATED123)",
+          },
+          id: "2",
+        },
+      };
+      const responseData = await new MessagesController().edit(
+        mockedWS,
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.equal(responseData.response.success, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 403,
+        message: "Forbidden",
+      });
+    });
+  });
+
   after(async () => {
     await User.clearCollection();
     await UserSession.clearCollection();
-    // await Messages.clearCollection();
+    await Messages.clearCollection();
     await Conversation.clearCollection();
     await ConversationParticipant.clearCollection();
     userId = [];

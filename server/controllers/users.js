@@ -1,4 +1,5 @@
 import ACTIVE from "../models/active.js";
+import OfflineQueue from "../models/offline_queue.js";
 import User from "../models/user.js";
 import UserSession from "../models/user_session.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
@@ -56,14 +57,6 @@ export default class UsersController {
     const userSession = new UserSession({ user_id: user.params._id });
     await userSession.save();
 
-    // if (ACTIVE.SESSIONS[ws]) {
-    //   const currentSession = await UserSession.findOne({
-    //     user_id: ACTIVE.SESSIONS[ws].userSession.user_id,
-    //   });
-    //   if (currentSession) {
-    //     await currentSession.delete();
-    //   }
-    // }
     ACTIVE.SESSIONS[ws] = { userSession: userSession.params };
     ACTIVE.CONNECTIONS[userSession.params.user_id] = ws;
 
@@ -71,6 +64,17 @@ export default class UsersController {
       token: userSession.params._id,
       user: user.visibleParams(),
     };
+
+    const expectedReqs = await OfflineQueue.findAll({
+      user_id: user.params._id,
+    });
+    if (expectedReqs && expectedReqs.length) {
+      for (const current in expectedReqs) {
+        ws.send(expectedReqs[current].request);
+      }
+      await OfflineQueue.deleteMany({ user_id: user.params._id });
+    }
+
     return { response: { id: requestId, user: respData } };
   }
 

@@ -76,7 +76,6 @@ describe("Conversation functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.conversation, undefined);
       assert.equal(responseData.response.error, undefined);
-
       await sendLogout("test", currentUserToken);
       currentUserToken = "";
     });
@@ -248,7 +247,7 @@ describe("Conversation functions", async () => {
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Select at least one user",
+        message: "Participants not provided",
       });
     });
 

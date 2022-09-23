@@ -1,15 +1,15 @@
 import BaseModel from "./base/base.js";
 
-export default class Messages extends BaseModel {
+export default class OfflineQueue extends BaseModel {
   constructor(params) {
     super(params);
   }
 
   static get collection() {
-    return "messages";
+    return "offline_queue";
   }
 
   static get visibleFields() {
-    return ["id", "t", "to", "from", "body", "cid", "x", "deleted_for"];
+    return ["_id", "created_at", "updated_at", "user_id", "request"];
   }
 }
