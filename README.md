@@ -307,6 +307,8 @@ If use "all", then other users in this conversation who is online will receive t
 };
 ```
 
+If users are offline, they will receive a message once became online.
+
 ### Edit message
 
 A message sender can edit own message.
@@ -336,6 +338,8 @@ Then other users in this conversation who is online will receive the following m
   },
 };
 ```
+
+If users are offline, they will receive a message once became online.
 
 ### Carbons
 
