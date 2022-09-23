@@ -205,16 +205,18 @@ On each message sent to server - a server will deliver back to client a simple p
 ### List messages 
 
 ```
-request: {
-  message_list: {
-    cid: "63077ad836b78c3d82af0812",
-    limit: 27,
-    updated_at: {
-      gt: timestamp1,
+{
+  request: {
+    message_list: {
+      cid: "63077ad836b78c3d82af0812",
+      limit: 27,
+      updated_at: {
+        gt: timestamp1,
+      },
     },
-  },
-  id: "2",
-};
+    id: "2",
+  };
+}
 
 { response: { id: '2', messages: [...] } }
 
