@@ -237,7 +237,11 @@ On each message sent to server - a server will deliver back to client a simple p
 }
 ```
 
+Either `cid` or `to` should be provided. 
+
 A `t` param should be omit at sender's side. Server will add it by itself in a message to recipient. 
+
+Then other users in this conversation who is online will receive the same delivered message. 
 
 ### Read message status
 
@@ -254,7 +258,11 @@ A `t` param should be omit at sender's side. Server will add it by itself in a m
 }
 ```
 
+Either `cid` or `to` should be provided. 
+
 A `t` param should be omit at sender's side. Server will add it by itself in a message to recipient. 
+
+Then other users in this conversation who is online will receive the same read message.
 
 ### Message typing
 
