@@ -1,13 +1,11 @@
 import Conversation from "../models/conversation.js";
-import ConversationController from "../controllers/conversations.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import Messages from "../models/message.js";
-import MessagesController from "../controllers/messages.js";
 import OfflineQueue from "../models/offline_queue.js";
 import User from "../models/user.js";
 import UserSession from "../models/user_session.js";
 import { connectToDBPromise } from "../lib/db.js";
-import { processJsonMessage } from "../routes/ws.js";
+import { processJsonMessageOrError } from "../routes/ws.js";
 
 let currentUserToken = "";
 let userId = [];
@@ -29,7 +27,7 @@ async function sendLogin(ws, login) {
       id: "0101",
     },
   };
-  const response = await processJsonMessage(ws, requestData);
+  const response = await processJsonMessageOrError(ws, requestData);
   return response;
 }
 async function sendLogout(ws, currentUserToken) {
@@ -41,7 +39,7 @@ async function sendLogout(ws, currentUserToken) {
       id: "0102",
     },
   };
-  await processJsonMessage("test", requestData);
+  await processJsonMessageOrError(mockedWS, requestData);
 }
 
 describe("User EXPECTED requests", async () => {
@@ -57,7 +55,7 @@ describe("User EXPECTED requests", async () => {
           id: "0",
         },
       };
-      const responseData = await processJsonMessage(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestDataCreate
       );
@@ -80,10 +78,7 @@ describe("User EXPECTED requests", async () => {
         id: "1",
       },
     };
-    let responseData = await new ConversationController().create(
-      mockedWS,
-      requestData
-    );
+    let responseData = await processJsonMessageOrError(mockedWS, requestData);
     currentConversationId =
       responseData.response.conversation.params._id.toString();
 
@@ -94,7 +89,7 @@ describe("User EXPECTED requests", async () => {
         cid: currentConversationId,
       },
     };
-    await new MessagesController().create(mockedWS, requestData);
+    await processJsonMessageOrError(mockedWS, requestData);
 
     console.log("<-- user_1 sent message (private) -->");
     requestData = {
@@ -104,7 +99,7 @@ describe("User EXPECTED requests", async () => {
         to: userId[1],
       },
     };
-    await new MessagesController().create(mockedWS, requestData);
+    await processJsonMessageOrError(mockedWS, requestData);
     requestData = {
       message: {
         id: "message3",
@@ -112,7 +107,7 @@ describe("User EXPECTED requests", async () => {
         to: userId[1],
       },
     };
-    await new MessagesController().create(mockedWS, requestData);
+    await processJsonMessageOrError(mockedWS, requestData);
   });
 
   it("should work #2", async () => {
@@ -125,7 +120,7 @@ describe("User EXPECTED requests", async () => {
         id: "12",
       },
     };
-    await new MessagesController().edit(mockedWS, requestData);
+    await processJsonMessageOrError(mockedWS, requestData);
 
     console.log("<-- user_2 go online -->");
     await sendLogout(mockedWS, currentUserToken);
@@ -141,7 +136,7 @@ describe("User EXPECTED requests", async () => {
         id: "21",
       },
     };
-    await new MessagesController().delete(mockedWS, requestData);
+    await processJsonMessageOrError(mockedWS, requestData);
 
     console.log("<-- user_3 go online -->");
     await sendLogin(mockedWS, "user_3");
@@ -151,7 +146,7 @@ describe("User EXPECTED requests", async () => {
     await User.clearCollection();
     await UserSession.clearCollection();
     await OfflineQueue.clearCollection();
-    // await Messages.clearCollection();
+    await Messages.clearCollection();
     await Conversation.clearCollection();
     await ConversationParticipant.clearCollection();
     userId = [];

@@ -1,7 +1,7 @@
-import ACTIVE from "../models/active.js";
 import OfflineQueue from "../models/offline_queue.js";
 import User from "../models/user.js";
 import UserSession from "../models/user_session.js";
+import { ACTIVE, getSessionUserId } from "../models/active.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { slice } from "../utils/req_res_utils.js";
@@ -101,8 +101,8 @@ export default class UsersController {
   async delete(ws, data) {
     const requestId = data.request.id;
 
-    const userSession = ACTIVE.SESSIONS[ws].userSession;
-    if (userSession.user_id.toString() !== data.request.user_delete.id) {
+    const userSession = getSessionUserId(ws);
+    if (userSession !== data.request.user_delete.id) {
       return {
         response: {
           id: requestId,

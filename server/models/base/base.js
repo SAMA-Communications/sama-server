@@ -39,6 +39,12 @@ export default class BaseModel {
 
   static async findAll(query, returnParam, limit) {
     try {
+      if (query.cid) {
+        query.cid = new ObjectId(query.cid);
+      }
+      if (query.user_id) {
+        query.user_id = new ObjectId(query.user_id);
+      }
       if (query.conversation_id) {
         query.conversation_id = new ObjectId(query.conversation_id);
       }
@@ -85,6 +91,9 @@ export default class BaseModel {
 
   static async count(query) {
     try {
+      if (query.conversation_id) {
+        query.conversation_id = new ObjectId(query.conversation_id);
+      }
       return await getDb().collection(this.collection).count(query);
     } catch (e) {
       return null;
@@ -139,7 +148,7 @@ export default class BaseModel {
 
   static async deleteMany(query) {
     try {
-      await getDb().collection(this.collection).deleteMany(query);
+      return await getDb().collection(this.collection).deleteMany(query);
     } catch (e) {
       return null;
     }

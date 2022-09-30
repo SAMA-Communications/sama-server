@@ -1,4 +1,5 @@
 {
   "all": true,
-  "exclude": []
+  "exclude": [],
+  "include": ["test/**"]
 }

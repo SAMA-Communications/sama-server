@@ -1,12 +1,12 @@
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import Messages from "../models/message.js";
-import MessagesController from "../controllers/messages.js";
 import User from "../models/user.js";
 import UserSession from "../models/user_session.js";
 import assert from "assert";
 import { connectToDBPromise } from "../lib/db.js";
-import { processJsonMessage } from "../routes/ws.js";
+import { processJsonMessageOrError } from "../routes/ws.js";
+import { ObjectId } from "mongodb";
 
 let filterUpdatedAt = "";
 let currentUserToken = "";
@@ -27,7 +27,7 @@ async function sendLogin(ws, login) {
       id: "0101",
     },
   };
-  const response = await processJsonMessage(ws, requestData);
+  const response = await processJsonMessageOrError(ws, requestData);
   return response;
 }
 async function sendLogout(ws, currentUserToken) {
@@ -39,7 +39,7 @@ async function sendLogout(ws, currentUserToken) {
       id: "0102",
     },
   };
-  await processJsonMessage(ws, requestData);
+  await processJsonMessageOrError(ws, requestData);
 }
 
 describe("Message function", async () => {
@@ -55,7 +55,7 @@ describe("Message function", async () => {
           id: "0",
         },
       };
-      const responseData = await processJsonMessage(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestDataCreate
       );
@@ -76,7 +76,7 @@ describe("Message function", async () => {
         id: "0",
       },
     };
-    const responseData = await processJsonMessage(mockedWS, requestData);
+    const responseData = await processJsonMessageOrError(mockedWS, requestData);
     currentConversationId =
       responseData.response.conversation.params._id.toString();
   });
@@ -95,10 +95,17 @@ describe("Message function", async () => {
           },
         },
       };
-      const responseData = await new MessagesController().create(
-        mockedWS,
-        requestData
-      );
+      let responseData = {};
+      try {
+        responseData = await processJsonMessageOrError(mockedWS, requestData);
+      } catch (error) {
+        responseData = {
+          response: {
+            id: requestData.message.id,
+            error: error.cause,
+          },
+        };
+      }
 
       assert.strictEqual(requestData.message.id, responseData.ask.mid);
       assert.notEqual(responseData.ask.t, undefined);
@@ -116,16 +123,15 @@ describe("Message function", async () => {
           },
         },
       };
-      const responseData = await new MessagesController().create(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
 
-      assert.strictEqual(requestData.message.id, undefined);
       assert.equal(responseData.ask, undefined);
       assert.deepEqual(responseData.message.error, {
         status: 422,
-        message: "Message ID not found",
+        message: "Message ID missed",
       });
     });
 
@@ -141,12 +147,11 @@ describe("Message function", async () => {
           },
         },
       };
-      const responseData = await new MessagesController().create(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
 
-      assert.strictEqual(requestData.message.id, responseData.message.id);
       assert.equal(responseData.ask, undefined);
       assert.deepEqual(responseData.message.error, {
         status: 422,
@@ -169,7 +174,7 @@ describe("Message function", async () => {
           },
         },
       };
-      const responseData = await new MessagesController().create(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
@@ -177,7 +182,6 @@ describe("Message function", async () => {
       currentUserToken = (await sendLogin(mockedWS, "um_1")).response.user
         .token;
 
-      assert.strictEqual(requestData.message.id, responseData.message.id);
       assert.equal(responseData.ask, undefined);
       assert.deepEqual(responseData.message.error, {
         status: 403,
@@ -185,29 +189,28 @@ describe("Message function", async () => {
       });
     });
 
-    it("should fail body of message is empty", async () => {
+    it("should fail user send himself message", async () => {
       const requestData = {
         message: {
-          id: "xyz",
+          id: "messageID_9",
+          to: userId[0],
           from: "",
-          body: "",
-          cid: currentConversationId,
+          body: "working!!! (first)",
           x: {
             param1: "value",
             param2: "value",
           },
         },
       };
-      const responseData = await new MessagesController().create(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
 
-      assert.strictEqual(requestData.message.id, responseData.message.id);
       assert.equal(responseData.ask, undefined);
       assert.deepEqual(responseData.message.error, {
         status: 422,
-        message: "Body of message is empty",
+        message: "Incorrect user",
       });
     });
 
@@ -224,7 +227,29 @@ describe("Message function", async () => {
           },
         },
       };
-      const responseData = await new MessagesController().create(
+      const responseData = await processJsonMessageOrError(
+        mockedWS,
+        requestData
+      );
+
+      assert.strictEqual(requestData.message.id, responseData.ask.mid);
+      assert.notEqual(responseData.ask, undefined);
+    });
+
+    it("should work create private conversation", async () => {
+      const requestData = {
+        message: {
+          id: "messageID_9",
+          to: userId[1],
+          from: "",
+          body: "working!!! (first)",
+          x: {
+            param1: "value",
+            param2: "value",
+          },
+        },
+      };
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
@@ -246,7 +271,7 @@ describe("Message function", async () => {
           },
         },
       };
-      const responseData = await new MessagesController().create(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
@@ -269,7 +294,7 @@ describe("Message function", async () => {
           },
         },
       };
-      const responseData = await new MessagesController().create(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
@@ -295,10 +320,11 @@ describe("Message function", async () => {
             },
           },
         };
-        const responseData = await new MessagesController().create(
+        const responseData = await processJsonMessageOrError(
           mockedWS,
           requestData
         );
+
         if (i == 3) {
           const findMessage = await Messages.findOne({
             id: responseData.ask.mid,
@@ -319,7 +345,7 @@ describe("Message function", async () => {
           id: "2",
         },
       };
-      const responseData = await new MessagesController().list(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
@@ -344,7 +370,7 @@ describe("Message function", async () => {
           id: "2",
         },
       };
-      const responseData = await new MessagesController().list(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
@@ -370,7 +396,7 @@ describe("Message function", async () => {
           id: "2",
         },
       };
-      const responseData = await new MessagesController().list(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
@@ -380,21 +406,37 @@ describe("Message function", async () => {
       assert.notEqual(responseData.response.messages, undefined);
       assert(count <= numberOf, "limit filter does not work");
       assert.equal(responseData.response.error, undefined);
-    });
 
-    after(async () => {
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 5; i++) {
         const requestData = {
           request: {
             message_delete: {
               cid: currentConversationId,
+              type: "all",
               ids: [`messageID_${i + 1}`],
               from: userId[0],
             },
             id: "00",
           },
         };
-        await new MessagesController().delete(mockedWS, requestData);
+        await processJsonMessageOrError(mockedWS, requestData);
+      }
+    });
+
+    after(async () => {
+      for (let i = 5; i < 10; i++) {
+        const requestData = {
+          request: {
+            message_delete: {
+              cid: currentConversationId,
+              type: "all",
+              ids: [`messageID_${i + 1}`],
+              from: userId[0],
+            },
+            id: "00",
+          },
+        };
+        await processJsonMessageOrError(mockedWS, requestData);
       }
     });
   });
@@ -408,10 +450,10 @@ describe("Message function", async () => {
             id: `include_${i + 1}`,
             body: "hey how is going?",
             cid: currentConversationId,
-            deleted_for: [userId[2]],
+            deleted_for: [ObjectId(userId[2])],
           },
         };
-        await new MessagesController().create(mockedWS, requestData);
+        await processJsonMessageOrError(mockedWS, requestData);
       }
     });
 
@@ -426,7 +468,7 @@ describe("Message function", async () => {
           id: "1",
         },
       };
-      const responseData = await new MessagesController().delete(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
@@ -447,7 +489,7 @@ describe("Message function", async () => {
           id: "2",
         },
       };
-      const responseData = await new MessagesController().delete(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
@@ -468,12 +510,11 @@ describe("Message function", async () => {
           id: "1",
         },
       };
-      const responseData = await new MessagesController().delete(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
 
-      assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
@@ -491,12 +532,34 @@ describe("Message function", async () => {
           id: "1",
         },
       };
-      const responseData = await new MessagesController().delete(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
 
-      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.equal(responseData.response.success, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "Message Type missed",
+      });
+    });
+
+    it("should fail type is incorrect", async () => {
+      const requestData = {
+        request: {
+          message_delete: {
+            cid: currentConversationId,
+            type: "asdbads",
+            ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
+          },
+          id: "1",
+        },
+      };
+      const responseData = await processJsonMessageOrError(
+        mockedWS,
+        requestData
+      );
+
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
@@ -515,12 +578,11 @@ describe("Message function", async () => {
           id: "1",
         },
       };
-      const responseData = await new MessagesController().delete(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
 
-      assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 404,
@@ -538,12 +600,11 @@ describe("Message function", async () => {
           id: "1",
         },
       };
-      const responseData = await new MessagesController().delete(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
 
-      assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 404,
@@ -562,12 +623,11 @@ describe("Message function", async () => {
           id: "1",
         },
       };
-      const responseData = await new MessagesController().delete(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
 
-      assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
@@ -587,7 +647,7 @@ describe("Message function", async () => {
           id: "1",
         },
       };
-      const responseData = await new MessagesController().edit(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
@@ -607,12 +667,11 @@ describe("Message function", async () => {
           id: "1",
         },
       };
-      const responseData = await new MessagesController().edit(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
 
-      assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
@@ -629,12 +688,11 @@ describe("Message function", async () => {
           id: "2",
         },
       };
-      const responseData = await new MessagesController().edit(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
 
-      assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
@@ -652,12 +710,11 @@ describe("Message function", async () => {
           id: "1",
         },
       };
-      const responseData = await new MessagesController().edit(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
 
-      assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
@@ -676,12 +733,11 @@ describe("Message function", async () => {
           id: "2",
         },
       };
-      const responseData = await new MessagesController().edit(
+      const responseData = await processJsonMessageOrError(
         mockedWS,
         requestData
       );
 
-      assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 403,

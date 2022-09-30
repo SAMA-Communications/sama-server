@@ -1,7 +1,7 @@
 import User from "../models/user.js";
 import assert from "assert";
 import { connectToDBPromise, getClient } from "../lib/db.js";
-import { processJsonMessage } from "../routes/ws.js";
+import { processJsonMessageOrError } from "../routes/ws.js";
 
 const userLogin = [...Array(30)]
   .map(() => Math.random().toString(36)[2])
@@ -28,7 +28,7 @@ describe("User cycle", async () => {
           id: "1_1",
         },
       };
-      const responseData = await processJsonMessage("test", requestData);
+      const responseData = await processJsonMessageOrError("test", requestData);
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.user, undefined);
@@ -45,7 +45,7 @@ describe("User cycle", async () => {
           id: "1_2",
         },
       };
-      const responseData = await processJsonMessage("test", requestData);
+      const responseData = await processJsonMessageOrError("test", requestData);
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(responseData.response.user, undefined);
@@ -67,9 +67,18 @@ describe("User cycle", async () => {
           id: "2_1",
         },
       };
-      const responseData = await processJsonMessage("test", requestData);
+      let responseData = {};
+      try {
+        responseData = await processJsonMessageOrError("test", requestData);
+      } catch (e) {
+        responseData = {
+          response: {
+            id: responseData.id,
+            error: error.cause,
+          },
+        };
+      }
 
-      assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(responseData.response.user, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 404,
@@ -87,7 +96,7 @@ describe("User cycle", async () => {
           id: "2_2",
         },
       };
-      const responseData = await processJsonMessage("test", requestData);
+      const responseData = await processJsonMessageOrError("test", requestData);
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(responseData.response.user, undefined);
@@ -107,7 +116,7 @@ describe("User cycle", async () => {
           id: "2_3",
         },
       };
-      const responseData = await processJsonMessage("test", requestData);
+      const responseData = await processJsonMessageOrError("test", requestData);
       currentUserToken = responseData.response.user.token;
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -126,7 +135,7 @@ describe("User cycle", async () => {
           id: "3_1",
         },
       };
-      const responseData = await processJsonMessage("test", requestData);
+      const responseData = await processJsonMessageOrError("test", requestData);
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notStrictEqual(responseData.response.success, undefined);
@@ -142,9 +151,8 @@ describe("User cycle", async () => {
           id: "3_2",
         },
       };
-      const responseData = await processJsonMessage("test", requestData);
+      const responseData = await processJsonMessageOrError("test", requestData);
 
-      assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 404,
@@ -165,7 +173,7 @@ describe("User cycle", async () => {
           id: "2_3",
         },
       };
-      await processJsonMessage("test", requestData);
+      await processJsonMessageOrError("test", requestData);
       userDeleteId = (
         await User.findOne({ login: userLogin })
       ).params._id.toString();
@@ -180,7 +188,7 @@ describe("User cycle", async () => {
           id: "4_2",
         },
       };
-      const responseData = await processJsonMessage("test", requestData);
+      const responseData = await processJsonMessageOrError("test", requestData);
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(responseData.response.success, undefined);
@@ -199,7 +207,7 @@ describe("User cycle", async () => {
           id: "4_1",
         },
       };
-      const responseData = await processJsonMessage("test", requestData);
+      const responseData = await processJsonMessageOrError("test", requestData);
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.success, undefined);

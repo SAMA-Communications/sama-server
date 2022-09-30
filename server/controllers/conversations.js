@@ -1,17 +1,26 @@
-import ACTIVE from "../models/active.js";
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import User from "../models/user.js";
+import validate, {
+  validateConversationisUserOwner,
+  validateConversationName,
+  validateConversationType,
+  validateIsConversation,
+  validateIsUserSendHimSelf,
+  validateParticipants,
+  validateParticipantsInUType,
+  validateParticipantsLimit,
+} from "../lib/validation.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { ObjectId } from "mongodb";
+import { getSessionUserId } from "../models/active.js";
 import { slice } from "../utils/req_res_utils.js";
 
 export default class ConversationController {
   async create(ws, data) {
     const requestId = data.request.id;
-
     const participantsParams = slice(
       data.request.conversation_create,
       ALLOW_FIELDS.ALLOWED_FIELDS_PARTICIPANTS_CREATE
@@ -19,60 +28,27 @@ export default class ConversationController {
     participantsParams.participants = await User.getAllIdsBy({
       _id: { $in: participantsParams.participants },
     });
-
     const conversationParams = slice(
       data.request.conversation_create,
       ALLOW_FIELDS.ALLOWED_FIELDS_CONVERSATION_CREATE
     );
 
-    if (!CONSTANTS.CONVERSATION_TYPES.includes(conversationParams.type)) {
-      return {
-        response: {
-          id: requestId,
-          error: ERROR_STATUES.INCORRECT_TYPE,
-        },
-      };
-    }
+    await validate(ws, conversationParams, [validateConversationType]);
+    await validate(ws, participantsParams, [validateParticipants]);
 
-    if (
-      !participantsParams.participants ||
-      participantsParams.participants.length === 0
-    ) {
-      return {
-        response: {
-          id: requestId,
-          error: ERROR_STATUES.USER_SELECTED,
-        },
-      };
-    }
+    conversationParams.owner_id = ObjectId(getSessionUserId(ws));
     if (conversationParams.type == "u") {
-      if (participantsParams.participants.length >= 3) {
-        return {
-          response: {
-            id: requestId,
-            error: ERROR_STATUES.TOO_MANY_USERS,
-          },
-        };
-      }
-      if (!conversationParams.recipient) {
-        return {
-          response: {
-            id: requestId,
-            error: ERROR_STATUES.RECIPIENT_NOT_FOUND,
-          },
-        };
-      }
-    }
-
-    if (!conversationParams.name && conversationParams.type == "g") {
-      return {
-        response: {
-          id: requestId,
-          error: ERROR_STATUES.CONVERSATION_NAME_MISSED,
+      await validate(
+        ws,
+        {
+          participants: participantsParams.participants,
+          recipient: conversationParams.recipient,
         },
-      };
+        [validateParticipantsInUType, validateIsUserSendHimSelf]
+      );
+    } else if (conversationParams.type == "g") {
+      await validate(ws, conversationParams, [validateConversationName]);
     }
-    conversationParams.owner_id = ACTIVE.SESSIONS[ws].userSession.user_id;
 
     let isOwnerInArray = false;
     participantsParams.participants.forEach((el) => {
@@ -83,7 +59,7 @@ export default class ConversationController {
     });
     if (!isOwnerInArray) {
       participantsParams.participants.push(
-        ObjectId(conversationParams.owner_id.toString())
+        ObjectId(conversationParams.owner_id)
       );
     } else if (participantsParams.participants.length === 1) {
       return {
@@ -93,17 +69,10 @@ export default class ConversationController {
         },
       };
     }
-    if (
-      participantsParams.participants.length >=
-      process.env.CONVERSATION_MAX_PARTICIPANTS
-    ) {
-      return {
-        response: {
-          id: requestId,
-          error: ERROR_STATUES.PARTICIPANTS_LIMIT,
-        },
-      };
-    }
+
+    await validate(ws, participantsParams.participants.length, [
+      validateParticipantsLimit,
+    ]);
 
     const conversationObj = new Conversation(conversationParams);
     await conversationObj.save();
@@ -127,28 +96,11 @@ export default class ConversationController {
   async update(ws, data) {
     const requestId = data.request.id;
     const requestData = data.request.conversation_update;
+    await validate(ws, requestData, [validateIsConversation]);
 
     const conversation = await Conversation.findOne({ _id: requestData });
-    if (!requestData.id || !conversation) {
-      return {
-        response: {
-          id: requestId,
-          error: ERROR_STATUES.BAD_REQUEST,
-        },
-      };
-    }
+    await validate(ws, conversation.params, [validateConversationisUserOwner]);
 
-    if (
-      conversation.params.owner_id.toString() !==
-      ACTIVE.SESSIONS[ws].userSession.user_id.toString()
-    ) {
-      return {
-        response: {
-          id: requestId,
-          error: ERROR_STATUES.FORBIDDEN,
-        },
-      };
-    }
     const conversationId = requestData.id;
     delete requestData.id;
 
@@ -163,20 +115,12 @@ export default class ConversationController {
       const addUsers = participantsToUpdate.add;
       const removeUsers = participantsToUpdate.remove;
       const countParticipants = await ConversationParticipant.count({
-        conversation_id: ObjectId(conversationId),
+        conversation_id: conversationId,
       });
       if (addUsers) {
-        if (
-          countParticipants + addUsers.length >
-          process.env.CONVERSATION_MAX_PARTICIPANTS
-        ) {
-          return {
-            response: {
-              id: requestId,
-              error: ERROR_STATUES.PARTICIPANTS_LIMIT,
-            },
-          };
-        }
+        await validate(ws, countParticipants + addUsers.length, [
+          validateParticipantsLimit,
+        ]);
 
         for (let i = 0; i < addUsers.length; i++) {
           const obj = new ConversationParticipant({
@@ -229,6 +173,7 @@ export default class ConversationController {
     const returnConversation = await Conversation.findOne({
       _id: conversationId,
     });
+
     return {
       response: {
         id: requestId,
@@ -240,7 +185,7 @@ export default class ConversationController {
   async list(ws, data) {
     const requestId = data.request.id;
 
-    const currentUser = ACTIVE.SESSIONS[ws].userSession.user_id;
+    const currentUser = getSessionUserId(ws);
     const limit =
       data.request.conversation_list.limit > CONSTANTS.LIMIT_MAX
         ? CONSTANTS.LIMIT_MAX
@@ -275,21 +220,13 @@ export default class ConversationController {
     const requestId = data.request.id;
 
     const conversationId = data.request.conversation_delete.id;
+    await validate(ws, { id: conversationId }, [validateIsConversation]);
     const conversation = await Conversation.findOne({
       _id: conversationId,
     });
 
-    if (!conversation) {
-      return {
-        response: {
-          id: requestId,
-          error: ERROR_STATUES.CONVERSATION_NOT_FOUND,
-        },
-      };
-    }
-
     const conversationParticipant = await ConversationParticipant.findOne({
-      user_id: ACTIVE.SESSIONS[ws].userSession.user_id,
+      user_id: getSessionUserId(ws),
       conversation_id: conversationId,
     });
     if (!conversationParticipant) {
@@ -307,8 +244,7 @@ export default class ConversationController {
     if (!isUserInConvesation) {
       await conversation.delete();
     } else if (
-      conversation.params.owner_id.toString() ===
-      ACTIVE.SESSIONS[ws].userSession.user_id.toString()
+      conversation.params.owner_id.toString() === getSessionUserId(ws)
     ) {
       Conversation.updateOne(
         { _id: conversationId },

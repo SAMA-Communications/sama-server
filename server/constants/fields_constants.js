@@ -1,5 +1,5 @@
 export const ALLOW_FIELDS = {
-  ALLOWED_FILEDS_MESSAGES: [
+  ALLOWED_FILEDS_MESSAGE: [
     "id",
     "t",
     "to",
@@ -9,6 +9,7 @@ export const ALLOW_FIELDS = {
     "x",
     "deleted_for",
   ],
+  ALLOWED_FILEDS_STATUS: ["id", "t", "type", "to", "from", "mid", "cid"],
   ALLOWED_FIELDS_USER_CREATE: ["login", "password"],
   ALLOWED_FIELDS_CONVERSATION_CREATE: [
     "name",
