@@ -380,28 +380,22 @@ Carbons is enabled by default.  On send - a message will be delivered back to al
 A system message is a message w/o body, but with a set of params. The intention to have system mesasges is to exchange non human content.
 These mesasge will never be saved into history.
 
-## Chat history storage
+## Offline queue
 
-All the messages are automatically stored in DB and then can be retrieved via REST API (see below)
-
-## Offline message delivery
-
-I see 2 potential solutions here:
-
-* No offline storage at all (I prefer this)
-* Offline messages delivery is supported for all types of messages, but there is a TTL at server side
-
-so TBD
+TBA
 
 ## Contacts list
 
-Via REST API. 
 * Upload complete address book
 * CRUD on contacts
+
+TBA
 
 ## Last activity
 
 ### Request 
+
+TBA
 
 ```
 {
@@ -428,7 +422,9 @@ Upload attachments to server and send a fid to opponents, so they will build an 
 
 ## Block list
 
-Via REST API. Can block, unblock and list blocked users. 
+Can block, unblock and list blocked users. 
+
+TBA
 
 ## IDC - inter deployments communication
 
