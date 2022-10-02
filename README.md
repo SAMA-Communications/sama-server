@@ -359,26 +359,6 @@ If users are offline, they will receive a message once became online.
 
 Carbons is enabled by default.  On send - a message will be delivered back to all active sender's devices except the current one.  
 
-The packet is a simple 'carbon' wrapper around original message. 
-
-```
-{
- 'carbon': {
-  'message': {
-    'id': 'xyz', 
-    't': 15673838833,
-    'to': '',
-    'from': '',
-    'body': 'hey how is going?',
-    'x': {
-      'param1': 'value',
-      'param2': 'value'
-    }
-  }
- } 
-}
-```
-
 
 ### System messages
 
@@ -461,14 +441,19 @@ Will support it on a later stage
 * [x] User logout
 * [x] User delete
 * User edit
-* Search user
+* Search users / retrieve users
 * [x] Create conversation
 * [x] List conversations
 * [x] Edit conversation
 * [x] Delete conversation
-* List chat messages
+* Get conversation's participants
+* [x] Send/Receive message
+* [x] List chat messages
+* [x] Typing status
+* [x] Read/Delivered status
 * Upload attachment
 * Get attachment by url
+* Last activity
 * Block user
 * Unblock user
 * List blocked users
