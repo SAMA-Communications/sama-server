@@ -61,6 +61,7 @@ describe("User cycle", async () => {
       const requestData = {
         request: {
           user_login: {
+            deviceId: "PC",
             login: "user_testtttt",
             password: "user_paswword_1",
           },
@@ -90,6 +91,7 @@ describe("User cycle", async () => {
       const requestData = {
         request: {
           user_login: {
+            deviceId: "PC",
             login: userLogin,
             password: "Invalid_password213",
           },
@@ -106,10 +108,30 @@ describe("User cycle", async () => {
       });
     });
 
+    it("should fail 'deviceId' is required", async () => {
+      const requestData = {
+        request: {
+          user_login: {
+            login: userLogin,
+            password: "Invalid_password213",
+          },
+          id: "3_2",
+        },
+      };
+      const responseData = await processJsonMessageOrError("xc", requestData);
+
+      assert.strictEqual(responseData.response.success, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "'deviceId' is required",
+      });
+    });
+
     it("should work", async () => {
       const requestData = {
         request: {
           user_login: {
+            deviceId: "PC",
             login: userLogin,
             password: "user_paswword_1",
           },
@@ -117,7 +139,7 @@ describe("User cycle", async () => {
         },
       };
       const responseData = await processJsonMessageOrError("test", requestData);
-      currentUserToken = responseData.response.user.token;
+      currentUserToken = responseData.response.user._id;
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.user, undefined);
@@ -129,9 +151,7 @@ describe("User cycle", async () => {
     it("should work", async () => {
       const requestData = {
         request: {
-          user_logout: {
-            token: currentUserToken,
-          },
+          user_logout: {},
           id: "3_1",
         },
       };
@@ -142,17 +162,16 @@ describe("User cycle", async () => {
       assert.equal(responseData.response.error, undefined);
     });
 
-    it("should fail because the user does not exist", async () => {
+    it("should fail user isn`t online", async () => {
       const requestData = {
         request: {
-          user_logout: {
-            token: "currentUserToken",
-          },
+          user_logout: {},
           id: "3_2",
         },
       };
       const responseData = await processJsonMessageOrError("test", requestData);
 
+      assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 404,
@@ -162,29 +181,10 @@ describe("User cycle", async () => {
   });
 
   describe("Delete User", async () => {
-    let userDeleteId = "";
-    before(async () => {
-      const requestData = {
+    it("should fail user not login", async () => {
+      let requestData = {
         request: {
-          user_login: {
-            login: userLogin,
-            password: "user_paswword_1",
-          },
-          id: "2_3",
-        },
-      };
-      await processJsonMessageOrError("test", requestData);
-      userDeleteId = (
-        await User.findOne({ login: userLogin })
-      ).params._id.toString();
-    });
-
-    it("should fail because the user haven't permission", async () => {
-      const requestData = {
-        request: {
-          user_delete: {
-            id: "6315d59636b1797de3f30a79",
-          },
+          user_delete: {},
           id: "4_2",
         },
       };
@@ -193,17 +193,27 @@ describe("User cycle", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
-        status: 403,
-        message: "Forbidden",
+        status: 404,
+        message: "Unauthorized",
       });
+
+      requestData = {
+        request: {
+          user_login: {
+            deviceId: "PC",
+            login: userLogin,
+            password: "user_paswword_1",
+          },
+          id: "2_3",
+        },
+      };
+      await processJsonMessageOrError("test", requestData);
     });
 
     it("should work", async () => {
       const requestData = {
         request: {
-          user_delete: {
-            id: userDeleteId,
-          },
+          user_delete: {},
           id: "4_1",
         },
       };

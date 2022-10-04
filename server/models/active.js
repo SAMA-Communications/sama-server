@@ -1,11 +1,18 @@
 const ACTIVE = {
   SESSIONS: {},
-  CONNECTIONS: {},
+  DEVICES: {},
 };
+
 function getSessionUserId(ws) {
   if (ACTIVE.SESSIONS[ws]) {
-    return ACTIVE.SESSIONS[ws].userSession.user_id.toString();
+    return ACTIVE.SESSIONS[ws].user_id.toString();
   }
   return null;
 }
-export { ACTIVE, getSessionUserId };
+function getDeviceId(ws, userId) {
+  if (ACTIVE.DEVICES[userId]) {
+    return ACTIVE.DEVICES[userId].find((el) => el.ws === ws).deviceId;
+  }
+  return null;
+}
+export { ACTIVE, getSessionUserId, getDeviceId };

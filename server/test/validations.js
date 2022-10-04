@@ -1,7 +1,6 @@
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import User from "../models/user.js";
-import UserSession from "../models/user_session.js";
 import assert from "assert";
 import { connectToDBPromise } from "../lib/db.js";
 import { processJsonMessageOrError } from "../routes/ws.js";
@@ -35,6 +34,7 @@ async function sendLogin(ws, login) {
   const requestData = {
     request: {
       user_login: {
+        deviceId: "PC",
         login: login,
         password: "user_paswword_1",
       },
@@ -47,9 +47,7 @@ async function sendLogin(ws, login) {
 async function sendLogout(ws, currentUserToken) {
   const requestData = {
     request: {
-      user_logout: {
-        token: currentUserToken,
-      },
+      user_logout: {},
       id: "0102",
     },
   };
@@ -967,7 +965,6 @@ describe("Validate functions", async () => {
   });
   after(async () => {
     await User.clearCollection();
-    await UserSession.clearCollection();
     await Conversation.clearCollection();
     await ConversationParticipant.clearCollection();
   });

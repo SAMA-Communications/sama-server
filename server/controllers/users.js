@@ -1,7 +1,7 @@
 import OfflineQueue from "../models/offline_queue.js";
 import User from "../models/user.js";
-import UserSession from "../models/user_session.js";
-import { ACTIVE, getSessionUserId } from "../models/active.js";
+import validate, { validateDeviceId } from "../lib/validation.js";
+import { ACTIVE, getDeviceId, getSessionUserId } from "../models/active.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { slice } from "../utils/req_res_utils.js";
@@ -22,79 +22,88 @@ export default class UsersController {
 
       return { response: { id: requestId, user: user.toJSON() } };
     } else {
-      return {
-        response: {
-          id: requestId,
-          error: ERROR_STATUES.USER_MISSED,
-        },
-      };
+      throw new Error(ERROR_STATUES.USER_ALREADY_EXISTS.message, {
+        cause: ERROR_STATUES.USER_ALREADY_EXISTS,
+      });
     }
   }
 
   async login(ws, data) {
     const requestId = data.request.id;
-
     const userInfo = data.request.user_login;
+    await validate(ws, userInfo, [validateDeviceId]);
+
     const user = await User.findOne({ login: userInfo.login });
     if (!user) {
-      return {
-        response: {
-          id: requestId,
-          error: ERROR_STATUES.UNAUTHORIZED,
-        },
-      };
+      throw new Error(ERROR_STATUES.UNAUTHORIZED.message, {
+        cause: ERROR_STATUES.UNAUTHORIZED,
+      });
     }
 
     if (!(await user.isValidPassword(userInfo.password))) {
-      return {
-        response: {
-          id: requestId,
-          error: ERROR_STATUES.UNAUTHORIZED,
-        },
-      };
+      throw new Error(ERROR_STATUES.UNAUTHORIZED.message, {
+        cause: ERROR_STATUES.UNAUTHORIZED,
+      });
     }
+    const userId = user.params._id;
+    const deviceId = userInfo.deviceId;
+    //deviceId should come in a request's params (will be generated at client side )
 
-    const userSession = new UserSession({ user_id: user.params._id });
-    await userSession.save();
-
-    ACTIVE.SESSIONS[ws] = { userSession: userSession.params };
-    ACTIVE.CONNECTIONS[userSession.params.user_id] = ws;
-
-    const respData = {
-      token: userSession.params._id,
-      user: user.visibleParams(),
-    };
+    const activeConnections = ACTIVE.DEVICES[userId];
+    if (activeConnections) {
+      let wsToClose = [];
+      const devices = activeConnections.filter((obj) => {
+        if (obj.deviceId !== deviceId) {
+          return true;
+        } else {
+          wsToClose.push(obj.ws);
+          return false;
+        }
+      });
+      wsToClose.forEach((ws) => {
+        ws.send(JSON.stringify({ error: "Device replacement" }));
+        ws.close();
+      });
+      ACTIVE.DEVICES[userId] = [...devices, { ws, deviceId }];
+    } else {
+      ACTIVE.DEVICES[userId] = [{ ws, deviceId }];
+    }
+    ACTIVE.SESSIONS[ws] = { user_id: userId };
 
     const expectedReqs = await OfflineQueue.findAll({
-      user_id: user.params._id,
+      user_id: userId,
     });
     if (expectedReqs && expectedReqs.length) {
       for (const current in expectedReqs) {
         ws.send(expectedReqs[current].request);
       }
-      await OfflineQueue.deleteMany({ user_id: user.params._id });
+      await OfflineQueue.deleteMany({ user_id: userId });
     }
-
-    return { response: { id: requestId, user: respData } };
+    return { response: { id: requestId, user: user.visibleParams() } };
   }
 
   async logout(ws, data) {
     const requestId = data.request.id;
 
-    const sessionId = data.request.user_logout.token;
-    const currentUserSession = await UserSession.findOne({ _id: sessionId });
+    const currentUserSession = ACTIVE.SESSIONS[ws];
+    const userId = currentUserSession.user_id;
+
+    const deviceId = getDeviceId(ws, userId);
     if (currentUserSession) {
-      delete ACTIVE.CONNECTIONS[currentUserSession.params.user_id];
-      delete ACTIVE.SESSIONS[ws];
-      await currentUserSession.delete();
+      if (ACTIVE.DEVICES[userId].length > 1) {
+        ACTIVE.DEVICES[userId] = ACTIVE.DEVICES[userId].filter((obj) => {
+          return obj.deviceId !== deviceId;
+        });
+      } else {
+        delete ACTIVE.DEVICES[userId];
+        delete ACTIVE.SESSIONS[ws];
+      }
+
       return { response: { id: requestId, success: true } };
     } else {
-      return {
-        response: {
-          id: requestId,
-          error: ERROR_STATUES.UNAUTHORIZED,
-        },
-      };
+      throw new Error(ERROR_STATUES.UNAUTHORIZED.message, {
+        cause: ERROR_STATUES.UNAUTHORIZED,
+      });
     }
   }
 
@@ -102,37 +111,25 @@ export default class UsersController {
     const requestId = data.request.id;
 
     const userSession = getSessionUserId(ws);
-    if (userSession !== data.request.user_delete.id) {
-      return {
-        response: {
-          id: requestId,
-          error: ERROR_STATUES.FORBIDDEN,
-        },
-      };
+    if (!userSession) {
+      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+        cause: ERROR_STATUES.FORBIDDEN,
+      });
     }
 
-    const userId = data.request.user_delete.id;
-    const currentUserSession = await UserSession.findOne({
-      user_id: userId,
-    });
-
-    if (currentUserSession) {
-      delete ACTIVE.CONNECTIONS[currentUserSession.params.user_id];
+    if (ACTIVE.SESSIONS[ws]) {
+      delete ACTIVE.DEVICES[userSession];
       delete ACTIVE.SESSIONS[ws];
-      await currentUserSession.delete();
     }
 
-    const user = await User.findOne({ _id: userId });
+    const user = await User.findOne({ _id: userSession });
     if (user) {
       await user.delete();
       return { response: { id: requestId, success: true } };
     } else {
-      return {
-        response: {
-          id: requestId,
-          error: ERROR_STATUES.UNAUTHORIZED,
-        },
-      };
+      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+        cause: ERROR_STATUES.FORBIDDEN,
+      });
     }
   }
 }

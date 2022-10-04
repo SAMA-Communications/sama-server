@@ -7,11 +7,13 @@ export const ERROR_STATUES = {
   // Users -->
   USER_MISSED: { status: 422, message: "User already exists" },
   USER_SELECTED: { status: 422, message: "Select at least one user" },
+  USER_ALREADY_EXISTS: { status: 422, message: "User already exists" },
   TOO_MANY_USERS: {
     status: 422,
     message: "Too many users in private conversation",
   },
   INCORRECT_USER: { status: 422, message: "Incorrect user" },
+  DEVICE_ID_MISSED: { status: 422, message: "'deviceId' is required" },
   // Conversation -->
   CONVERSATION_NOT_FOUND: { status: 404, message: "Conversation not found" },
   CONVERSATION_NAME_MISSED: {

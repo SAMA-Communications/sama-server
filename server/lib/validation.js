@@ -1,11 +1,11 @@
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import Messages from "../models/message.js";
+import User from "../models/user.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { ObjectId } from "mongodb";
 import { getSessionUserId } from "../models/active.js";
-import User from "../models/user.js";
 
 function validateIsUserAccess(vParams, ws) {
   if (getSessionUserId(ws) != vParams.from.toString()) {
@@ -25,6 +25,13 @@ function validateTOorCID(vParams) {
   if (!vParams.to && !vParams.cid) {
     throw new Error(ERROR_STATUES.EITHER_TO_OR_CID_REQUIRED.message, {
       cause: ERROR_STATUES.EITHER_TO_OR_CID_REQUIRED,
+    });
+  }
+}
+function validateDeviceId(vParams) {
+  if (!vParams.deviceId) {
+    throw new Error(ERROR_STATUES.DEVICE_ID_MISSED.message, {
+      cause: ERROR_STATUES.DEVICE_ID_MISSED,
     });
   }
 }
@@ -228,6 +235,7 @@ export {
   validateTOorCID,
   validateUserSession,
   validateIsUserSendHimSelf,
+  validateDeviceId,
 };
 
 export default async function validate(ws, vParams, functionsValidate) {

@@ -2,7 +2,6 @@ import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import Messages from "../models/message.js";
 import User from "../models/user.js";
-import UserSession from "../models/user_session.js";
 import assert from "assert";
 import { connectToDBPromise } from "../lib/db.js";
 import { processJsonMessageOrError } from "../routes/ws.js";
@@ -21,6 +20,7 @@ async function sendLogin(ws, login) {
   const requestData = {
     request: {
       user_login: {
+        deviceId: `${login}${Math.random() * 10000}`,
         login: login,
         password: "1um",
       },
@@ -33,9 +33,7 @@ async function sendLogin(ws, login) {
 async function sendLogout(ws, currentUserToken) {
   const requestData = {
     request: {
-      user_logout: {
-        token: currentUserToken,
-      },
+      user_logout: {},
       id: "0102",
     },
   };
@@ -63,7 +61,7 @@ describe("Message function", async () => {
     }
     // console.log("UserId: ", userId);
     await sendLogin(mockedWS, "um_2");
-    currentUserToken = (await sendLogin(mockedWS, "um_1")).response.user.token;
+    currentUserToken = (await sendLogin(mockedWS, "um_1")).response.user._id;
 
     const requestData = {
       request: {
@@ -212,28 +210,6 @@ describe("Message function", async () => {
         status: 422,
         message: "Incorrect user",
       });
-    });
-
-    it("should work create private conversation", async () => {
-      const requestData = {
-        message: {
-          id: "messageID_9",
-          to: userId[1],
-          from: "",
-          body: "working!!! (first)",
-          x: {
-            param1: "value",
-            param2: "value",
-          },
-        },
-      };
-      const responseData = await processJsonMessageOrError(
-        mockedWS,
-        requestData
-      );
-
-      assert.strictEqual(requestData.message.id, responseData.ask.mid);
-      assert.notEqual(responseData.ask, undefined);
     });
 
     it("should work create private conversation", async () => {
@@ -748,7 +724,6 @@ describe("Message function", async () => {
 
   after(async () => {
     await User.clearCollection();
-    await UserSession.clearCollection();
     await Messages.clearCollection();
     await Conversation.clearCollection();
     await ConversationParticipant.clearCollection();

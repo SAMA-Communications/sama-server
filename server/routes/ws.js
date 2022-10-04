@@ -12,10 +12,12 @@ import { StringDecoder } from "string_decoder";
 const decoder = new StringDecoder("utf8");
 
 async function deliverToUser(userId, request) {
-  const wsRecipient = ACTIVE.CONNECTIONS[userId];
+  const wsRecipient = ACTIVE.DEVICES[userId];
 
   if (wsRecipient) {
-    wsRecipient.send({ message: request });
+    wsRecipient.forEach((data) => {
+      data["ws"].send({ message: request });
+    });
   } else {
     request = new OfflineQueue({ user_id: userId, request: request });
     await request.save();

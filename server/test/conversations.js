@@ -1,7 +1,6 @@
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import User from "../models/user.js";
-import UserSession from "../models/user_session.js";
 import assert from "assert";
 import { connectToDBPromise } from "../lib/db.js";
 import { processJsonMessageOrError } from "../routes/ws.js";
@@ -16,6 +15,7 @@ async function sendLogin(ws, login) {
   const requestData = {
     request: {
       user_login: {
+        deviceId: "PC",
         login: login,
         password: "user_paswword_1",
       },
@@ -28,9 +28,7 @@ async function sendLogin(ws, login) {
 async function sendLogout(ws, currentUserToken) {
   const requestData = {
     request: {
-      user_logout: {
-        token: currentUserToken,
-      },
+      user_logout: {},
       id: "0102",
     },
   };
@@ -56,7 +54,7 @@ describe("Conversation functions", async () => {
       );
       userId[i] = JSON.parse(responseData.response.user)._id;
     }
-    currentUserToken = (await sendLogin("test", "user_1")).response.user.token;
+    currentUserToken = (await sendLogin("test", "user_1")).response.user._id;
   });
 
   describe("IsUserAuth validation", async () => {
@@ -197,9 +195,7 @@ describe("Conversation functions", async () => {
       await processJsonMessageOrError("login_tmp", requestDataDelete);
       const requestDataLogout = {
         request: {
-          user_logout: {
-            token: tmpToken,
-          },
+          user_logout: {},
           id: "0102",
         },
       };
@@ -600,7 +596,6 @@ describe("Conversation functions", async () => {
 
   after(async () => {
     await User.clearCollection();
-    await UserSession.clearCollection();
     await Conversation.clearCollection();
     await ConversationParticipant.clearCollection();
     userId = [];
