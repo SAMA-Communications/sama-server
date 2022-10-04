@@ -62,7 +62,7 @@ Login + pwd
   },
 };
 
-{ response: { id: "2", user: {token: "..", user: {}} }
+{ response: { id: "2", user: {...} }
 ```
 
 ### Logout user
@@ -70,9 +70,7 @@ Login + pwd
 ```
 {
   request: {
-    user_logout: {
-      token: "...",
-    },
+    user_logout: {},
     id: "3",
   },
 };
