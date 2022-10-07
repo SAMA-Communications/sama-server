@@ -1,7 +1,6 @@
 /* Simplified stock exchange made with uWebSockets.js pub/sub */
 import uWS from "uWebSockets.js";
 
-import { default as buildUsersRoutes } from "./routes/users.js";
 import { default as buildWSRoutes } from "./routes/ws.js";
 
 // get MongoDB driver connection
@@ -20,7 +19,6 @@ const WS_OPTIONS = {
 
 const APP = uWS.App(APP_OPTIONS);
 
-buildUsersRoutes(APP);
 buildWSRoutes(APP, WS_OPTIONS);
 
 APP.listen(APP_PORT, (listenSocket) => {
