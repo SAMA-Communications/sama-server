@@ -129,6 +129,7 @@ export default function routes(app, wsOptions) {
     },
 
     close: (ws, code, message) => {
+      console.log("[close]", `WebSokect connect down`);
       delete ACTIVE.SESSIONS[ws];
     },
 

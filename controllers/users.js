@@ -20,7 +20,7 @@ export default class UsersController {
       const user = new User(userParams);
       await user.save();
 
-      return { response: { id: requestId, user: user.toJSON() } };
+      return { response: { id: requestId, user: user.visibleParams() } };
     } else {
       throw new Error(ERROR_STATUES.USER_ALREADY_EXISTS.message, {
         cause: ERROR_STATUES.USER_ALREADY_EXISTS,
@@ -47,7 +47,6 @@ export default class UsersController {
     }
     const userId = user.params._id;
     const deviceId = userInfo.deviceId;
-    //deviceId should come in a request's params (will be generated at client side )
 
     const activeConnections = ACTIVE.DEVICES[userId];
     if (activeConnections) {
