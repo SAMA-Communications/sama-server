@@ -68,17 +68,7 @@ describe("User cycle", async () => {
           id: "2_1",
         },
       };
-      let responseData = {};
-      try {
-        responseData = await processJsonMessageOrError("test", requestData);
-      } catch (e) {
-        responseData = {
-          response: {
-            id: responseData.id,
-            error: error.cause,
-          },
-        };
-      }
+      const responseData = await processJsonMessageOrError("test", requestData);
 
       assert.strictEqual(responseData.response.user, undefined);
       assert.deepEqual(responseData.response.error, {
