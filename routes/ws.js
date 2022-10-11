@@ -4,7 +4,7 @@ import MessagesController from "../controllers/messages.js";
 import OfflineQueue from "../models/offline_queue.js";
 import StatusController from "../controllers/status.js";
 import UsersController from "../controllers/users.js";
-import { ACTIVE } from "../models/active.js";
+import { ACTIVE, getSessionUserId } from "../models/active.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { ObjectId } from "mongodb";
 import { StringDecoder } from "string_decoder";
@@ -130,6 +130,12 @@ export default function routes(app, wsOptions) {
 
     close: (ws, code, message) => {
       console.log("[close]", `WebSokect connect down`);
+      const arrDevices = ACTIVE.DEVICES[getSessionUserId(ws)];
+      if (arrDevices) {
+        ACTIVE.DEVICES[getSessionUserId(ws)] = arrDevices.filter(
+          (obj) => obj.ws !== ws
+        );
+      }
       delete ACTIVE.SESSIONS[ws];
     },
 
