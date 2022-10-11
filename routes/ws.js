@@ -130,7 +130,12 @@ export default function routes(app, wsOptions) {
 
     close: (ws, code, message) => {
       console.log("[close]", `WebSokect connect down`);
-      delete ACTIVE.DEVICES[getSessionUserId(ws)];
+      const arrDevices = ACTIVE.DEVICES[getSessionUserId(ws)];
+      if (arrDevices) {
+        ACTIVE.DEVICES[getSessionUserId(ws)] = arrDevices.filter(
+          (obj) => obj.ws !== ws
+        );
+      }
       delete ACTIVE.SESSIONS[ws];
     },
 
