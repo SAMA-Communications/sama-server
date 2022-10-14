@@ -31,7 +31,6 @@ export default class UsersController {
   async login(ws, data) {
     const requestId = data.request.id;
     const userInfo = data.request.user_login;
-    console.log(userInfo);
     await validate(ws, userInfo, [validateDeviceId]);
 
     let user;
