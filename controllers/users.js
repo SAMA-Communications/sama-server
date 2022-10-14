@@ -31,19 +31,30 @@ export default class UsersController {
   async login(ws, data) {
     const requestId = data.request.id;
     const userInfo = data.request.user_login;
+    console.log(userInfo);
     await validate(ws, userInfo, [validateDeviceId]);
 
-    const user = await User.findOne({ login: userInfo.login });
-    if (!user) {
-      throw new Error(ERROR_STATUES.UNAUTHORIZED.message, {
-        cause: ERROR_STATUES.UNAUTHORIZED,
-      });
-    }
+    let user;
+    if (!userInfo.token) {
+      user = await User.findOne({ login: userInfo.login });
+      if (!user) {
+        throw new Error(ERROR_STATUES.UNAUTHORIZED.message, {
+          cause: ERROR_STATUES.UNAUTHORIZED,
+        });
+      }
 
-    if (!(await user.isValidPassword(userInfo.password))) {
-      throw new Error(ERROR_STATUES.UNAUTHORIZED.message, {
-        cause: ERROR_STATUES.UNAUTHORIZED,
-      });
+      if (!(await user.isValidPassword(userInfo.password))) {
+        throw new Error(ERROR_STATUES.UNAUTHORIZED.message, {
+          cause: ERROR_STATUES.UNAUTHORIZED,
+        });
+      }
+    } else {
+      user = await User.findOne({ _id: userInfo.token });
+      if (!user) {
+        throw new Error(ERROR_STATUES.INCORRECT_SESSION_ID.message, {
+          cause: ERROR_STATUES.INCORRECT_SESSION_ID,
+        });
+      }
     }
     const userId = user.params._id;
     const deviceId = userInfo.deviceId;

@@ -4,6 +4,7 @@ export const ERROR_STATUES = {
   FORBIDDEN: { status: 403, message: "Forbidden" },
   BAD_REQUEST: { status: 400, message: "Bad Request" },
   INCORRECT_TYPE: { status: 422, message: "Incorrect type" },
+  INCORRECT_SESSION_ID: { status: 422, message: "Incorrect sessionId" },
   // Users -->
   USER_MISSED: { status: 422, message: "User already exists" },
   USER_SELECTED: { status: 422, message: "Select at least one user" },
