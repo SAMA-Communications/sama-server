@@ -16,7 +16,7 @@ async function deliverToUser(userId, request) {
 
   if (wsRecipient) {
     wsRecipient.forEach((data) => {
-      data["ws"].send({ message: request });
+      data["ws"].send(JSON.stringify({ message: request }));
     });
   } else {
     request = new OfflineQueue({ user_id: userId, request: request });
