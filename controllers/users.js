@@ -1,5 +1,6 @@
 import OfflineQueue from "../models/offline_queue.js";
 import User from "../models/user.js";
+import jwt from "jsonwebtoken";
 import validate, { validateDeviceId } from "../lib/validation.js";
 import { ACTIVE, getDeviceId, getSessionUserId } from "../models/active.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
@@ -17,6 +18,7 @@ export default class UsersController {
 
     const isUserCreate = await User.findOne({ login: userParams.login });
     if (!isUserCreate) {
+      userParams.token = "";
       const user = new User(userParams);
       await user.save();
 
@@ -48,7 +50,7 @@ export default class UsersController {
         });
       }
     } else {
-      user = await User.findOne({ _id: userInfo.token });
+      user = await User.findOne({ token: userInfo.token });
       if (!user) {
         throw new Error(ERROR_STATUES.INCORRECT_SESSION_ID.message, {
           cause: ERROR_STATUES.INCORRECT_SESSION_ID,
@@ -88,7 +90,14 @@ export default class UsersController {
       }
       await OfflineQueue.deleteMany({ user_id: userId });
     }
-    return { response: { id: requestId, user: user.visibleParams() } };
+    const token = jwt
+      .sign(user.visibleParams(), process.env.JWT_ACCESS_SECRET, {
+        expiresIn: "2d",
+      })
+      .split(".")[1];
+    await User.updateOne(user.params, { $set: { token: token } });
+
+    return { response: { id: requestId, token: token } };
   }
 
   async logout(ws, data) {
