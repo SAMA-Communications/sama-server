@@ -90,11 +90,14 @@ export default class UsersController {
       }
       await OfflineQueue.deleteMany({ user_id: userId });
     }
-    const token = jwt
-      .sign(user.visibleParams(), process.env.JWT_ACCESS_SECRET, {
+
+    const token = jwt.sign(
+      { _id: user.params._id, login: user.params.login },
+      process.env.JWT_ACCESS_SECRET,
+      {
         expiresIn: "2d",
-      })
-      .split(".")[1];
+      }
+    );
     await User.updateOne(user.params, { $set: { token: token } });
 
     return { response: { id: requestId, token: token } };
