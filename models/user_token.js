@@ -6,7 +6,7 @@ export default class UserToken extends BaseModel {
   }
 
   static get collection() {
-    return "user_token";
+    return "user_tokens";
   }
 
   static get visibleFields() {

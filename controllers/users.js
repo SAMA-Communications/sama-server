@@ -95,31 +95,22 @@ export default class UsersController {
       await OfflineQueue.deleteMany({ user_id: userId });
     }
 
-    const createToken = jwt.sign(
+    const jwtToken = jwt.sign(
       { _id: user.params._id, login: user.params.login },
       process.env.JWT_ACCESS_SECRET,
       {
-        expiresIn: "3h",
+        expiresIn: process.env.EXPIRES_IN,
       }
     );
-    if (!userInfo.token) {
-      const userToken = new UserToken({
-        _id: user.params.id,
-        user_id: user.params._id,
-        device_id: deviceId,
-        token: createToken,
-      });
-      await userToken.save();
-    } else {
-      await UserToken.updateOne(
-        {
-          user_id: token.params.user_id,
-        },
-        { $set: { token: createToken } }
-      );
-    }
+    const userToken = new UserToken({
+      _id: user.params.id,
+      user_id: user.params._id,
+      device_id: deviceId,
+      token: jwtToken,
+    });
+    await userToken.save();
 
-    return { response: { id: requestId, token: createToken } };
+    return { response: { id: requestId, token: jwtToken } };
   }
 
   async logout(ws, data) {

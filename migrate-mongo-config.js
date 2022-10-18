@@ -1,7 +1,6 @@
 const config = {
   mongodb: {
-    url: "mongodb+srv://oleksandr:admin@cluster0.njiaclc.mongodb.net/samadb",
-    // databaseName: "YOURDATABASENAME",
+    url: process.env.MONGODB_URL,
 
     options: {
       useNewUrlParser: true, // removes a deprecation warning when connecting
