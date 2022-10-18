@@ -102,13 +102,22 @@ export default class UsersController {
         expiresIn: process.env.EXPIRES_IN,
       }
     );
-    const userToken = new UserToken({
-      _id: user.params.id,
-      user_id: user.params._id,
-      device_id: deviceId,
-      token: jwtToken,
-    });
-    await userToken.save();
+    if (!userInfo.token) {
+      const userToken = new UserToken({
+        _id: user.params.id,
+        user_id: user.params._id,
+        device_id: deviceId,
+        token: jwtToken,
+      });
+      await userToken.save();
+    } else {
+      await UserToken.updateOne(
+        {
+          user_id: token.params.user_id,
+        },
+        { $set: { token: jwtToken } }
+      );
+    }
 
     return { response: { id: requestId, token: jwtToken } };
   }
