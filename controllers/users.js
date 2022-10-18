@@ -119,7 +119,9 @@ export default class UsersController {
       );
     }
 
-    return { response: { id: requestId, token: jwtToken } };
+    return {
+      response: { id: requestId, user: user.visibleParams(), token: jwtToken },
+    };
   }
 
   async logout(ws, data) {
