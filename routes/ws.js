@@ -45,7 +45,7 @@ async function processJsonMessage(ws, json) {
   if (
     !json.request?.user_create &&
     !json.request?.user_login &&
-    !ACTIVE.SESSIONS[ws]
+    !ACTIVE.SESSIONS.get(ws)
   ) {
     throw new Error(ERROR_STATUES.UNAUTHORIZED.message, {
       cause: ERROR_STATUES.UNAUTHORIZED,
@@ -136,7 +136,7 @@ export default function routes(app, wsOptions) {
           (obj) => obj.ws !== ws
         );
       }
-      delete ACTIVE.SESSIONS[ws];
+      ACTIVE.SESSIONS.delete(ws);
     },
 
     message: async (ws, message, isBinary) => {

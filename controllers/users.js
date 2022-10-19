@@ -131,7 +131,7 @@ export default class UsersController {
   async logout(ws, data) {
     const requestId = data.request.id;
 
-    const currentUserSession = ACTIVE.SESSIONS[ws];
+    const currentUserSession = ACTIVE.SESSIONS.get(ws);
     const userId = currentUserSession.user_id;
 
     const deviceId = getDeviceId(ws, userId);
@@ -169,7 +169,7 @@ export default class UsersController {
       });
     }
 
-    if (ACTIVE.SESSIONS[ws]) {
+    if (ACTIVE.SESSIONS.get(ws)) {
       delete ACTIVE.DEVICES[userSession];
       ACTIVE.SESSIONS.delete(ws);
     }

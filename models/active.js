@@ -4,8 +4,8 @@ const ACTIVE = {
 };
 
 function getSessionUserId(ws) {
-  if (ACTIVE.SESSIONS[ws]) {
-    return ACTIVE.SESSIONS[ws].user_id.toString();
+  if (ACTIVE.SESSIONS.get(ws)) {
+    return ACTIVE.SESSIONS.get(ws).user_id.toString();
   }
   return null;
 }
