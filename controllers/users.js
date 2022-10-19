@@ -89,16 +89,6 @@ export default class UsersController {
     }
     ACTIVE.SESSIONS.set(ws, { user_id: userId });
 
-    const expectedReqs = await OfflineQueue.findAll({
-      user_id: userId,
-    });
-    if (expectedReqs && expectedReqs.length) {
-      for (const current in expectedReqs) {
-        ws.send(expectedReqs[current].request);
-      }
-      await OfflineQueue.deleteMany({ user_id: userId });
-    }
-
     const jwtToken = jwt.sign(
       { _id: user.params._id, login: user.params.login },
       process.env.JWT_ACCESS_SECRET,
@@ -123,8 +113,24 @@ export default class UsersController {
       );
     }
 
+    const expectedReqs = await OfflineQueue.findAll({
+      user_id: getSessionUserId(ws),
+    });
+    if (expectedReqs && expectedReqs.length) {
+      setTimeout(async () => {
+        for (const current in expectedReqs) {
+          ws.send(JSON.stringify(expectedReqs[current].request));
+        }
+        await OfflineQueue.deleteMany({ user_id: getSessionUserId(ws) });
+      }, 2000);
+    }
+
     return {
-      response: { id: requestId, user: user.visibleParams(), token: jwtToken },
+      response: {
+        id: requestId,
+        user: user.visibleParams(),
+        token: jwtToken,
+      },
     };
   }
 
