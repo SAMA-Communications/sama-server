@@ -62,7 +62,22 @@ Login + pwd
   },
 };
 
-{ response: { id: "2", user: {...} }
+{ response: { id: "2", user: {...}, token: "..." }
+```
+
+Later, the subsequent logins can be done via `token`:
+
+```
+{
+  request: {
+    user_login: {
+      token: "...",
+    },
+    id: "3",
+  },
+};
+
+{ response: { id: "3", user: {...}, token: "..." }
 ```
 
 ### Logout user
