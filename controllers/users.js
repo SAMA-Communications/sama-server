@@ -34,8 +34,8 @@ export default class UsersController {
     const requestId = data.request.id;
     const userInfo = data.request.user_login;
     await validate(ws, userInfo, [validateDeviceId]);
-    let user;
-    let token;
+
+    let user, token;
     if (!userInfo.token) {
       user = await User.findOne({ login: userInfo.login });
       if (!user) {
@@ -49,6 +49,10 @@ export default class UsersController {
           cause: ERROR_STATUES.UNAUTHORIZED,
         });
       }
+      token = await UserToken.findOne({
+        user_id: user.params._id,
+        device_id: userInfo.deviceId,
+      });
     } else {
       token = await UserToken.findOne({
         token: userInfo.token,
@@ -83,7 +87,7 @@ export default class UsersController {
     } else {
       ACTIVE.DEVICES[userId] = [{ ws, deviceId }];
     }
-    ACTIVE.SESSIONS[ws] = { user_id: userId };
+    ACTIVE.SESSIONS.set(ws, { user_id: userId });
 
     const expectedReqs = await OfflineQueue.findAll({
       user_id: userId,
@@ -102,7 +106,7 @@ export default class UsersController {
         expiresIn: process.env.EXPIRES_IN,
       }
     );
-    if (!userInfo.token) {
+    if (!token) {
       const userToken = new UserToken({
         _id: user.params.id,
         user_id: user.params._id,
@@ -118,7 +122,7 @@ export default class UsersController {
         { $set: { token: jwtToken } }
       );
     }
-
+    console.log(ACTIVE.SESSIONS);
     return {
       response: { id: requestId, user: user.visibleParams(), token: jwtToken },
     };
@@ -138,8 +142,14 @@ export default class UsersController {
         });
       } else {
         delete ACTIVE.DEVICES[userId];
-        delete ACTIVE.SESSIONS[ws];
+        ACTIVE.SESSIONS.delete(ws);
       }
+
+      const tokenIds = await UserToken.getAllIdsBy({
+        user_id: userId,
+        device_id: deviceId,
+      });
+      await UserToken.deleteMany(tokenIds);
 
       return { response: { id: requestId, success: true } };
     } else {
@@ -161,7 +171,7 @@ export default class UsersController {
 
     if (ACTIVE.SESSIONS[ws]) {
       delete ACTIVE.DEVICES[userSession];
-      delete ACTIVE.SESSIONS[ws];
+      ACTIVE.SESSIONS.delete(ws);
     }
 
     const user = await User.findOne({ _id: userSession });

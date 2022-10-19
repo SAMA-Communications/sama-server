@@ -3,6 +3,7 @@ import ConversationController from "./conversations.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import Messages from "../models/message.js";
 import validate, {
+  validateIsConversation,
   validateIsConversationByCID,
   validateIsMessageById,
   validateIsUserAccess,
@@ -114,6 +115,7 @@ export default class MessagesController {
     const requestId = data.request.id;
 
     const cid = data.request.message_list.cid;
+    await validate(ws, { id: cid }, [validateIsConversation]);
     const limit =
       data.request.message_list.limit > CONSTANTS.LIMIT_MAX
         ? CONSTANTS.LIMIT_MAX

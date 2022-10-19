@@ -1,5 +1,5 @@
 const ACTIVE = {
-  SESSIONS: {},
+  SESSIONS: new Map(),
   DEVICES: {},
 };
 
