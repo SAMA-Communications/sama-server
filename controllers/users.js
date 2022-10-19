@@ -34,15 +34,6 @@ export default class UsersController {
     const requestId = data.request.id;
     const userInfo = data.request.user_login;
     await validate(ws, userInfo, [validateDeviceId]);
-    let user;
-    let token;
-    if (!userInfo.token) {
-      user = await User.findOne({ login: userInfo.login });
-      if (!user) {
-        throw new Error(ERROR_STATUES.UNAUTHORIZED.message, {
-          cause: ERROR_STATUES.UNAUTHORIZED,
-        });
-      }
 
     let user, token;
     if (!userInfo.token) {
@@ -131,7 +122,7 @@ export default class UsersController {
         { $set: { token: jwtToken } }
       );
     }
-    
+
     return {
       response: { id: requestId, user: user.visibleParams(), token: jwtToken },
     };
