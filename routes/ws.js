@@ -141,8 +141,11 @@ export default function routes(app, wsOptions) {
 
     message: async (ws, message, isBinary) => {
       const json = JSON.parse(decoder.write(Buffer.from(message)));
+      // console.log("==============================");
 
+      // console.log(json);
       const responseData = await processJsonMessageOrError(ws, json);
+      // console.log(responseData);
       ws.send(JSON.stringify(responseData));
     },
   });

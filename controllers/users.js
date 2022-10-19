@@ -72,7 +72,8 @@ export default class UsersController {
     if (activeConnections) {
       let wsToClose = [];
       const devices = activeConnections.filter((obj) => {
-        if (obj.deviceId !== deviceId) {
+        console.log("obj: ", obj, deviceId);
+        if (obj.deviceId === deviceId) {
           return true;
         } else {
           wsToClose.push(obj.ws);
@@ -114,23 +115,19 @@ export default class UsersController {
     }
 
     const expectedReqs = await OfflineQueue.findAll({
-      user_id: getSessionUserId(ws),
+      user_id: userId,
     });
     if (expectedReqs && expectedReqs.length) {
-      setTimeout(async () => {
+      setImmediate(async () => {
         for (const current in expectedReqs) {
           ws.send(JSON.stringify(expectedReqs[current].request));
         }
-        await OfflineQueue.deleteMany({ user_id: getSessionUserId(ws) });
-      }, 2000);
+        await OfflineQueue.deleteMany({ user_id: userId });
+      });
     }
 
     return {
-      response: {
-        id: requestId,
-        user: user.visibleParams(),
-        token: jwtToken,
-      },
+      response: { id: requestId, user: user.visibleParams(), token: jwtToken },
     };
   }
 
