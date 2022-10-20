@@ -7,6 +7,7 @@ import { ACTIVE, getDeviceId, getSessionUserId } from "../models/active.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { slice } from "../utils/req_res_utils.js";
+import { CONSTANTS } from "../constants/constants.js";
 
 export default class UsersController {
   async create(ws, data) {
@@ -183,5 +184,26 @@ export default class UsersController {
         cause: ERROR_STATUES.FORBIDDEN,
       });
     }
+  }
+
+  async search(ws, data) {
+    const requestId = data.request.id;
+    const requestParam = data.request.user_search;
+
+    const currentUser = getSessionUserId(ws);
+    const limit =
+      requestParam.limit > CONSTANTS.LIMIT_MAX
+        ? CONSTANTS.LIMIT_MAX
+        : requestParam.limit || CONSTANTS.LIMIT_MAX;
+    const query = {
+      login: { $regex: `^(?i)${requestParam.login}*` },
+    };
+    const timeFromUpdate = requestParam.updated_at;
+    if (timeFromUpdate) {
+      query.updated_at = { $gt: new Date(timeFromUpdate.gt) };
+    }
+    const users = await User.findAll(query, null, limit);
+
+    return { response: { id: requestId, users: users } };
   }
 }

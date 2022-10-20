@@ -74,6 +74,8 @@ async function processJsonMessage(ws, json) {
     return await new UsersController().logout(ws, json);
   } else if (json.request.user_delete) {
     return await new UsersController().delete(ws, json);
+  } else if (json.request.user_search) {
+    return await new UsersController().search(ws, json);
   } else if (json.request.conversation_create) {
     return await new ConversationController().create(ws, json);
   } else if (json.request.conversation_delete) {
