@@ -13,7 +13,6 @@ const decoder = new StringDecoder("utf8");
 
 async function deliverToUser(userId, request) {
   const wsRecipient = ACTIVE.DEVICES[userId];
-
   if (wsRecipient) {
     wsRecipient.forEach((data) => {
       data["ws"].send(JSON.stringify({ message: request }));

@@ -54,10 +54,12 @@ export default class UsersController {
         device_id: userInfo.deviceId,
       });
     } else {
+      console.log(userInfo);
       token = await UserToken.findOne({
         token: userInfo.token,
         device_id: userInfo.deviceId,
       });
+      console.log("token: ", token);
       if (!token) {
         throw new Error(ERROR_STATUES.TOKEN_EXPIRED.message, {
           cause: ERROR_STATUES.TOKEN_EXPIRED,
@@ -72,8 +74,7 @@ export default class UsersController {
     if (activeConnections) {
       let wsToClose = [];
       const devices = activeConnections.filter((obj) => {
-        console.log("obj: ", obj, deviceId);
-        if (obj.deviceId === deviceId) {
+        if (obj.deviceId !== deviceId) {
           return true;
         } else {
           wsToClose.push(obj.ws);
@@ -109,6 +110,7 @@ export default class UsersController {
       await UserToken.updateOne(
         {
           user_id: token.params.user_id,
+          device_id: deviceId,
         },
         { $set: { token: jwtToken } }
       );
@@ -134,7 +136,7 @@ export default class UsersController {
   async logout(ws, data) {
     const requestId = data.request.id;
 
-    const currentUserSession = ACTIVE.SESSIONS[ws];
+    const currentUserSession = ACTIVE.SESSIONS.get(ws);
     const userId = currentUserSession.user_id;
 
     const deviceId = getDeviceId(ws, userId);
@@ -148,11 +150,11 @@ export default class UsersController {
         ACTIVE.SESSIONS.delete(ws);
       }
 
-      const tokenIds = await UserToken.getAllIdsBy({
+      const userToken = await UserToken.findOne({
         user_id: userId,
         device_id: deviceId,
       });
-      await UserToken.deleteMany(tokenIds);
+      userToken.delete();
 
       return { response: { id: requestId, success: true } };
     } else {
@@ -172,7 +174,7 @@ export default class UsersController {
       });
     }
 
-    if (ACTIVE.SESSIONS[ws]) {
+    if (ACTIVE.SESSIONS.get(ws)) {
       delete ACTIVE.DEVICES[userSession];
       ACTIVE.SESSIONS.delete(ws);
     }
