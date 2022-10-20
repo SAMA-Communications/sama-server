@@ -90,16 +90,6 @@ export default class UsersController {
     }
     ACTIVE.SESSIONS.set(ws, { user_id: userId });
 
-    const expectedReqs = await OfflineQueue.findAll({
-      user_id: userId,
-    });
-    if (expectedReqs && expectedReqs.length) {
-      for (const current in expectedReqs) {
-        ws.send(expectedReqs[current].request);
-      }
-      await OfflineQueue.deleteMany({ user_id: userId });
-    }
-
     const jwtToken = jwt.sign(
       { _id: user.params._id, login: user.params.login },
       process.env.JWT_ACCESS_SECRET,
@@ -119,9 +109,22 @@ export default class UsersController {
       await UserToken.updateOne(
         {
           user_id: token.params.user_id,
+          deviceId: deviceId,
         },
         { $set: { token: jwtToken } }
       );
+    }
+
+    const expectedReqs = await OfflineQueue.findAll({
+      user_id: userId,
+    });
+    if (expectedReqs && expectedReqs.length) {
+      setImmediate(async () => {
+        for (const current in expectedReqs) {
+          ws.send(JSON.stringify(expectedReqs[current].request));
+        }
+        await OfflineQueue.deleteMany({ user_id: userId });
+      });
     }
 
     return {
@@ -146,11 +149,11 @@ export default class UsersController {
         ACTIVE.SESSIONS.delete(ws);
       }
 
-      const tokenIds = await UserToken.getAllIdsBy({
+      const userToken = await UserToken.findOne({
         user_id: userId,
         device_id: deviceId,
       });
-      await UserToken.deleteMany(tokenIds);
+      userToken.delete();
 
       return { response: { id: requestId, success: true } };
     } else {
@@ -190,13 +193,13 @@ export default class UsersController {
     const requestId = data.request.id;
     const requestParam = data.request.user_search;
 
-    const currentUser = getSessionUserId(ws);
     const limit =
       requestParam.limit > CONSTANTS.LIMIT_MAX
         ? CONSTANTS.LIMIT_MAX
         : requestParam.limit || CONSTANTS.LIMIT_MAX;
     const query = {
       login: { $regex: `^(?i)${requestParam.login}*` },
+      _id: { $ne: getSessionUserId(ws) },
     };
     const timeFromUpdate = requestParam.updated_at;
     if (timeFromUpdate) {

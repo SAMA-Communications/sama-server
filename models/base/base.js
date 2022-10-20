@@ -42,6 +42,9 @@ export default class BaseModel {
       if (query.cid) {
         query.cid = new ObjectId(query.cid);
       }
+      if (query._id) {
+        query._id.$ne = new ObjectId(query._id.$ne);
+      }
       if (query.user_id) {
         query.user_id = new ObjectId(query.user_id);
       }
@@ -53,7 +56,13 @@ export default class BaseModel {
         .collection(this.collection)
         .find(query, { limit: limit })
         .forEach((el) => {
-          arr.add(returnParam ? el[returnParam] : el);
+          arr.add(
+            returnParam
+              ? el[returnParam]
+              : query.login
+              ? { _id: el._id, login: el.login }
+              : el
+          );
         });
       return Array.from(arr);
     } catch (e) {
