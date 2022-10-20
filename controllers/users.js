@@ -54,12 +54,10 @@ export default class UsersController {
         device_id: userInfo.deviceId,
       });
     } else {
-      console.log(userInfo);
       token = await UserToken.findOne({
         token: userInfo.token,
         device_id: userInfo.deviceId,
       });
-      console.log("token: ", token);
       if (!token) {
         throw new Error(ERROR_STATUES.TOKEN_EXPIRED.message, {
           cause: ERROR_STATUES.TOKEN_EXPIRED,
@@ -91,6 +89,16 @@ export default class UsersController {
     }
     ACTIVE.SESSIONS.set(ws, { user_id: userId });
 
+    const expectedReqs = await OfflineQueue.findAll({
+      user_id: userId,
+    });
+    if (expectedReqs && expectedReqs.length) {
+      for (const current in expectedReqs) {
+        ws.send(expectedReqs[current].request);
+      }
+      await OfflineQueue.deleteMany({ user_id: userId });
+    }
+
     const jwtToken = jwt.sign(
       { _id: user.params._id, login: user.params.login },
       process.env.JWT_ACCESS_SECRET,
@@ -110,22 +118,9 @@ export default class UsersController {
       await UserToken.updateOne(
         {
           user_id: token.params.user_id,
-          device_id: deviceId,
         },
         { $set: { token: jwtToken } }
       );
-    }
-
-    const expectedReqs = await OfflineQueue.findAll({
-      user_id: userId,
-    });
-    if (expectedReqs && expectedReqs.length) {
-      setImmediate(async () => {
-        for (const current in expectedReqs) {
-          ws.send(JSON.stringify(expectedReqs[current].request));
-        }
-        await OfflineQueue.deleteMany({ user_id: userId });
-      });
     }
 
     return {
@@ -150,11 +145,11 @@ export default class UsersController {
         ACTIVE.SESSIONS.delete(ws);
       }
 
-      const userToken = await UserToken.findOne({
+      const tokenIds = await UserToken.getAllIdsBy({
         user_id: userId,
         device_id: deviceId,
       });
-      userToken.delete();
+      await UserToken.deleteMany(tokenIds);
 
       return { response: { id: requestId, success: true } };
     } else {
