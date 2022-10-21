@@ -197,17 +197,19 @@ export default class UsersController {
       requestParam.limit > CONSTANTS.LIMIT_MAX
         ? CONSTANTS.LIMIT_MAX
         : requestParam.limit || CONSTANTS.LIMIT_MAX;
+
     const query = {
       login: { $regex: `^(?i)${requestParam.login}*` },
       _id: {
-        $ne: getSessionUserId(ws),
+        $nin: [getSessionUserId(ws), ...requestParam.ignore_ids],
       },
     };
+
     const timeFromUpdate = requestParam.updated_at;
     if (timeFromUpdate) {
       query.updated_at = { $gt: new Date(timeFromUpdate.gt) };
     }
-    const users = await User.findAll(query, null, limit);
+    const users = await User.findAll(query, ["_id", "login"], limit);
 
     return { response: { id: requestId, users: users } };
   }
