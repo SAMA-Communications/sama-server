@@ -97,9 +97,9 @@ export default class UsersController {
         expiresIn: process.env.EXPIRES_IN,
       }
     );
+
     if (!token) {
       const userToken = new UserToken({
-        _id: user.params.id,
         user_id: user.params._id,
         device_id: deviceId,
         token: jwtToken,
@@ -109,7 +109,7 @@ export default class UsersController {
       await UserToken.updateOne(
         {
           user_id: token.params.user_id,
-          deviceId: deviceId,
+          device_id: deviceId,
         },
         { $set: { token: jwtToken } }
       );
@@ -199,7 +199,9 @@ export default class UsersController {
         : requestParam.limit || CONSTANTS.LIMIT_MAX;
     const query = {
       login: { $regex: `^(?i)${requestParam.login}*` },
-      _id: { $ne: getSessionUserId(ws) },
+      _id: {
+        $ne: getSessionUserId(ws),
+      },
     };
     const timeFromUpdate = requestParam.updated_at;
     if (timeFromUpdate) {
