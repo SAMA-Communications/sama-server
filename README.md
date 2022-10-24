@@ -25,7 +25,7 @@ With SAMA our goal is the following:
 ## Transport
 
 * WSS
-* TLS socket (for later purpose ?)
+* (TBA) TLS socket 
 
 ## Authentication
 
@@ -106,6 +106,26 @@ Later, the subsequent logins can be done via `token`:
 };
 
 { response: { id: "3", success: true } }
+```
+
+### Users search
+
+```
+{
+  request: {
+    user_search: {
+      login: "sam",
+      limit: 100,
+      updated_at: {
+        gt: timestamp1,
+      },
+      ignore_ids: [45, 98]
+    },
+    id: "3",
+  },
+};
+
+{ response: { id: "3", users: [...]}
 ```
 
 ### Conversation create 
