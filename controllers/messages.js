@@ -79,9 +79,11 @@ export default class MessagesController {
     message.params.t = parseInt(currentTs);
 
     await message.save();
-    await deliverToUserOrUsers(messageParams, message);
+    await deliverToUserOrUsers(messageParams, message, getSessionUserId(ws));
 
-    return { ask: { mid: messageId, t: currentTs } };
+    return {
+      ask: { mid: messageId, server_mid: messageParams.id, t: currentTs },
+    };
   }
 
   async edit(ws, data) {
@@ -106,7 +108,7 @@ export default class MessagesController {
         from: ObjectId(getSessionUserId(ws)),
       },
     };
-    await deliverToUserOrUsers(message.params, request);
+    await deliverToUserOrUsers(message.params, request, getSessionUserId(ws));
 
     return { response: { id: requestId, success: true } };
   }

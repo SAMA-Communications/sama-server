@@ -29,7 +29,7 @@ export default class StatusController {
     const currentTs = Math.round(Date.now() / 1000);
     status.params.t = parseInt(currentTs);
 
-    await deliverToUserOrUsers(statusParams, status);
+    await deliverToUserOrUsers(statusParams, status, statusParams.from);
   }
 
   async read(ws, data) {
@@ -48,7 +48,7 @@ export default class StatusController {
     const currentTs = Math.round(Date.now() / 1000);
     status.params.t = parseInt(currentTs);
 
-    await deliverToUserOrUsers(statusParams, status);
+    await deliverToUserOrUsers(statusParams, status, statusParams.from);
   }
 
   async delivered(ws, data) {
@@ -70,6 +70,6 @@ export default class StatusController {
     const currentTs = Math.round(Date.now() / 1000);
     status.params.t = parseInt(currentTs);
 
-    await deliverToUserOrUsers(statusParams, status);
+    await deliverToUserOrUsers(statusParams, status, statusParams.from);
   }
 }
