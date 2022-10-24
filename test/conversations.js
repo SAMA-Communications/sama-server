@@ -4,6 +4,7 @@ import User from "../models/user.js";
 import assert from "assert";
 import { connectToDBPromise } from "../lib/db.js";
 import { processJsonMessageOrError } from "../routes/ws.js";
+import { getSessionUserId } from "../models/active.js";
 
 let currentUserToken = "";
 let userId = [];
@@ -52,7 +53,7 @@ describe("Conversation functions", async () => {
         "test",
         requestDataCreate
       );
-      userId[i] = JSON.parse(responseData.response.user)._id;
+      userId[i] = responseData.response.user._id;
     }
     currentUserToken = (await sendLogin("test", "user_1")).response.user._id;
   });
@@ -72,8 +73,7 @@ describe("Conversation functions", async () => {
       };
       const responseData = await processJsonMessageOrError("test", requestData);
 
-      currentConversationId =
-        responseData.response.conversation.params._id.toString();
+      currentConversationId = responseData.response.conversation._id.toString();
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.conversation, undefined);
@@ -217,11 +217,45 @@ describe("Conversation functions", async () => {
         },
       };
       const responseData = await processJsonMessageOrError("test", requestData);
-      currentConversationId =
-        responseData.response.conversation.params._id.toString();
+      currentConversationId = responseData.response.conversation._id.toString();
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.conversation, undefined);
+      assert.equal(responseData.response.error, undefined);
+    });
+
+    it("should work create conversation duplicate", async () => {
+      const requestData = {
+        request: {
+          conversation_create: {
+            name: "chat123",
+            description: "for admin and users",
+            type: "u",
+            opponent_id: userId[2],
+            participants: [userId[2]],
+          },
+          id: "1_1",
+        },
+      };
+      let responseData = await processJsonMessageOrError("test", requestData);
+      const countRecordsFirst = await Conversation.findAll(
+        {
+          name: "chat123",
+        },
+        null,
+        100
+      );
+      responseData = await processJsonMessageOrError("test", requestData);
+      const countRecordsSecond = await Conversation.findAll(
+        {
+          name: "chat123",
+        },
+        null,
+        100
+      );
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.notEqual(responseData.response.conversation, undefined);
+      assert.equal(countRecordsFirst.length, countRecordsSecond.length);
       assert.equal(responseData.response.error, undefined);
     });
 
@@ -466,8 +500,8 @@ describe("Conversation functions", async () => {
         const responseData = (
           await processJsonMessageOrError("test", requestData)
         ).response.conversation;
-        i == 0 ? (filterUpdatedAt = responseData.params.updated_at) : true;
-        ArrayOfTmpConversaionts.push(responseData.params._id.toString());
+        i == 0 ? (filterUpdatedAt = responseData.updated_at) : true;
+        ArrayOfTmpConversaionts.push(responseData._id.toString());
       }
     });
 

@@ -54,7 +54,7 @@ describe("Sending 'delivered' status", async () => {
         mockedWS,
         requestDataCreate
       );
-      userId[i] = JSON.parse(responseData.response.user)._id;
+      userId[i] = responseData.response.user._id;
     }
     currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user
       .token;
@@ -70,8 +70,7 @@ describe("Sending 'delivered' status", async () => {
       },
     };
     let responseData = await processJsonMessageOrError(mockedWS, requestData);
-    currentConversationId =
-      responseData.response.conversation.params._id.toString();
+    currentConversationId = responseData.response.conversation._id.toString();
 
     requestData = {
       message: {
