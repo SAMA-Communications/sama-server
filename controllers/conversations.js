@@ -42,10 +42,31 @@ export default class ConversationController {
         ws,
         {
           participants: participantsParams.participants,
-          recipient: conversationParams.recipient,
+          opponent_id: conversationParams.opponent_id,
         },
         [validateParticipantsInUType, validateIsUserSendHimSelf]
       );
+      const isConversationCreate = await Conversation.findOne({
+        $or: [
+          {
+            type: "u",
+            owner_id: ObjectId(getSessionUserId(ws)),
+            opponent_id: conversationParams.opponent_id,
+          },
+          {
+            type: "u",
+            owner_id: ObjectId(conversationParams.opponent_id),
+            opponent_id: getSessionUserId(ws),
+          },
+        ],
+      });
+      if (isConversationCreate)
+        return {
+          response: {
+            id: requestId,
+            conversation: isConversationCreate,
+          },
+        };
     } else if (conversationParams.type == "g") {
       await validate(ws, conversationParams, [validateConversationName]);
     }

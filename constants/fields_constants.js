@@ -15,7 +15,7 @@ export const ALLOW_FIELDS = {
     "name",
     "description",
     "type",
-    "recipient",
+    "opponent_id",
   ],
   ALLOWED_FIELDS_PARTICIPANTS_CREATE: ["participants"],
 };

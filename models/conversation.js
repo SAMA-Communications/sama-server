@@ -18,7 +18,7 @@ export default class Conversation extends BaseModel {
       "type",
       "description",
       "owner_id",
-      "recipient",
+      "opponent_id",
     ];
   }
 }

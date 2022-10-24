@@ -41,12 +41,12 @@ export default class MessagesController {
           {
             type: "u",
             owner_id: ObjectId(getSessionUserId(ws)),
-            recipient: messageParams.to.toString(),
+            opponent_id: messageParams.to.toString(),
           },
           {
             type: "u",
             owner_id: ObjectId(messageParams.to),
-            recipient: getSessionUserId(ws),
+            opponent_id: getSessionUserId(ws),
           },
         ],
       });
@@ -56,7 +56,7 @@ export default class MessagesController {
             conversation_create: {
               type: "u",
               owner_id: ObjectId(getSessionUserId(ws)),
-              recipient: messageParams.to,
+              opponent_id: messageParams.to,
               participants: [messageParams.to, ObjectId(getSessionUserId(ws))],
             },
             id: "0",
