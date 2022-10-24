@@ -7,6 +7,7 @@ import { ACTIVE, getDeviceId, getSessionUserId } from "../models/active.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { slice } from "../utils/req_res_utils.js";
+import { CONSTANTS } from "../constants/constants.js";
 
 export default class UsersController {
   async create(ws, data) {
@@ -54,12 +55,10 @@ export default class UsersController {
         device_id: userInfo.deviceId,
       });
     } else {
-      console.log(userInfo);
       token = await UserToken.findOne({
         token: userInfo.token,
         device_id: userInfo.deviceId,
       });
-      console.log("token: ", token);
       if (!token) {
         throw new Error(ERROR_STATUES.TOKEN_EXPIRED.message, {
           cause: ERROR_STATUES.TOKEN_EXPIRED,
@@ -98,9 +97,9 @@ export default class UsersController {
         expiresIn: process.env.EXPIRES_IN,
       }
     );
+
     if (!token) {
       const userToken = new UserToken({
-        _id: user.params.id,
         user_id: user.params._id,
         device_id: deviceId,
         token: jwtToken,
@@ -188,5 +187,30 @@ export default class UsersController {
         cause: ERROR_STATUES.FORBIDDEN,
       });
     }
+  }
+
+  async search(ws, data) {
+    const requestId = data.request.id;
+    const requestParam = data.request.user_search;
+
+    const limit =
+      requestParam.limit > CONSTANTS.LIMIT_MAX
+        ? CONSTANTS.LIMIT_MAX
+        : requestParam.limit || CONSTANTS.LIMIT_MAX;
+
+    const query = {
+      login: { $regex: `^(?i)${requestParam.login}*` },
+      _id: {
+        $nin: [getSessionUserId(ws), ...requestParam.ignore_ids],
+      },
+    };
+
+    const timeFromUpdate = requestParam.updated_at;
+    if (timeFromUpdate) {
+      query.updated_at = { $gt: new Date(timeFromUpdate.gt) };
+    }
+    const users = await User.findAll(query, ["_id", "login"], limit);
+
+    return { response: { id: requestId, users: users } };
   }
 }

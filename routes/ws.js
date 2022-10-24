@@ -13,6 +13,7 @@ const decoder = new StringDecoder("utf8");
 
 async function deliverToUser(userId, request) {
   const wsRecipient = ACTIVE.DEVICES[userId];
+
   if (wsRecipient) {
     wsRecipient.forEach((data) => {
       data["ws"].send(JSON.stringify({ message: request }));
@@ -73,6 +74,8 @@ async function processJsonMessage(ws, json) {
     return await new UsersController().logout(ws, json);
   } else if (json.request.user_delete) {
     return await new UsersController().delete(ws, json);
+  } else if (json.request.user_search) {
+    return await new UsersController().search(ws, json);
   } else if (json.request.conversation_create) {
     return await new ConversationController().create(ws, json);
   } else if (json.request.conversation_delete) {
@@ -140,11 +143,8 @@ export default function routes(app, wsOptions) {
 
     message: async (ws, message, isBinary) => {
       const json = JSON.parse(decoder.write(Buffer.from(message)));
-      // console.log("==============================");
 
-      // console.log(json);
       const responseData = await processJsonMessageOrError(ws, json);
-      // console.log(responseData);
       ws.send(JSON.stringify(responseData));
     },
   });
