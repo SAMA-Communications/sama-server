@@ -64,7 +64,7 @@ export default class ConversationController {
         return {
           response: {
             id: requestId,
-            conversation: isConversationCreate,
+            conversation: isConversationCreate.visibleParams(),
           },
         };
     } else if (conversationParams.type == "g") {
@@ -109,7 +109,7 @@ export default class ConversationController {
     return {
       response: {
         id: requestId,
-        conversation: conversationObj,
+        conversation: conversationObj.visibleParams(),
       },
     };
   }
