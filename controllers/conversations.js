@@ -46,7 +46,7 @@ export default class ConversationController {
         },
         [validateParticipantsInUType, validateIsUserSendHimSelf]
       );
-      const isConversationCreate = await Conversation.findOne({
+      const existingConversation = await Conversation.findOne({
         $or: [
           {
             type: "u",
@@ -60,11 +60,11 @@ export default class ConversationController {
           },
         ],
       });
-      if (isConversationCreate)
+      if (existingConversation)
         return {
           response: {
             id: requestId,
-            conversation: isConversationCreate.visibleParams(),
+            conversation: existingConversation.visibleParams(),
           },
         };
     } else if (conversationParams.type == "g") {
