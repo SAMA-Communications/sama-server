@@ -1,6 +1,5 @@
 export const ALLOW_FIELDS = {
   ALLOWED_FILEDS_MESSAGE: [
-    "id",
     "t",
     "to",
     "from",
