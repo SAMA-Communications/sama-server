@@ -42,10 +42,31 @@ export default class ConversationController {
         ws,
         {
           participants: participantsParams.participants,
-          recipient: conversationParams.recipient,
+          opponent_id: conversationParams.opponent_id,
         },
         [validateParticipantsInUType, validateIsUserSendHimSelf]
       );
+      const existingConversation = await Conversation.findOne({
+        $or: [
+          {
+            type: "u",
+            owner_id: ObjectId(getSessionUserId(ws)),
+            opponent_id: conversationParams.opponent_id,
+          },
+          {
+            type: "u",
+            owner_id: ObjectId(conversationParams.opponent_id),
+            opponent_id: getSessionUserId(ws),
+          },
+        ],
+      });
+      if (existingConversation)
+        return {
+          response: {
+            id: requestId,
+            conversation: existingConversation.visibleParams(),
+          },
+        };
     } else if (conversationParams.type == "g") {
       await validate(ws, conversationParams, [validateConversationName]);
     }
@@ -88,7 +109,7 @@ export default class ConversationController {
     return {
       response: {
         id: requestId,
-        conversation: conversationObj,
+        conversation: conversationObj.visibleParams(),
       },
     };
   }

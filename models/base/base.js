@@ -47,7 +47,7 @@ export default class BaseModel {
           query._id.$nin[i] = new ObjectId(query._id.$nin[i]);
         }
       }
-      if (query.user_id) {
+      if (query.user_id && !query.user_id.$ne) {
         query.user_id = new ObjectId(query.user_id);
       }
       if (query.conversation_id) {
@@ -57,6 +57,7 @@ export default class BaseModel {
       await getDb()
         .collection(this.collection)
         .find(query, { limit: limit })
+        .sort({ $natural: -1 })
         .forEach((el) => {
           let obj = {};
           if (!returnParam) {

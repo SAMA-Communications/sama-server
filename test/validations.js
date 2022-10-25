@@ -84,7 +84,7 @@ describe("Validate functions", async () => {
         "validate",
         requestDataCreate
       );
-      userId[i] = JSON.parse(responseData.response.user)._id;
+      userId[i] = responseData.response.user._id;
     }
   });
 
@@ -361,8 +361,7 @@ describe("Validate functions", async () => {
         "validate",
         requestData
       );
-      currentConversationId =
-        responseData.response.conversation.params._id.toString();
+      currentConversationId = responseData.response.conversation._id.toString();
     });
 
     after(async () => {
@@ -439,7 +438,7 @@ describe("Validate functions", async () => {
     it("should work", async () => {
       const requestData = {
         participants: [userId[0], userId[1]],
-        recipient: userId[1],
+        opponent_id: userId[1],
       };
       assert.strictEqual(
         await validateParticipantsInUType(requestData),
@@ -450,7 +449,7 @@ describe("Validate functions", async () => {
     it("should fail #1", async () => {
       const requestData = {
         participants: [userId[0], userId[1], "id3", "id4"],
-        recipient: userId[1],
+        opponent_id: userId[1],
       };
       await assertThrowsAsync(
         async () => {
@@ -477,8 +476,8 @@ describe("Validate functions", async () => {
         },
         {
           name: "Error",
-          message: "Recipient not found",
-          cause: { status: 422, message: "Recipient not found" },
+          message: "Opponent Id not found",
+          cause: { status: 422, message: "Opponent Id not found" },
         }
       );
     });
@@ -504,8 +503,7 @@ describe("Validate functions", async () => {
         requestData
       );
 
-      currentConversationId =
-        responseData.response.conversation.params._id.toString();
+      currentConversationId = responseData.response.conversation._id.toString();
     });
 
     it("should work", async () => {
@@ -579,15 +577,14 @@ describe("Validate functions", async () => {
 
   describe(" --> validateIsConversationByTO", async () => {
     before(async () => {
-      currentUserToken = (await sendLogin("validate", "user_1")).response.user
-        .token;
+      currentUserToken = (await sendLogin("validate", "user_1")).response.token;
       let requestData = {
         request: {
           conversation_create: {
             description: "for admin and user",
             type: "u",
+            opponent_id: userId[1],
             participants: [userId[0], userId[1]],
-            recipient: userId[1],
           },
           id: "1_5",
         },
@@ -633,10 +630,9 @@ describe("Validate functions", async () => {
 
   describe(" --> validateIsUserSendHimSelf", async () => {
     it("should work", async () => {
-      currentUserToken = (await sendLogin("validate", "user_1")).response.user
-        .token;
+      currentUserToken = (await sendLogin("validate", "user_1")).response.token;
       const requestData = {
-        recipient: userId[1],
+        opponent_id: userId[1],
       };
       assert.strictEqual(
         await validateIsUserSendHimSelf(requestData, "validate"),
@@ -646,7 +642,7 @@ describe("Validate functions", async () => {
 
     it("should fail #1", async () => {
       const requestData = {
-        recipient: userId[0],
+        opponent_id: userId[0],
       };
       await assertThrowsAsync(
         async () => {
@@ -763,8 +759,7 @@ describe("Validate functions", async () => {
         "validate",
         requestData
       );
-      currentConversationId =
-        responseData.response.conversation.params._id.toString();
+      currentConversationId = responseData.response.conversation._id.toString();
       requestData = {
         message: {
           id: "xyz",

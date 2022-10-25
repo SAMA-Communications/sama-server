@@ -57,7 +57,7 @@ describe("Message function", async () => {
         mockedWS,
         requestDataCreate
       );
-      userId[i] = JSON.parse(responseData.response.user)._id;
+      userId[i] = responseData.response.user._id;
     }
     // console.log("UserId: ", userId);
     await sendLogin(mockedWS, "um_2");
@@ -75,8 +75,7 @@ describe("Message function", async () => {
       },
     };
     const responseData = await processJsonMessageOrError(mockedWS, requestData);
-    currentConversationId =
-      responseData.response.conversation.params._id.toString();
+    currentConversationId = responseData.response.conversation._id.toString();
   });
 
   describe("Send Message", async () => {
@@ -305,7 +304,7 @@ describe("Message function", async () => {
           const findMessage = await Messages.findOne({
             id: responseData.ask.mid,
           });
-          filterUpdatedAt = findMessage.params.updated_at;
+          filterUpdatedAt = findMessage.updated_at;
         }
       }
     });
@@ -334,7 +333,7 @@ describe("Message function", async () => {
     });
 
     it("should work with date parametr", async () => {
-      const numberOf = 4;
+      const numberOf = 9;
       const requestData = {
         request: {
           message_list: {

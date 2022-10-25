@@ -49,7 +49,7 @@ describe("Carbons", async () => {
         "create",
         requestData
       );
-      userId[i] = JSON.parse(responseData.response.user)._id;
+      userId[i] = responseData.response.user._id;
     }
   });
 

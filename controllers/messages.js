@@ -41,12 +41,12 @@ export default class MessagesController {
           {
             type: "u",
             owner_id: ObjectId(getSessionUserId(ws)),
-            recipient: messageParams.to.toString(),
+            opponent_id: messageParams.to.toString(),
           },
           {
             type: "u",
             owner_id: ObjectId(messageParams.to),
-            recipient: getSessionUserId(ws),
+            opponent_id: getSessionUserId(ws),
           },
         ],
       });
@@ -56,7 +56,7 @@ export default class MessagesController {
             conversation_create: {
               type: "u",
               owner_id: ObjectId(getSessionUserId(ws)),
-              recipient: messageParams.to,
+              opponent_id: messageParams.to,
               participants: [messageParams.to, ObjectId(getSessionUserId(ws))],
             },
             id: "0",
@@ -79,9 +79,11 @@ export default class MessagesController {
     message.params.t = parseInt(currentTs);
 
     await message.save();
-    await deliverToUserOrUsers(messageParams, message);
+    await deliverToUserOrUsers(messageParams, message, getSessionUserId(ws));
 
-    return { ask: { mid: messageId, t: currentTs } };
+    return {
+      ask: { mid: messageId, server_mid: messageParams.id, t: currentTs },
+    };
   }
 
   async edit(ws, data) {
@@ -106,7 +108,7 @@ export default class MessagesController {
         from: ObjectId(getSessionUserId(ws)),
       },
     };
-    await deliverToUserOrUsers(message.params, request);
+    await deliverToUserOrUsers(message.params, request, getSessionUserId(ws));
 
     return { response: { id: requestId, success: true } };
   }

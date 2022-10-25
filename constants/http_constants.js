@@ -37,7 +37,7 @@ export const ERROR_STATUES = {
     status: 422,
     message: "Max participants limit reached",
   },
-  RECIPIENT_NOT_FOUND: { status: 422, message: "Recipient not found" },
+  OPPONENT_NOT_FOUND: { status: 422, message: "Opponent Id not found" },
   // Message -->
   MESSAGE_PARTICIPANT_NOT_FOUND: {
     status: 403,
