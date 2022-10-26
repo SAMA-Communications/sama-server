@@ -10,6 +10,6 @@ export default class Messages extends BaseModel {
   }
 
   static get visibleFields() {
-    return ["id", "t", "to", "from", "body", "cid", "x", "deleted_for"];
+    return ["_id", "t", "to", "from", "body", "cid", "x"];
   }
 }

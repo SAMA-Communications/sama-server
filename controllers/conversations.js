@@ -274,4 +274,27 @@ export default class ConversationController {
     }
     return { response: { id: requestId, success: true } };
   }
+
+  async getParticioantsByCid(ws, data) {
+    const requestId = data.request.id;
+
+    let query = {
+      conversation_id: data.request.getParticioantsByCid.cid,
+    };
+    const participantIds = await ConversationParticipant.findAll(
+      query,
+      ["user_id"],
+      null
+    );
+
+    let ids = [];
+    for (const id in participantIds) ids.push(participantIds[id].user_id);
+
+    query = {
+      _id: { $in: ids },
+    };
+    const usersLogin = await User.findAll(query, ["_id", "login"], null);
+
+    return { response: { id: requestId, users: usersLogin } };
+  }
 }

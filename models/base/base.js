@@ -56,7 +56,7 @@ export default class BaseModel {
       const arr = new Set();
       await getDb()
         .collection(this.collection)
-        .find(query, { limit: limit })
+        .find(query, { limit: limit || 100})
         .sort({ $natural: -1 })
         .forEach((el) => {
           let obj = {};

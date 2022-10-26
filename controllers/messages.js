@@ -127,9 +127,10 @@ export default class MessagesController {
     if (timeFromUpdate) {
       query.updated_at = { $gt: new Date(timeFromUpdate.gt) };
     }
+
     const messages = await Messages.findAll(
       query,
-      ["_id", "body", "from", "cid", "x", "t"],
+      Messages.visibleFields,
       limit
     );
 
