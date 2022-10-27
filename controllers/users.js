@@ -206,7 +206,7 @@ export default class UsersController {
     };
 
     const timeFromUpdate = requestParam.updated_at;
-    if (timeFromUpdate) {
+    if (timeFromUpdate && timeFromUpdate.gt) {
       query.updated_at = { $gt: new Date(timeFromUpdate.gt) };
     }
     const users = await User.findAll(query, ["_id", "login"], limit);

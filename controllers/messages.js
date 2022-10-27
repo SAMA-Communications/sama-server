@@ -124,7 +124,7 @@ export default class MessagesController {
       cid: cid,
     };
     const timeFromUpdate = data.request.message_list.updated_at;
-    if (timeFromUpdate) {
+    if (timeFromUpdate && timeFromUpdate.gt) {
       query.updated_at = { $gt: new Date(timeFromUpdate.gt) };
     }
 
@@ -158,7 +158,7 @@ export default class MessagesController {
         {
           conversation_id: conversationId,
         },
-        "user_id",
+        ["user_id"],
         100
       );
       for (const user in participants) {

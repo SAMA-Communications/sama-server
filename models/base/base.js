@@ -37,7 +37,7 @@ export default class BaseModel {
     }
   }
 
-  static async findAll(query, returnParam, limit) {
+  static async findAll(query, returnParams, limit) {
     try {
       if (query.cid) {
         query.cid = new ObjectId(query.cid);
@@ -53,25 +53,17 @@ export default class BaseModel {
       if (query.conversation_id) {
         query.conversation_id = new ObjectId(query.conversation_id);
       }
-      const arr = new Set();
-      await getDb()
+
+      const projection = returnParams?.reduce((acc, p) => {
+        return { ...acc, [p]: 1 };
+      }, {});
+
+      return await getDb()
         .collection(this.collection)
-        .find(query, { limit: limit || 100})
+        .find(query, { limit: limit || 100 })
+        .project(projection)
         .sort({ $natural: -1 })
-        .forEach((el) => {
-          let obj = {};
-          if (!returnParam) {
-            obj = el;
-          } else if (!Array.isArray(returnParam)) {
-            obj = el[returnParam];
-          } else {
-            returnParam.forEach((key) => {
-              obj[key] = el[key];
-            });
-          }
-          arr.add(obj);
-        });
-      return Array.from(arr);
+        .toArray();
     } catch (e) {
       return null;
     }

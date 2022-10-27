@@ -211,20 +211,20 @@ export default class ConversationController {
       data.request.conversation_list.limit > CONSTANTS.LIMIT_MAX
         ? CONSTANTS.LIMIT_MAX
         : data.request.conversation_list.limit || CONSTANTS.LIMIT_MAX;
-    const userConversationsId = await ConversationParticipant.findAll(
+    const userConversationsIds = await ConversationParticipant.findAll(
       {
         user_id: currentUser,
       },
-      "conversation_id"
+      ["conversation_id"]
     );
 
     const query = {
       _id: {
-        $in: userConversationsId,
+        $in: userConversationsIds.map((p) => p.conversation_id),
       },
     };
     const timeFromUpdate = data.request.conversation_list.updated_at;
-    if (timeFromUpdate) {
+    if (timeFromUpdate && timeFromUpdate.gt) {
       query.updated_at = { $gt: new Date(timeFromUpdate.gt) };
     }
     const userConversations = await Conversation.findAll(query, null, limit);
@@ -275,26 +275,31 @@ export default class ConversationController {
     return { response: { id: requestId, success: true } };
   }
 
-  async getParticioantsByCid(ws, data) {
+  async getParticipantsByCids(ws, data) {
     const requestId = data.request.id;
+    const cids = data.request.getParticipantsByCids.cids;
 
-    let query = {
-      conversation_id: data.request.getParticioantsByCid.cid,
+    let participants = {};
+    for (const i in cids) {
+      const participantIds = await ConversationParticipant.findAll(
+        { conversation_id: cids[i] },
+        ["user_id"],
+        null
+      );
+      let ids = [];
+      for (const id in participantIds) ids.push(participantIds[id].user_id);
+
+      const usersLogin = await User.findAll(
+        {
+          _id: { $in: ids },
+        },
+        ["_id", "login"],
+        null
+      );
+      participants[cids[i]] = usersLogin;
+    }
+    return {
+      response: { id: requestId, participants },
     };
-    const participantIds = await ConversationParticipant.findAll(
-      query,
-      ["user_id"],
-      null
-    );
-
-    let ids = [];
-    for (const id in participantIds) ids.push(participantIds[id].user_id);
-
-    query = {
-      _id: { $in: ids },
-    };
-    const usersLogin = await User.findAll(query, ["_id", "login"], null);
-
-    return { response: { id: requestId, users: usersLogin } };
   }
 }
