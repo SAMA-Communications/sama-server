@@ -279,27 +279,23 @@ export default class ConversationController {
     const requestId = data.request.id;
     const cids = data.request.getParticipantsByCids.cids;
 
-    let participants = {};
-    for (const i in cids) {
-      const participantIds = await ConversationParticipant.findAll(
-        { conversation_id: cids[i] },
-        ["user_id"],
-        null
-      );
-      let ids = [];
-      for (const id in participantIds) ids.push(participantIds[id].user_id);
+    const participantIds = await ConversationParticipant.findAll(
+      { conversation_id: { $in: cids } },
+      ["user_id"],
+      null
+    );
 
-      const usersLogin = await User.findAll(
-        {
-          _id: { $in: ids },
-        },
-        ["_id", "login"],
-        null
-      );
-      participants[cids[i]] = usersLogin;
-    }
+    const ids = participantIds.map((p) => p.user_id);
+    const usersLogin = await User.findAll(
+      {
+        _id: { $in: ids },
+      },
+      ["_id", "login"],
+      null
+    );
+
     return {
-      response: { id: requestId, participants },
+      response: { id: requestId, users: usersLogin },
     };
   }
 }

@@ -51,7 +51,12 @@ export default class BaseModel {
         query.user_id = new ObjectId(query.user_id);
       }
       if (query.conversation_id) {
-        query.conversation_id = new ObjectId(query.conversation_id);
+        if (query.conversation_id.$in) {
+          for (let i = 0; i < query.conversation_id.$in.length; i++)
+            query.conversation_id.$in[i] = new ObjectId(
+              query.conversation_id.$in[i]
+            );
+        } else query.conversation_id = new ObjectId(query.conversation_id);
       }
 
       const projection = returnParams?.reduce((acc, p) => {
