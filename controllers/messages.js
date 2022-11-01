@@ -25,13 +25,10 @@ export default class MessagesController {
       data.message,
       ALLOW_FIELDS.ALLOWED_FILEDS_MESSAGE
     );
+    await validate(ws, messageParams, [validateMessageBody, validateTOorCID]);
 
-    await validate(ws, messageParams, [
-      validateMessageId,
-      validateMessageBody,
-      validateTOorCID,
-    ]);
     const messageId = data.message.id;
+    await validate(ws, { id: messageId }, [validateMessageId]);
 
     if (messageParams.cid) {
       await validate(ws, messageParams, [validateIsConversationByCID]);
@@ -82,7 +79,7 @@ export default class MessagesController {
     await deliverToUserOrUsers(messageParams, message, getSessionUserId(ws));
 
     return {
-      ask: { mid: messageId, server_mid: messageParams.id, t: currentTs },
+      ask: { mid: messageId, server_mid: message.params._id, t: currentTs },
     };
   }
 
@@ -127,10 +124,15 @@ export default class MessagesController {
       cid: cid,
     };
     const timeFromUpdate = data.request.message_list.updated_at;
-    if (timeFromUpdate) {
+    if (timeFromUpdate && timeFromUpdate.gt) {
       query.updated_at = { $gt: new Date(timeFromUpdate.gt) };
     }
-    const messages = await Messages.findAll(query, null, limit);
+
+    const messages = await Messages.findAll(
+      query,
+      Messages.visibleFields,
+      limit
+    );
 
     return {
       response: {
@@ -156,7 +158,7 @@ export default class MessagesController {
         {
           conversation_id: conversationId,
         },
-        "user_id",
+        ["user_id"],
         100
       );
       for (const user in participants) {

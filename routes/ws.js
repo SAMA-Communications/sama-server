@@ -25,15 +25,13 @@ async function deliverToUser(userId, request) {
 }
 
 async function deliverToUserOrUsers(dParams, message, currentUserId) {
-  if (dParams.to) {
-    await deliverToUser(ObjectId(dParams.to), message);
-  } else if (dParams.cid) {
+  if (dParams.cid) {
     const participants = await ConversationParticipant.findAll(
       {
         conversation_id: dParams.cid,
         user_id: { $ne: ObjectId(currentUserId) },
       },
-      "user_id",
+      ["user_id"],
       100
     );
     participants.forEach(async (userId) => {
@@ -77,6 +75,8 @@ async function processJsonMessage(ws, json) {
     return await new UsersController().delete(ws, json);
   } else if (json.request.user_search) {
     return await new UsersController().search(ws, json);
+  } else if (json.request.getParticipantsByCids) {
+    return await new ConversationController().getParticipantsByCids(ws, json);
   } else if (json.request.conversation_create) {
     return await new ConversationController().create(ws, json);
   } else if (json.request.conversation_delete) {
