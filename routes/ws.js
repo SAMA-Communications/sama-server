@@ -25,15 +25,13 @@ async function deliverToUser(userId, request) {
 }
 
 async function deliverToUserOrUsers(dParams, message, currentUserId) {
-  if (dParams.to) {
-    await deliverToUser(ObjectId(dParams.to), message);
-  } else if (dParams.cid) {
+  if (dParams.cid) {
     const participants = await ConversationParticipant.findAll(
       {
         conversation_id: dParams.cid,
         user_id: { $ne: ObjectId(currentUserId) },
       },
-      "user_id",
+      ["user_id"],
       100
     );
     participants.forEach(async (userId) => {
