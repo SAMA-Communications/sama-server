@@ -222,6 +222,7 @@ export default class ConversationController {
       _id: {
         $in: userConversationsIds.map((p) => p.conversation_id),
       },
+      deleted_for: { $ne: getSessionUserId(ws) },
     };
     const timeFromUpdate = data.request.conversation_list.updated_at;
     if (timeFromUpdate && timeFromUpdate.gt) {
@@ -246,32 +247,53 @@ export default class ConversationController {
       _id: conversationId,
     });
 
-    const conversationParticipant = await ConversationParticipant.findOne({
-      user_id: getSessionUserId(ws),
-      conversation_id: conversationId,
-    });
-    if (!conversationParticipant) {
-      return {
-        response: {
-          id: requestId,
-          error: ERROR_STATUES.PARTICIPANT_NOT_FOUND,
-        },
-      };
-    }
-    await conversationParticipant.delete();
-    const isUserInConvesation = await ConversationParticipant.findOne({
-      conversation_id: conversationId,
-    });
-    if (!isUserInConvesation) {
-      await conversation.delete();
-    } else if (
-      conversation.params.owner_id.toString() === getSessionUserId(ws)
-    ) {
-      Conversation.updateOne(
+    if (conversation.params.type === "u") {
+      await Conversation.updateOne(
         { _id: conversationId },
-        { $set: { owner_id: isUserInConvesation.params.user_id } }
+        { $set: { deleted_for: getSessionUserId(ws) } }
       );
+      if (conversation.params.deleted_for) {
+        await conversation.delete();
+        const conversationParticipants = await ConversationParticipant.findAll(
+          {
+            conversation_id: conversationId,
+          },
+          ["user_id"]
+        );
+        await ConversationParticipant.deleteMany({
+          user_id: { $in: conversationParticipants.map((el) => el.user_id) },
+          conversation_id: ObjectId(conversationId),
+        });
+      }
+    } else {
+      const conversationParticipant = await ConversationParticipant.findOne({
+        user_id: getSessionUserId(ws),
+        conversation_id: conversationId,
+      });
+      if (!conversationParticipant) {
+        return {
+          response: {
+            id: requestId,
+            error: ERROR_STATUES.PARTICIPANT_NOT_FOUND,
+          },
+        };
+      }
+      await conversationParticipant.delete();
+      const isUserInConvesation = await ConversationParticipant.findOne({
+        conversation_id: conversationId,
+      });
+      if (!isUserInConvesation) {
+        await conversation.delete();
+      } else if (
+        conversation.params.owner_id.toString() === getSessionUserId(ws)
+      ) {
+        Conversation.updateOne(
+          { _id: conversationId },
+          { $set: { owner_id: isUserInConvesation.params.user_id } }
+        );
+      }
     }
+
     return { response: { id: requestId, success: true } };
   }
 
