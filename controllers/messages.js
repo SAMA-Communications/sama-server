@@ -172,7 +172,7 @@ export default class MessagesController {
         };
         await deliverToUser(user, request);
       }
-      await Messages.deleteMany({ id: { $in: messagesIds } });
+      await Messages.deleteMany({ _id: { $in: messagesIds } });
     } else {
       await Messages.updateMany(
         { id: { $in: messagesIds } },
