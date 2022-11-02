@@ -248,10 +248,6 @@ export default class ConversationController {
     });
 
     if (conversation.params.type === "u") {
-      await Conversation.updateOne(
-        { _id: conversationId },
-        { $set: { deleted_for: getSessionUserId(ws) } }
-      );
       if (conversation.params.deleted_for) {
         await conversation.delete();
         const conversationParticipants = await ConversationParticipant.findAll(
@@ -264,6 +260,11 @@ export default class ConversationController {
           user_id: { $in: conversationParticipants.map((el) => el.user_id) },
           conversation_id: ObjectId(conversationId),
         });
+      } else {
+        await Conversation.updateOne(
+          { _id: conversationId },
+          { $set: { deleted_for: getSessionUserId(ws) } }
+        );
       }
     } else {
       const conversationParticipant = await ConversationParticipant.findOne({
