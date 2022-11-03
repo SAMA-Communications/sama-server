@@ -66,7 +66,6 @@ export default class BaseModel {
         .collection(this.collection)
         .find(query, { limit: limit || 100 })
         .project(projection)
-        .sort({ $natural: -1 })
         .toArray();
     } catch (e) {
       return null;
