@@ -76,7 +76,11 @@ export default class MessagesController {
     message.params.t = parseInt(currentTs);
 
     await message.save();
-    await deliverToUserOrUsers(messageParams, message, getSessionUserId(ws));
+    await deliverToUserOrUsers(
+      messageParams,
+      message.visibleParams(),
+      getSessionUserId(ws)
+    );
 
     return {
       ask: { mid: messageId, server_mid: message.params._id, t: currentTs },
