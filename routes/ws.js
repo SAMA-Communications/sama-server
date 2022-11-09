@@ -34,8 +34,8 @@ async function deliverToUserOrUsers(dParams, message, currentUserId) {
       ["user_id"],
       100
     );
-    participants.forEach(async (userId) => {
-      await deliverToUser(userId.user_id, message);
+    participants.forEach(async (participants) => {
+      await deliverToUser(participants.user_id, message);
     });
   }
 }
