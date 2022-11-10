@@ -16,7 +16,7 @@ export default class ConversationParticipant extends BaseModel {
       "updated_at",
       "conversation_id",
       "user_id",
-      "unread_messages",
+      // "unread_messages",
     ];
   }
 }
