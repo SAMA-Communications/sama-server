@@ -102,7 +102,7 @@ export default class ConversationController {
       const participant = new ConversationParticipant({
         user_id: userId,
         conversation_id: conversationObj.params._id,
-        unread_messages: 0,
+        // unread_messages: 0,
       });
       await participant.save();
     }

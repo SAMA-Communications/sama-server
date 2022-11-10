@@ -37,10 +37,10 @@ async function deliverToUserOrUsers(dParams, message, currentUserId) {
     participants.forEach(async (participants) => {
       await deliverToUser(participants.user_id, message);
     });
-    await ConversationParticipant.updateMany(
-      { _id: { $in: participants.map((obj) => obj._id) } },
-      { $inc: { unread_messages: 1 } }
-    );
+    // await ConversationParticipant.updateMany(
+    //   { _id: { $in: participants.map((obj) => obj._id) } },
+    //   { $inc: { unread_messages: 1 } }
+    // );
   }
 }
 
