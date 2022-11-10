@@ -37,6 +37,10 @@ async function deliverToUserOrUsers(dParams, message, currentUserId) {
     participants.forEach(async (participants) => {
       await deliverToUser(participants.user_id, message);
     });
+    await ConversationParticipant.updateMany(
+      { _id: { $in: participants.map((obj) => obj._id) } },
+      { $inc: { unread_messages: 1 } }
+    );
   }
 }
 
@@ -77,6 +81,13 @@ async function processJsonMessage(ws, json) {
     return await new UsersController().search(ws, json);
   } else if (json.request.getParticipantsByCids) {
     return await new ConversationController().getParticipantsByCids(ws, json);
+  } else if (json.request.getCountOfUnreadMessages) {
+    return await new ConversationController().getCountOfUnreadMessages(
+      ws,
+      json
+    );
+  } else if (json.request.clearIndicatorByCid) {
+    return await new ConversationController().clearIndicatorByCid(ws, json);
   } else if (json.request.conversation_create) {
     return await new ConversationController().create(ws, json);
   } else if (json.request.conversation_delete) {
