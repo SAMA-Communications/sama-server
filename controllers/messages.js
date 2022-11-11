@@ -84,7 +84,7 @@ export default class MessagesController {
 
     await Conversation.updateOne(
       { _id: messageParams.cid },
-      { $set: { updated_at: new Date(Date.now()) } }
+      { $set: { updated_at: new Date(currentTs).toISOString() } }
     );
     return {
       ask: { mid: messageId, server_mid: message.params._id, t: currentTs },
