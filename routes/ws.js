@@ -4,19 +4,20 @@ import MessagesController from "../controllers/messages.js";
 import OfflineQueue from "../models/offline_queue.js";
 import StatusController from "../controllers/status.js";
 import UsersController from "../controllers/users.js";
-import { ACTIVE, getSessionUserId } from "../models/active.js";
+import { ACTIVE, getSessionUserId, getDeviceId } from "../models/active.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
-import { ObjectId } from "mongodb";
 import { StringDecoder } from "string_decoder";
 
 const decoder = new StringDecoder("utf8");
 
-async function deliverToUser(userId, request) {
+async function deliverToUser(currentWS, userId, request) {
   const wsRecipient = ACTIVE.DEVICES[userId];
 
   if (wsRecipient) {
     wsRecipient.forEach((data) => {
-      data["ws"].send(JSON.stringify({ message: request }));
+      if (data.ws !== currentWS) {
+        data.ws.send(JSON.stringify({ message: request }));
+      }
     });
   } else {
     request = new OfflineQueue({ user_id: userId, request: request });
@@ -24,18 +25,17 @@ async function deliverToUser(userId, request) {
   }
 }
 
-async function deliverToUserOrUsers(dParams, message, currentUserId) {
+async function deliverToUserOrUsers(dParams, message, currentWS) {
   if (dParams.cid) {
     const participants = await ConversationParticipant.findAll(
       {
         conversation_id: dParams.cid,
-        user_id: { $ne: ObjectId(currentUserId) },
       },
       ["user_id"],
       100
     );
     participants.forEach(async (participants) => {
-      await deliverToUser(participants.user_id, message);
+      await deliverToUser(currentWS, participants.user_id, message);
     });
     // await ConversationParticipant.updateMany(
     //   { _id: { $in: participants.map((obj) => obj._id) } },

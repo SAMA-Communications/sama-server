@@ -76,15 +76,11 @@ export default class MessagesController {
     message.params.t = parseInt(currentTs);
 
     await message.save();
-    await deliverToUserOrUsers(
-      messageParams,
-      message.visibleParams(),
-      getSessionUserId(ws)
-    );
+    await deliverToUserOrUsers(messageParams, message.visibleParams(), ws);
 
     await Conversation.updateOne(
       { _id: messageParams.cid },
-      { $set: { updated_at: new Date(currentTs).toISOString() } }
+      { $set: { updated_at: new Date(Date.now()).toISOString() } }
     );
     return {
       ask: { mid: messageId, server_mid: message.params._id, t: currentTs },
