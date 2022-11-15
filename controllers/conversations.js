@@ -1,5 +1,6 @@
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
+import MessagesController from "./messages.js";
 import User from "../models/user.js";
 import validate, {
   validateConversationisUserOwner,
@@ -230,7 +231,14 @@ export default class ConversationController {
       query.updated_at = { $gt: new Date(timeFromUpdate.gt) };
     }
     const userConversations = await Conversation.findAll(query, null, limit);
-
+    const lastMessagesArrayByCid =
+      await MessagesController.getLastMessageForConversation(
+        userConversationsIds,
+        currentUser
+      );
+    userConversations.forEach((obj) => {
+      obj["last_message"] = lastMessagesArrayByCid[obj._id];
+    });
     return {
       response: {
         id: requestId,
