@@ -1,6 +1,6 @@
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
-import MessagesController from "./messages.js";
+import Messages from "../models/message.js";
 import User from "../models/user.js";
 import validate, {
   validateConversationisUserOwner,
@@ -231,14 +231,25 @@ export default class ConversationController {
       query.updated_at = { $gt: new Date(timeFromUpdate.gt) };
     }
     const userConversations = await Conversation.findAll(query, null, limit);
-    const lastMessagesArrayByCid =
-      await MessagesController.getLastMessageForConversation(
-        userConversationsIds,
-        currentUser
+    const lastMessagesListByCid = await Messages.getLastMessageForConversation(
+      userConversationsIds.map((el) => el.conversation_id),
+      currentUser
+    );
+
+    userConversations.forEach((conv) => {
+      let lastMessage = lastMessagesListByCid.find(
+        (obj) => obj._id.toString() === conv._id.toString()
       );
-    userConversations.forEach((obj) => {
-      obj["last_message"] = lastMessagesArrayByCid[obj._id];
+      if (lastMessage) {
+        lastMessage = lastMessage["lastMessage"];
+        lastMessage["status"] = "sent";
+        delete lastMessage["cid"];
+      } else {
+        lastMessage = { t: Math.round(Date.parse(conv.updated_at) / 1000) };
+      }
+      conv["last_message"] = lastMessage;
     });
+
     return {
       response: {
         id: requestId,

@@ -195,32 +195,4 @@ export default class MessagesController {
       },
     };
   }
-
-  static async getLastMessageForConversation(cid, uId) {
-    const $match = {
-      cid: { $in: cid.map((el) => el.conversation_id) },
-      // deleted_for: { $nin: [uId] },
-    };
-
-    const $sort = { t: -1 };
-    const $group = {
-      _id: "$cid", // group by 'cid' field
-      lastMessage: { $first: "$$ROOT" },
-    };
-    const $project = { _id: 1, body: 1, from: 1, t: 1, cid: 1 };
-    const aggregatedResult = await Messages.aggregate([
-      { $match },
-      { $project },
-      { $sort },
-      { $group },
-    ]);
-
-    const result = {};
-    aggregatedResult.forEach((data) => {
-      result[data["_id"]] = data["lastMessage"];
-      result[data["_id"]]["status"] = "sent";
-      delete result[data["_id"]].cid;
-    });
-    return result;
-  }
 }
