@@ -67,6 +67,8 @@ async function processJsonMessage(ws, json) {
     return await new MessagesController().edit(ws, json);
   } else if (json.request.message_list) {
     return await new MessagesController().list(ws, json);
+  } else if (json.request.message_read) {
+    return await new MessagesController().read(ws, json);
   } else if (json.request.message_delete) {
     return await new MessagesController().delete(ws, json);
   } else if (json.request.user_create) {

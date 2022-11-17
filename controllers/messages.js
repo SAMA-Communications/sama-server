@@ -146,6 +146,18 @@ export default class MessagesController {
     };
   }
 
+  async read(ws, data) {
+    const requestId = data.request.id;
+    const cid = data.request.mewssage_read.cid;
+    const mIds = data.request.mewssage_read.ids;
+    return {
+      response: {
+        id: requestId,
+        success: true,
+      },
+    };
+  }
+
   async delete(ws, data) {
     const requestId = data.request.id;
     const requestType = data.request.message_delete.type;

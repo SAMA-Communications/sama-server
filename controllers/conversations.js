@@ -341,37 +341,4 @@ export default class ConversationController {
       response: { id: requestId, users: usersLogin },
     };
   }
-
-  // async getCountOfUnreadMessages(ws, data) {
-  //   const requestId = data.request.id;
-  //   const user_id = data.request.getCountOfUnreadMessages.user_id;
-
-  //   const array = await ConversationParticipant.findAll(
-  //     {
-  //       user_id: user_id,
-  //     },
-  //     ["conversation_id", "unread_messages"]
-  //   );
-
-  //   return {
-  //     response: { id: requestId, indicators: array },
-  //   };
-  // }
-
-  // async clearIndicatorByCid(ws, data) {
-  //   const requestId = data.request.id;
-  //   const request = data.request.clearIndicatorByCid;
-
-  //   await ConversationParticipant.updateOne(
-  //     {
-  //       user_id: ObjectId(request.user_id),
-  //       conversation_id: ObjectId(request.cid),
-  //     },
-  //     { $set: { unread_messages: 0 } }
-  //   );
-
-  //   return {
-  //     response: { id: requestId, success: "success" },
-  //   };
-  // }
 }
