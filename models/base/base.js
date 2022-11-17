@@ -152,6 +152,17 @@ export default class BaseModel {
     }
   }
 
+  static async aggregate(query) {
+    try {
+      return await getDb()
+        .collection(this.collection)
+        .aggregate(query)
+        .toArray();
+    } catch (e) {
+      return null;
+    }
+  }
+
   async delete() {
     await getDb()
       .collection(this.constructor.collection)
