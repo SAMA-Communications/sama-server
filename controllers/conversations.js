@@ -257,23 +257,28 @@ export default class ConversationController {
         lastMessage = { t: Math.round(Date.parse(conv.updated_at) / 1000) };
       }
       conv["last_message"] = lastMessage;
-      const lastMessageRead = await MessageStatus.findOne({
-        cid: conv._id,
-        user_id: getSessionUserId(ws),
-      });
-      console.log(lastMessageRead);
+      const lastReadMessage = (
+        await MessageStatus.findAll(
+          {
+            cid: conv._id,
+            user_id: getSessionUserId(ws),
+          },
+          ["created_at", "mid"],
+          1
+        )
+      )[0];
       conv["unread_messages_count"] = await Messages.count(
-        lastMessageRead
+        lastReadMessage
           ? {
               cid: conv._id,
-              from: { $ne: ObjectId(getSessionUserId(ws)) },
+              from: { $ne: getSessionUserId(ws) },
               created_at: {
-                $gt: lastMessageRead ? lastMessageRead.params.created_at : 0,
+                $gt: lastReadMessage.created_at,
               },
             }
           : {
               cid: conv._id,
-              from: { $ne: ObjectId(getSessionUserId(ws)) },
+              from: { $ne: getSessionUserId(ws) },
             }
       );
     }

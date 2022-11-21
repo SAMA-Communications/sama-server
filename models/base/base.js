@@ -106,6 +106,9 @@ export default class BaseModel {
       if (query.conversation_id) {
         query.conversation_id = new ObjectId(query.conversation_id);
       }
+      if (query.user_id && !query.user_id.$ne) {
+        query.user_id = new ObjectId(query.user_id);
+      }
       if (query.user_id?.$ne) {
         query.user_id.$ne = new ObjectId(query.user_id.$ne);
       }
