@@ -2,6 +2,7 @@ import Conversation from "../models/conversation.js";
 import ConversationController from "./conversations.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import Messages from "../models/message.js";
+import MessageStatus from "../models/message_status.js";
 import validate, {
   validateIsConversation,
   validateIsConversationByCID,
@@ -138,6 +139,17 @@ export default class MessagesController {
       limit
     );
 
+    for (const obj of messages) {
+      obj["read"] = (
+        await MessageStatus.findAll({
+          mid: obj._id,
+          user_id: { $ne: getSessionUserId(ws) },
+        })
+      ).length
+        ? true
+        : false;
+    }
+
     return {
       response: {
         id: requestId,
@@ -148,8 +160,21 @@ export default class MessagesController {
 
   async read(ws, data) {
     const requestId = data.request.id;
-    const cid = data.request.mewssage_read.cid;
-    const mIds = data.request.mewssage_read.ids;
+    const cid = data.request.message_read.cid;
+    const userId = getSessionUserId(ws);
+    const messagesIds = data.request.message_read.ids;
+
+    //validate is cid
+    for (const id of messagesIds) {
+      const mStatus = new MessageStatus({
+        cid: ObjectId(cid),
+        mid: ObjectId(id),
+        user_id: ObjectId(userId),
+        status: "read",
+      });
+      await mStatus.save();
+    }
+
     return {
       response: {
         id: requestId,

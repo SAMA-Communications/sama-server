@@ -1,6 +1,7 @@
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import Messages from "../models/message.js";
+import MessageStatus from "../models/message_status.js";
 import User from "../models/user.js";
 import validate, {
   validateConversationisUserOwner,
@@ -236,19 +237,46 @@ export default class ConversationController {
       currentUser
     );
 
-    userConversations.forEach((conv) => {
+    for (const conv of userConversations) {
       let lastMessage = lastMessagesListByCid.find(
         (obj) => obj._id.toString() === conv._id.toString()
       );
       if (lastMessage) {
         lastMessage = lastMessage["lastMessage"];
         lastMessage["status"] = "sent";
+        lastMessage["read"] = (
+          await MessageStatus.findAll({
+            mid: lastMessage._id,
+            user_id: { $ne: getSessionUserId(ws) },
+          })
+        ).length
+          ? true
+          : false;
         delete lastMessage["cid"];
       } else {
         lastMessage = { t: Math.round(Date.parse(conv.updated_at) / 1000) };
       }
       conv["last_message"] = lastMessage;
-    });
+      const lastMessageRead = await MessageStatus.findOne({
+        cid: conv._id,
+        user_id: getSessionUserId(ws),
+      });
+      console.log(lastMessageRead);
+      conv["unread_messages_count"] = await Messages.count(
+        lastMessageRead
+          ? {
+              cid: conv._id,
+              from: { $ne: ObjectId(getSessionUserId(ws)) },
+              created_at: {
+                $gt: lastMessageRead ? lastMessageRead.params.created_at : 0,
+              },
+            }
+          : {
+              cid: conv._id,
+              from: { $ne: ObjectId(getSessionUserId(ws)) },
+            }
+      );
+    }
 
     return {
       response: {

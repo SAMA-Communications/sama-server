@@ -106,6 +106,12 @@ export default class BaseModel {
       if (query.conversation_id) {
         query.conversation_id = new ObjectId(query.conversation_id);
       }
+      if (query.user_id?.$ne) {
+        query.user_id.$ne = new ObjectId(query.user_id.$ne);
+      }
+      if (query.from?.$ne) {
+        query.from.$ne = new ObjectId(query.from.$ne);
+      }
       return await getDb().collection(this.collection).count(query);
     } catch (e) {
       return null;
@@ -159,6 +165,7 @@ export default class BaseModel {
         .aggregate(query)
         .toArray();
     } catch (e) {
+      console.log(e);
       return null;
     }
   }
