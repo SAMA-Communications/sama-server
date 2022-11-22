@@ -12,6 +12,16 @@ const decoder = new StringDecoder("utf8");
 
 async function deliverToUser(currentWS, userId, request) {
   const wsRecipient = ACTIVE.DEVICES[userId];
+  if (request.readMessages) {
+    if (wsRecipient) {
+      wsRecipient.forEach((data) => {
+        if (data.ws !== currentWS) {
+          data.ws.send(JSON.stringify({ message: request }));
+        }
+      });
+    }
+    return;
+  }
 
   if (wsRecipient) {
     wsRecipient.forEach((data) => {

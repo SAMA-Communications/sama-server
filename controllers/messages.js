@@ -176,25 +176,31 @@ export default class MessagesController {
       lastReadMessage
         ? {
             cid: cid,
-            from: { $ne: getSessionUserId(ws) },
+            from: { $ne: ObjectId(getSessionUserId(ws)) },
             created_at: {
               $gt: lastReadMessage.created_at,
             },
           }
         : {
             cid: cid,
-            from: { $ne: getSessionUserId(ws) },
+            from: { $ne: ObjectId(getSessionUserId(ws)) },
           }
     );
-
-    for (const msg of newMessages) {
-      const mStatus = new MessageStatus({
-        cid: ObjectId(cid),
-        mid: ObjectId(msg._id),
-        user_id: ObjectId(getSessionUserId(ws)),
-        status: "read",
-      });
-      await mStatus.save();
+    if (newMessages.length) {
+      for (const msg of newMessages) {
+        const mStatus = new MessageStatus({
+          cid: ObjectId(cid),
+          mid: ObjectId(msg._id),
+          user_id: ObjectId(getSessionUserId(ws)),
+          status: "read",
+        });
+        await mStatus.save();
+      }
+      await deliverToUserOrUsers(
+        { cid: cid },
+        { readMessages: newMessages },
+        ws
+      );
     }
 
     return {
