@@ -12,16 +12,6 @@ const decoder = new StringDecoder("utf8");
 
 async function deliverToUser(currentWS, userId, request) {
   const wsRecipient = ACTIVE.DEVICES[userId];
-  if (request.readMessages) {
-    if (wsRecipient) {
-      wsRecipient.forEach((data) => {
-        if (data.ws !== currentWS) {
-          data.ws.send(JSON.stringify({ message: request }));
-        }
-      });
-    }
-    return;
-  }
 
   if (wsRecipient) {
     wsRecipient.forEach((data) => {
@@ -29,7 +19,7 @@ async function deliverToUser(currentWS, userId, request) {
         data.ws.send(JSON.stringify({ message: request }));
       }
     });
-  } else {
+  } else if (!request.message_read) {
     request = new OfflineQueue({ user_id: userId, request: request });
     await request.save();
   }
@@ -44,13 +34,25 @@ async function deliverToUserOrUsers(dParams, message, currentWS) {
       ["user_id"],
       100
     );
-    participants.forEach(async (participants) => {
-      await deliverToUser(currentWS, participants.user_id, message);
-    });
-    // await ConversationParticipant.updateMany(
-    //   { _id: { $in: participants.map((obj) => obj._id) } },
-    //   { $inc: { unread_messages: 1 } }
-    // );
+    if (message.message_read) {
+      const messages = message.message_read.messages;
+      delete message.message_read.messages;
+
+      for (const uId in messages) {
+        const mids = messages[uId];
+        const participant = participants.find(
+          (u) => u.user_id.toString() === uId
+        );
+        if (participant) {
+          message.message_read["ids"] = mids;
+          await deliverToUser(currentWS, participant.user_id, message);
+        }
+      }
+    } else {
+      participants.forEach(async (participants) => {
+        await deliverToUser(currentWS, participants.user_id, message);
+      });
+    }
   }
 }
 

@@ -37,6 +37,18 @@ export default class BaseModel {
     }
   }
 
+  static async insertArray(data) {
+    try {
+      const bulk = getDb()
+        .collection(this.collection)
+        .initializeUnorderedBulkOp();
+      data.forEach((item) => bulk.insert(item));
+      bulk.execute();
+    } catch (e) {
+      return e;
+    }
+  }
+
   static async findAll(query, returnParams, limit) {
     try {
       if (query.cid) {
@@ -56,6 +68,9 @@ export default class BaseModel {
               (id) => new ObjectId(id)
             ))
           : (query.conversation_id = new ObjectId(query.conversation_id));
+      }
+      if (query.from?.$ne) {
+        query.from.$ne = new ObjectId(query.from.$ne);
       }
 
       const projection = returnParams?.reduce((acc, p) => {

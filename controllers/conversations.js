@@ -225,7 +225,7 @@ export default class ConversationController {
       _id: {
         $in: userConversationsIds.map((p) => p.conversation_id),
       },
-      deleted_for: { $ne: getSessionUserId(ws) },
+      deleted_for: { $ne: currentUser },
     };
     const timeFromUpdate = data.request.conversation_list.updated_at;
     if (timeFromUpdate && timeFromUpdate.gt) {
@@ -247,7 +247,7 @@ export default class ConversationController {
         lastMessage["read"] = (
           await MessageStatus.findAll({
             mid: lastMessage._id,
-            user_id: { $ne: getSessionUserId(ws) },
+            user_id: { $ne: currentUser },
           })
         ).length
           ? true
@@ -256,31 +256,24 @@ export default class ConversationController {
       } else {
         lastMessage = { t: Math.round(Date.parse(conv.updated_at) / 1000) };
       }
+
       conv["last_message"] = lastMessage;
+
       const lastReadMessage = (
         await MessageStatus.findAll(
           {
             cid: conv._id,
-            user_id: getSessionUserId(ws),
+            user_id: currentUser,
           },
-          ["created_at", "mid"],
+          ["mid"],
           1
         )
       )[0];
-      conv["unread_messages_count"] = await Messages.count(
-        lastReadMessage
-          ? {
-              cid: conv._id,
-              from: { $ne: getSessionUserId(ws) },
-              created_at: {
-                $gt: lastReadMessage.created_at,
-              },
-            }
-          : {
-              cid: conv._id,
-              from: { $ne: getSessionUserId(ws) },
-            }
-      );
+      const filters = { cid: conv._id, from: { $ne: currentUser } };
+      if (lastReadMessage) {
+        filters._id = { $gt: lastReadMessage.mid };
+      }
+      conv["unread_messages_count"] = await Messages.count(filters);
     }
 
     return {

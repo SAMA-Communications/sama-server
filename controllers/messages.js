@@ -161,46 +161,56 @@ export default class MessagesController {
   async read(ws, data) {
     const requestId = data.request.id;
     const cid = data.request.message_read.cid;
+    const uId = getSessionUserId(ws);
 
     const lastReadMessage = (
       await MessageStatus.findAll(
         {
           cid: cid,
-          user_id: getSessionUserId(ws),
+          user_id: uId,
         },
-        ["created_at", "mid"],
+        ["mid"],
         1
       )
     )[0];
-    const newMessages = await Messages.findAll(
-      lastReadMessage
-        ? {
-            cid: cid,
-            from: { $ne: ObjectId(getSessionUserId(ws)) },
-            created_at: {
-              $gt: lastReadMessage.created_at,
-            },
-          }
-        : {
-            cid: cid,
-            from: { $ne: ObjectId(getSessionUserId(ws)) },
-          }
-    );
+
+    const filters = { cid: cid, from: { $ne: uId } };
+    if (lastReadMessage) {
+      filters._id = { $gt: lastReadMessage.mid };
+    }
+    const newMessages = await Messages.findAll(filters);
+
     if (newMessages.length) {
-      for (const msg of newMessages) {
-        const mStatus = new MessageStatus({
+      const insertMessages = newMessages.map((msg) => {
+        return {
           cid: ObjectId(cid),
           mid: ObjectId(msg._id),
-          user_id: ObjectId(getSessionUserId(ws)),
+          user_id: ObjectId(uId),
           status: "read",
+        };
+      });
+      await MessageStatus.insertArray(insertMessages);
+      const midsByUid = () => {
+        const usersMids = {};
+        const messages = newMessages.map((msg) => {
+          return { _id: msg._id, from: msg.from };
         });
-        await mStatus.save();
-      }
-      await deliverToUserOrUsers(
-        { cid: cid },
-        { readMessages: newMessages },
-        ws
-      );
+        for (const msg of messages) {
+          if (!usersMids[msg.from]) {
+            usersMids[msg.from] = [];
+          }
+          usersMids[msg.from].push(msg._id.toString());
+        }
+        return usersMids;
+      };
+      const request = {
+        message_read: {
+          cid: ObjectId(cid),
+          messages: midsByUid(),
+          from: ObjectId(uId),
+        },
+      };
+      await deliverToUserOrUsers({ cid: cid }, request, ws);
     }
 
     return {
