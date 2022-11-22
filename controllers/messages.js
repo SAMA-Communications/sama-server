@@ -161,15 +161,37 @@ export default class MessagesController {
   async read(ws, data) {
     const requestId = data.request.id;
     const cid = data.request.message_read.cid;
-    const userId = getSessionUserId(ws);
-    const messagesIds = data.request.message_read.ids;
 
-    //validate is cid
-    for (const id of messagesIds) {
+    const lastReadMessage = (
+      await MessageStatus.findAll(
+        {
+          cid: cid,
+          user_id: getSessionUserId(ws),
+        },
+        ["created_at", "mid"],
+        1
+      )
+    )[0];
+    const newMessages = await Messages.findAll(
+      lastReadMessage
+        ? {
+            cid: cid,
+            from: { $ne: getSessionUserId(ws) },
+            created_at: {
+              $gt: lastReadMessage.created_at,
+            },
+          }
+        : {
+            cid: cid,
+            from: { $ne: getSessionUserId(ws) },
+          }
+    );
+
+    for (const msg of newMessages) {
       const mStatus = new MessageStatus({
         cid: ObjectId(cid),
-        mid: ObjectId(id),
-        user_id: ObjectId(userId),
+        mid: ObjectId(msg._id),
+        user_id: ObjectId(getSessionUserId(ws)),
         status: "read",
       });
       await mStatus.save();
