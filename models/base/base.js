@@ -37,13 +37,16 @@ export default class BaseModel {
     }
   }
 
-  static async insertArray(data) {
+  static async insertMany(data) {
     try {
-      const bulk = getDb()
+      const currentDate = new Date();
+      await getDb()
         .collection(this.collection)
-        .initializeUnorderedBulkOp();
-      data.forEach((item) => bulk.insert(item));
-      bulk.execute();
+        .insertMany(
+          data.map((obj) => {
+            return { ...obj, created_at: currentDate, updated_at: currentDate };
+          })
+        );
     } catch (e) {
       return e;
     }

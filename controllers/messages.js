@@ -138,22 +138,16 @@ export default class MessagesController {
       Messages.visibleFields,
       limit
     );
-
-    for (const obj of messages) {
-      obj["read"] = (
-        await MessageStatus.findAll({
-          mid: obj._id,
-          user_id: { $ne: getSessionUserId(ws) },
-        })
-      ).length
-        ? true
-        : false;
-    }
-
+    const messagesStatus = await MessageStatus.getReadStatusForMids(
+      messages.map((msg) => msg._id)
+    );
     return {
       response: {
         id: requestId,
-        messages: messages,
+        messages: messages.map((msg) => {
+          msg["read"] = messagesStatus[msg._id] ? true : false;
+          return msg;
+        }),
       },
     };
   }
@@ -178,10 +172,10 @@ export default class MessagesController {
     if (lastReadMessage) {
       filters._id = { $gt: lastReadMessage.mid };
     }
-    const newMessages = await Messages.findAll(filters);
+    const unreadMessages = await Messages.findAll(filters);
 
-    if (newMessages.length) {
-      const insertMessages = newMessages.map((msg) => {
+    if (unreadMessages.length) {
+      const insertMessages = unreadMessages.map((msg) => {
         return {
           cid: ObjectId(cid),
           mid: ObjectId(msg._id),
@@ -189,10 +183,10 @@ export default class MessagesController {
           status: "read",
         };
       });
-      await MessageStatus.insertArray(insertMessages);
+      await MessageStatus.insertMany(insertMessages.reverse());
       const midsByUid = () => {
         const usersMids = {};
-        const messages = newMessages.map((msg) => {
+        const messages = unreadMessages.map((msg) => {
           return { _id: msg._id, from: msg.from };
         });
         for (const msg of messages) {

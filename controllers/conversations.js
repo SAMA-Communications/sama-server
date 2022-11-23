@@ -104,7 +104,6 @@ export default class ConversationController {
       const participant = new ConversationParticipant({
         user_id: userId,
         conversation_id: conversationObj.params._id,
-        // unread_messages: 0,
       });
       await participant.save();
     }
@@ -236,27 +235,11 @@ export default class ConversationController {
       userConversationsIds.map((el) => el.conversation_id),
       currentUser
     );
-
     for (const conv of userConversations) {
-      let lastMessage = lastMessagesListByCid.find(
-        (obj) => obj._id.toString() === conv._id.toString()
-      );
-      if (lastMessage) {
-        lastMessage = lastMessage["lastMessage"];
-        lastMessage["status"] = "sent";
-        lastMessage["read"] = (
-          await MessageStatus.findAll({
-            mid: lastMessage._id,
-            user_id: { $ne: currentUser },
-          })
-        ).length
-          ? true
-          : false;
-        delete lastMessage["cid"];
-      } else {
+      let lastMessage = lastMessagesListByCid[conv._id.toString()];
+      if (!lastMessage) {
         lastMessage = { t: Math.round(Date.parse(conv.updated_at) / 1000) };
       }
-
       conv["last_message"] = lastMessage;
 
       const lastReadMessage = (
