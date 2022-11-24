@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import BaseModel from "./base/base.js";
 import MessageStatus from "./message_status.js";
 
@@ -17,7 +18,7 @@ export default class Messages extends BaseModel {
   static async getLastMessageForConversation(cids, uId) {
     const $match = {
       cid: { $in: cids },
-      deleted_for: { $nin: [uId] },
+      deleted_for: { $nin: [uId] }, //ObjectId!!
     };
 
     const $sort = { t: -1 };
@@ -43,6 +44,34 @@ export default class Messages extends BaseModel {
       msg["status"] = "sent";
       delete msg["cid"];
       result[obj._id] = msg;
+    });
+    return result;
+  }
+
+  static async getCountOfUnredMessagesByCid(cids, uId) {
+    //aggregate for messages status, we need the last read record from db
+    const lastReadMessageByUserForCids =
+      await MessageStatus.getLastReadMessageByUserForCid(cids, uId);
+
+    //aggregate message -> get list of newMessages
+    const arrayParams = cids.map((cid) => {
+      const query = { cid: ObjectId(cid), from: { $ne: ObjectId(uId) } };
+      if (lastReadMessageByUserForCids[cid]) {
+        query._id = { $gt: lastReadMessageByUserForCids[cid] };
+      }
+      return query;
+    });
+    const $group = {
+      _id: "$cid",
+      unred_messages: { $push: "$_id" },
+    };
+    const aggregatedResult = await this.aggregate([
+      { $match: { $or: arrayParams } },
+      { $group },
+    ]);
+    const result = {};
+    aggregatedResult.forEach((obj) => {
+      result[obj._id] = [...new Set(obj.unred_messages)].length;
     });
     return result;
   }

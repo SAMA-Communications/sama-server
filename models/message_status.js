@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import BaseModel from "./base/base.js";
 
 export default class MessageStatus extends BaseModel {
@@ -25,6 +26,28 @@ export default class MessageStatus extends BaseModel {
     const result = {};
     aggregatedResult.forEach((obj) => {
       result[obj._id] = [...new Set(obj.users)];
+    });
+    return result;
+  }
+
+  static async getLastReadMessageByUserForCid(cids, uId) {
+    const $match = {
+      cid: { $in: cids },
+      user_id: ObjectId(uId),
+    };
+    const $sort = { _id: -1 };
+    const $group = {
+      _id: "$cid",
+      last_message: { $first: "$$ROOT" },
+    };
+    const aggregatedResult = await this.aggregate([
+      { $match },
+      { $sort },
+      { $group },
+    ]);
+    const result = {};
+    aggregatedResult.forEach((obj) => {
+      result[obj._id] = obj.last_message.mid;
     });
     return result;
   }

@@ -230,33 +230,28 @@ export default class ConversationController {
     if (timeFromUpdate && timeFromUpdate.gt) {
       query.updated_at = { $gt: new Date(timeFromUpdate.gt) };
     }
+
+    //last message for all converastions
     const userConversations = await Conversation.findAll(query, null, limit);
     const lastMessagesListByCid = await Messages.getLastMessageForConversation(
       userConversationsIds.map((el) => el.conversation_id),
       currentUser
     );
+    //count of unread messages for all conversations
+    const countOfUnreadMessagesByCid =
+      await Messages.getCountOfUnredMessagesByCid(
+        userConversationsIds.map((el) => el.conversation_id),
+        currentUser
+      );
+
     for (const conv of userConversations) {
       let lastMessage = lastMessagesListByCid[conv._id.toString()];
       if (!lastMessage) {
         lastMessage = { t: Math.round(Date.parse(conv.updated_at) / 1000) };
       }
       conv["last_message"] = lastMessage;
-
-      const lastReadMessage = (
-        await MessageStatus.findAll(
-          {
-            cid: conv._id,
-            user_id: currentUser,
-          },
-          ["mid"],
-          1
-        )
-      )[0];
-      const filters = { cid: conv._id, from: { $ne: currentUser } };
-      if (lastReadMessage) {
-        filters._id = { $gt: lastReadMessage.mid };
-      }
-      conv["unread_messages_count"] = await Messages.count(filters);
+      conv["unread_messages_count"] =
+        countOfUnreadMessagesByCid[conv._id.toString()];
     }
 
     return {
