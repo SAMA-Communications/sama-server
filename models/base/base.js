@@ -57,13 +57,19 @@ export default class BaseModel {
       if (query.cid) {
         query.cid = new ObjectId(query.cid);
       }
+
       if (query._id?.$nin) {
         for (let i = 0; i < query._id.$nin.length; i++) {
           query._id.$nin[i] = new ObjectId(query._id.$nin[i]);
         }
       }
-      if (query.user_id && !query.user_id.$ne) {
+      if (query.user_id && !query.user_id.$ne && !query.user_id.$in) {
         query.user_id = new ObjectId(query.user_id);
+      }
+      if (query.user_id?.$in) {
+        for (let i = 0; i < query.user_id.$in.length; i++) {
+          query.user_id.$in[i] = new ObjectId(query.user_id.$in[i]);
+        }
       }
       if (query.conversation_id) {
         query.conversation_id.$in

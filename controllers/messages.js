@@ -17,7 +17,7 @@ import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ObjectId } from "mongodb";
 import { deliverToUser, deliverToUserOrUsers } from "../routes/ws.js";
-import { getSessionUserId } from "../models/active.js";
+import { ACTIVE, getSessionUserId } from "../models/active.js";
 import { slice } from "../utils/req_res_utils.js";
 
 export default class MessagesController {
@@ -197,14 +197,7 @@ export default class MessagesController {
         }
         return usersMids;
       };
-      const request = {
-        message_read: {
-          cid: ObjectId(cid),
-          messages: midsByUid(),
-          from: ObjectId(uId),
-        },
-      };
-      await deliverToUserOrUsers({ cid: cid }, request, ws);
+      await this.deliverStatusToUsers(midsByUid(), cid, ws);
     }
 
     return {
@@ -213,6 +206,39 @@ export default class MessagesController {
         success: true,
       },
     };
+  }
+
+  async deliverStatusToUsers(midsByUId, cid, currentWS) {
+    const participantsIds = Object.keys(midsByUId);
+    const participants = await ConversationParticipant.findAll(
+      {
+        conversation_id: cid,
+        user_id: { $in: participantsIds },
+      },
+      ["user_id"],
+      100
+    );
+
+    for (const user of participants) {
+      const uId = user.user_id.toString();
+      const wsRecipient = ACTIVE.DEVICES[uId];
+
+      if (wsRecipient) {
+        wsRecipient.forEach((data) => {
+          if (data.ws !== currentWS) {
+            const message = {
+              message_read: {
+                cid: ObjectId(cid),
+                ids: midsByUId[uId],
+                from: ObjectId(uId),
+              },
+            };
+            data.ws.send(JSON.stringify({ message }));
+          }
+        });
+      }
+    }
+    console.log(4);
   }
 
   async delete(ws, data) {
