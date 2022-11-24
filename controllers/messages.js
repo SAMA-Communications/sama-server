@@ -238,7 +238,6 @@ export default class MessagesController {
         });
       }
     }
-    console.log(4);
   }
 
   async delete(ws, data) {

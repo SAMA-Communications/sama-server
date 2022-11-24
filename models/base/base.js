@@ -57,19 +57,15 @@ export default class BaseModel {
       if (query.cid) {
         query.cid = new ObjectId(query.cid);
       }
-
       if (query._id?.$nin) {
-        for (let i = 0; i < query._id.$nin.length; i++) {
-          query._id.$nin[i] = new ObjectId(query._id.$nin[i]);
-        }
+        query._id.$nin = query._id.$nin.map((id) => new ObjectId(id));
       }
-      if (query.user_id && !query.user_id.$ne && !query.user_id.$in) {
-        query.user_id = new ObjectId(query.user_id);
-      }
-      if (query.user_id?.$in) {
-        for (let i = 0; i < query.user_id.$in.length; i++) {
-          query.user_id.$in[i] = new ObjectId(query.user_id.$in[i]);
-        }
+      if (query.user_id && !query.user_id.$ne) {
+        query.user_id.$in
+          ? (query.user_id.$in = query.user_id.$in.map(
+              (id) => new ObjectId(id)
+            ))
+          : (query.user_id = new ObjectId(query.user_id));
       }
       if (query.conversation_id) {
         query.conversation_id.$in
@@ -167,9 +163,7 @@ export default class BaseModel {
   static async getAllIdsBy(query) {
     try {
       if (query) {
-        for (let i = 0; i < query._id.$in.length; i++) {
-          query._id.$in[i] = new ObjectId(query._id.$in[i]);
-        }
+        query._id.$in = query._id.$in.map((id) => new ObjectId(id));
       }
       const obj = [];
       await getDb()
