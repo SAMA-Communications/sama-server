@@ -35,6 +35,7 @@ export default class MessageStatus extends BaseModel {
       cid: { $in: cids },
       user_id: ObjectId(uId),
     };
+
     const $sort = { _id: -1 };
     const $group = {
       _id: "$cid",

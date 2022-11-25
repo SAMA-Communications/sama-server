@@ -6,11 +6,13 @@ import assert from "assert";
 import { connectToDBPromise } from "../lib/db.js";
 import { processJsonMessageOrError } from "../routes/ws.js";
 import { ObjectId } from "mongodb";
+import MessageStatus from "../models/message_status.js";
 
 let filterUpdatedAt = "";
 let currentUserToken = "";
 let currentConversationId = "";
 let userId = [];
+let messagesIds = [];
 let messageId1 = "";
 const mockedWS = {
   send: (data) => {
@@ -631,7 +633,7 @@ describe("Message function", async () => {
         mockedWS,
         requestData
       );
-      console.log(responseData);
+
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.success, undefined);
       assert.equal(responseData.response.error, undefined);
@@ -724,11 +726,169 @@ describe("Message function", async () => {
         message: "Forbidden",
       });
     });
+
+    after(async () => {
+      await User.clearCollection();
+      await Messages.clearCollection();
+      await Conversation.clearCollection();
+      await ConversationParticipant.clearCollection();
+      userId = [];
+    });
+  });
+
+  describe("Aggregate functions message", async () => {
+    before(async () => {
+      for (let i = 0; i < 3; i++) {
+        const requestDataCreate = {
+          request: {
+            user_create: {
+              login: `um_${i + 1}`,
+              password: "1um",
+            },
+            id: "0",
+          },
+        };
+        const responseData = await processJsonMessageOrError(
+          mockedWS,
+          requestDataCreate
+        );
+        userId[i] = responseData.response.user._id;
+      }
+      currentUserToken = (
+        await sendLogin(mockedWS, "um_1")
+      ).response.user._id.toString();
+
+      let requestData = {
+        request: {
+          conversation_create: {
+            name: "groupChat",
+            description: "test aggregation",
+            type: "g",
+            participants: [userId[0], userId[1], userId[2]],
+          },
+          id: "0",
+        },
+      };
+      let responseData = await processJsonMessageOrError(mockedWS, requestData);
+      currentConversationId = responseData.response.conversation._id.toString();
+
+      //create 3 messages
+      for (let i = 0; i < 6; i++) {
+        requestData = {
+          message: {
+            id: `messages_${i}`,
+            from: "",
+            body: `this is messages ${i + 1}`,
+            cid: currentConversationId,
+          },
+        };
+        responseData = await processJsonMessageOrError(mockedWS, requestData);
+        messagesIds.push(responseData.ask.server_mid);
+      }
+
+      //red 3/6 messages by u2
+      currentUserToken = (await sendLogin(mockedWS, "um_2")).response.user._id;
+      requestData = {
+        request: {
+          message_read: {
+            cid: currentConversationId,
+            ids: [messagesIds[0], messagesIds[1], messagesIds[2]],
+          },
+          id: "123",
+        },
+      };
+      responseData = await processJsonMessageOrError(mockedWS, requestData);
+    });
+
+    describe("--> getLastReadMessageByUserForCid", () => {
+      it("should work for u1", async () => {
+        const responseData = await MessageStatus.getLastReadMessageByUserForCid(
+          [ObjectId(currentConversationId)],
+          userId[0]
+        );
+        assert.strictEqual(responseData[currentConversationId], undefined);
+      });
+
+      it("should work for u2", async () => {
+        const responseData = await MessageStatus.getLastReadMessageByUserForCid(
+          [ObjectId(currentConversationId)],
+          userId[1]
+        );
+        assert.strictEqual(
+          responseData[currentConversationId]?.toString(),
+          messagesIds[2].toString()
+        );
+      });
+
+      it("should work for u3", async () => {
+        const responseData = await MessageStatus.getLastReadMessageByUserForCid(
+          [ObjectId(currentConversationId)],
+          userId[2]
+        );
+        assert.strictEqual(responseData[currentConversationId], undefined);
+      });
+    });
+
+    describe("--> getCountOfUnredMessagesByCid", () => {
+      it("should work for sender user (u1)", async () => {
+        const responseData = await Messages.getCountOfUnredMessagesByCid(
+          [ObjectId(currentConversationId)],
+          userId[0]
+        );
+        assert.strictEqual(responseData[currentConversationId], undefined);
+      });
+
+      it("should work for u2 (read 3/6 messages)", async () => {
+        const responseData = await Messages.getCountOfUnredMessagesByCid(
+          [ObjectId(currentConversationId)],
+          userId[1]
+        );
+        assert.strictEqual(responseData[currentConversationId], 3);
+      });
+
+      it("should work for u3 (read 0/6 messages)", async () => {
+        const responseData = await Messages.getCountOfUnredMessagesByCid(
+          [ObjectId(currentConversationId)],
+          userId[2]
+        );
+        assert.strictEqual(responseData[currentConversationId], 6);
+      });
+    });
+
+    describe("--> getReadStatusForMids", () => {
+      it("should work for sender user (u1)", async () => {
+        const responseData = await MessageStatus.getReadStatusForMids(
+          messagesIds
+        );
+        let isDone = false;
+        let midsSucces = 0;
+        for (let i = 0; i < 3; i++) {
+          if (responseData[messagesIds[i]].length) midsSucces++;
+        }
+        if (midsSucces === 3) {
+          isDone = true;
+        }
+        assert.strictEqual(isDone, true);
+      });
+    });
+
+    describe("--> getLastMessageForConversation", () => {
+      it("should work", async () => {
+        const responseData = await Messages.getLastMessageForConversation([
+          ObjectId(currentConversationId),
+        ]);
+        assert.strictEqual(
+          responseData[currentConversationId]._id?.toString(),
+          messagesIds[5].toString()
+        );
+      });
+    });
   });
 
   after(async () => {
     await User.clearCollection();
     await Messages.clearCollection();
+    await MessageStatus.clearCollection();
     await Conversation.clearCollection();
     await ConversationParticipant.clearCollection();
     userId = [];

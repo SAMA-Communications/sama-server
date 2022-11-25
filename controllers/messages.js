@@ -94,13 +94,10 @@ export default class MessagesController {
     const messageParams = data.request.message_edit;
 
     await validate(ws, messageParams, [validateMessageId, validateMessageBody]);
-    console.log(1);
     const messageId = messageParams.id;
     await validate(ws, { mid: messageId }, [validateIsMessageById]);
-    console.log(2);
     let message = await Messages.findOne({ _id: messageId });
     await validate(ws, message.params, [validateIsUserAccess]);
-    console.log(3);
 
     await Messages.updateOne(
       { _id: messageId },
@@ -113,7 +110,6 @@ export default class MessagesController {
         from: ObjectId(getSessionUserId(ws)),
       },
     };
-    console.log(4);
     await deliverToUserOrUsers(message.params, request, getSessionUserId(ws));
 
     return { response: { id: requestId, success: true } };
@@ -166,15 +162,16 @@ export default class MessagesController {
       cid: cid,
       user_id: uId,
     };
-    if (data.request.message_read.ids) {
-      query.mid = { $in: data.request.message_read.ids };
-    }
+
     const lastReadMessage = (await MessageStatus.findAll(query, ["mid"], 1))[0];
 
     const filters = { cid: cid, from: { $ne: uId } };
-    if (lastReadMessage) {
+    if (data.request.message_read.ids) {
+      filters._id = { $in: data.request.message_read.ids };
+    } else if (lastReadMessage) {
       filters._id = { $gt: lastReadMessage.mid };
     }
+
     const unreadMessages = await Messages.findAll(filters);
 
     if (unreadMessages.length) {

@@ -79,13 +79,6 @@ async function processJsonMessage(ws, json) {
     return await new UsersController().search(ws, json);
   } else if (json.request.getParticipantsByCids) {
     return await new ConversationController().getParticipantsByCids(ws, json);
-    // } else if (json.request.getCountOfUnreadMessages) {
-    //   return await new ConversationController().getCountOfUnreadMessages(
-    //     ws,
-    //     json
-    //   );
-    // } else if (json.request.clearIndicatorByCid) {
-    //   return await new ConversationController().clearIndicatorByCid(ws, json);
   } else if (json.request.conversation_create) {
     return await new ConversationController().create(ws, json);
   } else if (json.request.conversation_delete) {

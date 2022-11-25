@@ -18,10 +18,10 @@ export default class Messages extends BaseModel {
   static async getLastMessageForConversation(cids, uId) {
     const $match = {
       cid: { $in: cids },
-      deleted_for: { $nin: [uId] }, //ObjectId!!
+      // deleted_for: { $nin: [uId] }, //ObjectId!!
     };
 
-    const $sort = { t: -1 };
+    const $sort = { t: -1, _id: -1 };
     const $group = {
       _id: "$cid",
       last_message: { $first: "$$ROOT" },
@@ -48,11 +48,9 @@ export default class Messages extends BaseModel {
   }
 
   static async getCountOfUnredMessagesByCid(cids, uId) {
-    //aggregate for messages status, we need the last read record from db
     const lastReadMessageByUserForCids =
       await MessageStatus.getLastReadMessageByUserForCid(cids, uId);
 
-    //aggregate message -> get list of newMessages
     const arrayParams = cids.map((cid) => {
       const query = { cid: ObjectId(cid), from: { $ne: ObjectId(uId) } };
       if (lastReadMessageByUserForCids[cid]) {
