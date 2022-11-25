@@ -13,7 +13,7 @@ import validate, {
   validateMessageId,
   validateTOorCID,
 } from "../lib/validation.js";
-import groupBy from "../routes/helpers/utils/groupBy.js";
+import groupBy from "../utils/groupBy.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ObjectId } from "mongodb";
