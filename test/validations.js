@@ -28,6 +28,7 @@ import {
 
 let currentUserToken = "";
 let userId = [];
+let messageId = "";
 let currentConversationId = "";
 
 async function sendLogin(ws, login) {
@@ -771,7 +772,8 @@ describe("Validate functions", async () => {
           },
         },
       };
-      await processJsonMessageOrError("validate", requestData);
+      messageId = (await processJsonMessageOrError("validate", requestData)).ask
+        .server_mid;
     });
 
     after(async () => {
@@ -781,7 +783,7 @@ describe("Validate functions", async () => {
 
     it("should work", async () => {
       const requestData = {
-        mid: "xyz",
+        mid: messageId,
       };
       assert.strictEqual(await validateIsMessageById(requestData), undefined);
     });

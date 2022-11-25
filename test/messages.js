@@ -11,6 +11,7 @@ let filterUpdatedAt = "";
 let currentUserToken = "";
 let currentConversationId = "";
 let userId = [];
+let messageId1 = "";
 const mockedWS = {
   send: (data) => {
     console.log("[WS] send mocked data", data);
@@ -302,7 +303,7 @@ describe("Message function", async () => {
 
         if (i == 3) {
           const findMessage = await Messages.findOne({
-            id: responseData.ask.mid,
+            _id: responseData.ask.server_mid,
           });
           filterUpdatedAt = findMessage.updated_at;
         }
@@ -428,7 +429,11 @@ describe("Message function", async () => {
             deleted_for: [ObjectId(userId[2])],
           },
         };
-        await processJsonMessageOrError(mockedWS, requestData);
+        i === 3
+          ? (messageId1 = (
+              await processJsonMessageOrError(mockedWS, requestData)
+            ).ask.server_mid)
+          : await processJsonMessageOrError(mockedWS, requestData);
       }
     });
 
@@ -616,7 +621,7 @@ describe("Message function", async () => {
       const requestData = {
         request: {
           message_edit: {
-            id: "include_2",
+            id: messageId1,
             body: "updated message body (UPDATED)",
           },
           id: "1",
@@ -626,7 +631,7 @@ describe("Message function", async () => {
         mockedWS,
         requestData
       );
-
+      console.log(responseData);
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.success, undefined);
       assert.equal(responseData.response.error, undefined);
@@ -702,7 +707,7 @@ describe("Message function", async () => {
       const requestData = {
         request: {
           message_edit: {
-            id: "include_2",
+            id: messageId1,
             body: "updated message body (UPDATED123)",
           },
           id: "2",

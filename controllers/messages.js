@@ -94,14 +94,16 @@ export default class MessagesController {
     const messageParams = data.request.message_edit;
 
     await validate(ws, messageParams, [validateMessageId, validateMessageBody]);
-
+    console.log(1);
     const messageId = messageParams.id;
     await validate(ws, { mid: messageId }, [validateIsMessageById]);
-    let message = await Messages.findOne({ id: messageId });
+    console.log(2);
+    let message = await Messages.findOne({ _id: messageId });
     await validate(ws, message.params, [validateIsUserAccess]);
+    console.log(3);
 
     await Messages.updateOne(
-      { id: messageId },
+      { _id: messageId },
       { $set: { body: messageParams.body } }
     );
     const request = {
@@ -111,6 +113,7 @@ export default class MessagesController {
         from: ObjectId(getSessionUserId(ws)),
       },
     };
+    console.log(4);
     await deliverToUserOrUsers(message.params, request, getSessionUserId(ws));
 
     return { response: { id: requestId, success: true } };
@@ -142,12 +145,12 @@ export default class MessagesController {
     const messagesStatus = await MessageStatus.getReadStatusForMids(
       messages.map((msg) => msg._id)
     );
-    console.log(messagesStatus);
+
     return {
       response: {
         id: requestId,
         messages: messages.map((msg) => {
-          msg["status"] = messagesStatus[msg._id].length ? "read" : "sent";
+          msg["status"] = messagesStatus[msg._id]?.length ? "read" : "sent";
           return msg;
         }),
       },

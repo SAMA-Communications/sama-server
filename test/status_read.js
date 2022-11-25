@@ -6,6 +6,7 @@ import { processJsonMessageOrError } from "../routes/ws.js";
 let currentConversationId = "";
 let currentUserToken = "";
 let userId = [];
+let messageId = "";
 
 const mockedWS = {
   send: (data) => {
@@ -80,6 +81,7 @@ describe("Sending 'read' status", async () => {
       },
     };
     responseData = await processJsonMessageOrError(mockedWS, requestData);
+    messageId = responseData.ask.server_mid;
     await sendLogout(mockedWS, currentUserToken);
   });
 
@@ -193,7 +195,7 @@ describe("Sending 'read' status", async () => {
       read: {
         id: "xyz",
         type: "start",
-        mid: "message1234",
+        mid: messageId,
         cid: currentConversationId,
       },
     };
