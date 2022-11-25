@@ -13,6 +13,7 @@ import validate, {
   validateMessageId,
   validateTOorCID,
 } from "../lib/validation.js";
+import groupBy from "../routes/helpers/utils/groupBy.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ObjectId } from "mongodb";
@@ -141,11 +142,12 @@ export default class MessagesController {
     const messagesStatus = await MessageStatus.getReadStatusForMids(
       messages.map((msg) => msg._id)
     );
+    console.log(messagesStatus);
     return {
       response: {
         id: requestId,
         messages: messages.map((msg) => {
-          msg["read"] = messagesStatus[msg._id] ? true : false;
+          msg["status"] = messagesStatus[msg._id].length ? "read" : "sent";
           return msg;
         }),
       },
@@ -157,16 +159,14 @@ export default class MessagesController {
     const cid = data.request.message_read.cid;
     const uId = getSessionUserId(ws);
 
-    const lastReadMessage = (
-      await MessageStatus.findAll(
-        {
-          cid: cid,
-          user_id: uId,
-        },
-        ["mid"],
-        1
-      )
-    )[0];
+    const query = {
+      cid: cid,
+      user_id: uId,
+    };
+    if (data.request.message_read.ids) {
+      query.mid = { $in: data.request.message_read.ids };
+    }
+    const lastReadMessage = (await MessageStatus.findAll(query, ["mid"], 1))[0];
 
     const filters = { cid: cid, from: { $ne: uId } };
     if (lastReadMessage) {
@@ -184,20 +184,8 @@ export default class MessagesController {
         };
       });
       await MessageStatus.insertMany(insertMessages.reverse());
-      const midsByUid = () => {
-        const usersMids = {};
-        const messages = unreadMessages.map((msg) => {
-          return { _id: msg._id, from: msg.from };
-        });
-        for (const msg of messages) {
-          if (!usersMids[msg.from]) {
-            usersMids[msg.from] = [];
-          }
-          usersMids[msg.from].push(msg._id.toString());
-        }
-        return usersMids;
-      };
-      await this.deliverStatusToUsers(midsByUid(), cid, ws);
+      const unreadMessagesGrouppedByFrom = groupBy(unreadMessages, "from");
+      await this.deliverStatusToUsers(unreadMessagesGrouppedByFrom, cid, ws);
     }
 
     return {
@@ -210,17 +198,7 @@ export default class MessagesController {
 
   async deliverStatusToUsers(midsByUId, cid, currentWS) {
     const participantsIds = Object.keys(midsByUId);
-    const participants = await ConversationParticipant.findAll(
-      {
-        conversation_id: cid,
-        user_id: { $in: participantsIds },
-      },
-      ["user_id"],
-      100
-    );
-
-    for (const user of participants) {
-      const uId = user.user_id.toString();
+    participantsIds.forEach((uId) => {
       const wsRecipient = ACTIVE.DEVICES[uId];
 
       if (wsRecipient) {
@@ -237,7 +215,7 @@ export default class MessagesController {
           }
         });
       }
-    }
+    });
   }
 
   async delete(ws, data) {

@@ -40,9 +40,8 @@ export default class Messages extends BaseModel {
     );
     aggregatedResult.forEach((obj) => {
       const msg = obj.last_message;
-      msg["read"] = messageStatus[msg._id.toString()] ? true : false;
-      msg["status"] = "sent";
       delete msg["cid"];
+      msg["status"] = messageStatus[msg._id.toString()] ? "read" : "sent";
       result[obj._id] = msg;
     });
     return result;

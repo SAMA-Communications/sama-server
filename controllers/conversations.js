@@ -245,13 +245,11 @@ export default class ConversationController {
       );
 
     for (const conv of userConversations) {
-      let lastMessage = lastMessagesListByCid[conv._id.toString()];
-      if (!lastMessage) {
-        lastMessage = { t: Math.round(Date.parse(conv.updated_at) / 1000) };
-      }
-      conv["last_message"] = lastMessage;
-      conv["unread_messages_count"] =
-        countOfUnreadMessagesByCid[conv._id.toString()];
+      const convId = conv._id.toString();
+      conv["last_message"] = lastMessagesListByCid[convId];
+      conv["unread_messages_count"] = countOfUnreadMessagesByCid[convId]
+        ? countOfUnreadMessagesByCid[convId]
+        : 0;
     }
 
     return {
