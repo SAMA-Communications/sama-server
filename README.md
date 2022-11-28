@@ -325,11 +325,25 @@ On each message sent to server - a server will deliver back to client a simple p
         gt: timestamp1,
       },
     },
-    id: "2",
+    id: "ef5326a5-b16b-4f75-9e88-cc42e5fea016",
   };
 }
 
-{ response: { id: '2', messages: [...] } }
+{ 
+  response: { 
+    id: 'ef5326a5-b16b-4f75-9e88-cc42e5fea016', 
+    messages: [
+      {
+        "_id": "63760c34c35e750877677925",
+        "body": "How is going?",
+        "cid": "63563a2ad745dc1c6ad01b5f",
+        "from": "63480e68f4794709f802a2fa",
+        "status": "sent",
+        "t": 1668680757,
+      }
+    ] 
+  } 
+}
 
 ```
 
@@ -536,16 +550,16 @@ Will support it on a later stage
 * [x] User logout
 * [x] User delete
 * User edit
-* Search users / retrieve users
+* [x] Search users
 * [x] Create conversation
 * [x] List conversations
 * [x] Edit conversation
 * [x] Delete conversation
-* Get conversation's participants
+* [x] Get conversation's participants
 * [x] Send/Receive message
 * [x] List chat messages
 * [x] Typing status
-* [x] Read/Delivered status
+* [x] Read status
 * Upload attachment
 * Get attachment by url
 * Last activity
