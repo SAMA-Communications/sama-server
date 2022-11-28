@@ -202,7 +202,30 @@ A `type` param must have only one of two values:
   },
 };
 
-{ response: { id: "7", conversations: [ ... ] } }
+{ 
+  response: { 
+    id: "7", 
+    conversations: [ 
+      {
+        "_id": "507f1f77bcf86cd799439011",
+        "created_at": "",
+        "updated_at": "",
+        "name": "General",
+        "type": "g",
+        "description": "General discuss chat",
+        "owner_id": "507f191e810c19729de860ea",
+        "opponent_id": "507f191e810c19729de880ee",
+        "last_message": {
+          "_id" :"507f191e810c19729de860ea", 
+          "body": "Any news on the recent decision?", 
+          "from": "507f191e810c19729de880ee", 
+          "t": 15673838833,
+        },
+        "unread_messages_count": 2
+      }
+    ] 
+  } 
+}
 ```
 
 
