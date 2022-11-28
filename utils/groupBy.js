@@ -4,7 +4,7 @@ export default function groupBy(data, filed) {
     if (!groupObj[obj[filed]]) {
       groupObj[obj[filed]] = [];
     }
-    groupObj[obj[filed]].push(obj["_id"].toString());
+    groupObj[obj[filed]].push(obj);
   }
   return groupObj;
 }

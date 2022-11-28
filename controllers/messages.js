@@ -146,7 +146,9 @@ export default class MessagesController {
       response: {
         id: requestId,
         messages: messages.map((msg) => {
-          msg["status"] = messagesStatus[msg._id]?.length ? "read" : "sent";
+          if (msg.from.toString() === getSessionUserId(ws)) {
+            msg["status"] = messagesStatus[msg._id]?.length ? "read" : "sent";
+          }
           return msg;
         }),
       },
@@ -163,13 +165,16 @@ export default class MessagesController {
       user_id: uId,
     };
 
-    const lastReadMessage = (await MessageStatus.findAll(query, ["mid"], 1))[0];
-
     const filters = { cid: cid, from: { $ne: uId } };
     if (data.request.message_read.ids) {
       filters._id = { $in: data.request.message_read.ids };
-    } else if (lastReadMessage) {
-      filters._id = { $gt: lastReadMessage.mid };
+    } else {
+      const lastReadMessage = (
+        await MessageStatus.findAll(query, ["mid"], 1)
+      )[0];
+      if (lastReadMessage) {
+        filters._id = { $gt: lastReadMessage.mid };
+      }
     }
 
     const unreadMessages = await Messages.findAll(filters);
@@ -207,7 +212,7 @@ export default class MessagesController {
             const message = {
               message_read: {
                 cid: ObjectId(cid),
-                ids: midsByUId[uId],
+                ids: midsByUId[uId].map((el) => el._id),
                 from: ObjectId(uId),
               },
             };

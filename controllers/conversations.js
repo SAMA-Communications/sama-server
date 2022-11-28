@@ -247,9 +247,7 @@ export default class ConversationController {
     for (const conv of userConversations) {
       const convId = conv._id.toString();
       conv["last_message"] = lastMessagesListByCid[convId];
-      conv["unread_messages_count"] = countOfUnreadMessagesByCid[convId]
-        ? countOfUnreadMessagesByCid[convId]
-        : 0;
+      conv["unread_messages_count"] = countOfUnreadMessagesByCid[convId] || 0;
     }
 
     return {
