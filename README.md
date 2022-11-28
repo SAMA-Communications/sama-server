@@ -255,47 +255,35 @@ On each message sent to server - a server will deliver back to client a simple p
 
 ```
 
-### Delivered message status
-
-```
-{
-  'delivered': {
-    'id': 'xyz', 
-    't': 15673838833,
-    'to': '',
-    'from': '',
-    'mid': 'zyx'
-    'cid': 'xcv'
-  }
-}
-```
-
-Either `cid` or `to` should be provided. 
-
-A `t` param should be omit at sender's side. Server will add it by itself in a message to recipient. 
-
-Then other users in this conversation who is online will receive the same delivered message. 
-
 ### Read message status
 
 ```
 {
-  'read': {
-    'id': 'xyz', 
-    't': 15673838833,
-    'to': '',
-    'from': '',
-    'mid': 'zyx',
-    'cid': 'xcv'
-  }
-}
+  request: {
+    message_read: {
+      cid: "..",
+      ids: [1, 2, 3],
+    },
+    id: "3",
+  },
+};
+
+{ response: { id: "3", success: true } }
 ```
 
-Either `cid` or `to` should be provided. 
+If `ids` is omit, we mark all unread messages as read.
 
-A `t` param should be omit at sender's side. Server will add it by itself in a message to recipient. 
+Then, all the users whose messages we read will receive the following message:
 
-Then other users in this conversation who is online will receive the same read message.
+```
+{
+  message_read: {
+    cid: "63077ad836b78c3d82af0812"
+    ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
+    from: "..."
+  },
+};
+```
 
 ### Message typing
 
