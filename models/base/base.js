@@ -37,18 +37,35 @@ export default class BaseModel {
     }
   }
 
+  static async insertMany(data) {
+    try {
+      const currentDate = new Date();
+      await getDb()
+        .collection(this.collection)
+        .insertMany(
+          data.map((obj) => {
+            return { ...obj, created_at: currentDate, updated_at: currentDate };
+          })
+        );
+    } catch (e) {
+      return e;
+    }
+  }
+
   static async findAll(query, returnParams, limit) {
     try {
       if (query.cid) {
         query.cid = new ObjectId(query.cid);
       }
       if (query._id?.$nin) {
-        for (let i = 0; i < query._id.$nin.length; i++) {
-          query._id.$nin[i] = new ObjectId(query._id.$nin[i]);
-        }
+        query._id.$nin = query._id.$nin.map((id) => new ObjectId(id));
       }
       if (query.user_id && !query.user_id.$ne) {
-        query.user_id = new ObjectId(query.user_id);
+        query.user_id.$in
+          ? (query.user_id.$in = query.user_id.$in.map(
+              (id) => new ObjectId(id)
+            ))
+          : (query.user_id = new ObjectId(query.user_id));
       }
       if (query.conversation_id) {
         query.conversation_id.$in
@@ -56,6 +73,9 @@ export default class BaseModel {
               (id) => new ObjectId(id)
             ))
           : (query.conversation_id = new ObjectId(query.conversation_id));
+      }
+      if (query.from?.$ne) {
+        query.from.$ne = new ObjectId(query.from.$ne);
       }
 
       const projection = returnParams?.reduce((acc, p) => {
@@ -106,6 +126,15 @@ export default class BaseModel {
       if (query.conversation_id) {
         query.conversation_id = new ObjectId(query.conversation_id);
       }
+      if (query.user_id && !query.user_id.$ne) {
+        query.user_id = new ObjectId(query.user_id);
+      }
+      if (query.user_id?.$ne) {
+        query.user_id.$ne = new ObjectId(query.user_id.$ne);
+      }
+      if (query.from?.$ne) {
+        query.from.$ne = new ObjectId(query.from.$ne);
+      }
       return await getDb().collection(this.collection).count(query);
     } catch (e) {
       return null;
@@ -134,9 +163,7 @@ export default class BaseModel {
   static async getAllIdsBy(query) {
     try {
       if (query) {
-        for (let i = 0; i < query._id.$in.length; i++) {
-          query._id.$in[i] = new ObjectId(query._id.$in[i]);
-        }
+        query._id.$in = query._id.$in.map((id) => new ObjectId(id));
       }
       const obj = [];
       await getDb()
@@ -159,6 +186,7 @@ export default class BaseModel {
         .aggregate(query)
         .toArray();
     } catch (e) {
+      console.log(e);
       return null;
     }
   }

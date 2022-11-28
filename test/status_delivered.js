@@ -12,6 +12,7 @@ const mockedWS = {
     console.log("[WS] send mocked data", data);
   },
 };
+let messageId = "";
 
 async function sendLogin(ws, login) {
   const requestData = {
@@ -80,6 +81,7 @@ describe("Sending 'delivered' status", async () => {
       },
     };
     responseData = await processJsonMessageOrError(mockedWS, requestData);
+    messageId = responseData.ask.server_mid;
     await sendLogout(mockedWS, currentUserToken);
   });
 
@@ -175,7 +177,7 @@ describe("Sending 'delivered' status", async () => {
       delivered: {
         id: "xyz",
         type: "start",
-        mid: "message1234",
+        mid: messageId,
         cid: currentConversationId,
       },
     };

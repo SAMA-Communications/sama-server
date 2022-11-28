@@ -2,6 +2,7 @@ import Conversation from "../models/conversation.js";
 import ConversationController from "./conversations.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import Messages from "../models/message.js";
+import MessageStatus from "../models/message_status.js";
 import validate, {
   validateIsConversation,
   validateIsConversationByCID,
@@ -12,11 +13,12 @@ import validate, {
   validateMessageId,
   validateTOorCID,
 } from "../lib/validation.js";
+import groupBy from "../utils/groupBy.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ObjectId } from "mongodb";
 import { deliverToUser, deliverToUserOrUsers } from "../routes/ws.js";
-import { getSessionUserId } from "../models/active.js";
+import { ACTIVE, getSessionUserId } from "../models/active.js";
 import { slice } from "../utils/req_res_utils.js";
 
 export default class MessagesController {
@@ -92,14 +94,13 @@ export default class MessagesController {
     const messageParams = data.request.message_edit;
 
     await validate(ws, messageParams, [validateMessageId, validateMessageBody]);
-
     const messageId = messageParams.id;
     await validate(ws, { mid: messageId }, [validateIsMessageById]);
-    let message = await Messages.findOne({ id: messageId });
+    let message = await Messages.findOne({ _id: messageId });
     await validate(ws, message.params, [validateIsUserAccess]);
 
     await Messages.updateOne(
-      { id: messageId },
+      { _id: messageId },
       { $set: { body: messageParams.body } }
     );
     const request = {
@@ -137,13 +138,89 @@ export default class MessagesController {
       Messages.visibleFields,
       limit
     );
+    const messagesStatus = await MessageStatus.getReadStatusForMids(
+      messages.map((msg) => msg._id)
+    );
 
     return {
       response: {
         id: requestId,
-        messages: messages,
+        messages: messages.map((msg) => {
+          if (msg.from.toString() === getSessionUserId(ws)) {
+            msg["status"] = messagesStatus[msg._id]?.length ? "read" : "sent";
+          }
+          return msg;
+        }),
       },
     };
+  }
+
+  async read(ws, data) {
+    const requestId = data.request.id;
+    const cid = data.request.message_read.cid;
+    const uId = getSessionUserId(ws);
+
+    const query = {
+      cid: cid,
+      user_id: uId,
+    };
+
+    const filters = { cid: cid, from: { $ne: uId } };
+    if (data.request.message_read.ids) {
+      filters._id = { $in: data.request.message_read.ids };
+    } else {
+      const lastReadMessage = (
+        await MessageStatus.findAll(query, ["mid"], 1)
+      )[0];
+      if (lastReadMessage) {
+        filters._id = { $gt: lastReadMessage.mid };
+      }
+    }
+
+    const unreadMessages = await Messages.findAll(filters);
+
+    if (unreadMessages.length) {
+      const insertMessages = unreadMessages.map((msg) => {
+        return {
+          cid: ObjectId(cid),
+          mid: ObjectId(msg._id),
+          user_id: ObjectId(uId),
+          status: "read",
+        };
+      });
+      await MessageStatus.insertMany(insertMessages.reverse());
+      const unreadMessagesGrouppedByFrom = groupBy(unreadMessages, "from");
+      await this.deliverStatusToUsers(unreadMessagesGrouppedByFrom, cid, ws);
+    }
+
+    return {
+      response: {
+        id: requestId,
+        success: true,
+      },
+    };
+  }
+
+  async deliverStatusToUsers(midsByUId, cid, currentWS) {
+    const participantsIds = Object.keys(midsByUId);
+    participantsIds.forEach((uId) => {
+      const wsRecipient = ACTIVE.DEVICES[uId];
+
+      if (wsRecipient) {
+        wsRecipient.forEach((data) => {
+          if (data.ws !== currentWS) {
+            const message = {
+              message_read: {
+                cid: ObjectId(cid),
+                ids: midsByUId[uId].map((el) => el._id),
+                from: ObjectId(uId),
+              },
+            };
+            data.ws.send(JSON.stringify({ message }));
+          }
+        });
+      }
+    });
   }
 
   async delete(ws, data) {

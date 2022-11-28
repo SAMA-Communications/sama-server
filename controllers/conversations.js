@@ -1,6 +1,7 @@
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import Messages from "../models/message.js";
+import MessageStatus from "../models/message_status.js";
 import User from "../models/user.js";
 import validate, {
   validateConversationisUserOwner,
@@ -103,7 +104,6 @@ export default class ConversationController {
       const participant = new ConversationParticipant({
         user_id: userId,
         conversation_id: conversationObj.params._id,
-        // unread_messages: 0,
       });
       await participant.save();
     }
@@ -224,31 +224,31 @@ export default class ConversationController {
       _id: {
         $in: userConversationsIds.map((p) => p.conversation_id),
       },
-      deleted_for: { $ne: getSessionUserId(ws) },
+      deleted_for: { $ne: currentUser },
     };
     const timeFromUpdate = data.request.conversation_list.updated_at;
     if (timeFromUpdate && timeFromUpdate.gt) {
       query.updated_at = { $gt: new Date(timeFromUpdate.gt) };
     }
+
+    //last message for all converastions
     const userConversations = await Conversation.findAll(query, null, limit);
     const lastMessagesListByCid = await Messages.getLastMessageForConversation(
       userConversationsIds.map((el) => el.conversation_id),
       currentUser
     );
-
-    userConversations.forEach((conv) => {
-      let lastMessage = lastMessagesListByCid.find(
-        (obj) => obj._id.toString() === conv._id.toString()
+    //count of unread messages for all conversations
+    const countOfUnreadMessagesByCid =
+      await Messages.getCountOfUnredMessagesByCid(
+        userConversationsIds.map((el) => el.conversation_id),
+        currentUser
       );
-      if (lastMessage) {
-        lastMessage = lastMessage["lastMessage"];
-        lastMessage["status"] = "sent";
-        delete lastMessage["cid"];
-      } else {
-        lastMessage = { t: Math.round(Date.parse(conv.updated_at) / 1000) };
-      }
-      conv["last_message"] = lastMessage;
-    });
+
+    for (const conv of userConversations) {
+      const convId = conv._id.toString();
+      conv["last_message"] = lastMessagesListByCid[convId];
+      conv["unread_messages_count"] = countOfUnreadMessagesByCid[convId] || 0;
+    }
 
     return {
       response: {
@@ -341,37 +341,4 @@ export default class ConversationController {
       response: { id: requestId, users: usersLogin },
     };
   }
-
-  // async getCountOfUnreadMessages(ws, data) {
-  //   const requestId = data.request.id;
-  //   const user_id = data.request.getCountOfUnreadMessages.user_id;
-
-  //   const array = await ConversationParticipant.findAll(
-  //     {
-  //       user_id: user_id,
-  //     },
-  //     ["conversation_id", "unread_messages"]
-  //   );
-
-  //   return {
-  //     response: { id: requestId, indicators: array },
-  //   };
-  // }
-
-  // async clearIndicatorByCid(ws, data) {
-  //   const requestId = data.request.id;
-  //   const request = data.request.clearIndicatorByCid;
-
-  //   await ConversationParticipant.updateOne(
-  //     {
-  //       user_id: ObjectId(request.user_id),
-  //       conversation_id: ObjectId(request.cid),
-  //     },
-  //     { $set: { unread_messages: 0 } }
-  //   );
-
-  //   return {
-  //     response: { id: requestId, success: "success" },
-  //   };
-  // }
 }
