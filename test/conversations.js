@@ -5,12 +5,14 @@ import assert from "assert";
 import { connectToDBPromise } from "../lib/db.js";
 import { processJsonMessageOrError } from "../routes/ws.js";
 import { getSessionUserId } from "../models/active.js";
+import { ObjectId } from "mongodb";
 
 let currentUserToken = "";
 let userId = [];
 let filterUpdatedAt = "";
 let currentConversationId = "";
 let ArrayOfTmpConversaionts = [];
+let lastMessageInChat = "";
 
 async function sendLogin(ws, login) {
   const requestData = {
@@ -486,7 +488,7 @@ describe("Conversation functions", async () => {
   describe("List of Conversations", async () => {
     before(async () => {
       for (let i = 0; i < 3; i++) {
-        const requestData = {
+        let requestData = {
           request: {
             conversation_create: {
               name: `chat_${i + 1}`,
@@ -497,12 +499,70 @@ describe("Conversation functions", async () => {
             id: "0",
           },
         };
-        const responseData = (
+        let responseData = (
           await processJsonMessageOrError("test", requestData)
         ).response.conversation;
         i == 0 ? (filterUpdatedAt = responseData.updated_at) : true;
         ArrayOfTmpConversaionts.push(responseData._id.toString());
       }
+
+      for (let i = 0; i < 3; i++) {
+        let requestData = {
+          message: {
+            id: `messages_${i}`,
+            from: "",
+            body: `this is messages ${i + 1}`,
+            cid: ArrayOfTmpConversaionts[0],
+          },
+        };
+        let responseData = await processJsonMessageOrError("test", requestData);
+        lastMessageInChat = responseData.ask.server_mid;
+      }
+    });
+
+    it("should work check last_message id", async () => {
+      const requestData = {
+        request: {
+          conversation_list: {},
+          id: "3_0",
+        },
+      };
+      const responseData = await processJsonMessageOrError("test", requestData);
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(
+        responseData.response.conversations
+          .find((el) => el._id.toString() === ArrayOfTmpConversaionts[0])
+          ?.last_message._id.toString(),
+        lastMessageInChat.toString()
+      );
+      assert.notEqual(responseData.response.conversations, undefined);
+      assert.equal(responseData.response.error, undefined);
+    });
+
+    it("should work check count of unread_messages", async () => {
+      await sendLogout("test", currentUserToken);
+      currentUserToken = (await sendLogin("test", "user_4")).response.user
+        .token;
+      const requestData = {
+        request: {
+          conversation_list: {},
+          id: "3_0",
+        },
+      };
+      const responseData = await processJsonMessageOrError("test", requestData);
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(
+        responseData.response.conversations[0].unread_messages_count,
+        0
+      );
+      assert.strictEqual(
+        responseData.response.conversations[2].unread_messages_count,
+        3
+      );
+      assert.notEqual(responseData.response.conversations, undefined);
+      assert.equal(responseData.response.error, undefined);
     });
 
     it("should work with a time parameter", async () => {
@@ -527,6 +587,9 @@ describe("Conversation functions", async () => {
     });
 
     it("should fail limit exceeded", async () => {
+      await sendLogout("test", currentUserToken);
+      currentUserToken = (await sendLogin("test", "user_1")).response.user
+        .token;
       const numberOf = 3;
       const requestData = {
         request: {
@@ -542,6 +605,9 @@ describe("Conversation functions", async () => {
     });
 
     it("should work a time parameter and limit", async () => {
+      await sendLogout("test", currentUserToken);
+      currentUserToken = (await sendLogin("test", "user_4")).response.user
+        .token;
       const numberOf = 1;
       const requestData = {
         request: {
