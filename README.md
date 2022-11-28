@@ -42,11 +42,21 @@ Login + pwd
       login: "user_1",
       password: "user_paswword_1",
     },
-    id: "1",
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c",
   },
 };
 
-{ response: { id: "1", user: {...} }
+{ 
+  response: { 
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c", 
+    user: {
+      created_at: "2022-10-13T13:11:04.447Z",
+      updated_at: "2022-10-13T13:11:04.447Z",
+      login :"user_1",
+      id: "63480e68f4794709f802a2fa", 
+    } 
+  }
+}
 ```
 
 ### Login user
@@ -58,11 +68,22 @@ Login + pwd
       login: "user_1",
       password: "user_paswword_1",
     },
-    id: "2",
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c",
   },
 };
 
-{ response: { id: "2", user: {...}, token: "..." }
+{ 
+  response: { 
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c", 
+    user: {
+      created_at: "2022-10-13T13:11:04.447Z",
+      updated_at: "2022-10-13T13:11:04.447Z",
+      login :"user_1",
+      id: "63480e68f4794709f802a2fa", 
+    }, 
+    token: "..." 
+  }
+}
 ```
 
 Later, the subsequent logins can be done via `token`:
@@ -228,6 +249,40 @@ A `type` param must have only one of two values:
 }
 ```
 
+### List conversations' participants
+
+```
+{
+    "request": {
+        "getParticipantsByCids": {
+            "cids": [
+                "635a3b4cb15254ebe43e76ff",
+                "63563a2ad745dc1c6ad01b5f",
+                "63563a0cd745dc1c6ad01b5c"
+            ]
+        },
+        "id": "e3a1fcbf-bb1a-4c6d-b13a-8952db609585"
+    }
+}
+```
+
+```
+{
+    "response": {
+        "id": "e3a1fcbf-bb1a-4c6d-b13a-8952db609585",
+        "users": [
+            {
+                "_id": "634ec51c0b65918393dca5bf",
+                "login": "carol18"
+            },
+            {
+                "_id": "63480e68f4794709f802a2fa",
+                "login": "breadpit"
+            }
+        ]
+    }
+}
+```
 
 ### Send/Receive messages
 
