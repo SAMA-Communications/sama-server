@@ -11,7 +11,7 @@ import validate, {
   validateMessageBody,
   validateMessageDeleteType,
   validateMessageId,
-  validateTOorCID,
+  validateIsCID,
 } from "../lib/validation.js";
 import groupBy from "../utils/groupBy.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
@@ -27,43 +27,12 @@ export default class MessagesController {
       data.message,
       ALLOW_FIELDS.ALLOWED_FILEDS_MESSAGE
     );
-    await validate(ws, messageParams, [validateMessageBody, validateTOorCID]);
+    await validate(ws, messageParams, [validateMessageBody, validateIsCID]);
 
     const messageId = data.message.id;
     await validate(ws, { id: messageId }, [validateMessageId]);
 
-    if (messageParams.cid) {
-      await validate(ws, messageParams, [validateIsConversationByCID]);
-    } else if (messageParams.to) {
-      let conversation = await Conversation.findOne({
-        $or: [
-          {
-            type: "u",
-            owner_id: ObjectId(getSessionUserId(ws)),
-            opponent_id: messageParams.to.toString(),
-          },
-          {
-            type: "u",
-            owner_id: ObjectId(messageParams.to),
-            opponent_id: getSessionUserId(ws),
-          },
-        ],
-      });
-      if (!conversation) {
-        const requestData = {
-          request: {
-            conversation_create: {
-              type: "u",
-              owner_id: ObjectId(getSessionUserId(ws)),
-              opponent_id: messageParams.to,
-              participants: [messageParams.to, ObjectId(getSessionUserId(ws))],
-            },
-            id: "0",
-          },
-        };
-        await new ConversationController().create(ws, requestData);
-      }
-    }
+    await validate(ws, messageParams, [validateIsConversationByCID]);
 
     messageParams.from = ObjectId(getSessionUserId(ws));
     if (!messageParams.deleted_for) {
@@ -71,9 +40,9 @@ export default class MessagesController {
     }
 
     const message = new Messages(messageParams);
-    message.params.cid
-      ? (message.params.cid = ObjectId(message.params.cid))
-      : (message.params.to = ObjectId(message.params.to));
+    message.params.cid = message.params.cid
+      ? ObjectId(message.params.cid)
+      : message.params.cid;
     const currentTs = Math.round(Date.now() / 1000);
     message.params.t = parseInt(currentTs);
 
