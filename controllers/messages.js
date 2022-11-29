@@ -34,9 +34,6 @@ export default class MessagesController {
     await validate(ws, messageParams, [validateIsConversationByCID]);
 
     messageParams.from = ObjectId(getSessionUserId(ws));
-    if (!messageParams.deleted_for) {
-      messageParams.deleted_for = [];
-    }
 
     const message = new Messages(messageParams);
     message.params.cid = message.params.cid
@@ -222,15 +219,6 @@ export default class MessagesController {
         await deliverToUser(user, request);
       }
       await Messages.deleteMany({ _id: { $in: messagesIds } });
-    } else {
-      await Messages.updateMany(
-        { id: { $in: messagesIds } },
-        {
-          $addToSet: {
-            deleted_for: ObjectId(getSessionUserId(ws)),
-          },
-        }
-      );
     }
 
     return {

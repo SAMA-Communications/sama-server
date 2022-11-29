@@ -428,7 +428,6 @@ describe("Message function", async () => {
             id: `include_${i + 1}`,
             body: "hey how is going?",
             cid: currentConversationId,
-            deleted_for: [ObjectId(userId[2])],
           },
         };
         i === 3
@@ -448,27 +447,6 @@ describe("Message function", async () => {
             type: "all",
           },
           id: "1",
-        },
-      };
-      const responseData = await processJsonMessageOrError(
-        mockedWS,
-        requestData
-      );
-
-      assert.strictEqual(requestData.request.id, responseData.response.id);
-      assert.notEqual(responseData.response.success, undefined);
-      assert.equal(responseData.response.error, undefined);
-    });
-
-    it("should work deleted_for", async () => {
-      const requestData = {
-        request: {
-          message_delete: {
-            cid: currentConversationId,
-            ids: ["include_2", "include_3"],
-            type: "me",
-          },
-          id: "2",
         },
       };
       const responseData = await processJsonMessageOrError(
