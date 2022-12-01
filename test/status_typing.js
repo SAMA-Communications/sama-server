@@ -155,7 +155,7 @@ describe("Sending 'typing' status", async () => {
     assert.strictEqual(responseData.typing.user, undefined);
     assert.deepEqual(responseData.typing.error, {
       status: 422,
-      message: "Either 'to' or 'cid' field is required",
+      message: "'cid' field is required",
     });
   });
 

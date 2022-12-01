@@ -135,7 +135,7 @@ describe("Message function", async () => {
       });
     });
 
-    it("should fail either 'to' or 'cid' field is required", async () => {
+    it("should fail 'cid' field is required", async () => {
       const requestData = {
         message: {
           id: "xyz",
@@ -155,7 +155,7 @@ describe("Message function", async () => {
       assert.equal(responseData.ask, undefined);
       assert.deepEqual(responseData.message.error, {
         status: 422,
-        message: "Either 'to' or 'cid' field is required",
+        message: "'cid' field is required",
       });
     });
 
@@ -187,99 +187,6 @@ describe("Message function", async () => {
         status: 403,
         message: "Forbidden",
       });
-    });
-
-    it("should fail user send himself message", async () => {
-      const requestData = {
-        message: {
-          id: "messageID_9",
-          to: userId[0],
-          from: "",
-          body: "working!!! (first)",
-          x: {
-            param1: "value",
-            param2: "value",
-          },
-        },
-      };
-      const responseData = await processJsonMessageOrError(
-        mockedWS,
-        requestData
-      );
-
-      assert.equal(responseData.ask, undefined);
-      assert.deepEqual(responseData.message.error, {
-        status: 422,
-        message: "Incorrect user",
-      });
-    });
-
-    it("should work create private conversation", async () => {
-      const requestData = {
-        message: {
-          id: "messageID_9",
-          to: userId[1],
-          from: "",
-          body: "working!!! (first)",
-          x: {
-            param1: "value",
-            param2: "value",
-          },
-        },
-      };
-      const responseData = await processJsonMessageOrError(
-        mockedWS,
-        requestData
-      );
-
-      assert.strictEqual(requestData.message.id, responseData.ask.mid);
-      assert.notEqual(responseData.ask, undefined);
-    });
-
-    it("should work privete conversation message", async () => {
-      const requestData = {
-        message: {
-          id: "messageID_10",
-          to: userId[1],
-          from: "",
-          body: "second message!!!",
-          x: {
-            param1: "value",
-            param2: "value",
-          },
-        },
-      };
-      const responseData = await processJsonMessageOrError(
-        mockedWS,
-        requestData
-      );
-
-      assert.strictEqual(requestData.message.id, responseData.ask.mid);
-      assert.notEqual(responseData.ask, undefined);
-    });
-
-    it("should work privete conversation message reverse", async () => {
-      await sendLogin(mockedWS, "um_2");
-      const requestData = {
-        message: {
-          id: "messageID_11",
-          to: userId[0],
-          from: "",
-          body: "third message!!! (last)",
-          x: {
-            param1: "value",
-            param2: "value",
-          },
-        },
-      };
-      const responseData = await processJsonMessageOrError(
-        mockedWS,
-        requestData
-      );
-
-      await sendLogin(mockedWS, "um_1");
-      assert.strictEqual(requestData.message.id, responseData.ask.mid);
-      assert.notEqual(responseData.ask, undefined);
     });
   });
 

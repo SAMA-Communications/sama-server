@@ -10,7 +10,6 @@ import {
   validateConversationisUserOwner,
   validateIsConversation,
   validateIsConversationByCID,
-  validateIsConversationByTO,
   validateIsMessageById,
   validateIsUserAccess,
   validateMessageBody,
@@ -21,7 +20,7 @@ import {
   validateParticipantsLimit,
   validateStatusConversationType,
   validateStatusId,
-  validateTOorCID,
+  validateIsCID,
   validateUserSession,
   validateIsUserSendHimSelf,
 } from "../lib/validation.js";
@@ -144,19 +143,12 @@ describe("Validate functions", async () => {
     });
   });
 
-  describe(" --> validateTOorCID", async () => {
-    it("should work #1", async () => {
-      const requestData = {
-        to: "chat",
-      };
-      assert.strictEqual(validateTOorCID(requestData), undefined);
-    });
-
+  describe(" --> validateIsCID", async () => {
     it("should work #2", async () => {
       const requestData = {
         cid: "chat",
       };
-      assert.strictEqual(validateTOorCID(requestData), undefined);
+      assert.strictEqual(validateIsCID(requestData), undefined);
     });
 
     it("should fail", async () => {
@@ -165,14 +157,14 @@ describe("Validate functions", async () => {
       };
       assert.throws(
         () => {
-          validateTOorCID(requestData);
+          validateIsCID(requestData);
         },
         {
           name: "Error",
-          message: "Either 'to' or 'cid' field is required",
+          message: "'cid' field is required",
           cause: {
             status: 422,
-            message: "Either 'to' or 'cid' field is required",
+            message: "'cid' field is required",
           },
         }
       );
@@ -568,59 +560,6 @@ describe("Validate functions", async () => {
         }
       );
       await sendLogout("validate", currentUserToken);
-    });
-
-    after(async () => {
-      await Conversation.clearCollection();
-      await ConversationParticipant.clearCollection();
-    });
-  });
-
-  describe(" --> validateIsConversationByTO", async () => {
-    before(async () => {
-      currentUserToken = (await sendLogin("validate", "user_1")).response.token;
-      let requestData = {
-        request: {
-          conversation_create: {
-            description: "for admin and user",
-            type: "u",
-            opponent_id: userId[1],
-            participants: [userId[0], userId[1]],
-          },
-          id: "1_5",
-        },
-      };
-      const responseData = await processJsonMessageOrError(
-        "validate",
-        requestData
-      );
-    });
-
-    it("should work", async () => {
-      const requestData = {
-        to: userId[1],
-      };
-      assert.strictEqual(
-        await validateIsConversationByTO(requestData, "validate"),
-        undefined
-      );
-      await sendLogout("validate", currentUserToken);
-    });
-
-    it("should fail #1", async () => {
-      const requestData = {
-        to: userId[1],
-      };
-      await assertThrowsAsync(
-        async () => {
-          await validateIsConversationByTO(requestData, "validate");
-        },
-        {
-          name: "Error",
-          message: "Conversation not found",
-          cause: { status: 404, message: "Conversation not found" },
-        }
-      );
     });
 
     after(async () => {
