@@ -386,7 +386,6 @@ A user either can send typing or stop typing packets:
     'id': 'xyz', 
     't': 15673838833,
     'type': 'start/stop',
-    'from': '',
     'cid': 'xcv'
   }
 }
