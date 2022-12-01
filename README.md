@@ -291,7 +291,6 @@ A `type` param must have only one of two values:
   'message': {
     'id': 'xyz', 
     't': 15673838833,
-    'to': '',
     'from': '',
     'body': 'hey how is going?',
     'cid': 'xcv',
