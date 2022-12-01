@@ -51,8 +51,8 @@ export const ERROR_STATUES = {
   STATUS_ID_MISSED: { status: 422, message: "Status ID missed" },
   STATUS_TYPE_MISSED: { status: 422, message: "Status Type missed" },
   // Other -->
-  EITHER_TO_OR_CID_REQUIRED: {
+  CID_REQUIRED: {
     status: 422,
-    message: "Either 'to' or 'cid' field is required",
+    message: "'cid' field is required",
   },
 };
