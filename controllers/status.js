@@ -12,7 +12,10 @@ import { slice } from "../utils/req_res_utils.js";
 
 export default class StatusController {
   async typing(ws, data) {
-    const statusParams = slice(data.typing, ALLOW_FIELDS.ALLOWED_FILEDS_STATUS);
+    const statusParams = slice(
+      data.typing,
+      ALLOW_FIELDS.ALLOWED_FILEDS_TYPINGS
+    );
     await validate(ws, statusParams, [
       validateStatusId,
       validateStatusConversationType,
