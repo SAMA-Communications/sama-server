@@ -3,7 +3,6 @@ import validate, {
   validateStatusConversationType,
   validateIsConversationByCID,
   validateIsConversationByTO,
-  validateIsMessageById,
   validateStatusId,
   validateTOorCID,
 } from "../lib/validation.js";
@@ -22,47 +21,6 @@ export default class StatusController {
       statusParams.cid
         ? validateIsConversationByCID
         : validateIsConversationByTO,
-    ]);
-    statusParams.from = getSessionUserId(ws);
-
-    const status = new Status(statusParams);
-    const currentTs = Math.round(Date.now() / 1000);
-    status.params.t = parseInt(currentTs);
-
-    await deliverToUserOrUsers(statusParams, status, statusParams.from);
-  }
-
-  async read(ws, data) {
-    const statusParams = slice(data.read, ALLOW_FIELDS.ALLOWED_FILEDS_STATUS);
-    await validate(ws, statusParams, [
-      validateStatusId,
-      validateTOorCID,
-      statusParams.cid
-        ? validateIsConversationByCID
-        : validateIsConversationByTO,
-      validateIsMessageById,
-    ]);
-    statusParams.from = getSessionUserId(ws);
-
-    const status = new Status(statusParams);
-    const currentTs = Math.round(Date.now() / 1000);
-    status.params.t = parseInt(currentTs);
-
-    await deliverToUserOrUsers(statusParams, status, statusParams.from);
-  }
-
-  async delivered(ws, data) {
-    const statusParams = slice(
-      data.delivered,
-      ALLOW_FIELDS.ALLOWED_FILEDS_STATUS
-    );
-    await validate(ws, statusParams, [
-      validateStatusId,
-      validateTOorCID,
-      statusParams.cid
-        ? validateIsConversationByCID
-        : validateIsConversationByTO,
-      validateIsMessageById,
     ]);
     statusParams.from = getSessionUserId(ws);
 

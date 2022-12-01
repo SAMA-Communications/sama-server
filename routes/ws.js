@@ -1,10 +1,10 @@
 import ConversationController from "../controllers/conversations.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import MessagesController from "../controllers/messages.js";
-import OfflineQueue from "../models/offline_queue.js";
 import StatusController from "../controllers/status.js";
+import OfflineQueue from "../models/offline_queue.js";
 import UsersController from "../controllers/users.js";
-import { ACTIVE, getSessionUserId, getDeviceId } from "../models/active.js";
+import { ACTIVE, getSessionUserId } from "../models/active.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { StringDecoder } from "string_decoder";
 
@@ -55,10 +55,6 @@ async function processJsonMessage(ws, json) {
     return await new MessagesController().create(ws, json);
   } else if (json.typing) {
     return await new StatusController().typing(ws, json);
-  } else if (json.read) {
-    return await new StatusController().read(ws, json);
-  } else if (json.delivered) {
-    return await new StatusController().delivered(ws, json);
   } else if (json.request.message_edit) {
     return await new MessagesController().edit(ws, json);
   } else if (json.request.message_list) {
