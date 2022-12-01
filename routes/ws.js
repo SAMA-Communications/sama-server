@@ -1,7 +1,6 @@
 import ConversationController from "../controllers/conversations.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import MessagesController from "../controllers/messages.js";
-
 import StatusController from "../controllers/status.js";
 import OfflineQueue from "../models/offline_queue.js";
 import UsersController from "../controllers/users.js";
