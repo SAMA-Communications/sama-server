@@ -2,9 +2,8 @@ import Status from "../models/status.js";
 import validate, {
   validateStatusConversationType,
   validateIsConversationByCID,
-  validateIsConversationByTO,
   validateStatusId,
-  validateTOorCID,
+  validateIsCID,
 } from "../lib/validation.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { deliverToUserOrUsers } from "../routes/ws.js";
@@ -17,10 +16,8 @@ export default class StatusController {
     await validate(ws, statusParams, [
       validateStatusId,
       validateStatusConversationType,
-      validateTOorCID,
-      statusParams.cid
-        ? validateIsConversationByCID
-        : validateIsConversationByTO,
+      validateIsCID,
+      validateIsConversationByCID,
     ]);
     statusParams.from = getSessionUserId(ws);
 
