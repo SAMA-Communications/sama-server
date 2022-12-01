@@ -53,6 +53,6 @@ export const ERROR_STATUES = {
   // Other -->
   CID_REQUIRED: {
     status: 422,
-    message: "Either 'cid' field is required",
+    message: "'cid' field is required",
   },
 };
