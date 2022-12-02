@@ -506,40 +506,13 @@ Carbons is enabled by default.  On send - a message will be delivered back to al
 
 ### System messages
 
-```
-{
-  'system_message': {
-    'id': 'xyz', 
-    't': 15673838833,
-    'to': '',
-    'from': '',
-    'x': {
-      'param1': 'value',
-      'param2': 'value'
-    }
-  }
-}
-```
-
-A system message is a message w/o body, but with a set of params. The intention to have system mesasges is to exchange non human content.
-These mesasge will never be saved into history.
+TBA
 
 ## Offline queue
 
 TBA
 
-## Contacts list
-
-* Upload complete address book
-* CRUD on contacts
-
-TBA
-
 ## Last activity
-
-### Request 
-
-TBA
 
 ```
 {
@@ -547,11 +520,7 @@ TBA
     'to': '',
   }
 }
-```
 
-### Response 
-
-```
 {
   'last_activity': {
     'from': '',
@@ -562,17 +531,19 @@ TBA
 
 ## Attachments
 
-Upload attachments to server and send a fid to opponents, so they will build an url and download it. 
+TBA
 
 ## Block list
-
-Can block, unblock and list blocked users. 
 
 TBA
 
 ## IDC - inter deployments communication
 
-Will support it on a later stage
+TBA
+
+## Contacts list
+
+TBA
 
 ## API (todo)
 
