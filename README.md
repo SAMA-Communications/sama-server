@@ -114,6 +114,33 @@ Later, the subsequent logins can be done via `token`:
 { response: { id: "3", success: true } }
 ```
 
+### Update user
+
+```
+{
+  request: {
+    user_edit: {
+      login: "user_1",
+      current_password: "...",
+      new_password: "..."
+    },
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c",
+  },
+};
+
+{ 
+  response: { 
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c", 
+    user: {
+      created_at: "2022-10-13T13:11:04.447Z",
+      updated_at: "2022-10-13T13:11:04.447Z",
+      login :"user_1",
+      id: "63480e68f4794709f802a2fa", 
+    } 
+  }
+}
+```
+
 ### User delete
 
 ```
@@ -172,7 +199,6 @@ A `type` param must have only one of two values:
 * `g` - (group) - conversations for a group of users, two or more.
 
 ### Conversation update
-
 
 ```
 {
@@ -264,9 +290,7 @@ A `type` param must have only one of two values:
         "id": "e3a1fcbf-bb1a-4c6d-b13a-8952db609585"
     }
 }
-```
 
-```
 {
     "response": {
         "id": "e3a1fcbf-bb1a-4c6d-b13a-8952db609585",
