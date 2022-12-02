@@ -1,4 +1,3 @@
-import User from "../models/user.js";
 import assert from "assert";
 import { connectToDBPromise, getClient } from "../lib/db.js";
 import { processJsonMessageOrError } from "../routes/ws.js";
@@ -6,7 +5,6 @@ import { processJsonMessageOrError } from "../routes/ws.js";
 const userLogin = [...Array(30)]
   .map(() => Math.random().toString(36)[2])
   .join("");
-let currentUserToken = "";
 
 describe("User cycle", async () => {
   before(async () => {
@@ -129,11 +127,113 @@ describe("User cycle", async () => {
         },
       };
       const responseData = await processJsonMessageOrError("test", requestData);
-      currentUserToken = responseData.response.user._id;
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.user, undefined);
       assert.equal(responseData.response.error, undefined);
+    });
+  });
+
+  describe("Edit User", async () => {
+    it("should work update password", async () => {
+      const requestData = {
+        request: {
+          user_edit: {
+            login: userLogin,
+            current_password: "user_paswword_1",
+            new_password: "312sad",
+          },
+          id: "5_1",
+        },
+      };
+      const responseData = await processJsonMessageOrError("test", requestData);
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.notEqual(responseData.response.user, undefined);
+      assert.equal(responseData.response.user?.login, userLogin);
+      assert.equal(responseData.response.error, undefined);
+    });
+
+    it("should work login with new password", async () => {
+      const requestData = {
+        request: {
+          user_login: {
+            deviceId: 123,
+            login: userLogin,
+            password: "312sad",
+          },
+          id: "2_3",
+        },
+      };
+      const responseData = await processJsonMessageOrError("test", requestData);
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.notEqual(responseData.response.user, undefined);
+      assert.equal(responseData.response.user?.login, userLogin);
+      assert.equal(responseData.response.error, undefined);
+    });
+
+    it("should fail incorrect login", async () => {
+      const requestData = {
+        request: {
+          user_edit: {
+            login: "dasdsad",
+            // current_password: "user_paswword_1",
+            new_password: "312sad",
+          },
+          id: "5_1",
+        },
+      };
+      const responseData = await processJsonMessageOrError("test", requestData);
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(responseData.response.user, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "User 'login' or 'password' field missed",
+      });
+    });
+
+    it("should fail incorrect login", async () => {
+      const requestData = {
+        request: {
+          user_edit: {
+            login: 123123,
+            current_password: "user_paswword_1",
+            new_password: "312sad",
+          },
+          id: "5_1",
+        },
+      };
+      const responseData = await processJsonMessageOrError("test", requestData);
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(responseData.response.user, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "Incorrect user",
+      });
+    });
+
+    it("should fail invalid current password", async () => {
+      const requestData = {
+        request: {
+          user_edit: {
+            login: userLogin,
+            current_password: "asdaseqw",
+            new_password: "312sad",
+          },
+          id: "5_1",
+        },
+      };
+      const responseData = await processJsonMessageOrError("test", requestData);
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(responseData.response.user, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "Incorrect current password",
+      });
     });
   });
 
@@ -150,6 +250,8 @@ describe("User cycle", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notStrictEqual(responseData.response.success, undefined);
       assert.equal(responseData.response.error, undefined);
+
+      await processJsonMessageOrError("test", requestData);
     });
 
     it("should fail user isn`t online", async () => {
@@ -192,7 +294,7 @@ describe("User cycle", async () => {
           user_login: {
             deviceId: "PC",
             login: userLogin,
-            password: "user_paswword_1",
+            password: "312sad",
           },
           id: "2_3",
         },
