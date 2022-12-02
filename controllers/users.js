@@ -164,7 +164,6 @@ export default class UsersController {
       }
     );
     const updatedUser = await User.findOne({ login: userParams.login });
-    console.log(updatedUser);
 
     return {
       response: { id: requestId, user: updatedUser.visibleParams() },
