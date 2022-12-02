@@ -159,10 +159,12 @@ export default class UsersController {
         $set: {
           password_salt: updateUser.params.password_salt,
           encrypted_password: updateUser.params.encrypted_password,
+          updated_at: new Date(),
         },
       }
     );
     const updatedUser = await User.findOne({ login: userParams.login });
+    console.log(updatedUser);
 
     return {
       response: { id: requestId, user: updatedUser.visibleParams() },
