@@ -313,9 +313,24 @@ A `type` param must have only one of two values:
 ```
 {
   'message': {
-    'id': 'xyz', 
+    'body': 'hey how is going?',
+    'cid': '63480e68f4794709f802a2fa',
+    'x': {
+      'param1': 'value',
+      'param2': 'value'
+    }
+  }
+}
+```
+
+All conversation's participants who is online will receive the following message in real-time:
+
+```
+{
+  'message': {
+    'id': '63480e68f4794709f802a2fa', 
     't': 15673838833,
-    'from': '',
+    'from': '634ec51c0b65918393dca5bf',
     'body': 'hey how is going?',
     'cid': 'xcv',
     'x': {
@@ -326,8 +341,7 @@ A `type` param must have only one of two values:
 }
 ```
 
-A `t` param should be omit at sender's side. Server will add it by itself in a message to recipient. 
-To make sure both sender and recipient have same message timestamp - see belowe about `Sent status`
+All offline participants can retrieve the messages via below `List messages` API.
 
 
 ### Sent status
