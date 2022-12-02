@@ -348,7 +348,7 @@ All offline participants can retrieve the messages via below `List messages` API
 
 On each message sent to server - a server will deliver back to client a simple packet with message id and timestamp at which the message was stored in DB so both sender & recipient will have same date sent time stored:
 
-`{'ack': {'mid': 'xyz', 't': 15673838833}}`
+`{'ack': {'mid': '63480e68f4794709f802a2fa', 't': 15673838833}}`
 
 ### List messages 
 
