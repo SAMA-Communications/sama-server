@@ -390,8 +390,8 @@ On each message sent to server - a server will deliver back to client a simple p
 {
   request: {
     message_read: {
-      cid: "..",
-      ids: [1, 2, 3],
+      cid: "63077ad836b78c3d82af0812",
+      ids: [63480e68f4794709f802a2fa, 63077ad836b78c3d82af0866],
     },
     id: "3",
   },
@@ -408,8 +408,8 @@ Then, all the users whose messages we read will receive the following message:
 {
   message_read: {
     cid: "63077ad836b78c3d82af0812"
-    ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
-    from: "..."
+    ids: ["63480e68f4794709f802a2fa", "63077ad836b78c3d82af0866"],
+    from: "634ec51c0b65918393dca5bf"
   },
 };
 ```
@@ -428,10 +428,6 @@ A user either can send typing or stop typing packets:
   }
 }
 ```
-
-Either `cid` or `to` should be provided. 
-
-A `t` param should be omit at sender's side. Server will add it by itself in a message to recipient. 
 
 Then other users in this conversation who is online will receive the same typing message.
 
@@ -464,7 +460,7 @@ If use "all", then other users in this conversation who is online will receive t
     cid: "63077ad836b78c3d82af0812"
     ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
     type: "all",
-    from: "..."
+    from: "634ec51c0b65918393dca5bf"
   },
 };
 ```
@@ -496,7 +492,7 @@ Then other users in this conversation who is online will receive the following m
   message_edit: {
     id: "63077ad836b78c3d82af0812",
     body: 'updated message body'
-    from: "..."
+    from: "634ec51c0b65918393dca5bf"
   },
 };
 ```
