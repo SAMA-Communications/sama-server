@@ -34,9 +34,7 @@ export default class MessagesController {
     await validate(ws, messageParams, [validateIsConversationByCID]);
 
     messageParams.from = ObjectId(getSessionUserId(ws));
-    if (!messageParams.deleted_for) {
-      messageParams.deleted_for = [];
-    }
+    messageParams.deleted_for = [];
 
     const message = new Messages(messageParams);
     message.params.cid = message.params.cid
