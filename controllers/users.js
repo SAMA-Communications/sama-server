@@ -141,7 +141,11 @@ export default class UsersController {
 
     await validate(
       ws,
-      { login: userParams.login, password: userParams.current_password },
+      {
+        login: userParams.login,
+        password: userParams.current_password,
+        new_password: userParams.new_password,
+      },
       [validateiIsValidUserPassword]
     );
 
