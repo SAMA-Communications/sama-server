@@ -1,6 +1,7 @@
 const ACTIVE = {
   SESSIONS: new Map(),
   DEVICES: {},
+  SUBSRIBERS: {},
 };
 
 function getSessionUserId(ws) {

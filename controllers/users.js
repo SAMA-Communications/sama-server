@@ -20,6 +20,7 @@ export default class UsersController {
 
     const isUserCreate = await User.findOne({ login: userParams.login });
     if (!isUserCreate) {
+      userParams["recent_activity"] = Date.now();
       const user = new User(userParams);
       await user.save();
 
@@ -68,6 +69,24 @@ export default class UsersController {
     }
     const userId = user.params._id;
     const deviceId = userInfo.deviceId;
+
+    const arrSubscribers = ACTIVE.SUBSRIBERS[userId];
+    if (arrSubscribers) {
+      const request = { user_activity_update: {} };
+      request.user_activity_update[userId] = "online";
+
+      arrSubscribers.forEach((userId) => {
+        const wsRecipient = ACTIVE.DEVICES[userId];
+
+        if (wsRecipient) {
+          wsRecipient.forEach((data) => {
+            if (data.ws !== ws) {
+              data.ws.send(JSON.stringify({ message: request }));
+            }
+          });
+        }
+      });
+    }
 
     const activeConnections = ACTIVE.DEVICES[userId];
     if (activeConnections) {
@@ -154,6 +173,29 @@ export default class UsersController {
         device_id: deviceId,
       });
       userToken.delete();
+
+      await User.updateOne(
+        { _id: userId },
+        { $set: { recent_activity: Date.now() } }
+      );
+
+      const arrSubscribers = ACTIVE.SUBSRIBERS[userId];
+      if (arrSubscribers) {
+        const request = { user_activity_update: {} };
+        request.user_activity_update[userId] = Date.now();
+
+        arrSubscribers.forEach((userId) => {
+          const wsRecipient = ACTIVE.DEVICES[userId];
+
+          if (wsRecipient) {
+            wsRecipient.forEach((data) => {
+              if (data.ws !== ws) {
+                data.ws.send(JSON.stringify({ message: request }));
+              }
+            });
+          }
+        });
+      }
 
       return { response: { id: requestId, success: true } };
     } else {

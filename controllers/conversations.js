@@ -16,7 +16,7 @@ import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { ObjectId } from "mongodb";
-import { getSessionUserId } from "../models/active.js";
+import { ACTIVE, getSessionUserId } from "../models/active.js";
 import { slice } from "../utils/req_res_utils.js";
 
 export default class ConversationController {
