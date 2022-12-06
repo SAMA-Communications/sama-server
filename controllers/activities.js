@@ -5,14 +5,24 @@ export default class ActivityController {
   async subscribe(ws, data) {
     const requestId = data.request.id;
     const uId = data.request.user_last_activity_subscribe.id;
+    const currentUId = getSessionUserId(ws);
     const obj = {};
 
-    if (Array.isArray(ACTIVE.SUBSRIBERS[uId])) {
-      if (!ACTIVE.SUBSRIBERS[uId].includes(getSessionUserId(ws))) {
-        ACTIVE.SUBSRIBERS[uId].push(getSessionUserId(ws));
+    const oldTrackerUserId = ACTIVE.SUBSCRIBEDTO[currentUId];
+    const oldUserSubscribers = ACTIVE.SUBSCRIBERS[oldTrackerUserId];
+    ACTIVE.SUBSCRIBEDTO[currentUId] = uId;
+
+    if (Array.isArray(ACTIVE.SUBSCRIBERS[uId])) {
+      if (oldUserSubscribers && oldUserSubscribers.includes(currentUId)) {
+        ACTIVE.SUBSCRIBERS[oldTrackerUserId] = oldUserSubscribers.filter(
+          (el) => el !== currentUId
+        );
+      }
+      if (!ACTIVE.SUBSCRIBERS[uId].includes(currentUId)) {
+        ACTIVE.SUBSCRIBERS[uId].push(currentUId);
       }
     } else {
-      ACTIVE.SUBSRIBERS[uId] = [getSessionUserId(ws)];
+      ACTIVE.SUBSCRIBERS[uId] = [currentUId];
     }
 
     if (!!ACTIVE.DEVICES[uId]) {

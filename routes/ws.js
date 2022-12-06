@@ -136,6 +136,7 @@ export default function routes(app, wsOptions) {
       console.log("[close]", `WebSokect connect down`);
       const uId = getSessionUserId(ws);
       const arrDevices = ACTIVE.DEVICES[uId];
+
       if (arrDevices) {
         ACTIVE.DEVICES[uId] = arrDevices.filter((obj) => obj.ws !== ws);
         if (!ACTIVE.DEVICES[uId]?.length) {
@@ -144,8 +145,9 @@ export default function routes(app, wsOptions) {
             { $set: { recent_activity: Date.now() } }
           );
         }
-        if (ACTIVE.SUBSRIBERS[uId]) {
-          const arrSubscribers = ACTIVE.SUBSRIBERS[uId];
+
+        if (ACTIVE.SUBSCRIBERS[uId]) {
+          const arrSubscribers = ACTIVE.SUBSCRIBERS[uId];
           const request = { user_activity_update: {} };
           request.user_activity_update[uId] = Date.now();
 
@@ -160,6 +162,9 @@ export default function routes(app, wsOptions) {
               });
             }
           });
+        }
+        if (ACTIVE.SUBSCRIBEDTO[uId]) {
+          delete ACTIVE.SUBSCRIBEDTO[uId];
         }
       }
       ACTIVE.SESSIONS.delete(ws);

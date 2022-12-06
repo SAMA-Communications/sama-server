@@ -70,7 +70,7 @@ export default class UsersController {
     const userId = user.params._id;
     const deviceId = userInfo.deviceId;
 
-    const arrSubscribers = ACTIVE.SUBSRIBERS[userId];
+    const arrSubscribers = ACTIVE.SUBSCRIBERS[userId];
     if (arrSubscribers) {
       const request = { user_activity_update: {} };
       request.user_activity_update[userId] = "online";
@@ -86,6 +86,10 @@ export default class UsersController {
           });
         }
       });
+    }
+
+    if (ACTIVE.SUBSCRIBEDTO[userId]) {
+      delete ACTIVE.SUBSCRIBEDTO[userId];
     }
 
     const activeConnections = ACTIVE.DEVICES[userId];
@@ -179,7 +183,7 @@ export default class UsersController {
         { $set: { recent_activity: Date.now() } }
       );
 
-      const arrSubscribers = ACTIVE.SUBSRIBERS[userId];
+      const arrSubscribers = ACTIVE.SUBSCRIBERS[userId];
       if (arrSubscribers) {
         const request = { user_activity_update: {} };
         request.user_activity_update[userId] = Date.now();
