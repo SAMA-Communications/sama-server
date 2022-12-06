@@ -7,6 +7,10 @@ export const ERROR_STATUES = {
   TOKEN_EXPIRED: { status: 422, message: "Token has expired" },
   // Users -->
   USER_MISSED: { status: 422, message: "User already exists" },
+  USER_LOGIN_OR_PASS: {
+    status: 422,
+    message: "User 'login' or 'password' field missed",
+  },
   USER_SELECTED: { status: 422, message: "Select at least one user" },
   USER_ALREADY_EXISTS: { status: 422, message: "User already exists" },
   TOO_MANY_USERS: {
@@ -14,6 +18,10 @@ export const ERROR_STATUES = {
     message: "Too many users in private conversation",
   },
   INCORRECT_USER: { status: 422, message: "Incorrect user" },
+  INCORRECT_CURRENT_PASSWORD: {
+    status: 422,
+    message: "Incorrect current password",
+  },
   DEVICE_ID_MISSED: { status: 422, message: "'deviceId' is required" },
   // Conversation -->
   CONVERSATION_NOT_FOUND: { status: 404, message: "Conversation not found" },

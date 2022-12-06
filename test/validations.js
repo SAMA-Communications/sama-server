@@ -21,7 +21,6 @@ import {
   validateStatusConversationType,
   validateStatusId,
   validateIsCID,
-  validateUserSession,
   validateIsUserSendHimSelf,
 } from "../lib/validation.js";
 
@@ -118,28 +117,6 @@ describe("Validate functions", async () => {
         }
       );
       await sendLogout("validate", currentUserToken);
-    });
-  });
-
-  describe(" --> validateUserSession", async () => {
-    it("should work", async () => {
-      currentUserToken = (await sendLogin("validate", "user_1")).response.user
-        .token;
-      assert.strictEqual(validateUserSession(null, "validate"), undefined);
-    });
-
-    it("should fail", async () => {
-      await sendLogout("validate", currentUserToken);
-      assert.throws(
-        () => {
-          validateUserSession(null, "validate");
-        },
-        {
-          name: "Error",
-          message: "Unauthorized",
-          cause: { status: 404, message: "Unauthorized" },
-        }
-      );
     });
   });
 

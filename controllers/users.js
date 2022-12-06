@@ -2,7 +2,10 @@ import OfflineQueue from "../models/offline_queue.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
 import jwt from "jsonwebtoken";
-import validate, { validateDeviceId } from "../lib/validation.js";
+import validate, {
+  validateDeviceId,
+  validateiIsValidUserPassword,
+} from "../lib/validation.js";
 import { ACTIVE, getDeviceId, getSessionUserId } from "../models/active.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
@@ -129,6 +132,45 @@ export default class UsersController {
 
     return {
       response: { id: requestId, user: user.visibleParams(), token: jwtToken },
+    };
+  }
+
+  async edit(ws, data) {
+    const requestId = data.request.id;
+    const userParams = data.request.user_edit;
+
+    await validate(
+      ws,
+      {
+        login: userParams.login,
+        password: userParams.current_password,
+        new_password: userParams.new_password,
+      },
+      [validateiIsValidUserPassword]
+    );
+
+    const updateUser = new User({
+      login: userParams.login,
+      password: userParams.new_password,
+    });
+
+    await updateUser.encryptAndSetPassword();
+    await User.updateOne(
+      {
+        login: userParams.login,
+      },
+      {
+        $set: {
+          password_salt: updateUser.params.password_salt,
+          encrypted_password: updateUser.params.encrypted_password,
+          updated_at: new Date(),
+        },
+      }
+    );
+    const updatedUser = await User.findOne({ login: userParams.login });
+
+    return {
+      response: { id: requestId, user: updatedUser.visibleParams() },
     };
   }
 
