@@ -6,7 +6,11 @@ import StatusController from "../controllers/status.js";
 import OfflineQueue from "../models/offline_queue.js";
 import UsersController from "../controllers/users.js";
 import User from "../models/user.js";
-import { ACTIVE, getSessionUserId } from "../models/active.js";
+import {
+  ACTIVE,
+  deliverActivityToUsers,
+  getSessionUserId,
+} from "../models/active.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { StringDecoder } from "string_decoder";
 const decoder = new StringDecoder("utf8");
@@ -149,21 +153,7 @@ export default function routes(app, wsOptions) {
         }
 
         if (ACTIVE.SUBSCRIBERS[uId]) {
-          const arrSubscribers = ACTIVE.SUBSCRIBERS[uId];
-          const request = { last_activity: {} };
-          request.last_activity[uId] = Math.round(Date.now() / 1000);
-
-          arrSubscribers.forEach((userId) => {
-            const wsRecipient = ACTIVE.DEVICES[userId];
-
-            if (wsRecipient) {
-              wsRecipient.forEach((data) => {
-                if (data.ws !== ws) {
-                  data.ws.send(JSON.stringify(request));
-                }
-              });
-            }
-          });
+          deliverActivityToUsers(ws, uId, Math.round(Date.now() / 1000));
         }
         if (ACTIVE.SUBSCRIBED_TO[uId]) {
           delete ACTIVE.SUBSCRIBED_TO[uId];

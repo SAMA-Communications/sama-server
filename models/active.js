@@ -17,4 +17,21 @@ function getDeviceId(ws, userId) {
   }
   return null;
 }
-export { ACTIVE, getSessionUserId, getDeviceId };
+function deliverActivityToUsers(ws, uId, activity) {
+  const arrSubscribers = ACTIVE.SUBSCRIBERS[uId];
+  const request = { last_activity: {} };
+  request.last_activity[uId] = activity;
+
+  arrSubscribers.forEach((userId) => {
+    const wsRecipient = ACTIVE.DEVICES[userId];
+
+    if (wsRecipient) {
+      wsRecipient.forEach((data) => {
+        if (data.ws !== ws) {
+          data.ws.send(JSON.stringify(request));
+        }
+      });
+    }
+  });
+}
+export { ACTIVE, getSessionUserId, getDeviceId, deliverActivityToUsers };

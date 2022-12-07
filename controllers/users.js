@@ -3,7 +3,12 @@ import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
 import jwt from "jsonwebtoken";
 import validate, { validateDeviceId } from "../lib/validation.js";
-import { ACTIVE, getDeviceId, getSessionUserId } from "../models/active.js";
+import {
+  ACTIVE,
+  deliverActivityToUsers,
+  getDeviceId,
+  getSessionUserId,
+} from "../models/active.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { slice } from "../utils/req_res_utils.js";
@@ -70,22 +75,8 @@ export default class UsersController {
     const userId = user.params._id;
     const deviceId = userInfo.deviceId;
 
-    const arrSubscribers = ACTIVE.SUBSCRIBERS[userId];
-    if (arrSubscribers) {
-      const request = { last_activity: {} };
-      request.last_activity[userId] = "online";
-
-      arrSubscribers.forEach((userId) => {
-        const wsRecipient = ACTIVE.DEVICES[userId];
-
-        if (wsRecipient) {
-          wsRecipient.forEach((data) => {
-            if (data.ws !== ws) {
-              data.ws.send(JSON.stringify(request));
-            }
-          });
-        }
-      });
+    if (ACTIVE.SUBSCRIBERS[userId]) {
+      deliverActivityToUsers(ws, userId, "online");
     }
 
     if (ACTIVE.SUBSCRIBED_TO[userId]) {
@@ -183,22 +174,8 @@ export default class UsersController {
         { $set: { recent_activity: Math.round(Date.now() / 1000) } }
       );
 
-      const arrSubscribers = ACTIVE.SUBSCRIBERS[userId];
-      if (arrSubscribers) {
-        const request = { last_activity: {} };
-        request.last_activity[userId] = Math.round(Date.now() / 1000);
-
-        arrSubscribers.forEach((userId) => {
-          const wsRecipient = ACTIVE.DEVICES[userId];
-
-          if (wsRecipient) {
-            wsRecipient.forEach((data) => {
-              if (data.ws !== ws) {
-                data.ws.send(JSON.stringify(request));
-              }
-            });
-          }
-        });
+      if (ACTIVE.SUBSCRIBERS[userId]) {
+        deliverActivityToUsers(ws, userId, Math.round(Date.now() / 1000));
       }
 
       return { response: { id: requestId, success: true } };
