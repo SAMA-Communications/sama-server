@@ -1,16 +1,16 @@
 import ConversationController from "../controllers/conversations.js";
 import ConversationParticipant from "../models/conversation_participant.js";
-import ActivityController from "../controllers/activities.js";
 import MessagesController from "../controllers/messages.js";
 import StatusController from "../controllers/status.js";
 import OfflineQueue from "../models/offline_queue.js";
+import Activity from "../store/activity.js";
 import UsersController from "../controllers/users.js";
 import User from "../models/user.js";
 import {
   ACTIVE,
   deliverActivityToUsers,
   getSessionUserId,
-} from "../models/active.js";
+} from "../store/active.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { StringDecoder } from "string_decoder";
 const decoder = new StringDecoder("utf8");
@@ -81,9 +81,9 @@ async function processJsonMessage(ws, json) {
   } else if (json.request.user_search) {
     return await new UsersController().search(ws, json);
   } else if (json.request.user_last_activity_subscribe) {
-    return await new ActivityController().subscribe(ws, json);
+    return await new Activity().statusSubscribe(ws, json);
   } else if (json.request.user_last_activity) {
-    return await new ActivityController().status(ws, json);
+    return await new Activity().getUserStatus(ws, json);
   } else if (json.request.getParticipantsByCids) {
     return await new ConversationController().getParticipantsByCids(ws, json);
   } else if (json.request.conversation_create) {

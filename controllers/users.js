@@ -8,7 +8,7 @@ import {
   deliverActivityToUsers,
   getDeviceId,
   getSessionUserId,
-} from "../models/active.js";
+} from "../store/active.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { slice } from "../utils/req_res_utils.js";

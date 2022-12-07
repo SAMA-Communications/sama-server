@@ -1,8 +1,13 @@
+import { ACTIVE, getSessionUserId } from "./active.js";
+import BaseModel from "../models/base/base.js";
 import User from "../models/user.js";
-import { ACTIVE, getSessionUserId } from "../models/active.js";
 
-export default class ActivityController {
-  async subscribe(ws, data) {
+export default class Activity extends BaseModel {
+  constructor(params) {
+    super(params);
+  }
+
+  async statusSubscribe(ws, data) {
     const requestId = data.request.id;
     const uId = data.request.user_last_activity_subscribe.id;
     const currentUId = getSessionUserId(ws);
@@ -35,7 +40,7 @@ export default class ActivityController {
     return { response: { id: requestId, last_activity: obj } };
   }
 
-  async status(ws, data) {
+  async getUserStatus(ws, data) {
     const requestId = data.request.id;
     const uIds = data.request.user_last_activity.ids;
     const obj = {};
@@ -44,9 +49,9 @@ export default class ActivityController {
       "_id",
       "recent_activity",
     ]);
-    for (const uId in uLastActivities) {
-      obj[uId] = uLastActivities[uId].recent_activity;
-    }
+    uLastActivities.forEach((u) => {
+      obj[u._id] = uLastActivities[u._id].recent_activity;
+    });
 
     return { response: { id: requestId, last_activity: obj } };
   }
