@@ -76,6 +76,8 @@ async function processJsonMessage(ws, json) {
     return await new UsersController().search(ws, json);
   } else if (json.request.user_last_activity_subscribe) {
     return await new ActivityController().subscribe(ws, json);
+  } else if (json.request.user_last_activity) {
+    return await new ActivityController().status(ws, json);
   } else if (json.request.getParticipantsByCids) {
     return await new ConversationController().getParticipantsByCids(ws, json);
   } else if (json.request.conversation_create) {
@@ -142,14 +144,14 @@ export default function routes(app, wsOptions) {
         if (!ACTIVE.DEVICES[uId]?.length) {
           await User.updateOne(
             { _id: uId },
-            { $set: { recent_activity: Date.now() } }
+            { $set: { recent_activity: Math.round(Date.now() / 1000) } }
           );
         }
 
         if (ACTIVE.SUBSCRIBERS[uId]) {
           const arrSubscribers = ACTIVE.SUBSCRIBERS[uId];
-          const request = { user_activity_update: {} };
-          request.user_activity_update[uId] = Date.now();
+          const request = { last_activity: {} };
+          request.last_activity[uId] = Math.round(Date.now() / 1000);
 
           arrSubscribers.forEach((userId) => {
             const wsRecipient = ACTIVE.DEVICES[userId];
@@ -157,14 +159,14 @@ export default function routes(app, wsOptions) {
             if (wsRecipient) {
               wsRecipient.forEach((data) => {
                 if (data.ws !== ws) {
-                  data.ws.send(JSON.stringify({ message: request }));
+                  data.ws.send(JSON.stringify(request));
                 }
               });
             }
           });
         }
-        if (ACTIVE.SUBSCRIBEDTO[uId]) {
-          delete ACTIVE.SUBSCRIBEDTO[uId];
+        if (ACTIVE.SUBSCRIBED_TO[uId]) {
+          delete ACTIVE.SUBSCRIBED_TO[uId];
         }
       }
       ACTIVE.SESSIONS.delete(ws);

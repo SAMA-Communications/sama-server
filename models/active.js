@@ -1,7 +1,7 @@
 const ACTIVE = {
   SESSIONS: new Map(),
   DEVICES: {},
-  SUBSCRIBEDTO: {},
+  SUBSCRIBED_TO: {},
   SUBSCRIBERS: {},
 };
 

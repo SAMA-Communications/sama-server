@@ -72,8 +72,8 @@ export default class UsersController {
 
     const arrSubscribers = ACTIVE.SUBSCRIBERS[userId];
     if (arrSubscribers) {
-      const request = { user_activity_update: {} };
-      request.user_activity_update[userId] = "online";
+      const request = { last_activity: {} };
+      request.last_activity[userId] = "online";
 
       arrSubscribers.forEach((userId) => {
         const wsRecipient = ACTIVE.DEVICES[userId];
@@ -81,15 +81,15 @@ export default class UsersController {
         if (wsRecipient) {
           wsRecipient.forEach((data) => {
             if (data.ws !== ws) {
-              data.ws.send(JSON.stringify({ message: request }));
+              data.ws.send(JSON.stringify(request));
             }
           });
         }
       });
     }
 
-    if (ACTIVE.SUBSCRIBEDTO[userId]) {
-      delete ACTIVE.SUBSCRIBEDTO[userId];
+    if (ACTIVE.SUBSCRIBED_TO[userId]) {
+      delete ACTIVE.SUBSCRIBED_TO[userId];
     }
 
     const activeConnections = ACTIVE.DEVICES[userId];
@@ -180,13 +180,13 @@ export default class UsersController {
 
       await User.updateOne(
         { _id: userId },
-        { $set: { recent_activity: Date.now() } }
+        { $set: { recent_activity: Math.round(Date.now() / 1000) } }
       );
 
       const arrSubscribers = ACTIVE.SUBSCRIBERS[userId];
       if (arrSubscribers) {
-        const request = { user_activity_update: {} };
-        request.user_activity_update[userId] = Date.now();
+        const request = { last_activity: {} };
+        request.last_activity[userId] = Math.round(Date.now() / 1000);
 
         arrSubscribers.forEach((userId) => {
           const wsRecipient = ACTIVE.DEVICES[userId];
@@ -194,7 +194,7 @@ export default class UsersController {
           if (wsRecipient) {
             wsRecipient.forEach((data) => {
               if (data.ws !== ws) {
-                data.ws.send(JSON.stringify({ message: request }));
+                data.ws.send(JSON.stringify(request));
               }
             });
           }

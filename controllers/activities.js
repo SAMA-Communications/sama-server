@@ -8,9 +8,9 @@ export default class ActivityController {
     const currentUId = getSessionUserId(ws);
     const obj = {};
 
-    const oldTrackerUserId = ACTIVE.SUBSCRIBEDTO[currentUId];
+    const oldTrackerUserId = ACTIVE.SUBSCRIBED_TO[currentUId];
     const oldUserSubscribers = ACTIVE.SUBSCRIBERS[oldTrackerUserId];
-    ACTIVE.SUBSCRIBEDTO[currentUId] = uId;
+    ACTIVE.SUBSCRIBED_TO[currentUId] = uId;
 
     if (Array.isArray(ACTIVE.SUBSCRIBERS[uId])) {
       if (oldUserSubscribers && oldUserSubscribers.includes(currentUId)) {
@@ -50,4 +50,26 @@ export default class ActivityController {
 
     return { response: { id: requestId, last_activity: obj } };
   }
+
+  // async deliverStatusToUsers(midsByUId, cid, currentWS) {
+  //   const participantsIds = Object.keys(midsByUId);
+  //   participantsIds.forEach((uId) => {
+  //     const wsRecipient = ACTIVE.DEVICES[uId];
+
+  //     if (wsRecipient) {
+  //       wsRecipient.forEach((data) => {
+  //         if (data.ws !== currentWS) {
+  //           const message = {
+  //             message_read: {
+  //               cid: ObjectId(cid),
+  //               ids: midsByUId[uId].map((el) => el._id),
+  //               from: ObjectId(uId),
+  //             },
+  //           };
+  //           data.ws.send(JSON.stringify({ message }));
+  //         }
+  //       });
+  //     }
+  //   });
+  // }
 }
