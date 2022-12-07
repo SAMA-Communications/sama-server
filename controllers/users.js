@@ -146,6 +146,45 @@ export default class UsersController {
     };
   }
 
+  async edit(ws, data) {
+    const requestId = data.request.id;
+    const userParams = data.request.user_edit;
+
+    await validate(
+      ws,
+      {
+        login: userParams.login,
+        password: userParams.current_password,
+        new_password: userParams.new_password,
+      },
+      [validateiIsValidUserPassword]
+    );
+
+    const updateUser = new User({
+      login: userParams.login,
+      password: userParams.new_password,
+    });
+
+    await updateUser.encryptAndSetPassword();
+    await User.updateOne(
+      {
+        login: userParams.login,
+      },
+      {
+        $set: {
+          password_salt: updateUser.params.password_salt,
+          encrypted_password: updateUser.params.encrypted_password,
+          updated_at: new Date(),
+        },
+      }
+    );
+    const updatedUser = await User.findOne({ login: userParams.login });
+
+    return {
+      response: { id: requestId, user: updatedUser.visibleParams() },
+    };
+  }
+
   async logout(ws, data) {
     const requestId = data.request.id;
 

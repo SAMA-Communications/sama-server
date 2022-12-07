@@ -70,6 +70,8 @@ async function processJsonMessage(ws, json) {
     return await new MessagesController().delete(ws, json);
   } else if (json.request.user_create) {
     return await new UsersController().create(ws, json);
+  } else if (json.request.user_edit) {
+    return await new UsersController().edit(ws, json);
   } else if (json.request.user_login) {
     return await new UsersController().login(ws, json);
   } else if (json.request.user_logout) {
