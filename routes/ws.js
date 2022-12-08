@@ -3,11 +3,12 @@ import ConversationParticipant from "../models/conversation_participant.js";
 import MessagesController from "../controllers/messages.js";
 import StatusController from "../controllers/status.js";
 import OfflineQueue from "../models/offline_queue.js";
-import Activity, { maybeUpdateAndSendUserActivity } from "../store/activity.js";
+import LastActivityController from "../controllers/activities.js";
 import UsersController from "../controllers/users.js";
 import { ACTIVE, getSessionUserId } from "../store/session.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { StringDecoder } from "string_decoder";
+import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
 const decoder = new StringDecoder("utf8");
 
 async function deliverToUser(currentWS, userId, request) {
@@ -76,11 +77,11 @@ async function processJsonMessage(ws, json) {
   } else if (json.request.user_search) {
     return await new UsersController().search(ws, json);
   } else if (json.request.user_last_activity_subscribe) {
-    return await new Activity().statusSubscribe(ws, json);
+    return await new LastActivityController().statusSubscribe(ws, json);
   } else if (json.request.user_last_activity_unsubscribe) {
-    return await new Activity().statusUnsubscribe(ws, json);
+    return await new LastActivityController().statusUnsubscribe(ws, json);
   } else if (json.request.user_last_activity) {
-    return await new Activity().getUserStatus(ws, json);
+    return await new LastActivityController().getUserStatus(ws, json);
   } else if (json.request.getParticipantsByCids) {
     return await new ConversationController().getParticipantsByCids(ws, json);
   } else if (json.request.conversation_create) {

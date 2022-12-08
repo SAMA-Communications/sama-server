@@ -2,12 +2,12 @@ import OfflineQueue from "../models/offline_queue.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
 import jwt from "jsonwebtoken";
-import Activity, { maybeUpdateAndSendUserActivity } from "../store/activity.js";
 import validate, { validateDeviceId } from "../lib/validation.js";
 import { ACTIVE, getDeviceId, getSessionUserId } from "../store/session.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
+import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
 import { slice } from "../utils/req_res_utils.js";
 
 export default class UsersController {
