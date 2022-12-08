@@ -8,6 +8,7 @@ import {
   deliverActivityToUsers,
   getDeviceId,
   getSessionUserId,
+  updateAndSendUserActivity,
 } from "../store/active.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
@@ -208,14 +209,7 @@ export default class UsersController {
       });
       userToken.delete();
 
-      await User.updateOne(
-        { _id: userId },
-        { $set: { recent_activity: Math.round(Date.now() / 1000) } }
-      );
-
-      if (ACTIVE.SUBSCRIBERS[userId]) {
-        deliverActivityToUsers(ws, userId, Math.round(Date.now() / 1000));
-      }
+      await updateAndSendUserActivity(ws, userId);
 
       return { response: { id: requestId, success: true } };
     } else {

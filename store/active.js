@@ -1,3 +1,5 @@
+import User from "../models/user.js";
+
 const ACTIVE = {
   SESSIONS: new Map(),
   DEVICES: {},
@@ -33,5 +35,22 @@ function deliverActivityToUsers(ws, uId, activity) {
       });
     }
   });
+  return null;
 }
-export { ACTIVE, getSessionUserId, getDeviceId, deliverActivityToUsers };
+
+async function updateAndSendUserActivity(ws, uId) {
+  const t = Math.round(Date.now() / 1000);
+  await User.updateOne({ _id: uId }, { $set: { recent_activity: t } });
+
+  if (ACTIVE.SUBSCRIBERS[uId]) {
+    deliverActivityToUsers(ws, uId, t);
+  }
+}
+
+export {
+  ACTIVE,
+  getSessionUserId,
+  getDeviceId,
+  deliverActivityToUsers,
+  updateAndSendUserActivity,
+};

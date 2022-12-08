@@ -10,6 +10,7 @@ import {
   ACTIVE,
   deliverActivityToUsers,
   getSessionUserId,
+  updateAndSendUserActivity,
 } from "../store/active.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { StringDecoder } from "string_decoder";
@@ -82,6 +83,8 @@ async function processJsonMessage(ws, json) {
     return await new UsersController().search(ws, json);
   } else if (json.request.user_last_activity_subscribe) {
     return await new Activity().statusSubscribe(ws, json);
+  } else if (json.request.user_last_activity_unsubscribe) {
+    return await new Activity().statusUnsubscribe(ws, json);
   } else if (json.request.user_last_activity) {
     return await new Activity().getUserStatus(ws, json);
   } else if (json.request.getParticipantsByCids) {
@@ -147,16 +150,8 @@ export default function routes(app, wsOptions) {
 
       if (arrDevices) {
         ACTIVE.DEVICES[uId] = arrDevices.filter((obj) => obj.ws !== ws);
-        if (!ACTIVE.DEVICES[uId]?.length) {
-          await User.updateOne(
-            { _id: uId },
-            { $set: { recent_activity: Math.round(Date.now() / 1000) } }
-          );
-        }
+        await updateAndSendUserActivity(ws, uId);
 
-        if (ACTIVE.SUBSCRIBERS[uId]) {
-          deliverActivityToUsers(ws, uId, Math.round(Date.now() / 1000));
-        }
         if (ACTIVE.SUBSCRIBED_TO[uId]) {
           delete ACTIVE.SUBSCRIBED_TO[uId];
         }
