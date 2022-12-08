@@ -3,15 +3,9 @@ import ConversationParticipant from "../models/conversation_participant.js";
 import MessagesController from "../controllers/messages.js";
 import StatusController from "../controllers/status.js";
 import OfflineQueue from "../models/offline_queue.js";
-import Activity from "../store/activity.js";
+import Activity, { maybeUpdateAndSendUserActivity } from "../store/activity.js";
 import UsersController from "../controllers/users.js";
-import User from "../models/user.js";
-import {
-  ACTIVE,
-  deliverActivityToUsers,
-  getSessionUserId,
-  updateAndSendUserActivity,
-} from "../store/active.js";
+import { ACTIVE, getSessionUserId } from "../store/session.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { StringDecoder } from "string_decoder";
 const decoder = new StringDecoder("utf8");
@@ -150,11 +144,7 @@ export default function routes(app, wsOptions) {
 
       if (arrDevices) {
         ACTIVE.DEVICES[uId] = arrDevices.filter((obj) => obj.ws !== ws);
-        await updateAndSendUserActivity(ws, uId);
-
-        if (ACTIVE.SUBSCRIBED_TO[uId]) {
-          delete ACTIVE.SUBSCRIBED_TO[uId];
-        }
+        await maybeUpdateAndSendUserActivity(ws, { uId });
       }
       ACTIVE.SESSIONS.delete(ws);
     },

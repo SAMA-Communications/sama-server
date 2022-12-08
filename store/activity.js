@@ -1,8 +1,13 @@
-import { ACTIVE, getSessionUserId } from "./active.js";
+import { ACTIVE, getSessionUserId } from "./session.js";
 import BaseModel from "../models/base/base.js";
 import User from "../models/user.js";
 
-export default class Activity extends BaseModel {
+const ACTIVITY = {
+  SUBSCRIBED_TO: {},
+  SUBSCRIBERS: {},
+};
+
+class Activity extends BaseModel {
   constructor(params) {
     super(params);
   }
@@ -13,15 +18,17 @@ export default class Activity extends BaseModel {
     const currentUId = getSessionUserId(ws);
     const obj = {};
 
-    this.statusUnsubscribe(ws, { request: { id: requestId } });
+    if (ACTIVITY.SUBSCRIBED_TO[currentUId]) {
+      this.statusUnsubscribe(ws, { request: { id: requestId } });
+    }
 
-    ACTIVE.SUBSCRIBED_TO[currentUId] = uId;
-    if (Array.isArray(ACTIVE.SUBSCRIBERS[uId])) {
-      if (!ACTIVE.SUBSCRIBERS[uId].includes(currentUId)) {
-        ACTIVE.SUBSCRIBERS[uId].push(currentUId);
+    ACTIVITY.SUBSCRIBED_TO[currentUId] = uId;
+    if (Array.isArray(ACTIVITY.SUBSCRIBERS[uId])) {
+      if (!ACTIVITY.SUBSCRIBERS[uId].includes(currentUId)) {
+        ACTIVITY.SUBSCRIBERS[uId].push(currentUId);
       }
     } else {
-      ACTIVE.SUBSCRIBERS[uId] = [currentUId];
+      ACTIVITY.SUBSCRIBERS[uId] = [currentUId];
     }
 
     if (!!ACTIVE.DEVICES[uId]) {
@@ -38,15 +45,15 @@ export default class Activity extends BaseModel {
     const requestId = data.request.id;
     const currentUId = getSessionUserId(ws);
 
-    const oldTrackerUserId = ACTIVE.SUBSCRIBED_TO[currentUId];
-    const oldUserSubscribers = ACTIVE.SUBSCRIBERS[oldTrackerUserId];
-    delete ACTIVE.SUBSCRIBED_TO[currentUId];
+    const oldTrackerUserId = ACTIVITY.SUBSCRIBED_TO[currentUId];
+    const oldUserSubscribers = ACTIVITY.SUBSCRIBERS[oldTrackerUserId];
+    delete ACTIVITY.SUBSCRIBED_TO[currentUId];
 
     if (oldUserSubscribers && oldUserSubscribers.includes(currentUId)) {
-      if (ACTIVE.SUBSCRIBERS[oldTrackerUserId].length === 1) {
-        delete ACTIVE.SUBSCRIBERS[oldTrackerUserId];
+      if (ACTIVITY.SUBSCRIBERS[oldTrackerUserId].length === 1) {
+        delete ACTIVITY.SUBSCRIBERS[oldTrackerUserId];
       } else {
-        ACTIVE.SUBSCRIBERS[oldTrackerUserId] = oldUserSubscribers.filter(
+        ACTIVITY.SUBSCRIBERS[oldTrackerUserId] = oldUserSubscribers.filter(
           (el) => el !== currentUId
         );
       }
@@ -71,3 +78,40 @@ export default class Activity extends BaseModel {
     return { response: { id: requestId, last_activity: obj } };
   }
 }
+
+function deliverActivityToUsers(ws, uId, activity) {
+  const arrSubscribers = ACTIVITY.SUBSCRIBERS[uId];
+  const request = { last_activity: {} };
+  request.last_activity[uId] = activity;
+
+  arrSubscribers.forEach((userId) => {
+    const wsRecipient = ACTIVE.DEVICES[userId];
+
+    if (wsRecipient) {
+      wsRecipient.forEach((data) => {
+        if (data.ws !== ws) {
+          data.ws.send(JSON.stringify(request));
+        }
+      });
+    }
+  });
+  return null;
+}
+
+async function maybeUpdateAndSendUserActivity(ws, { uId, rId }, status) {
+  await User.updateOne(
+    { _id: uId },
+    { $set: { recent_activity: status || Math.round(new Date() / 1000) } }
+  );
+
+  await new Activity().statusUnsubscribe(ws, {
+    request: { id: rId || "Unsubscribe" },
+  });
+
+  if (ACTIVITY.SUBSCRIBERS[uId]) {
+    deliverActivityToUsers(ws, uId, status || Math.round(new Date() / 1000));
+  }
+}
+
+export default Activity;
+export { ACTIVITY, deliverActivityToUsers, maybeUpdateAndSendUserActivity };

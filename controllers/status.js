@@ -7,7 +7,7 @@ import validate, {
 } from "../lib/validation.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { deliverToUserOrUsers } from "../routes/ws.js";
-import { getSessionUserId } from "../store/active.js";
+import { getSessionUserId } from "../store/session.js";
 import { slice } from "../utils/req_res_utils.js";
 
 export default class StatusController {

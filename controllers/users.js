@@ -2,18 +2,13 @@ import OfflineQueue from "../models/offline_queue.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
 import jwt from "jsonwebtoken";
+import Activity, { maybeUpdateAndSendUserActivity } from "../store/activity.js";
 import validate, { validateDeviceId } from "../lib/validation.js";
-import {
-  ACTIVE,
-  deliverActivityToUsers,
-  getDeviceId,
-  getSessionUserId,
-  updateAndSendUserActivity,
-} from "../store/active.js";
+import { ACTIVE, getDeviceId, getSessionUserId } from "../store/session.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
+import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { slice } from "../utils/req_res_utils.js";
-import { CONSTANTS } from "../constants/constants.js";
 
 export default class UsersController {
   async create(ws, data) {
@@ -41,6 +36,7 @@ export default class UsersController {
   async login(ws, data) {
     const requestId = data.request.id;
     const userInfo = data.request.user_login;
+
     await validate(ws, userInfo, [validateDeviceId]);
 
     let user, token;
@@ -76,13 +72,11 @@ export default class UsersController {
     const userId = user.params._id;
     const deviceId = userInfo.deviceId;
 
-    if (ACTIVE.SUBSCRIBERS[userId]) {
-      deliverActivityToUsers(ws, userId, "online");
-    }
-
-    if (ACTIVE.SUBSCRIBED_TO[userId]) {
-      delete ACTIVE.SUBSCRIBED_TO[userId];
-    }
+    await maybeUpdateAndSendUserActivity(
+      ws,
+      { uId: userId, rId: requestId },
+      "online"
+    );
 
     const activeConnections = ACTIVE.DEVICES[userId];
     if (activeConnections) {
@@ -194,6 +188,8 @@ export default class UsersController {
 
     const deviceId = getDeviceId(ws, userId);
     if (currentUserSession) {
+      await maybeUpdateAndSendUserActivity(ws, { uId: userId, rId: requestId });
+
       if (ACTIVE.DEVICES[userId].length > 1) {
         ACTIVE.DEVICES[userId] = ACTIVE.DEVICES[userId].filter((obj) => {
           return obj.deviceId !== deviceId;
@@ -208,8 +204,6 @@ export default class UsersController {
         device_id: deviceId,
       });
       userToken.delete();
-
-      await updateAndSendUserActivity(ws, userId);
 
       return { response: { id: requestId, success: true } };
     } else {
@@ -228,6 +222,9 @@ export default class UsersController {
         cause: ERROR_STATUES.FORBIDDEN,
       });
     }
+    await new Activity().statusUnsubscribe(ws, {
+      request: { id: requestId },
+    });
 
     if (ACTIVE.SESSIONS.get(ws)) {
       delete ACTIVE.DEVICES[userSession];
