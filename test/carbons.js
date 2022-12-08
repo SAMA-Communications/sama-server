@@ -2,7 +2,7 @@ import User from "../models/user.js";
 import assert from "assert";
 import { connectToDBPromise } from "../lib/db.js";
 import { processJsonMessageOrError } from "../routes/ws.js";
-import { ACTIVE } from "../models/active.js";
+import { ACTIVE } from "../store/session.js";
 
 let currentUserToken = [];
 let userId = [];

@@ -7,6 +7,7 @@ export const ERROR_STATUES = {
   TOKEN_EXPIRED: { status: 422, message: "Token has expired" },
   // Users -->
   USER_MISSED: { status: 422, message: "User already exists" },
+  USER_ID_MISSED: { status: 422, message: "User ID missed" },
   USER_LOGIN_OR_PASS: {
     status: 422,
     message: "User 'login' or 'password' field missed",

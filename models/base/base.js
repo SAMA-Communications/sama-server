@@ -57,8 +57,11 @@ export default class BaseModel {
       if (query.cid) {
         query.cid = new ObjectId(query.cid);
       }
-      if (query._id?.$nin) {
-        query._id.$nin = query._id.$nin.map((id) => new ObjectId(id));
+      if (query._id) {
+        query._id.$nin &&
+          (query._id.$nin = query._id.$nin.map((id) => new ObjectId(id)));
+        query._id.$in &&
+          (query._id.$in = query._id.$in.map((id) => new ObjectId(id)));
       }
       if (query.user_id && !query.user_id.$ne) {
         query.user_id.$in

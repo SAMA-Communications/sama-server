@@ -2,13 +2,17 @@ import OfflineQueue from "../models/offline_queue.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
 import jwt from "jsonwebtoken";
-import validate, { validateDeviceId } from "../lib/validation.js";
+import validate, {
+  validateDeviceId,
+  validateIsValidUserPassword,
+} from "../lib/validation.js";
 import { ACTIVE, getDeviceId, getSessionUserId } from "../store/session.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
 import { slice } from "../utils/req_res_utils.js";
+import LastActivityController from "./activities.js";
 
 export default class UsersController {
   async create(ws, data) {
@@ -152,7 +156,7 @@ export default class UsersController {
         password: userParams.current_password,
         new_password: userParams.new_password,
       },
-      [validateiIsValidUserPassword]
+      [validateIsValidUserPassword]
     );
 
     const updateUser = new User({
@@ -222,7 +226,8 @@ export default class UsersController {
         cause: ERROR_STATUES.FORBIDDEN,
       });
     }
-    await new Activity().statusUnsubscribe(ws, {
+
+    await new LastActivityController().statusUnsubscribe(ws, {
       request: { id: requestId },
     });
 
