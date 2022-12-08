@@ -99,16 +99,24 @@ function deliverActivityToUsers(ws, uId, activity) {
 }
 
 async function maybeUpdateAndSendUserActivity(ws, { uId, rId }, status) {
-  await User.updateOne(
-    { _id: uId },
-    { $set: { recent_activity: status || Math.round(new Date() / 1000) } }
-  );
-
-  await new Activity().statusUnsubscribe(ws, {
-    request: { id: rId || "Unsubscribe" },
-  });
-
   if (ACTIVITY.SUBSCRIBERS[uId]) {
+    if (status === "online") {
+      if (!ACTIVE.DEVICES[uId]?.length) {
+        await User.updateOne(
+          { _id: uId },
+          { $set: { recent_activity: status } }
+        );
+      }
+    } else {
+      await User.updateOne(
+        { _id: uId },
+        { $set: { recent_activity: Math.round(new Date() / 1000) } }
+      );
+      await new Activity().statusUnsubscribe(ws, {
+        request: { id: rId || "Unsubscribe" },
+      });
+    }
+
     deliverActivityToUsers(ws, uId, status || Math.round(new Date() / 1000));
   }
 }
