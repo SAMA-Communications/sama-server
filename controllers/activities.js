@@ -12,15 +12,12 @@ export default class LastActivityController {
     if (ACTIVITY.SUBSCRIBED_TO[currentUId]) {
       this.statusUnsubscribe(ws, { request: { id: requestId } });
     }
-
     ACTIVITY.SUBSCRIBED_TO[currentUId] = uId;
-    if (Array.isArray(ACTIVITY.SUBSCRIBERS[uId])) {
-      if (!ACTIVITY.SUBSCRIBERS[uId].includes(currentUId)) {
-        ACTIVITY.SUBSCRIBERS[uId].push(currentUId);
-      }
-    } else {
-      ACTIVITY.SUBSCRIBERS[uId] = [currentUId];
+
+    if (!ACTIVITY.SUBSCRIBERS[uId]) {
+      ACTIVITY.SUBSCRIBERS[uId] = {};
     }
+    ACTIVITY.SUBSCRIBERS[uId][currentUId] = true;
 
     if (!!ACTIVE.DEVICES[uId]) {
       obj[uId] = "online";
@@ -40,13 +37,11 @@ export default class LastActivityController {
     const oldUserSubscribers = ACTIVITY.SUBSCRIBERS[oldTrackerUserId];
     delete ACTIVITY.SUBSCRIBED_TO[currentUId];
 
-    if (oldUserSubscribers && oldUserSubscribers.includes(currentUId)) {
-      if (ACTIVITY.SUBSCRIBERS[oldTrackerUserId].length === 1) {
+    if (oldUserSubscribers) {
+      if (Object.keys(oldUserSubscribers[currentUId]).length <= 1) {
         delete ACTIVITY.SUBSCRIBERS[oldTrackerUserId];
-      } else {
-        ACTIVITY.SUBSCRIBERS[oldTrackerUserId] = oldUserSubscribers.filter(
-          (el) => el !== currentUId
-        );
+      } else if (oldUserSubscribers[currentUId]) {
+        delete ACTIVITY.SUBSCRIBERS[oldTrackerUserId][currentUId];
       }
     }
 
@@ -63,7 +58,9 @@ export default class LastActivityController {
       "recent_activity",
     ]);
     uLastActivities.forEach((u) => {
-      obj[u._id] = uLastActivities[u._id].recent_activity;
+      obj[u._id] = !!ACTIVE.DEVICES[u._id]
+        ? "online"
+        : uLastActivities[u._id].recent_activity;
     });
 
     return { response: { id: requestId, last_activity: obj } };

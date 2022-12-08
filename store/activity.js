@@ -8,7 +8,7 @@ const ACTIVITY = {
 };
 
 function deliverActivityToUsers(ws, uId, activity) {
-  const arrSubscribers = ACTIVITY.SUBSCRIBERS[uId];
+  const arrSubscribers = Object.keys(ACTIVITY.SUBSCRIBERS[uId]);
   const request = { last_activity: {} };
   request.last_activity[uId] = activity;
 
@@ -27,26 +27,25 @@ function deliverActivityToUsers(ws, uId, activity) {
 }
 
 async function maybeUpdateAndSendUserActivity(ws, { uId, rId }, status) {
-  if (ACTIVITY.SUBSCRIBERS[uId]) {
-    if (status === "online") {
-      if (!ACTIVE.DEVICES[uId]?.length) {
-        await User.updateOne(
-          { _id: uId },
-          { $set: { recent_activity: status } }
-        );
-      }
-    } else {
-      await User.updateOne(
-        { _id: uId },
-        { $set: { recent_activity: Math.round(new Date() / 1000) } }
-      );
-      await new LastActivityController().statusUnsubscribe(ws, {
-        request: { id: rId || "Unsubscribe" },
-      });
-    }
-
-    deliverActivityToUsers(ws, uId, status || Math.round(new Date() / 1000));
+  if (!ACTIVITY.SUBSCRIBERS[uId]) {
+    return;
   }
+
+  if (status === "online") {
+    if (!ACTIVE.DEVICES[uId]?.length) {
+      await User.updateOne({ _id: uId }, { $set: { recent_activity: status } });
+    }
+  } else {
+    await User.updateOne(
+      { _id: uId },
+      { $set: { recent_activity: Math.round(new Date() / 1000) } }
+    );
+    await new LastActivityController().statusUnsubscribe(ws, {
+      request: { id: rId || "Unsubscribe" },
+    });
+  }
+
+  deliverActivityToUsers(ws, uId, status || Math.round(new Date() / 1000));
 }
 
-export { ACTIVITY, deliverActivityToUsers, maybeUpdateAndSendUserActivity };
+export { ACTIVITY, maybeUpdateAndSendUserActivity };
