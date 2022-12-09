@@ -589,7 +589,7 @@ TBA
 * [x] User login
 * [x] User logout
 * [x] User delete
-* User edit
+* [x] User edit
 * [x] Search users
 * [x] Create conversation
 * [x] List conversations
@@ -600,9 +600,9 @@ TBA
 * [x] List chat messages
 * [x] Typing status
 * [x] Read status
+* [x] Last activity
 * Upload attachment
 * Get attachment by url
-* Last activity
 * Block user
 * Unblock user
 * List blocked users
