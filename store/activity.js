@@ -41,6 +41,7 @@ async function maybeUpdateAndSendUserActivity(ws, { uId, rId }, status) {
     });
   }
 
+  //todo: check userDevices
   deliverActivityStatusToSubscribers(
     ws,
     uId,
