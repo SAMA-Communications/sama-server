@@ -7,7 +7,7 @@ const ACTIVITY = {
   SUBSCRIBERS: {},
 };
 
-function deliverActivityToUsers(ws, uId, activity) {
+function deliverActivityStatusToSubscribers(ws, uId, activity) {
   const arrSubscribers = Object.keys(ACTIVITY.SUBSCRIBERS[uId]);
   const request = { last_activity: {} };
   request.last_activity[uId] = activity;
@@ -31,11 +31,7 @@ async function maybeUpdateAndSendUserActivity(ws, { uId, rId }, status) {
     return;
   }
 
-  if (status === "online") {
-    if (!ACTIVE.DEVICES[uId]?.length) {
-      await User.updateOne({ _id: uId }, { $set: { recent_activity: status } });
-    }
-  } else {
+  if (status !== "online") {
     await User.updateOne(
       { _id: uId },
       { $set: { recent_activity: Math.round(new Date() / 1000) } }
@@ -45,7 +41,11 @@ async function maybeUpdateAndSendUserActivity(ws, { uId, rId }, status) {
     });
   }
 
-  deliverActivityToUsers(ws, uId, status || Math.round(new Date() / 1000));
+  deliverActivityStatusToSubscribers(
+    ws,
+    uId,
+    status || Math.round(new Date() / 1000)
+  );
 }
 
 export { ACTIVITY, maybeUpdateAndSendUserActivity };
