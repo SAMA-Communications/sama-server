@@ -503,16 +503,7 @@ If users are offline, they will receive a message once became online.
 
 Carbons is enabled by default.  On send - a message will be delivered back to all active sender's devices except the current one.  
 
-
-### System messages
-
-TBA
-
-## Offline queue
-
-TBA
-
-## Last activity
+### Last activity
 
 A user can request last activity of other users:
 
@@ -537,7 +528,7 @@ A user can request last activity of other users:
 }
 ```
 
-### Last activity subscription
+#### Last activity subscription
 
 There is a way to subscribe to some user activity status upodate in real-time:
 
@@ -568,19 +559,27 @@ last_activity: {
 }
 ```
 
-## Attachments
+### System messages
 
 TBA
 
-## Block list
+## Offline queue
+
+TBA
+
+### Attachments
+
+TBA
+
+### Block list
+
+TBA
+
+### Contacts list
 
 TBA
 
 ## IDC - inter deployments communication
-
-TBA
-
-## Contacts list
 
 TBA
 
