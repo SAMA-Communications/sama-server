@@ -4,8 +4,6 @@ import User from "../models/user.js";
 import assert from "assert";
 import { connectToDBPromise } from "../lib/db.js";
 import { processJsonMessageOrError } from "../routes/ws.js";
-import { getSessionUserId } from "../models/active.js";
-import { ObjectId } from "mongodb";
 
 let currentUserToken = "";
 let userId = [];

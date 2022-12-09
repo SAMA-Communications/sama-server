@@ -3,11 +3,12 @@ import ConversationParticipant from "../models/conversation_participant.js";
 import MessagesController from "../controllers/messages.js";
 import StatusController from "../controllers/status.js";
 import OfflineQueue from "../models/offline_queue.js";
+import LastActivityController from "../controllers/activities.js";
 import UsersController from "../controllers/users.js";
-import { ACTIVE, getSessionUserId } from "../models/active.js";
+import { ACTIVE, getSessionUserId } from "../store/session.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { StringDecoder } from "string_decoder";
-
+import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
 const decoder = new StringDecoder("utf8");
 
 async function deliverToUser(currentWS, userId, request) {
@@ -75,6 +76,12 @@ async function processJsonMessage(ws, json) {
     return await new UsersController().delete(ws, json);
   } else if (json.request.user_search) {
     return await new UsersController().search(ws, json);
+  } else if (json.request.user_last_activity_subscribe) {
+    return await new LastActivityController().statusSubscribe(ws, json);
+  } else if (json.request.user_last_activity_unsubscribe) {
+    return await new LastActivityController().statusUnsubscribe(ws, json);
+  } else if (json.request.user_last_activity) {
+    return await new LastActivityController().getUserStatus(ws, json);
   } else if (json.request.getParticipantsByCids) {
     return await new ConversationController().getParticipantsByCids(ws, json);
   } else if (json.request.conversation_create) {
@@ -131,13 +138,14 @@ export default function routes(app, wsOptions) {
       );
     },
 
-    close: (ws, code, message) => {
+    close: async (ws, code, message) => {
       console.log("[close]", `WebSokect connect down`);
-      const arrDevices = ACTIVE.DEVICES[getSessionUserId(ws)];
+      const uId = getSessionUserId(ws);
+      const arrDevices = ACTIVE.DEVICES[uId];
+
       if (arrDevices) {
-        ACTIVE.DEVICES[getSessionUserId(ws)] = arrDevices.filter(
-          (obj) => obj.ws !== ws
-        );
+        ACTIVE.DEVICES[uId] = arrDevices.filter((obj) => obj.ws !== ws);
+        await maybeUpdateAndSendUserActivity(ws, { uId });
       }
       ACTIVE.SESSIONS.delete(ws);
     },

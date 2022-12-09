@@ -4,13 +4,15 @@ import UserToken from "../models/user_token.js";
 import jwt from "jsonwebtoken";
 import validate, {
   validateDeviceId,
-  validateiIsValidUserPassword,
+  validateIsValidUserPassword,
 } from "../lib/validation.js";
-import { ACTIVE, getDeviceId, getSessionUserId } from "../models/active.js";
+import { ACTIVE, getDeviceId, getSessionUserId } from "../store/session.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
-import { ERROR_STATUES } from "../constants/http_constants.js";
-import { slice } from "../utils/req_res_utils.js";
 import { CONSTANTS } from "../constants/constants.js";
+import { ERROR_STATUES } from "../constants/http_constants.js";
+import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
+import { slice } from "../utils/req_res_utils.js";
+import LastActivityController from "./activities.js";
 
 export default class UsersController {
   async create(ws, data) {
@@ -23,6 +25,7 @@ export default class UsersController {
 
     const isUserCreate = await User.findOne({ login: userParams.login });
     if (!isUserCreate) {
+      userParams["recent_activity"] = Date.now();
       const user = new User(userParams);
       await user.save();
 
@@ -37,6 +40,7 @@ export default class UsersController {
   async login(ws, data) {
     const requestId = data.request.id;
     const userInfo = data.request.user_login;
+
     await validate(ws, userInfo, [validateDeviceId]);
 
     let user, token;
@@ -71,6 +75,12 @@ export default class UsersController {
     }
     const userId = user.params._id;
     const deviceId = userInfo.deviceId;
+
+    await maybeUpdateAndSendUserActivity(
+      ws,
+      { uId: userId, rId: requestId },
+      "online"
+    );
 
     const activeConnections = ACTIVE.DEVICES[userId];
     if (activeConnections) {
@@ -146,7 +156,7 @@ export default class UsersController {
         password: userParams.current_password,
         new_password: userParams.new_password,
       },
-      [validateiIsValidUserPassword]
+      [validateIsValidUserPassword]
     );
 
     const updateUser = new User({
@@ -182,6 +192,8 @@ export default class UsersController {
 
     const deviceId = getDeviceId(ws, userId);
     if (currentUserSession) {
+      await maybeUpdateAndSendUserActivity(ws, { uId: userId, rId: requestId });
+
       if (ACTIVE.DEVICES[userId].length > 1) {
         ACTIVE.DEVICES[userId] = ACTIVE.DEVICES[userId].filter((obj) => {
           return obj.deviceId !== deviceId;
@@ -214,6 +226,10 @@ export default class UsersController {
         cause: ERROR_STATUES.FORBIDDEN,
       });
     }
+
+    await new LastActivityController().statusUnsubscribe(ws, {
+      request: { id: requestId },
+    });
 
     if (ACTIVE.SESSIONS.get(ws)) {
       delete ACTIVE.DEVICES[userSession];

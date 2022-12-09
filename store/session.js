@@ -15,4 +15,5 @@ function getDeviceId(ws, userId) {
   }
   return null;
 }
+
 export { ACTIVE, getSessionUserId, getDeviceId };

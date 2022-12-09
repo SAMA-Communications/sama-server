@@ -17,7 +17,7 @@ import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ObjectId } from "mongodb";
 import { deliverToUser, deliverToUserOrUsers } from "../routes/ws.js";
-import { ACTIVE, getSessionUserId } from "../models/active.js";
+import { ACTIVE, getSessionUserId } from "../store/session.js";
 import { slice } from "../utils/req_res_utils.js";
 
 export default class MessagesController {
