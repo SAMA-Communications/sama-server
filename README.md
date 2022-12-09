@@ -514,18 +514,57 @@ TBA
 
 ## Last activity
 
+A user can request last activity of other users:
+
 ```
 {
-  'last_activity': {
-    'to': '',
-  }
-}
+  request: {
+    user_last_activity: {
+      ids: [uid1, uid2, uid3],  // max 10 uids per request
+    },
+    id: "4",
+  },
+};
 
 {
-  'last_activity': {
-    'from': '',
-    'last_activity_ago': 'num_of_seconds'
-  }
+  response: {
+   id: "4",
+   last_activity: {
+     uid1: num_of_seconds,
+     uid2: "online",
+     uid3: num_of_seconds,
+   }
+}
+```
+
+### Last activity subscription
+
+There is a way to subscribe to some user activity status upodate in real-time:
+
+```
+{
+  request: {
+    user_last_activity_subscribe: {
+      id: uid1
+    },
+    id: "4",
+  },
+};
+
+{
+  response: {
+   id: "4",
+   last_activity: {
+     uid1: "online" | <last_activity-time>,
+   }
+}
+```
+
+Once that user will go offline/online, you will be receiving his/her last activity status:
+
+```
+last_activity: {
+  uid1:  "online" | num_of_seconds
 }
 ```
 
