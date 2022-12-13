@@ -1,14 +1,15 @@
 import BaseModel from "./base/base.js";
 
-export default class Status extends BaseModel {
+export default class File extends BaseModel {
   constructor(params) {
     super(params);
   }
+
   static get collection() {
-    return "status";
+    return "file";
   }
 
   static get visibleFields() {
-    return ["_id", "created_at", "updated_at", "t", "type", "cid"];
+    return ["_id", "name", "size", "content_type", "upload_url"];
   }
 }
