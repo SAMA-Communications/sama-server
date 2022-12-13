@@ -10,6 +10,6 @@ export default class File extends BaseModel {
   }
 
   static get visibleFields() {
-    return ["_id", "name", "size", "content_type", "upload_url"];
+    return ["_id", "name", "size", "content_type", "upload_url", "file_id"];
   }
 }
