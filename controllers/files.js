@@ -15,10 +15,10 @@ export default class FileController {
       ALLOW_FIELDS.ALLOWED_FILEDS_FILE
     );
 
-    const { fileId, url } = await storageClient.getUploadUrl(
+    const { objectId, url } = await storageClient.getUploadUrl(
       fileParams.name || "file"
     );
-    fileParams["file_id"] = fileId;
+    fileParams["object_id"] = objectId;
 
     const file = new File(fileParams);
     await file.save();
@@ -33,10 +33,10 @@ export default class FileController {
 
   async getDownloadUrl(ws, data) {
     const requestId = data.request.id;
-    const fileId = data.request.get_file_url.file_id;
-    await validate(ws, { id: fileId }, [validateFileId]);
+    const objectId = data.request.get_file_url.file_id;
+    await validate(ws, { id: objectId }, [validateFileId]);
 
-    const fileUrl = await storageClient.getDownloadUrl(fileId);
+    const fileUrl = await storageClient.getDownloadUrl(objectId);
     await validate(ws, { url: fileUrl }, [validateFileDownloadUrl]);
 
     return { response: { id: requestId, file_url: fileUrl } };
