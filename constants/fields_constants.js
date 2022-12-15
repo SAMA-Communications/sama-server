@@ -1,5 +1,5 @@
 export const ALLOW_FIELDS = {
-  ALLOWED_FILEDS_MESSAGE: ["body", "cid", "attachments"],
+  ALLOWED_FILEDS_MESSAGE: ["body", "cid", "x", "attachments"],
   ALLOWED_FILEDS_FILE: ["name", "size", "content_type"],
   ALLOWED_FILEDS_TYPINGS: ["id", "t", "type", "cid"],
   ALLOWED_FIELDS_USER_CREATE: ["login", "password"],

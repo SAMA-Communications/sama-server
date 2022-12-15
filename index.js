@@ -5,7 +5,7 @@ import { default as buildWSRoutes } from "./routes/ws.js";
 
 // get MongoDB driver connection
 import { connectToDB } from "./lib/db.js";
-import { minioClient } from "./lib/minio.js";
+import { minioClient } from "./lib/storage/minio.js";
 
 const APP_OPTIONS = {};
 

@@ -1,6 +1,6 @@
 import File from "../models/file.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
-import { getDownloadUrl, getUploadUrl } from "../lib/minio.js";
+import { getDownloadUrl, getUploadUrl } from "../lib/storage/minio.js";
 import { slice } from "../utils/req_res_utils.js";
 import validate, {
   validateFileDownloadUrl,
@@ -15,13 +15,17 @@ export default class FileController {
       ALLOW_FIELDS.ALLOWED_FILEDS_FILE
     );
     const { fileId, url } = await getUploadUrl(fileParams.name || "file");
-    fileParams["upload_url"] = url;
     fileParams["file_id"] = fileId;
 
     const file = new File(fileParams);
     await file.save();
 
-    return { response: { id: requestId, file: file.visibleParams() } };
+    return {
+      response: {
+        id: requestId,
+        file: { ...file.visibleParams(), upload_url: url },
+      },
+    };
   }
 
   async getDownloadUrl(ws, data) {
@@ -30,7 +34,6 @@ export default class FileController {
     await validate(ws, { id: fileId }, [validateFileId]);
 
     const fileUrl = await getDownloadUrl(fileId);
-    console.log("fileURL: ", typeof fileUrl);
     await validate(ws, { url: fileUrl }, [validateFileDownloadUrl]);
 
     return { response: { id: requestId, file_url: fileUrl } };
