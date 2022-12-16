@@ -5,6 +5,15 @@ import { default as buildWSRoutes } from "./routes/ws.js";
 
 // get MongoDB driver connection
 import { connectToDB } from "./lib/db.js";
+import Minio from "./lib/storage/minio.js";
+import S3 from "./lib/storage/s3.js";
+
+let storageClient;
+if (process.env.STORAGE_DRIVER === "minio") {
+  storageClient = new Minio();
+} else {
+  storageClient = new S3();
+}
 
 const APP_OPTIONS = {};
 
@@ -36,5 +45,7 @@ connectToDB((err) => {
     console.log("[connectToDB] Ok");
   }
 });
+
+export { storageClient };
 
 // https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph

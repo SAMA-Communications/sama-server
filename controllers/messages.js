@@ -26,6 +26,7 @@ export default class MessagesController {
       data.message,
       ALLOW_FIELDS.ALLOWED_FILEDS_MESSAGE
     );
+
     await validate(ws, messageParams, [validateMessageBody, validateIsCID]);
 
     const messageId = data.message.id;

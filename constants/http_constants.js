@@ -47,6 +47,9 @@ export const ERROR_STATUES = {
     message: "Max participants limit reached",
   },
   OPPONENT_NOT_FOUND: { status: 422, message: "Opponent Id not found" },
+  // File -->
+  FILE_ID_MISSED: { status: 422, message: "File ID missed" },
+  FILE_URL_NOT_FOUND: { status: 422, message: "File URL not found" },
   // Message -->
   MESSAGE_PARTICIPANT_NOT_FOUND: {
     status: 403,
