@@ -4,41 +4,46 @@ import { slice } from "../utils/req_res_utils.js";
 import { storageClient } from "../index.js";
 import validate, {
   validateFileDownloadUrl,
-  validateFileId,
+  validateFileIds,
 } from "../lib/validation.js";
 
 export default class FileController {
   async createUrl(ws, data) {
     const requestId = data.request.id;
-    const fileParams = slice(
-      data.request.create_file,
-      ALLOW_FIELDS.ALLOWED_FILEDS_FILE
+    const reqFiles = data.request.create_files.map((file) =>
+      slice(file, ALLOW_FIELDS.ALLOWED_FILEDS_FILE)
     );
 
-    const { objectId, url } = await storageClient.getUploadUrl(
-      fileParams.name || "file"
-    );
-    fileParams["object_id"] = objectId;
+    const resFiles = [];
+    for (let i = 0; i < reqFiles.length; i++) {
+      //TODO: update from many to one request if it posible
+      const { objectId, url } = await storageClient.getUploadUrl(
+        reqFiles[i].name || "file"
+      );
+      reqFiles[i]["object_id"] = objectId;
 
-    const file = new File(fileParams);
-    await file.save();
+      const file = new File(reqFiles[i]);
+      await file.save();
 
-    return {
-      response: {
-        id: requestId,
-        file: { ...file.visibleParams(), upload_url: url },
-      },
-    };
+      resFiles.push({ ...file.visibleParams(), upload_url: url });
+    }
+
+    return { response: { id: requestId, files: resFiles } };
   }
 
   async getDownloadUrl(ws, data) {
     const requestId = data.request.id;
-    const objectId = data.request.get_file_url.file_id;
-    await validate(ws, { id: objectId }, [validateFileId]);
+    const objectIds = data.request.get_files_url.file_ids;
+    await validate(ws, { ids: objectIds }, [validateFileIds]);
 
-    const fileUrl = await storageClient.getDownloadUrl(objectId);
-    await validate(ws, { url: fileUrl }, [validateFileDownloadUrl]);
+    let urls = {};
+    for (let i = 0; i < objectIds.length; i++) {
+      //TODO: update from many to one request if it posible
+      const fileUrl = await storageClient.getDownloadUrl(objectIds[i]);
+      // await validate(ws, { url: fileUrl }, [validateFileDownloadUrl]);
+      urls[objectIds[i]] = fileUrl;
+    }
 
-    return { response: { id: requestId, file_url: fileUrl } };
+    return { response: { id: requestId, file_urls: urls } };
   }
 }

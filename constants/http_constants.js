@@ -48,7 +48,7 @@ export const ERROR_STATUES = {
   },
   OPPONENT_NOT_FOUND: { status: 422, message: "Opponent Id not found" },
   // File -->
-  FILE_ID_MISSED: { status: 422, message: "File ID missed" },
+  FILE_IDS_MISSED: { status: 422, message: "File IDS missed" },
   FILE_URL_NOT_FOUND: { status: 422, message: "File URL not found" },
   // Message -->
   MESSAGE_PARTICIPANT_NOT_FOUND: {

@@ -65,9 +65,9 @@ async function processJsonMessage(ws, json) {
     return await new MessagesController().read(ws, json);
   } else if (json.request.message_delete) {
     return await new MessagesController().delete(ws, json);
-  } else if (json.request.create_file) {
+  } else if (json.request.create_files) {
     return await new FileController().createUrl(ws, json);
-  } else if (json.request.get_file_url) {
+  } else if (json.request.get_files_url) {
     return await new FileController().getDownloadUrl(ws, json);
   } else if (json.request.user_create) {
     return await new UsersController().create(ws, json);
