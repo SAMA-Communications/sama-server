@@ -33,7 +33,7 @@ export default class FileController {
 
   async getDownloadUrl(ws, data) {
     const requestId = data.request.id;
-    const objectIds = data.request.get_files_url.file_ids;
+    const objectIds = data.request.get_file_urls.file_ids;
     await validate(ws, { ids: objectIds }, [validateFileIds]);
 
     let urls = {};
