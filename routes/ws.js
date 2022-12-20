@@ -53,6 +53,37 @@ async function processJsonMessage(ws, json) {
     });
   }
 
+  const jsonKeys = {
+    message: () => new MessagesController().create(ws, json),
+    typing: () => new StatusController().typing(ws, json),
+    request: {
+      message_edit: () => new MessagesController().edit(ws, json),
+      message_list: () => new MessagesController().list(ws, json),
+      message_read: () => new MessagesController().read(ws, json),
+      message_delete: () => new MessagesController().delete(ws, json),
+      create_file: () => new FileController().createUrl(ws, json),
+      get_file_url: () => new FileController().getDownloadUrl(ws, json),
+      user_create: () => new UsersController().create(ws, json),
+      user_edit: () => new UsersController().edit(ws, json),
+      user_login: () => new UsersController().login(ws, json),
+      user_logout: () => new UsersController().logout(ws, json),
+      user_delete: () => new UsersController().delete(ws, json),
+      user_search: () => new UsersController().search(ws, json),
+      user_last_activity_subscribe: () =>
+        new LastActivityController().statusSubscribe(ws, json),
+      user_last_activity_unsubscribe: () =>
+        new LastActivityController().statusUnsubscribe(ws, json),
+      user_last_activity: () =>
+        new LastActivityController().getUserStatus(ws, json),
+      getParticipantsByCids: () =>
+        new ConversationController().getParticipantsByCids(ws, json),
+      conversation_create: () => new ConversationController().create(ws, json),
+      conversation_delete: () => new ConversationController().delete(ws, json),
+      conversation_update: () => new ConversationController().update(ws, json),
+      conversation_list: () => new ConversationController().list(ws, json),
+    },
+  };
+
   if (json.message) {
     return await new MessagesController().create(ws, json);
   } else if (json.typing) {
@@ -99,6 +130,7 @@ async function processJsonMessage(ws, json) {
     return await new ConversationController().list(ws, json);
   }
 }
+
 async function processJsonMessageOrError(ws, json) {
   let responseData;
   try {
