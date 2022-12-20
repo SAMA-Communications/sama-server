@@ -46,6 +46,16 @@ export default class UserBlockController {
 
   async list(ws, data) {
     const requestId = data.request.id;
-    return { response: { id: requestId, users: [] } };
+    const convId = data.request.cid;
+    await validate(ws, { cid: convId }, [validateIsConversationByCID]);
+
+    const blockedUsers = await BlockedUser.findAll(
+      { conversation_id: convId },
+      ["user_id"]
+    );
+
+    return {
+      response: { id: requestId, users: blockedUsers.map((el) => el.user_id) },
+    };
   }
 }
