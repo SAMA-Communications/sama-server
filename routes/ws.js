@@ -12,6 +12,34 @@ import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
 import ConversationController from "../controllers/conversations.js";
 const decoder = new StringDecoder("utf8");
 
+const jsonRequest = {
+  message: new MessagesController().create,
+  typing: new StatusController().typing,
+  request: {
+    message_edit: new MessagesController().edit,
+    message_list: new MessagesController().list,
+    message_read: new MessagesController().read,
+    message_delete: new MessagesController().delete,
+    create_file: new FileController().createUrl,
+    get_file_url: new FileController().getDownloadUrl,
+    user_create: new UsersController().create,
+    user_edit: new UsersController().edit,
+    user_login: new UsersController().login,
+    user_logout: new UsersController().logout,
+    user_delete: new UsersController().delete,
+    user_search: new UsersController().search,
+    user_last_activity_subscribe: new LastActivityController().statusSubscribe,
+    user_last_activity_unsubscribe: new LastActivityController()
+      .statusUnsubscribe,
+    user_last_activity: new LastActivityController().getUserStatus,
+    getParticipantsByCids: new ConversationController().getParticipantsByCids,
+    conversation_create: new ConversationController().create,
+    conversation_delete: new ConversationController().delete,
+    conversation_update: new ConversationController().update,
+    conversation_list: new ConversationController().list,
+  },
+};
+
 async function deliverToUser(currentWS, userId, request) {
   const wsRecipient = ACTIVE.DEVICES[userId];
 
@@ -53,41 +81,10 @@ async function processJsonMessage(ws, json) {
     });
   }
 
-  const jsonRequest = {
-    message: () => new MessagesController().create(ws, json),
-    typing: () => new StatusController().typing(ws, json),
-    request: {
-      message_edit: () => new MessagesController().edit(ws, json),
-      message_list: () => new MessagesController().list(ws, json),
-      message_read: () => new MessagesController().read(ws, json),
-      message_delete: () => new MessagesController().delete(ws, json),
-      create_file: () => new FileController().createUrl(ws, json),
-      get_file_url: () => new FileController().getDownloadUrl(ws, json),
-      user_create: () => new UsersController().create(ws, json),
-      user_edit: () => new UsersController().edit(ws, json),
-      user_login: () => new UsersController().login(ws, json),
-      user_logout: () => new UsersController().logout(ws, json),
-      user_delete: () => new UsersController().delete(ws, json),
-      user_search: () => new UsersController().search(ws, json),
-      user_last_activity_subscribe: () =>
-        new LastActivityController().statusSubscribe(ws, json),
-      user_last_activity_unsubscribe: () =>
-        new LastActivityController().statusUnsubscribe(ws, json),
-      user_last_activity: () =>
-        new LastActivityController().getUserStatus(ws, json),
-      getParticipantsByCids: () =>
-        new ConversationController().getParticipantsByCids(ws, json),
-      conversation_create: () => new ConversationController().create(ws, json),
-      conversation_delete: () => new ConversationController().delete(ws, json),
-      conversation_update: () => new ConversationController().update(ws, json),
-      conversation_list: () => new ConversationController().list(ws, json),
-    },
-  };
-
   const reqFirstParams = Object.keys(json)[0];
   return await (reqFirstParams === "request"
-    ? jsonRequest.request[Object.keys(json.request)[0]]()
-    : jsonRequest[reqFirstParams]());
+    ? jsonRequest.request[Object.keys(json.request)[0]](ws, json)
+    : jsonRequest[reqFirstParams](ws, json));
 }
 
 async function processJsonMessageOrError(ws, json) {
