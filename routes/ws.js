@@ -5,6 +5,7 @@ import LastActivityController from "../controllers/activities.js";
 import MessagesController from "../controllers/messages.js";
 import OfflineQueue from "../models/offline_queue.js";
 import StatusController from "../controllers/status.js";
+import UserBlockController from "../controllers/users_block.js";
 import UsersController from "../controllers/users.js";
 import { ACTIVE, getSessionUserId } from "../store/session.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
@@ -69,6 +70,12 @@ async function processJsonMessage(ws, json) {
     return await new FileController().createUrl(ws, json);
   } else if (json.request.get_file_url) {
     return await new FileController().getDownloadUrl(ws, json);
+  } else if (json.request.block_user) {
+    return await new UserBlockController().block(ws, json);
+  } else if (json.request.unblock_user) {
+    return await new UserBlockController().unblock(ws, json);
+  } else if (json.request.list_blocked_user) {
+    return await new UserBlockController().list(ws, json);
   } else if (json.request.user_create) {
     return await new UsersController().create(ws, json);
   } else if (json.request.user_edit) {
