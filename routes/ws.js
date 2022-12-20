@@ -1,4 +1,3 @@
-import ConversationController from "../controllers/conversations.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import FileController from "../controllers/files.js";
 import LastActivityController from "../controllers/activities.js";
@@ -10,7 +9,36 @@ import { ACTIVE, getSessionUserId } from "../store/session.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { StringDecoder } from "string_decoder";
 import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
+import ConversationController from "../controllers/conversations.js";
 const decoder = new StringDecoder("utf8");
+
+const jsonRequest = {
+  message: new MessagesController().create,
+  typing: new StatusController().typing,
+  request: {
+    message_edit: new MessagesController().edit,
+    message_list: new MessagesController().list,
+    message_read: new MessagesController().read,
+    message_delete: new MessagesController().delete,
+    create_file: new FileController().createUrl,
+    get_file_url: new FileController().getDownloadUrl,
+    user_create: new UsersController().create,
+    user_edit: new UsersController().edit,
+    user_login: new UsersController().login,
+    user_logout: new UsersController().logout,
+    user_delete: new UsersController().delete,
+    user_search: new UsersController().search,
+    user_last_activity_subscribe: new LastActivityController().statusSubscribe,
+    user_last_activity_unsubscribe: new LastActivityController()
+      .statusUnsubscribe,
+    user_last_activity: new LastActivityController().getUserStatus,
+    getParticipantsByCids: new ConversationController().getParticipantsByCids,
+    conversation_create: new ConversationController().create,
+    conversation_delete: new ConversationController().delete,
+    conversation_update: new ConversationController().update,
+    conversation_list: new ConversationController().list,
+  },
+};
 
 async function deliverToUser(currentWS, userId, request) {
   const wsRecipient = ACTIVE.DEVICES[userId];
@@ -44,61 +72,21 @@ async function deliverToUserOrUsers(dParams, message, currentWS) {
 
 async function processJsonMessage(ws, json) {
   if (
+    !ACTIVE.SESSIONS.get(ws) &&
     !json.request?.user_create &&
-    !json.request?.user_login &&
-    !ACTIVE.SESSIONS.get(ws)
+    !json.request?.user_login
   ) {
     throw new Error(ERROR_STATUES.UNAUTHORIZED.message, {
       cause: ERROR_STATUES.UNAUTHORIZED,
     });
   }
 
-  if (json.message) {
-    return await new MessagesController().create(ws, json);
-  } else if (json.typing) {
-    return await new StatusController().typing(ws, json);
-  } else if (json.request.message_edit) {
-    return await new MessagesController().edit(ws, json);
-  } else if (json.request.message_list) {
-    return await new MessagesController().list(ws, json);
-  } else if (json.request.message_read) {
-    return await new MessagesController().read(ws, json);
-  } else if (json.request.message_delete) {
-    return await new MessagesController().delete(ws, json);
-  } else if (json.request.create_file) {
-    return await new FileController().createUrl(ws, json);
-  } else if (json.request.get_file_url) {
-    return await new FileController().getDownloadUrl(ws, json);
-  } else if (json.request.user_create) {
-    return await new UsersController().create(ws, json);
-  } else if (json.request.user_edit) {
-    return await new UsersController().edit(ws, json);
-  } else if (json.request.user_login) {
-    return await new UsersController().login(ws, json);
-  } else if (json.request.user_logout) {
-    return await new UsersController().logout(ws, json);
-  } else if (json.request.user_delete) {
-    return await new UsersController().delete(ws, json);
-  } else if (json.request.user_search) {
-    return await new UsersController().search(ws, json);
-  } else if (json.request.user_last_activity_subscribe) {
-    return await new LastActivityController().statusSubscribe(ws, json);
-  } else if (json.request.user_last_activity_unsubscribe) {
-    return await new LastActivityController().statusUnsubscribe(ws, json);
-  } else if (json.request.user_last_activity) {
-    return await new LastActivityController().getUserStatus(ws, json);
-  } else if (json.request.getParticipantsByCids) {
-    return await new ConversationController().getParticipantsByCids(ws, json);
-  } else if (json.request.conversation_create) {
-    return await new ConversationController().create(ws, json);
-  } else if (json.request.conversation_delete) {
-    return await new ConversationController().delete(ws, json);
-  } else if (json.request.conversation_update) {
-    return await new ConversationController().update(ws, json);
-  } else if (json.request.conversation_list) {
-    return await new ConversationController().list(ws, json);
-  }
+  const reqFirstParams = Object.keys(json)[0];
+  return await (reqFirstParams === "request"
+    ? jsonRequest.request[Object.keys(json.request)[0]](ws, json)
+    : jsonRequest[reqFirstParams](ws, json));
 }
+
 async function processJsonMessageOrError(ws, json) {
   let responseData;
   try {
