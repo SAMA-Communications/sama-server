@@ -1,39 +1,37 @@
-import { ERROR_STATUES } from "../constants/http_constants.js";
-import validate, {
-  validateIsConversationByCID,
-  validateIsUserId,
-} from "../lib/validation.js";
 import BlockedUser from "../models/blocked_user.js";
+import validate, { validateIsUserId } from "../lib/validation.js";
+import { ERROR_STATUES } from "../constants/http_constants.js";
+import { getSessionUserId } from "../store/session.js";
 
 export default class UserBlockController {
   async block(ws, data) {
     const requestId = data.request.id;
-    const uId = data.request.id;
-    const convId = data.request.cid;
-    await validate(ws, { cid: convId, uId }, [
-      validateIsConversationByCID,
-      validateIsUserId,
-    ]);
+    const uId = data.request.block_user.id;
+    const currentUserId = getSessionUserId(ws);
+    await validate(ws, { uId }, [validateIsUserId]);
 
     const blockParams = {
-      user_id: uId,
-      conversation_id: convId,
+      user_id: currentUserId,
+      blocked_user_id: uId,
     };
 
     const blockedUser = new BlockedUser(blockParams);
     await blockedUser.save();
 
-    return {
-      response: { id: requestId, blocked_user: blockedUser.visibleParams() },
-    };
+    return { response: { id: requestId, success: true } };
   }
 
   async unblock(ws, data) {
     const requestId = data.request.id;
-    const uId = data.request.id;
+    const uId = data.request.unblock_user.id;
+    const currentUserId = getSessionUserId(ws);
     await validate(ws, { uId }, [validateIsUserId]);
 
-    const record = await BlockedUser.findOne({ user_id: uId });
+    const record = await BlockedUser.findOne({
+      blocked_user_id: uId,
+      user_id: currentUserId,
+    });
+
     if (record) {
       await record.delete();
       return { response: { id: requestId, success: true } };
@@ -46,16 +44,17 @@ export default class UserBlockController {
 
   async list(ws, data) {
     const requestId = data.request.id;
-    const convId = data.request.cid;
-    await validate(ws, { cid: convId }, [validateIsConversationByCID]);
+    const currentUserId = getSessionUserId(ws);
 
-    const blockedUsers = await BlockedUser.findAll(
-      { conversation_id: convId },
-      ["user_id"]
-    );
+    const blockedUsers = await BlockedUser.findAll({ user_id: currentUserId }, [
+      "blocked_user_id",
+    ]);
 
     return {
-      response: { id: requestId, users: blockedUsers.map((el) => el.user_id) },
+      response: {
+        id: requestId,
+        users: blockedUsers.map((el) => el.blocked_user_id),
+      },
     };
   }
 }
