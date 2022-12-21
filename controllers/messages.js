@@ -1,7 +1,8 @@
+import BlockedUser from "../models/blocked_user.js";
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
-import Messages from "../models/message.js";
 import MessageStatus from "../models/message_status.js";
+import Messages from "../models/message.js";
 import validate, {
   validateIsConversation,
   validateIsConversationByCID,
@@ -19,6 +20,7 @@ import { ObjectId } from "mongodb";
 import { deliverToUser, deliverToUserOrUsers } from "../routes/ws.js";
 import { ACTIVE, getSessionUserId } from "../store/session.js";
 import { slice } from "../utils/req_res_utils.js";
+import { ERROR_STATUES } from "../constants/http_constants.js";
 
 export default class MessagesController {
   async create(ws, data) {
@@ -32,10 +34,47 @@ export default class MessagesController {
     const messageId = data.message.id;
     await validate(ws, { id: messageId }, [validateMessageId]);
 
-    await validate(ws, messageParams, [validateIsConversationByCID]);
+    const currentUserId = getSessionUserId(ws);
+    const conversation = await Conversation.findOne({
+      _id: messageParams.cid,
+    });
+    let participants;
+    if (conversation) {
+      participants = await ConversationParticipant.findAll({
+        conversation_id: conversation.params._id,
+      });
+      participants = participants?.map((el) => el.user_id.toString());
+      if (!participants.includes(currentUserId)) {
+        throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+          cause: ERROR_STATUES.FORBIDDEN,
+        });
+      }
+    } else {
+      throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {
+        cause: ERROR_STATUES.CONVERSATION_NOT_FOUND,
+      });
+    }
 
-    messageParams.from = ObjectId(getSessionUserId(ws));
-    messageParams.deleted_for = [];
+    const blockedList = await BlockedUser.findAll(
+      { blocked_user_id: currentUserId, user_id: { $in: participants } },
+      ["user_id"]
+    );
+    if (conversation.params.type === "u" && blockedList.length) {
+      throw new Error(ERROR_STATUES.USER_BLOCKED.message, {
+        cause: ERROR_STATUES.USER_BLOCKED,
+      });
+    }
+    if (
+      conversation.params.type === "g" &&
+      blockedList.length === participants.length - 1
+    ) {
+      throw new Error(ERROR_STATUES.NOBODY_HEAR_USER.message, {
+        cause: ERROR_STATUES.NOBODY_HEAR_USER,
+      });
+    }
+
+    messageParams.deleted_for = blockedList.map((u) => u.user_id);
+    messageParams.from = ObjectId(currentUserId);
 
     const message = new Messages(messageParams);
     message.params.cid = message.params.cid
