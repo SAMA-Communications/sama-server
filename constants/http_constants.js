@@ -60,8 +60,16 @@ export const ERROR_STATUES = {
   MESSAGE_ID_MISSED: { status: 422, message: "Message ID missed" },
   MESSAGE_TYPE_MISSED: { status: 422, message: "Message Type missed" },
   BODY_IS_EMPTY: { status: 422, message: "Body of message is empty" },
-  USER_BLOCKED: { status: 422, message: "Opponent blocked this user" },
-  NOBODY_HEAR_USER: { status: 422, message: "Nobody can hear you" },
+  USER_BLOCKED: {
+    status: 422,
+    message:
+      "Communication is not possible - you are in a block list of the recipient",
+  },
+  USER_BLOCKED_FOR_ALL_PARTICIPANTS: {
+    status: 422,
+    message:
+      "Communication is not possible - you are in a block list of all the recipients",
+  },
   // Status -->
   STATUS_ID_MISSED: { status: 422, message: "Status ID missed" },
   STATUS_TYPE_MISSED: { status: 422, message: "Status Type missed" },

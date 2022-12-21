@@ -68,8 +68,8 @@ export default class MessagesController {
       conversation.params.type === "g" &&
       blockedList.length === participants.length - 1
     ) {
-      throw new Error(ERROR_STATUES.NOBODY_HEAR_USER.message, {
-        cause: ERROR_STATUES.NOBODY_HEAR_USER,
+      throw new Error(ERROR_STATUES.USER_BLOCKED_FOR_ALL_PARTICIPANTS.message, {
+        cause: ERROR_STATUES.USER_BLOCKED_FOR_ALL_PARTICIPANTS,
       });
     }
 

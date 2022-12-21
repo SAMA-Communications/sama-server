@@ -15,8 +15,11 @@ export default class UserBlockController {
       blocked_user_id: uId,
     };
 
-    const blockedUser = new BlockedUser(blockParams);
-    await blockedUser.save();
+    const isUserBlocked = await BlockedUser.findOne(blockParams);
+    if (!isUserBlocked) {
+      const blockedUser = new BlockedUser(blockParams);
+      await blockedUser.save();
+    }
 
     return { response: { id: requestId, success: true } };
   }
