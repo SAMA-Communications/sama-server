@@ -34,12 +34,9 @@ export default class UserBlockController {
 
     if (record) {
       await record.delete();
-      return { response: { id: requestId, success: true } };
-    } else {
-      throw new Error(ERROR_STATUES.USER_NOT_BLOCKED.message, {
-        cause: ERROR_STATUES.USER_NOT_BLOCKED,
-      });
     }
+
+    return { response: { id: requestId, success: true } };
   }
 
   async list(ws, data) {
