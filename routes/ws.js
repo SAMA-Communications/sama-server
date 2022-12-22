@@ -20,7 +20,7 @@ const jsonRequest = {
     message_list: new MessagesController().list,
     message_read: new MessagesController().read,
     message_delete: new MessagesController().delete,
-    create_file: new FileController().createUrl,
+    create_files: new FileController().createUrl,
     get_file_urls: new FileController().getDownloadUrl,
     user_create: new UsersController().create,
     user_edit: new UsersController().edit,
@@ -92,7 +92,6 @@ async function processJsonMessageOrError(ws, json) {
   try {
     responseData = await processJsonMessage(ws, json);
   } catch (e) {
-    console.log(e);
     if (json.request) {
       responseData = {
         response: {

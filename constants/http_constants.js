@@ -50,6 +50,12 @@ export const ERROR_STATUES = {
   // File -->
   FILE_IDS_MISSED: { status: 422, message: "File IDS missed" },
   FILE_URL_NOT_FOUND: { status: 422, message: "File URL not found" },
+  FILE_NAME_MISSED: { status: 422, message: "File name missed" },
+  FILE_SIZE_MISSED: { status: 422, message: "File size missed" },
+  FILE_CONTENT_TYPE_MISSED: {
+    status: 422,
+    message: "File content type missed",
+  },
   // Message -->
   MESSAGE_PARTICIPANT_NOT_FOUND: {
     status: 403,

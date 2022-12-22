@@ -3,7 +3,7 @@ import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { slice } from "../utils/req_res_utils.js";
 import { storageClient } from "../index.js";
 import validate, {
-  validateFileDownloadUrl,
+  validateFileFields,
   validateFileIds,
 } from "../lib/validation.js";
 
@@ -13,6 +13,7 @@ export default class FileController {
     const reqFiles = data.request.create_files.map((file) =>
       slice(file, ALLOW_FIELDS.ALLOWED_FILEDS_FILE)
     );
+    await validate(ws, { files: reqFiles }, [validateFileFields]);
 
     const resFiles = [];
     for (let i = 0; i < reqFiles.length; i++) {
@@ -40,7 +41,6 @@ export default class FileController {
     for (let i = 0; i < objectIds.length; i++) {
       //TODO: update from many to one request if it posible
       const fileUrl = await storageClient.getDownloadUrl(objectIds[i]);
-      // await validate(ws, { url: fileUrl }, [validateFileDownloadUrl]);
       urls[objectIds[i]] = fileUrl;
     }
 
