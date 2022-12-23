@@ -49,7 +49,7 @@ export const ERROR_STATUES = {
   OPPONENT_NOT_FOUND: { status: 422, message: "Opponent Id not found" },
   // File -->
   FILE_IDS_MISSED: { status: 422, message: "File IDS missed" },
-  FILE_LIMIT_EXCEEDED: { status: 422, message: "File limit exceeded" },
+  FILE_LIMIT_EXCEEDED: { status: 422, message: "File limit exceded" },
   FILE_IDS_EXCEEDED: {
     status: 422,
     message: "File ids for get download url exceeded",

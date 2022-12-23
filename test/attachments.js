@@ -130,6 +130,37 @@ describe("Attachments", async () => {
     assert.equal(Object.keys(responseData.response.file_urls).length, 2);
   });
 
+  it("should fail file limit exceded", async () => {
+    const requestData = {
+      request: {
+        create_files: [
+          { name: "1.png", size: 123, content_type: "image" },
+          { name: "2.png", size: 321, content_type: "image" },
+          { name: "1.png", size: 123, content_type: "image" },
+          { name: "2.png", size: 321, content_type: "image" },
+          { name: "1.png", size: 123, content_type: "image" },
+          { name: "2.png", size: 321, content_type: "image" },
+          { name: "1.png", size: 123, content_type: "image" },
+          { name: "1.png", size: 123, content_type: "image" },
+          { name: "2.png", size: 321, content_type: "image" },
+          { name: "1.png", size: 123, content_type: "image" },
+          { name: "2.png", size: 321, content_type: "image" },
+          { name: "1.png", size: 123, content_type: "image" },
+          { name: "2.png", size: 321, content_type: "image" },
+          { name: "2.png", size: 321, content_type: "image" },
+        ],
+        id: "createUploadUrlForFile",
+      },
+    };
+    const responseData = await processJsonMessageOrError(mockedWS, requestData);
+    assert.strictEqual(requestData.request.id, responseData.response.id);
+    assert.strictEqual(responseData.response.file_urls, undefined);
+    assert.deepEqual(responseData.response.error, {
+      message: "File limit exceded",
+      status: 422,
+    });
+  });
+
   it("should fail file_ids empty", async () => {
     const requestData = {
       request: {
@@ -144,6 +175,41 @@ describe("Attachments", async () => {
     assert.strictEqual(responseData.response.file_urls, undefined);
     assert.deepEqual(responseData.response.error, {
       message: "File IDS missed",
+      status: 422,
+    });
+  });
+
+  it("should fail file ids for get download links limit exceded ", async () => {
+    const requestData = {
+      request: {
+        get_file_urls: {
+          file_ids: [
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+          ],
+        },
+        id: "createUploadUrlForFile",
+      },
+    };
+    const responseData = await processJsonMessageOrError(mockedWS, requestData);
+    assert.strictEqual(requestData.request.id, responseData.response.id);
+    assert.strictEqual(responseData.response.file_urls, undefined);
+    assert.deepEqual(responseData.response.error, {
+      message: "File ids for get download url exceeded",
       status: 422,
     });
   });
