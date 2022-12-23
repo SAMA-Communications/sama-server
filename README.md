@@ -631,7 +631,60 @@ Get file download url:
 
 ### Block list
 
-TBA
+Block user:
+
+```
+{
+  request: {
+    block_user: {
+      id: "63077ad836b78c3d82af0812"
+    },
+    id: "4",
+  },
+};
+
+{
+  response: {
+   id: "4",
+   success: true
+}
+```
+
+Unblock user:
+
+```
+{
+  request: {
+    unblock_user: {
+      id: "63077ad836b78c3d82af0812"
+    },
+    id: "5",
+  },
+};
+
+{
+  response: {
+   id: "6",
+   success: true
+}
+```
+
+Get blocked users list:
+
+```
+{
+  request: {
+    list_blocked_users: {},
+    id: "5",
+  },
+};
+
+{
+  response: {
+   id: "5",
+   users: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"]
+}
+```
 
 ### Contacts list
 
