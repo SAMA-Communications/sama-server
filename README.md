@@ -656,10 +656,8 @@ TBA
 * [x] List chat messages
 * [x] Typing status
 * [x] Read status
-* [x] Last activity
+* [x] Last activity / Last activity subscription
 * [x] Attachments (create upload url, get download url)
-* Block user
-* Unblock user
-* List blocked users
-* Upload complete/changes address book
-* Subscribe to push notifications 
+* [x] Block user / Unblock user / List blocked users
+* [] Address book
+* [] Push notifications 
