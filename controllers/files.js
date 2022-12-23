@@ -3,6 +3,8 @@ import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { slice } from "../utils/req_res_utils.js";
 import { storageClient } from "../index.js";
 import validate, {
+  validateCountOfFileIds,
+  validateCountOfFileObjects,
   validateFileFields,
   validateFileIds,
 } from "../lib/validation.js";
@@ -13,13 +15,16 @@ export default class FileController {
     const reqFiles = data.request.create_files.map((file) =>
       slice(file, ALLOW_FIELDS.ALLOWED_FILEDS_FILE)
     );
-    await validate(ws, { files: reqFiles }, [validateFileFields]);
+    await validate(ws, { files: reqFiles }, [
+      validateCountOfFileObjects,
+      validateFileFields,
+    ]);
 
     const resFiles = [];
     for (let i = 0; i < reqFiles.length; i++) {
       //TODO: update from many to one request if it posible
       const { objectId, url } = await storageClient.getUploadUrl(
-        reqFiles[i].name || "file"
+        reqFiles[i].name
       );
       reqFiles[i]["object_id"] = objectId;
 
@@ -35,7 +40,10 @@ export default class FileController {
   async getDownloadUrl(ws, data) {
     const requestId = data.request.id;
     const objectIds = data.request.get_file_urls.file_ids;
-    await validate(ws, { ids: objectIds }, [validateFileIds]);
+    await validate(ws, { ids: objectIds }, [
+      validateCountOfFileIds,
+      validateFileIds,
+    ]);
 
     let urls = {};
     for (let i = 0; i < objectIds.length; i++) {
