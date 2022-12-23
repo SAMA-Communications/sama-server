@@ -106,18 +106,27 @@ describe("Attachments", async () => {
   });
 
   it("should work get download url for prev 2 files", async () => {
+    const file_ids = files.map((obj) => obj.object_id);
     const requestData = {
       request: {
         get_file_urls: {
-          file_ids: files.map((obj) => obj.object_id),
+          file_ids: file_ids,
         },
         id: "createUploadUrlForFile",
       },
     };
     const responseData = await processJsonMessageOrError(mockedWS, requestData);
+    const urls = responseData.response.file_urls;
 
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.notEqual(responseData.response.file_urls, undefined);
+
+    assert.notEqual(urls[file_ids[0]], undefined);
+    assert.notEqual(urls[file_ids[1]], undefined);
+
+    assert.equal(urls[file_ids[0]].split(":")[0], "http");
+    assert.equal(urls[file_ids[1]].split(":")[0], "http");
+
     assert.equal(Object.keys(responseData.response.file_urls).length, 2);
   });
 
