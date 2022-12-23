@@ -26,6 +26,8 @@ With SAMA our goal is the following:
 
 * WSS
 * (TBA) TLS socket 
+* (TBA) UDP channel 
+* (TBA) QUIC
 
 ## Authentication
 
