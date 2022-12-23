@@ -569,7 +569,63 @@ TBA
 
 ### Attachments
 
-TBA
+Create file upload url:
+
+```
+{
+  request: {
+    create_files: [
+      { name: "1.png", size: 240, content_type: "image/png" },
+      { name: "2.jpeg", size: 760, content_type: "image/jpeg" },
+    ],
+    id: "4",
+  },
+};
+
+{
+  response: {
+   id: "4",
+   files: [
+     {
+       _id: "63077ad836b78c3d82af0812",
+       name: "1.png",
+       size: 240,
+       content_type: "image/png",
+       upload_url: "https://...."
+     },
+     {
+       _id: "63077ad836b78c3d82af0813",
+       name: "2.jpeg",
+       size: 760,
+       content_type: "image/jpeg",
+       upload_url: "https://...."
+     },
+   ]
+}
+```
+
+Get file download url:
+
+```
+{
+  request: {
+    get_file_urls: {
+      file_ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
+    }
+    id: "5",
+  },
+};
+
+{
+  response: {
+   id: "5",
+   file_urls: [
+     "https://....",
+     "https://...."
+   ]
+}
+```
+
 
 ### Block list
 
@@ -601,8 +657,7 @@ TBA
 * [x] Typing status
 * [x] Read status
 * [x] Last activity
-* Upload attachment
-* Get attachment by url
+* [x] Attachments (create upload url, get download url)
 * Block user
 * Unblock user
 * List blocked users
