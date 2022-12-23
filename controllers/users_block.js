@@ -1,6 +1,5 @@
 import BlockedUser from "../models/blocked_user.js";
 import validate, { validateIsUserId } from "../lib/validation.js";
-import { ERROR_STATUES } from "../constants/http_constants.js";
 import { getSessionUserId } from "../store/session.js";
 
 export default class UserBlockController {

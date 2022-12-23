@@ -12,7 +12,6 @@ export const ERROR_STATUES = {
     status: 422,
     message: "User 'login' or 'password' field missed",
   },
-  USER_NOT_BLOCKED: { status: 422, message: "User not blocked" },
   USER_SELECTED: { status: 422, message: "Select at least one user" },
   USER_ALREADY_EXISTS: { status: 422, message: "User already exists" },
   TOO_MANY_USERS: {
