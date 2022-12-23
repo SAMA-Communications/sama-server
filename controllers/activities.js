@@ -13,7 +13,7 @@ export default class LastActivityController {
     const obj = {};
 
     if (ACTIVITY.SUBSCRIBED_TO[currentUId]) {
-      this.user_last_activity_unsubscribe(ws, { request: { id: requestId } });
+      this.statusUnsubscribe(ws, { request: { id: requestId } });
     }
     ACTIVITY.SUBSCRIBED_TO[currentUId] = uId;
 
