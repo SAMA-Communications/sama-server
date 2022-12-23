@@ -4,6 +4,7 @@ import LastActivityController from "../controllers/activities.js";
 import MessagesController from "../controllers/messages.js";
 import OfflineQueue from "../models/offline_queue.js";
 import StatusController from "../controllers/status.js";
+import UserBlockController from "../controllers/users_block.js";
 import UsersController from "../controllers/users.js";
 import { ACTIVE, getSessionUserId } from "../store/session.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
@@ -22,6 +23,9 @@ const jsonRequest = {
     message_delete: (ws, json) => new MessagesController().delete(ws, json),
     create_files: (ws, json) => new FileController().createUrl(ws, json),
     get_file_urls: (ws, json) => new FileController().getDownloadUrl(ws, json),
+    block_user: (ws, json) => new UserBlockController().block(ws, json),
+    unblock_user: (ws, json) => new UserBlockController().unblock(ws, json),
+    list_blocked_users: (ws, json) => new UserBlockController().list(ws, json),
     user_create: (ws, json) => new UsersController().create(ws, json),
     user_edit: (ws, json) => new UsersController().edit(ws, json),
     user_login: (ws, json) => new UsersController().login(ws, json),
