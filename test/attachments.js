@@ -83,7 +83,7 @@ describe("Attachments", async () => {
       request: {
         create_files: [
           { name: "1.png", size: 123, content_type: "image" },
-          { name: "2.png", size: 123, content_type: "image" },
+          { name: "2.png", size: 321, content_type: "image" },
         ],
         id: "createUploadUrlForFile",
       },
@@ -93,6 +93,15 @@ describe("Attachments", async () => {
 
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.notEqual(responseData.response.files, undefined);
+
+    assert.equal(files[0].name, "1.png");
+    assert.equal(files[0].size, 123);
+    assert.equal(files[0].content_type, "image");
+
+    assert.equal(files[1].name, "2.png");
+    assert.equal(files[1].size, 321);
+    assert.equal(files[1].content_type, "image");
+
     assert.equal(responseData.response.files.length, 2);
   });
 
