@@ -27,6 +27,8 @@ Disclaimer: the authors behind SAMA have 10+ years experience in building messag
 
 Make sure you have Node 18 installed.
 
+Copy `.env.example` to `.env`.
+
 - `docker-compose up` to run dependant services (S3, Minio)
 - `npm install` and `npm run start` to run server
 
@@ -718,5 +720,5 @@ TBA
 * [x] Last activity / Last activity subscription
 * [x] Attachments (create upload url, get download url)
 * [x] Block user / Unblock user / List blocked users
-* [] Address book
-* [] Push notifications 
+* [ ] Address book
+* [ ] Push notifications 
