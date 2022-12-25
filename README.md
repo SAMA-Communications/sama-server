@@ -1,39 +1,43 @@
 # SAMA - Simple but Advanced Messaging Alternative
 
 ## Overview
-The intention of another messging protocol is to provide an alternative solution to the wide spread XMPP messaging protocol (and to be honest - the only one wide spread 'standard' these days). 
+
+The intention of another messging protocol is to provide an alternative solution to the wide spread [XMPP](https://xmpp.org) messaging protocol (and to be honest - the only wide spread 'standard' these days). 
 
 XMPP is huge. XMPP covers pretty much every possible use case. These 2 things at the same time is main advantage and disvantage of it. 
 
-Disclaimer: the origin author has 10+ years experience in building messaging apps and services based on top of XMPP. 
-
-What personally I (and many other people) do not like about XMPP:
+What we personally (and many other people) do not like about XMPP:
 
 * Long connection & authentication flow, with a complexe session resumption management.
-* Lots of noisy traffic when use Roster
+* Lots of noisy traffic when use Roster for contact list.
 * Group chats is not a part of core protocol, hence there are many diffs in implementation when use private and group messaging.
 * Group chats: join room requirement. 
 * Complexe and limited recent chats list implementation based on top of MAM XEP which always leads to implementing an additional separated HTTP service.
-* HTTP API is not a part of core protocol.  HTTP API is much convenient for some operations like user signup, retrieve recent chats list, retrieve chat messages, block list, contact list etc.
+* HTTP API is not a part of core protocol. HTTP API is much convenient for some operations like user signup, retrieve recent chats list, retrieve chat messages, block list, contact list etc.
 * Lots of diff XEPs which makes hard for newcomers to pick the right direction what should be used.
 
 With SAMA our goal is the following:
 * to provide the minimal but enough features set for implementing standard chat app and cover 90% use cases
-* as much as possible simple API
-* clustering support out of the box - to cover cases with big MAU easily from day 1.
+* super simple and clean API
+* out of the box clustering support - spine as many servers as needed to support big MAU.
 
-## Transport
+Disclaimer: the authors behind SAMA have 10+ years experience in building messaging apps and services based on top of XMPP protocol.
+
+## Development
+
+Make sure you have Node 18 installed.
+
+- `docker-compose up` to run dependant services (S3, Minio)
+- `npm install` and `npm run start` to run server
+
+## API
+
+### Transport
 
 * WSS
 * (TBA) TLS socket 
 * (TBA) UDP channel 
 * (TBA) QUIC
-
-## Authentication
-
-Login + pwd 
-
-## API
 
 ### Create user
 
