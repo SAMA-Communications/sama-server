@@ -3,7 +3,7 @@ export const up = async (db, client) => {
     .collection("user_token")
     .createIndex(
       { updated_at: 1 },
-      { expireAfterSeconds: process.env.EXPIRES_IN }
+      { expireAfterSeconds: process.env.JWT_ACCESS_TOKEN_EXPIRES_IN }
     );
 };
 

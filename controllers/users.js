@@ -107,7 +107,7 @@ export default class UsersController {
       { _id: user.params._id, login: user.params.login },
       process.env.JWT_ACCESS_SECRET,
       {
-        expiresIn: process.env.EXPIRES_IN,
+        expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES_IN,
       }
     );
 
