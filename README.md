@@ -25,11 +25,10 @@ Disclaimer: the authors behind SAMA have 10+ years experience in building messag
 
 ## Development
 
-Make sure you have Node 18 installed.
-
-Copy `.env.example` to `.env`.
-
-- `docker-compose up` to run dependant services (S3, Minio)
+- Make sure you have Node 18 installed.
+- Copy `.env.example` to `.env`.
+- Run `docker-compose up` to run dependant services (S3, Minio)
+- Open `http://localhost:9001/access-keys`, create Access Keys and set `MINIO_ACCESS_KEY` and `MINIO_SECRET_KEY` in `.env`.
 - `npm install` and `npm run start` to run server
 
 ## API
