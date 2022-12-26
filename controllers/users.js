@@ -29,6 +29,8 @@ export default class UsersController {
       const user = new User(userParams);
       await user.save();
 
+      console.log("user", user)
+
       return { response: { id: requestId, user: user.visibleParams() } };
     } else {
       throw new Error(ERROR_STATUES.USER_ALREADY_EXISTS.message, {
