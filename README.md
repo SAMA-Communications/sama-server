@@ -25,9 +25,10 @@ Disclaimer: the authors behind SAMA have 10+ years experience in building messag
 
 ## Development
 
-Make sure you have Node 18 installed.
-
-- `docker-compose up` to run dependant services (S3, Minio)
+- Make sure you have Node 18 installed.
+- Copy `.env.example` to `.env`.
+- Run `docker-compose up` to run dependant services (S3, Minio)
+- Open `http://localhost:9001/access-keys`, create Access Keys and set `MINIO_ACCESS_KEY` and `MINIO_SECRET_KEY` in `.env`.
 - `npm install` and `npm run start` to run server
 
 ## API
@@ -694,6 +695,11 @@ Get blocked users list:
 
 TBA
 
+
+## Clustering
+
+TBA
+
 ## IDC - inter deployments communication
 
 TBA
@@ -718,5 +724,5 @@ TBA
 * [x] Last activity / Last activity subscription
 * [x] Attachments (create upload url, get download url)
 * [x] Block user / Unblock user / List blocked users
-* [] Address book
-* [] Push notifications 
+* [ ] Address book
+* [ ] Push notifications 
