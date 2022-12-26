@@ -608,7 +608,7 @@ describe("Message function", async () => {
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Message content is empty",
+        message: "Either message body or attachments required",
       });
     });
 
