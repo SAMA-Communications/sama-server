@@ -589,12 +589,13 @@ describe("Message function", async () => {
       });
     });
 
-    it("should fail body is empty", async () => {
+    it("should fail message content is empty", async () => {
       const requestData = {
         request: {
           message_edit: {
             id: "include_2",
             body: "",
+            attachments: [],
           },
           id: "1",
         },
@@ -607,7 +608,7 @@ describe("Message function", async () => {
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Body of message is empty",
+        message: "Either message body or attachments required",
       });
     });
 

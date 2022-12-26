@@ -69,7 +69,10 @@ export const ERROR_STATUES = {
   MESSAGE_ID_NOT_FOUND: { status: 422, message: "Message ID not found" },
   MESSAGE_ID_MISSED: { status: 422, message: "Message ID missed" },
   MESSAGE_TYPE_MISSED: { status: 422, message: "Message Type missed" },
-  BODY_IS_EMPTY: { status: 422, message: "Body of message is empty" },
+  MESSAGE_BODY_AND_ATTACHMENTS_EMPTY: {
+    status: 422,
+    message: "Either message body or attachments required",
+  },
   USER_BLOCKED: {
     status: 422,
     message:
