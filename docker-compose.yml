@@ -1,6 +1,5 @@
 version: "3.8"
 services:
-
   s3:
     image: minio/minio
     ports:
@@ -30,7 +29,7 @@ services:
       /usr/bin/mc mb sama/samabucket;
       /usr/bin/mc policy set public sama/samabucket;
       "
-      
+
   mongo:
     image: mongo:4.4
     container_name: server_mongo_database
