@@ -1,5 +1,7 @@
 # SAMA - Simple but Advanced Messaging Alternative
 
+<img width="597" alt="Screenshot 2022-12-31 at 14 15 04" src="https://user-images.githubusercontent.com/70977170/210136404-b1811eaa-b058-4fd4-a7db-14b8d059a118.png">
+
 ## Overview
 
 The intention of another messging protocol is to provide an alternative solution to the wide spread [XMPP](https://xmpp.org) messaging protocol (and to be honest - the only wide spread 'standard' these days). 
