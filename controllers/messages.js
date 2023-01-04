@@ -1,9 +1,11 @@
 import BlockListRepository from "../repositories/blocklist_repository.js";
+import BlockedUser from "../models/blocked_user.js";
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import ConversationRepository from "../repositories/conversation_repository.js";
 import MessageStatus from "../models/message_status.js";
 import Messages from "../models/message.js";
+import groupBy from "../utils/groupBy.js";
 import validate, {
   validateIsConversation,
   validateIsConversationByCID,
@@ -14,7 +16,10 @@ import validate, {
   validateMessageId,
   validateIsCID,
 } from "../lib/validation.js";
-import groupBy from "../utils/groupBy.js";
+import {
+  inMemoryBlockList,
+  inMemoryConversations,
+} from "../store/in_memory.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ObjectId } from "mongodb";
@@ -22,6 +27,16 @@ import { deliverToUser, deliverToUserOrUsers } from "../routes/ws.js";
 import { ACTIVE, getSessionUserId } from "../store/session.js";
 import { slice } from "../utils/req_res_utils.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
+
+const convRepository = new ConversationRepository(
+  Conversation,
+  inMemoryConversations
+);
+
+const blockListRepository = new BlockListRepository(
+  BlockedUser,
+  inMemoryBlockList
+);
 
 export default class MessagesController {
   async create(ws, data) {
@@ -36,9 +51,7 @@ export default class MessagesController {
     await validate(ws, { id: messageId }, [validateMessageId]);
 
     const currentUserId = getSessionUserId(ws);
-    const conversation = await ConversationRepository.findOne(
-      messageParams.cid
-    );
+    const conversation = await convRepository.findById(messageParams.cid);
 
     let participants;
     if (conversation) {
@@ -57,7 +70,7 @@ export default class MessagesController {
       });
     }
 
-    const blockedList = await BlockListRepository.findAll(
+    const blockedList = await blockListRepository.findAll(
       { blocked_user_id: currentUserId, user_id: { $in: participants } },
       ["user_id"]
     );

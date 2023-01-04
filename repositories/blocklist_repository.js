@@ -1,5 +1,4 @@
 import BaseRepository from "./base.js";
-import { inMemoryBlockList } from "../store/in_memory.js";
 import BlockedUser from "../models/blocked_user.js";
 
 export default class BlockListRepository extends BaseRepository {
@@ -7,11 +6,13 @@ export default class BlockListRepository extends BaseRepository {
     super(model, inMemoryStorage);
   }
 
-  static async findAll(params, fileds, limit) {
-    let users = inMemoryBlockList[params];
+  async findAll(params, fileds, limit) {
+    const storeKey = JSON.stringify(params);
+    let users = this.inMemoryStorage[storeKey];
+
     if (!users) {
       users = await BlockedUser.findAll(params, fileds, limit);
-      inMemoryBlockList[params] = users;
+      this.inMemoryStorage[storeKey] = users;
     }
 
     return users;
