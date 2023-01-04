@@ -1,6 +1,7 @@
-import BlockedUser from "../models/blocked_user.js";
+import BlockListRepository from "../repositories/blocklist_repository.js";
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
+import ConversationRepository from "../repositories/conversation_repository.js";
 import MessageStatus from "../models/message_status.js";
 import Messages from "../models/message.js";
 import validate, {
@@ -35,9 +36,10 @@ export default class MessagesController {
     await validate(ws, { id: messageId }, [validateMessageId]);
 
     const currentUserId = getSessionUserId(ws);
-    const conversation = await Conversation.findOne({
-      _id: messageParams.cid,
-    });
+    const conversation = await ConversationRepository.findOne(
+      messageParams.cid
+    );
+
     let participants;
     if (conversation) {
       participants = await ConversationParticipant.findAll({
@@ -55,7 +57,7 @@ export default class MessagesController {
       });
     }
 
-    const blockedList = await BlockedUser.findAll(
+    const blockedList = await BlockListRepository.findAll(
       { blocked_user_id: currentUserId, user_id: { $in: participants } },
       ["user_id"]
     );
