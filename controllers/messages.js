@@ -28,17 +28,18 @@ import { ACTIVE, getSessionUserId } from "../store/session.js";
 import { slice } from "../utils/req_res_utils.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 
-const convRepository = new ConversationRepository(
-  Conversation,
-  inMemoryConversations
-);
-
-const blockListRepository = new BlockListRepository(
-  BlockedUser,
-  inMemoryBlockList
-);
-
 export default class MessagesController {
+  constructor() {
+    this.conversationRepository = new ConversationRepository(
+      Conversation,
+      inMemoryConversations
+    );
+    this.blockListRepository = new BlockListRepository(
+      BlockedUser,
+      inMemoryBlockList
+    );
+  }
+
   async create(ws, data) {
     const messageParams = slice(
       data.message,
@@ -51,7 +52,9 @@ export default class MessagesController {
     await validate(ws, { id: messageId }, [validateMessageId]);
 
     const currentUserId = getSessionUserId(ws);
-    const conversation = await convRepository.findById(messageParams.cid);
+    const conversation = await this.conversationRepository.findById(
+      messageParams.cid
+    );
 
     let participants;
     if (conversation) {
@@ -70,7 +73,7 @@ export default class MessagesController {
       });
     }
 
-    const blockedList = await blockListRepository.findAll(
+    const blockedList = await this.blockListRepository.findAll(
       { blocked_user_id: currentUserId, user_id: { $in: participants } },
       ["user_id"]
     );
