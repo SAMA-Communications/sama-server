@@ -17,9 +17,17 @@ import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { ObjectId } from "mongodb";
 import { getSessionUserId } from "../store/session.js";
+import { inMemoryConversations } from "../store/in_memory.js";
 import { slice } from "../utils/req_res_utils.js";
 
 export default class ConversationController {
+  constructor() {
+    this.conversationRepository = new ConversationRepository(
+      Conversation,
+      inMemoryConversations
+    );
+  }
+
   async create(ws, data) {
     const requestId = data.request.id;
     const participantsParams = slice(
@@ -47,6 +55,7 @@ export default class ConversationController {
         },
         [validateParticipantsInUType, validateIsUserSendHimSelf]
       );
+      //in-memory request?
       const existingConversation = await Conversation.findOne({
         $or: [
           {
@@ -120,7 +129,9 @@ export default class ConversationController {
     const requestData = data.request.conversation_update;
     await validate(ws, requestData, [validateIsConversation]);
 
-    const conversation = await Conversation.findOne({ _id: requestData });
+    const conversation = await this.conversationRepository.findById(
+      requestData
+    );
     await validate(ws, conversation.params, [validateConversationisUserOwner]);
 
     const conversationId = requestData.id;
@@ -190,11 +201,13 @@ export default class ConversationController {
         { _id: conversationId },
         { $set: requestData }
       );
+
+      await this.conversationRepository.update(conversationId);
     }
 
-    const returnConversation = await Conversation.findOne({
-      _id: conversationId,
-    });
+    const returnConversation = await this.conversationRepository.findById(
+      conversationId
+    );
 
     return {
       response: {
@@ -282,14 +295,16 @@ export default class ConversationController {
       conversation_id: conversationId,
     });
     if (!isUserInConvesation) {
+      await this.conversationRepository.delete(conversationId);
       await conversation.delete();
     } else if (
       conversation.params.owner_id.toString() === getSessionUserId(ws)
     ) {
-      Conversation.updateOne(
+      await Conversation.updateOne(
         { _id: conversationId },
         { $set: { owner_id: isUserInConvesation.params.user_id } }
       );
+      await this.conversationRepository.update(conversationId);
     }
 
     return { response: { id: requestId, success: true } };

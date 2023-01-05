@@ -1,8 +1,16 @@
 import BlockedUser from "../models/blocked_user.js";
 import validate, { validateIsUserId } from "../lib/validation.js";
 import { getSessionUserId } from "../store/session.js";
+import { inMemoryBlockList } from "../store/in_memory.js";
 
 export default class UserBlockController {
+  constructor() {
+    this.blockListRepository = new BlockListRepository(
+      BlockedUser,
+      inMemoryBlockList
+    );
+  }
+
   async block(ws, data) {
     const requestId = data.request.id;
     const uId = data.request.block_user.id;
@@ -19,6 +27,8 @@ export default class UserBlockController {
       const blockedUser = new BlockedUser(blockParams);
       await blockedUser.save();
     }
+
+    this.blockListRepository.upsert(currentUserId, uId, true);
 
     return { response: { id: requestId, success: true } };
   }
@@ -37,6 +47,8 @@ export default class UserBlockController {
     if (record) {
       await record.delete();
     }
+
+    this.blockListRepository.upsert(uId, currentUserId, false);
 
     return { response: { id: requestId, success: true } };
   }

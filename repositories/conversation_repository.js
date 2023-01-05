@@ -19,17 +19,25 @@ export default class ConversationRepository extends BaseRepository {
     console.log("[Cache] Conversation cache upload success");
   }
 
-  static async upsert(_id, value) {
+  static async update(_id) {
     if (!_id) {
       return "Invalid key";
     }
 
-    if (!value) {
-      inMemoryConversations[_id] && delete inMemoryConversations[_id];
-      return;
+    const conv = await Conversation.findOne({ _id: _id });
+    if (conv) {
+      inMemoryConversations[_id] = conv.params;
+    } else if (inMemoryConversations[_id]) {
+      delete inMemoryConversations[_id];
+    }
+  }
+
+  static async delete(_id) {
+    if (!_id) {
+      return "Invalid key";
     }
 
-    inMemoryConversations[_id] = value;
+    inMemoryConversations[_id] && delete inMemoryConversations[_id];
   }
 
   async findById(_id) {

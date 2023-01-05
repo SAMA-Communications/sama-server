@@ -108,6 +108,8 @@ export default class MessagesController {
       { _id: messageParams.cid },
       { $set: { updated_at: message.params.created_at } }
     );
+    await this.conversationRepository.update(messageParams.cid);
+
     return {
       ask: { mid: messageId, server_mid: message.params._id, t: currentTs },
     };
