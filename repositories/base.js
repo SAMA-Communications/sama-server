@@ -4,6 +4,8 @@ export default class BaseRepository {
     this.inMemoryStorage = inMemoryStorage;
   }
 
+  warmCache() {}
+
   findAll(...args) {}
 
   findById(id) {

@@ -8,6 +8,10 @@ import { connectToDB } from "./lib/db.js";
 import Minio from "./lib/storage/minio.js";
 import S3 from "./lib/storage/s3.js";
 
+//cache storage
+import BlockListRepository from "./repositories/blocklist_repository.js";
+import ConversationRepository from "./repositories/conversation_repository.js";
+
 let storageClient;
 if (process.env.STORAGE_DRIVER === "minio") {
   storageClient = new Minio();
@@ -37,12 +41,14 @@ APP.listen(APP_PORT, (listenSocket) => {
 });
 
 // perform a database connection when the server starts
-connectToDB((err) => {
+connectToDB(async (err) => {
   if (err) {
     console.error("[connectToDB] Error", err);
     process.exit();
   } else {
     console.log("[connectToDB] Ok");
+    await BlockListRepository.warmCache();
+    await ConversationRepository.warmCache();
   }
 });
 

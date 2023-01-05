@@ -52,7 +52,7 @@ export default class BaseModel {
     }
   }
 
-  static async findAll(query, returnParams, limit) {
+  static async findAll(query, returnParams, limit, sortParams) {
     try {
       if (query.cid) {
         query.cid = new ObjectId(query.cid);
@@ -89,7 +89,7 @@ export default class BaseModel {
         .collection(this.collection)
         .find(query, { limit: limit || 100 })
         .project(projection)
-        .sort({ $natural: -1 })
+        .sort(sortParams || { $natural: -1 })
         .toArray();
     } catch (e) {
       return null;
