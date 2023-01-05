@@ -8,7 +8,7 @@ export default class ConversationRepository extends BaseRepository {
   }
 
   static async warmCache() {
-    const db_Conversation = await Conversation.findAll({}, null, null, {
+    const db_Conversation = await Conversation.findAll({}, null, 1000, {
       updated_at: -1,
     });
 
@@ -17,6 +17,19 @@ export default class ConversationRepository extends BaseRepository {
     });
 
     console.log("[Cache] Conversation cache upload success");
+  }
+
+  static async upsert(_id, value) {
+    if (!_id) {
+      return "Invalid key";
+    }
+
+    if (!value) {
+      inMemoryConversations[_id] && delete inMemoryConversations[_id];
+      return;
+    }
+
+    inMemoryConversations[_id] = value;
   }
 
   async findById(_id) {

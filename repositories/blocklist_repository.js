@@ -29,6 +29,30 @@ export default class BlockListRepository extends BaseRepository {
     console.log("[Cache] BlockList cache upload success");
   }
 
+  static async upsert(blocked_user_id, user_id, value) {
+    if (!blocked_user_id) {
+      return "Invalid key";
+    }
+
+    if (!value) {
+      inMemoryBlockList[blocked_user_id][user_id] &&
+        delete inMemoryBlockList[blocked_user_id][user_id];
+      return;
+    } else if (!inMemoryBlockList[blocked_user_id]) {
+      inMemoryBlockList[blocked_user_id] = {};
+    }
+
+    inMemoryBlockList[blocked_user_id][user_id] = true;
+  }
+
+  static async delete(user_id) {
+    inMemoryBlockList[user_id] && delete inMemoryBlockList[user_id];
+
+    for (const uId in inMemoryBlockList) {
+      inMemoryBlockList[uId][user_id] && delete inMemoryBlockList[uId][user_id];
+    }
+  }
+
   async findAll(params, fileds, limit) {
     const storeKey = JSON.stringify(params);
     let users = this.inMemoryStorage[storeKey];
