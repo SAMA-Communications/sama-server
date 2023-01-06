@@ -1,4 +1,5 @@
 import BlockedUser from "../models/blocked_user.js";
+import BlockListRepository from "../repositories/blocklist_repository.js";
 import validate, { validateIsUserId } from "../lib/validation.js";
 import { getSessionUserId } from "../store/session.js";
 import { inMemoryBlockList } from "../store/in_memory.js";

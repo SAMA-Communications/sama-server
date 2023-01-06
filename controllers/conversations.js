@@ -1,5 +1,6 @@
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
+import ConversationRepository from "../repositories/conversation_repository.js";
 import Messages from "../models/message.js";
 import User from "../models/user.js";
 import validate, {
