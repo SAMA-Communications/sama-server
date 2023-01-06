@@ -7,10 +7,4 @@ export default class BaseRepository {
   warmCache() {
     throw "not implemented";
   }
-
-  findAll(...args) {}
-
-  findById(id) {
-    return this.model.findByPk(id);
-  }
 }

@@ -15,6 +15,13 @@ import { slice } from "../utils/req_res_utils.js";
 import LastActivityController from "./activities.js";
 
 export default class UsersController {
+  constructor() {
+    this.blockListRepository = new BlockListRepository(
+      BlockedUser,
+      inMemoryBlockList
+    );
+  }
+
   async create(ws, data) {
     const requestId = data.request.id;
 
@@ -28,8 +35,6 @@ export default class UsersController {
       userParams["recent_activity"] = Date.now();
       const user = new User(userParams);
       await user.save();
-
-      console.log("user", user);
 
       return { response: { id: requestId, user: user.visibleParams() } };
     } else {
@@ -240,6 +245,7 @@ export default class UsersController {
 
     const user = await User.findOne({ _id: userSession });
     if (user) {
+      this.blockListRepository.delete(user.params._id);
       await user.delete();
       return { response: { id: requestId, success: true } };
     } else {

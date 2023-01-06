@@ -29,29 +29,25 @@ export default class BlockListRepository extends BaseRepository {
     console.log("[Cache] BlockList cache upload success");
   }
 
-  async upsert(blocked_user_id, user_id, value) {
+  async block(blocked_user_id, user_id) {
     if (!blocked_user_id) {
       throw "Invalid key";
     }
 
-    if (!value) {
-      this.inMemoryStorage[blocked_user_id][user_id] &&
-        delete this.inMemoryStorage[blocked_user_id][user_id];
-      return;
-    } else if (!this.inMemoryStorage[blocked_user_id]) {
+    if (!this.inMemoryStorage[blocked_user_id]) {
       this.inMemoryStorage[blocked_user_id] = {};
     }
 
     const blockedUser = new BlockedUser({
-      user_id: currentUserId,
-      blocked_user_id: uId,
+      blocked_user_id,
+      user_id,
     });
     await blockedUser.save();
 
     this.inMemoryStorage[blocked_user_id][user_id] = true;
   }
 
-  async delete(blocked_user_id, user_id) {
+  async unblock(blocked_user_id, user_id) {
     if (!user_id) {
       throw "Invalid key";
     }
@@ -60,16 +56,32 @@ export default class BlockListRepository extends BaseRepository {
       blocked_user_id,
       user_id,
     });
+    record && (await record.delete());
 
-    if (record) {
-      await record.delete();
+    this.inMemoryStorage[blocked_user_id][user_id] &&
+      delete this.inMemoryStorage[blocked_user_id][user_id];
+
+    for (const uId in this.inMemoryStorage) {
+      this.inMemoryStorage[uId][user_id] &&
+        delete this.inMemoryStorage[uId][user_id];
+    }
+  }
+
+  async delete(user_id) {
+    if (!user_id) {
+      throw "Invalid key";
     }
 
-    inMemoryBlockList[user_id] && delete inMemoryBlockList[user_id];
+    this.inMemoryStorage[user_id] && delete this.inMemoryStorage[user_id];
 
-    for (const uId in inMemoryBlockList) {
-      inMemoryBlockList[uId][user_id] && delete inMemoryBlockList[uId][user_id];
+    for (const uId in this.inMemoryStorage) {
+      this.inMemoryStorage[uId][user_id] &&
+        delete this.inMemoryStorage[uId][user_id];
     }
+
+    await BlockedUser.deleteMany({
+      $or: [{ blocked_user_id: user_id }, { user_id }],
+    });
   }
 
   async findAll(params, fileds, limit) {

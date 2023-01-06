@@ -18,7 +18,7 @@ export default class UserBlockController {
     const currentUserId = getSessionUserId(ws);
     await validate(ws, { uId }, [validateIsUserId]);
 
-    this.blockListRepository.upsert(currentUserId, uId, true);
+    this.blockListRepository.block(currentUserId, uId);
 
     return { response: { id: requestId, success: true } };
   }
@@ -29,7 +29,7 @@ export default class UserBlockController {
     const currentUserId = getSessionUserId(ws);
     await validate(ws, { uId }, [validateIsUserId]);
 
-    this.blockListRepository.delete(uId, currentUserId);
+    this.blockListRepository.unblock(uId, currentUserId);
 
     return { response: { id: requestId, success: true } };
   }
