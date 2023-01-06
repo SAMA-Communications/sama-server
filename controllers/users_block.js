@@ -18,17 +18,6 @@ export default class UserBlockController {
     const currentUserId = getSessionUserId(ws);
     await validate(ws, { uId }, [validateIsUserId]);
 
-    const blockParams = {
-      user_id: currentUserId,
-      blocked_user_id: uId,
-    };
-
-    const isUserBlocked = await BlockedUser.findOne(blockParams);
-    if (!isUserBlocked) {
-      const blockedUser = new BlockedUser(blockParams);
-      await blockedUser.save();
-    }
-
     this.blockListRepository.upsert(currentUserId, uId, true);
 
     return { response: { id: requestId, success: true } };
@@ -40,16 +29,7 @@ export default class UserBlockController {
     const currentUserId = getSessionUserId(ws);
     await validate(ws, { uId }, [validateIsUserId]);
 
-    const record = await BlockedUser.findOne({
-      blocked_user_id: uId,
-      user_id: currentUserId,
-    });
-
-    if (record) {
-      await record.delete();
-    }
-
-    this.blockListRepository.upsert(uId, currentUserId, false);
+    this.blockListRepository.delete(uId, currentUserId);
 
     return { response: { id: requestId, success: true } };
   }
@@ -58,9 +38,10 @@ export default class UserBlockController {
     const requestId = data.request.id;
     const currentUserId = getSessionUserId(ws);
 
-    const blockedUsers = await BlockedUser.findAll({ user_id: currentUserId }, [
-      "blocked_user_id",
-    ]);
+    const blockedUsers = await this.blockListRepository.findAll(
+      { user_id: currentUserId },
+      ["blocked_user_id"]
+    );
 
     return {
       response: {

@@ -29,7 +29,7 @@ export default class UsersController {
       const user = new User(userParams);
       await user.save();
 
-      console.log("user", user)
+      console.log("user", user);
 
       return { response: { id: requestId, user: user.visibleParams() } };
     } else {
@@ -259,7 +259,7 @@ export default class UsersController {
         : requestParam.limit || CONSTANTS.LIMIT_MAX;
 
     const query = {
-      login: { $regex: `^(?i)${requestParam.login}*` },
+      login: { $regex: `^${requestParam.login}.*` },
       _id: {
         $nin: [getSessionUserId(ws), ...requestParam.ignore_ids],
       },

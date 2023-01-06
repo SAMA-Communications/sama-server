@@ -56,8 +56,8 @@ export default class ConversationController {
         },
         [validateParticipantsInUType, validateIsUserSendHimSelf]
       );
-      //in-memory request?
-      const existingConversation = await Conversation.findOne({
+
+      const existingConversation = await this.conversationRepository.findOne({
         $or: [
           {
             type: "u",
@@ -198,12 +198,7 @@ export default class ConversationController {
     }
     isOwnerChange = false;
     if (Object.keys(requestData) != 0) {
-      await Conversation.updateOne(
-        { _id: conversationId },
-        { $set: requestData }
-      );
-
-      await this.conversationRepository.update(conversationId);
+      await this.conversationRepository.updateOne(conversationId, requestData);
     }
 
     const returnConversation = await this.conversationRepository.findById(
@@ -244,7 +239,11 @@ export default class ConversationController {
     }
 
     //last message for all converastions
-    const userConversations = await Conversation.findAll(query, null, limit);
+    const userConversations = await this.conversationRepository.findAll(
+      query,
+      null,
+      limit
+    );
     const lastMessagesListByCid = await Messages.getLastMessageForConversation(
       userConversationsIds.map((el) => el.conversation_id),
       currentUser
@@ -275,14 +274,15 @@ export default class ConversationController {
 
     const conversationId = data.request.conversation_delete.id;
     await validate(ws, { id: conversationId }, [validateIsConversation]);
-    const conversation = await Conversation.findOne({
-      _id: conversationId,
-    });
+    const conversation = await this.conversationRepository.findById(
+      conversationId
+    );
 
     const conversationParticipant = await ConversationParticipant.findOne({
       user_id: getSessionUserId(ws),
       conversation_id: conversationId,
     });
+
     if (!conversationParticipant) {
       return {
         response: {
@@ -295,17 +295,13 @@ export default class ConversationController {
     const isUserInConvesation = await ConversationParticipant.findOne({
       conversation_id: conversationId,
     });
+
     if (!isUserInConvesation) {
-      await this.conversationRepository.delete(conversationId);
-      await conversation.delete();
-    } else if (
-      conversation.params.owner_id.toString() === getSessionUserId(ws)
-    ) {
-      await Conversation.updateOne(
-        { _id: conversationId },
-        { $set: { owner_id: isUserInConvesation.params.user_id } }
-      );
-      await this.conversationRepository.update(conversationId);
+      await this.conversationRepository.delete(conversation);
+    } else if (conversation.owner_id.toString() === getSessionUserId(ws)) {
+      await this.conversationRepository.updateOne(conversationId, {
+        owner_id: isUserInConvesation.user_id,
+      });
     }
 
     return { response: { id: requestId, success: true } };

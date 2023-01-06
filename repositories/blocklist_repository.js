@@ -29,23 +29,42 @@ export default class BlockListRepository extends BaseRepository {
     console.log("[Cache] BlockList cache upload success");
   }
 
-  static async upsert(blocked_user_id, user_id, value) {
+  async upsert(blocked_user_id, user_id, value) {
     if (!blocked_user_id) {
-      return "Invalid key";
+      throw "Invalid key";
     }
 
     if (!value) {
-      inMemoryBlockList[blocked_user_id][user_id] &&
-        delete inMemoryBlockList[blocked_user_id][user_id];
+      this.inMemoryStorage[blocked_user_id][user_id] &&
+        delete this.inMemoryStorage[blocked_user_id][user_id];
       return;
-    } else if (!inMemoryBlockList[blocked_user_id]) {
-      inMemoryBlockList[blocked_user_id] = {};
+    } else if (!this.inMemoryStorage[blocked_user_id]) {
+      this.inMemoryStorage[blocked_user_id] = {};
     }
 
-    inMemoryBlockList[blocked_user_id][user_id] = true;
+    const blockedUser = new BlockedUser({
+      user_id: currentUserId,
+      blocked_user_id: uId,
+    });
+    await blockedUser.save();
+
+    this.inMemoryStorage[blocked_user_id][user_id] = true;
   }
 
-  static async delete(user_id) {
+  async delete(blocked_user_id, user_id) {
+    if (!user_id) {
+      throw "Invalid key";
+    }
+
+    const record = await BlockedUser.findOne({
+      blocked_user_id,
+      user_id,
+    });
+
+    if (record) {
+      await record.delete();
+    }
+
     inMemoryBlockList[user_id] && delete inMemoryBlockList[user_id];
 
     for (const uId in inMemoryBlockList) {
@@ -63,5 +82,9 @@ export default class BlockListRepository extends BaseRepository {
     }
 
     return users;
+  }
+
+  async findOne(blocked_user_id, user_id) {
+    return await BlockedUser.findOne(user_id, blocked_user_id);
   }
 }

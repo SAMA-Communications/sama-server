@@ -19,12 +19,14 @@ export default class ConversationRepository extends BaseRepository {
     console.log("[Cache] Conversation cache upload success");
   }
 
-  static async update(_id) {
+  async updateOne(_id, value) {
     if (!_id) {
-      return "Invalid key";
+      throw "Invalid key";
     }
 
-    const conv = await Conversation.findOne({ _id: _id });
+    await Conversation.updateOne({ _id }, { $set: value });
+    const conv = await Conversation.findOne({ _id });
+
     if (conv) {
       inMemoryConversations[_id] = conv.params;
     } else if (inMemoryConversations[_id]) {
@@ -32,12 +34,14 @@ export default class ConversationRepository extends BaseRepository {
     }
   }
 
-  static async delete(_id) {
-    if (!_id) {
-      return "Invalid key";
+  async delete(conv) {
+    if (!conv) {
+      throw "Invalid param";
     }
-
-    inMemoryConversations[_id] && delete inMemoryConversations[_id];
+    console.log(conv);
+    inMemoryConversations[conv.params._id] &&
+      delete inMemoryConversations[conv.params._id];
+    await conv.delete();
   }
 
   async findById(_id) {
@@ -49,5 +53,18 @@ export default class ConversationRepository extends BaseRepository {
     }
 
     return conv;
+  }
+
+  async findOne(params) {
+    return await Conversation.findOne(params);
+  }
+
+  async findAll(params, fields, limit, sortParams) {
+    const list = await Conversation.findAll(params, fields, limit, sortParams);
+    list.forEach(
+      (record) => (this.inMemoryStorage[record._id.toString()] = record)
+    );
+
+    return list;
   }
 }

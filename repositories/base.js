@@ -4,7 +4,9 @@ export default class BaseRepository {
     this.inMemoryStorage = inMemoryStorage;
   }
 
-  warmCache() {}
+  warmCache() {
+    throw "not implemented";
+  }
 
   findAll(...args) {}
 
