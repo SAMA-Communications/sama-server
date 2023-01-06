@@ -28,9 +28,9 @@ export default class ConversationRepository extends BaseRepository {
     const conv = await Conversation.findOne({ _id });
 
     if (conv) {
-      inMemoryConversations[_id] = conv.params;
-    } else if (inMemoryConversations[_id]) {
-      delete inMemoryConversations[_id];
+      this.inMemoryStorage[_id] = conv.params;
+    } else if (this.inMemoryStorage[_id]) {
+      delete this.inMemoryStorage[_id];
     }
   }
 
@@ -39,8 +39,8 @@ export default class ConversationRepository extends BaseRepository {
       throw "Invalid param";
     }
     console.log(conv);
-    inMemoryConversations[conv.params._id] &&
-      delete inMemoryConversations[conv.params._id];
+    this.inMemoryStorage[conv.params._id] &&
+      delete this.inMemoryStorage[conv.params._id];
     await conv.delete();
   }
 
