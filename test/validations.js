@@ -627,33 +627,32 @@ describe("Validate functions", async () => {
     it("should fail #1", async () => {
       const requestData = {
         body: "",
+        attachments: [],
       };
-      assert.throws(
-        () => {
-          validateMessageBody(requestData);
+
+      assert.throws(() => validateMessageBody(requestData), {
+        name: "Error",
+        message: "Either message body or attachments required",
+        cause: {
+          status: 422,
+          message: "Either message body or attachments required",
         },
-        {
-          name: "Error",
-          message: "Body of message is empty",
-          cause: { status: 422, message: "Body of message is empty" },
-        }
-      );
+      });
     });
 
     it("should fail #2", async () => {
       const requestData = {
         name: "123",
+        attachments: [],
       };
-      assert.throws(
-        () => {
-          validateMessageBody(requestData);
+      assert.throws(() => validateMessageBody(requestData), {
+        name: "Error",
+        message: "Either message body or attachments required",
+        cause: {
+          status: 422,
+          message: "Either message body or attachments required",
         },
-        {
-          name: "Error",
-          message: "Body of message is empty",
-          cause: { status: 422, message: "Body of message is empty" },
-        }
-      );
+      });
     });
   });
 

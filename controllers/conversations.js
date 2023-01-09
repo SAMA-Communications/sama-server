@@ -75,7 +75,7 @@ export default class ConversationController {
         return {
           response: {
             id: requestId,
-            conversation: existingConversation.visibleParams(),
+            conversation: existingConversation,
           },
         };
     } else if (conversationParams.type == "g") {
@@ -133,7 +133,8 @@ export default class ConversationController {
     const conversation = await this.conversationRepository.findById(
       requestData
     );
-    await validate(ws, conversation.params, [validateConversationisUserOwner]);
+
+    await validate(ws, conversation, [validateConversationisUserOwner]);
 
     const conversationId = requestData.id;
     delete requestData.id;
@@ -180,8 +181,7 @@ export default class ConversationController {
           });
           if (!!obj) {
             if (
-              conversation.params.owner_id.toString() ===
-              obj.params.user_id.toString()
+              conversation.owner_id.toString() === obj.params.user_id.toString()
             ) {
               isOwnerChange = true;
             }
@@ -238,7 +238,6 @@ export default class ConversationController {
       query.updated_at = { $gt: new Date(timeFromUpdate.gt) };
     }
 
-    //last message for all converastions
     const userConversations = await this.conversationRepository.findAll(
       query,
       null,
@@ -248,7 +247,7 @@ export default class ConversationController {
       userConversationsIds.map((el) => el.conversation_id),
       currentUser
     );
-    //count of unread messages for all conversations
+
     const countOfUnreadMessagesByCid =
       await Messages.getCountOfUnredMessagesByCid(
         userConversationsIds.map((el) => el.conversation_id),

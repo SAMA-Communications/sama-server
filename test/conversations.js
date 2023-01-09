@@ -253,6 +253,7 @@ describe("Conversation functions", async () => {
         null,
         100
       );
+
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.conversation, undefined);
       assert.equal(countRecordsFirst.length, countRecordsSecond.length);
@@ -406,6 +407,7 @@ describe("Conversation functions", async () => {
 
   describe("Update Conversation", async () => {
     it("should fail because conversation not found", async () => {
+      await sendLogin("test", "user_1");
       const requestData = {
         request: {
           conversation_update: {
@@ -500,7 +502,7 @@ describe("Conversation functions", async () => {
         let responseData = (
           await processJsonMessageOrError("test", requestData)
         ).response.conversation;
-        i == 0 ? (filterUpdatedAt = responseData.updated_at) : true;
+        i == 1 ? (filterUpdatedAt = responseData.updated_at) : true;
         ArrayOfTmpConversaionts.push(responseData._id.toString());
       }
 

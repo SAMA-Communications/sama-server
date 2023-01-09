@@ -52,7 +52,7 @@ export default class ConversationRepository extends BaseRepository {
     let conv = this.inMemoryStorage[_id];
 
     if (!conv) {
-      conv = await Conversation.findOne({ _id });
+      conv = (await Conversation.findOne({ _id }))?.params;
       this.inMemoryStorage[_id] = conv;
     }
 
@@ -60,7 +60,7 @@ export default class ConversationRepository extends BaseRepository {
   }
 
   async findOne(params) {
-    const conv = await Conversation.findOne(params);
+    const conv = (await Conversation.findOne(params))?.params;
     if (conv) {
       this.inMemoryStorage[conv._id.toString()] = conv;
     }

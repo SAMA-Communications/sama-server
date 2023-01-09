@@ -73,26 +73,26 @@ export default class MessagesController {
       });
     }
 
-    const blockedList = await this.blockListRepository.findAll(
+    const blockedUsersIds = await this.blockListRepository.findAll(
       currentUserId,
       participants
     );
 
-    if (conversation.type === "u" && blockedList.length) {
+    if (conversation.type === "u" && blockedUsersIds.length) {
       throw new Error(ERROR_STATUES.USER_BLOCKED.message, {
         cause: ERROR_STATUES.USER_BLOCKED,
       });
     }
     if (
       conversation.type === "g" &&
-      blockedList.length === participants.length - 1
+      blockedUsersIds.length === participants.length - 1
     ) {
       throw new Error(ERROR_STATUES.USER_BLOCKED_FOR_ALL_PARTICIPANTS.message, {
         cause: ERROR_STATUES.USER_BLOCKED_FOR_ALL_PARTICIPANTS,
       });
     }
 
-    messageParams.deleted_for = blockedList;
+    messageParams.deleted_for = blockedUsersIds;
     messageParams.from = ObjectId(currentUserId);
 
     const message = new Messages(messageParams);
@@ -105,11 +105,9 @@ export default class MessagesController {
     await message.save();
     await deliverToUserOrUsers(messageParams, message.visibleParams(), ws);
 
-    await Conversation.updateOne(
-      { _id: messageParams.cid },
-      { $set: { updated_at: message.params.created_at } }
-    );
-    await this.conversationRepository.updateOne(messageParams.cid);
+    await this.conversationRepository.updateOne(messageParams.cid, {
+      updated_at: message.params.created_at,
+    });
 
     return {
       ask: { mid: messageId, server_mid: message.params._id, t: currentTs },

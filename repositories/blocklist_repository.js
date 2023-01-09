@@ -61,13 +61,8 @@ export default class BlockListRepository extends BaseRepository {
     });
     record && (await record.delete());
 
-    this.inMemoryStorage[blocked_user_id][user_id] &&
+    this.inMemoryStorage[blocked_user_id] &&
       delete this.inMemoryStorage[blocked_user_id][user_id];
-
-    for (const uId in this.inMemoryStorage) {
-      this.inMemoryStorage[uId][user_id] &&
-        delete this.inMemoryStorage[uId][user_id];
-    }
   }
 
   async delete(user_id) {
@@ -75,11 +70,10 @@ export default class BlockListRepository extends BaseRepository {
       throw "Invalid key";
     }
 
-    this.inMemoryStorage[user_id] && delete this.inMemoryStorage[user_id];
+    delete this.inMemoryStorage[user_id];
 
     for (const uId in this.inMemoryStorage) {
-      this.inMemoryStorage[uId][user_id] &&
-        delete this.inMemoryStorage[uId][user_id];
+      this.inMemoryStorage[uId] && delete this.inMemoryStorage[uId][user_id];
     }
 
     await BlockedUser.deleteMany({
@@ -93,9 +87,5 @@ export default class BlockListRepository extends BaseRepository {
     return userObject
       ? Object.keys(userObject).filter((u) => users_filter.includes(u))
       : [];
-  }
-
-  async findOne(blocked_user_id, user_id) {
-    return await BlockedUser.findOne(user_id, blocked_user_id);
   }
 }
