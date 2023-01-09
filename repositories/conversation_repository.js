@@ -8,9 +8,14 @@ export default class ConversationRepository extends BaseRepository {
   }
 
   static async warmCache() {
-    const db_Conversation = await Conversation.findAll({}, null, 1000, {
-      updated_at: -1,
-    });
+    const db_Conversation = await Conversation.findAll(
+      {},
+      null,
+      process.env.CONVERSATION_PRELOAD_COUNT,
+      {
+        updated_at: -1,
+      }
+    );
 
     db_Conversation.forEach((conv) => {
       inMemoryConversations[conv._id] = conv;
@@ -29,7 +34,7 @@ export default class ConversationRepository extends BaseRepository {
 
     if (conv) {
       this.inMemoryStorage[_id] = conv.params;
-    } else if (this.inMemoryStorage[_id]) {
+    } else {
       delete this.inMemoryStorage[_id];
     }
   }
@@ -38,9 +43,8 @@ export default class ConversationRepository extends BaseRepository {
     if (!conv) {
       throw "Invalid param";
     }
-    console.log(conv);
-    this.inMemoryStorage[conv.params._id] &&
-      delete this.inMemoryStorage[conv.params._id];
+
+    delete this.inMemoryStorage[conv.params._id];
     await conv.delete();
   }
 
@@ -56,7 +60,12 @@ export default class ConversationRepository extends BaseRepository {
   }
 
   async findOne(params) {
-    return await Conversation.findOne(params);
+    const conv = await Conversation.findOne(params);
+    if (conv) {
+      this.inMemoryStorage[conv._id.toString()] = conv;
+    }
+
+    return conv;
   }
 
   async findAll(params, fields, limit, sortParams) {

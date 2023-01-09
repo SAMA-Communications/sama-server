@@ -38,12 +38,15 @@ export default class BlockListRepository extends BaseRepository {
       this.inMemoryStorage[blocked_user_id] = {};
     }
 
-    const blockedUser = new BlockedUser({
+    const blockedParams = {
       blocked_user_id,
       user_id,
-    });
-    await blockedUser.save();
-
+    };
+    const isUserBlocked = await BlockedUser.findOne(blockedParams);
+    if (!isUserBlocked) {
+      const blockedUser = new BlockedUser(blockedParams);
+      await blockedUser.save();
+    }
     this.inMemoryStorage[blocked_user_id][user_id] = true;
   }
 
@@ -84,16 +87,12 @@ export default class BlockListRepository extends BaseRepository {
     });
   }
 
-  async findAll(params, fileds, limit) {
-    const storeKey = JSON.stringify(params);
-    let users = this.inMemoryStorage[storeKey];
+  async findAll(blocked_user_id, users_filter) {
+    const userObject = this.inMemoryStorage[blocked_user_id];
 
-    if (!users) {
-      users = await BlockedUser.findAll(params, fileds, limit);
-      this.inMemoryStorage[storeKey] = users;
-    }
-
-    return users;
+    return userObject
+      ? Object.keys(userObject).filter((u) => users_filter.includes(u))
+      : [];
   }
 
   async findOne(blocked_user_id, user_id) {

@@ -59,7 +59,7 @@ export default class MessagesController {
     let participants;
     if (conversation) {
       participants = await ConversationParticipant.findAll({
-        conversation_id: conversation.params._id,
+        conversation_id: conversation._id,
       });
       participants = participants?.map((el) => el.user_id.toString());
       if (!participants.includes(currentUserId)) {
@@ -74,16 +74,17 @@ export default class MessagesController {
     }
 
     const blockedList = await this.blockListRepository.findAll(
-      { blocked_user_id: currentUserId, user_id: { $in: participants } },
-      ["user_id"]
+      currentUserId,
+      participants
     );
-    if (conversation.params.type === "u" && blockedList.length) {
+
+    if (conversation.type === "u" && blockedList.length) {
       throw new Error(ERROR_STATUES.USER_BLOCKED.message, {
         cause: ERROR_STATUES.USER_BLOCKED,
       });
     }
     if (
-      conversation.params.type === "g" &&
+      conversation.type === "g" &&
       blockedList.length === participants.length - 1
     ) {
       throw new Error(ERROR_STATUES.USER_BLOCKED_FOR_ALL_PARTICIPANTS.message, {
@@ -108,7 +109,7 @@ export default class MessagesController {
       { _id: messageParams.cid },
       { $set: { updated_at: message.params.created_at } }
     );
-    await this.conversationRepository.update(messageParams.cid);
+    await this.conversationRepository.updateOne(messageParams.cid);
 
     return {
       ask: { mid: messageId, server_mid: message.params._id, t: currentTs },
