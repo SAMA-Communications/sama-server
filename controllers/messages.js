@@ -92,7 +92,7 @@ export default class MessagesController {
       });
     }
 
-    messageParams.deleted_for = blockedList.map((u) => u.user_id);
+    messageParams.deleted_for = blockedList;
     messageParams.from = ObjectId(currentUserId);
 
     const message = new Messages(messageParams);
