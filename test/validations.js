@@ -5,6 +5,12 @@ import assert from "assert";
 import { connectToDBPromise } from "../lib/db.js";
 import { processJsonMessageOrError } from "../routes/ws.js";
 import {
+  createConversation,
+  createUserArray,
+  sendLogin,
+  sendLogout,
+} from "./utils.js";
+import {
   validateConversationName,
   validateConversationType,
   validateConversationisUserOwner,
@@ -25,33 +31,9 @@ import {
 } from "../lib/validation.js";
 
 let currentUserToken = "";
-let userId = [];
+let usersIds = [];
 let messageId = "";
 let currentConversationId = "";
-
-async function sendLogin(ws, login) {
-  const requestData = {
-    request: {
-      user_login: {
-        deviceId: "PC",
-        login: login,
-        password: "user_paswword_1",
-      },
-      id: "0101",
-    },
-  };
-  const response = await processJsonMessageOrError(ws, requestData);
-  return response;
-}
-async function sendLogout(ws, currentUserToken) {
-  const requestData = {
-    request: {
-      user_logout: {},
-      id: "0102",
-    },
-  };
-  await processJsonMessageOrError("validate", requestData);
-}
 
 async function assertThrowsAsync(fn, regExp) {
   let f = () => {};
@@ -69,22 +51,7 @@ async function assertThrowsAsync(fn, regExp) {
 describe("Validate functions", async () => {
   before(async () => {
     await connectToDBPromise();
-    for (let i = 0; i < 3; i++) {
-      const requestDataCreate = {
-        request: {
-          user_create: {
-            login: `user_${i + 1}`,
-            password: "user_paswword_1",
-          },
-          id: "0",
-        },
-      };
-      const responseData = await processJsonMessageOrError(
-        "validate",
-        requestDataCreate
-      );
-      userId[i] = responseData.response.user._id;
-    }
+    usersIds = await createUserArray(3);
   });
 
   describe(" --> validateIsUserAccess", async () => {
@@ -93,7 +60,7 @@ describe("Validate functions", async () => {
         .token;
       const requestData = {
         name: "validate",
-        from: userId[0],
+        from: usersIds[0],
       };
       assert.strictEqual(
         validateIsUserAccess(requestData, "validate"),
@@ -104,7 +71,7 @@ describe("Validate functions", async () => {
     it("should fail", async () => {
       const requestData = {
         name: "validate",
-        from: userId[1],
+        from: usersIds[1],
       };
       assert.throws(
         () => {
@@ -209,7 +176,7 @@ describe("Validate functions", async () => {
     it("should work", async () => {
       const requestData = {
         name: "chat",
-        participants: [userId[0], userId[1]],
+        participants: [usersIds[0], usersIds[1]],
         type: "g",
       };
       assert.strictEqual(validateParticipants(requestData), undefined);
@@ -286,7 +253,7 @@ describe("Validate functions", async () => {
         .token;
       const requestData = {
         name: "chat",
-        owner_id: userId[0],
+        owner_id: usersIds[0],
       };
       assert.strictEqual(
         validateConversationisUserOwner(requestData, "validate"),
@@ -296,7 +263,7 @@ describe("Validate functions", async () => {
 
     it("should fail", async () => {
       const requestData = {
-        owner_id: userId[1],
+        owner_id: usersIds[1],
       };
       assert.throws(
         () => {
@@ -316,22 +283,14 @@ describe("Validate functions", async () => {
     before(async () => {
       currentUserToken = (await sendLogin("validate", "user_1")).response.user
         .token;
-      const requestData = {
-        request: {
-          conversation_create: {
-            name: "validate",
-            description: "for admin and user",
-            type: "g",
-            participants: [userId[0], userId[1]],
-          },
-          id: "1_5",
-        },
-      };
-      const responseData = await processJsonMessageOrError(
+
+      currentConversationId = await createConversation(
         "validate",
-        requestData
+        null,
+        null,
+        "g",
+        [usersIds[1], usersIds[0]]
       );
-      currentConversationId = responseData.response.conversation._id.toString();
     });
 
     after(async () => {
@@ -407,8 +366,8 @@ describe("Validate functions", async () => {
   describe(" --> validateParticipantsInUType", async () => {
     it("should work", async () => {
       const requestData = {
-        participants: [userId[0], userId[1]],
-        opponent_id: userId[1],
+        participants: [usersIds[0], usersIds[1]],
+        opponent_id: usersIds[1],
       };
       assert.strictEqual(
         await validateParticipantsInUType(requestData),
@@ -418,8 +377,8 @@ describe("Validate functions", async () => {
 
     it("should fail #1", async () => {
       const requestData = {
-        participants: [userId[0], userId[1], "id3", "id4"],
-        opponent_id: userId[1],
+        participants: [usersIds[0], usersIds[1], "id3", "id4"],
+        opponent_id: usersIds[1],
       };
       await assertThrowsAsync(
         async () => {
@@ -438,7 +397,7 @@ describe("Validate functions", async () => {
 
     it("should fail #2", async () => {
       const requestData = {
-        participants: [userId[0], userId[1]],
+        participants: [usersIds[0], usersIds[1]],
       };
       await assertThrowsAsync(
         async () => {
@@ -457,23 +416,13 @@ describe("Validate functions", async () => {
     before(async () => {
       currentUserToken = (await sendLogin("validate", "user_1")).response.user
         .token;
-      let requestData = {
-        request: {
-          conversation_create: {
-            name: "validate",
-            description: "for admin and user",
-            type: "g",
-            participants: [userId[0], userId[2]],
-          },
-          id: "1_5",
-        },
-      };
-      const responseData = await processJsonMessageOrError(
+      currentConversationId = await createConversation(
         "validate",
-        requestData
+        null,
+        null,
+        "g",
+        [usersIds[2], usersIds[0]]
       );
-
-      currentConversationId = responseData.response.conversation._id.toString();
     });
 
     it("should work", async () => {
@@ -549,7 +498,7 @@ describe("Validate functions", async () => {
     it("should work", async () => {
       currentUserToken = (await sendLogin("validate", "user_1")).response.token;
       const requestData = {
-        opponent_id: userId[1],
+        opponent_id: usersIds[1],
       };
       assert.strictEqual(
         await validateIsUserSendHimSelf(requestData, "validate"),
@@ -559,7 +508,7 @@ describe("Validate functions", async () => {
 
     it("should fail #1", async () => {
       const requestData = {
-        opponent_id: userId[0],
+        opponent_id: usersIds[0],
       };
       await assertThrowsAsync(
         async () => {
@@ -660,23 +609,16 @@ describe("Validate functions", async () => {
     before(async () => {
       currentUserToken = (await sendLogin("validate", "user_1")).response.user
         .token;
-      let requestData = {
-        request: {
-          conversation_create: {
-            name: "validate",
-            description: "for admin and user",
-            type: "g",
-            participants: [userId[0], userId[1]],
-          },
-          id: "1_5",
-        },
-      };
-      const responseData = await processJsonMessageOrError(
+
+      currentConversationId = await createConversation(
         "validate",
-        requestData
+        null,
+        null,
+        "g",
+        [usersIds[1], usersIds[0]]
       );
-      currentConversationId = responseData.response.conversation._id.toString();
-      requestData = {
+
+      const requestData = {
         message: {
           id: "xyz",
           body: "hey how is going?",

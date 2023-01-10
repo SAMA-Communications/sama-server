@@ -1,84 +1,42 @@
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
+import MessageStatus from "../models/message_status.js";
 import Messages from "../models/message.js";
 import User from "../models/user.js";
 import assert from "assert";
-import { connectToDBPromise } from "../lib/db.js";
-import { processJsonMessageOrError } from "../routes/ws.js";
 import { ObjectId } from "mongodb";
-import MessageStatus from "../models/message_status.js";
+import { connectToDBPromise } from "../lib/db.js";
+import {
+  createConversation,
+  createUserArray,
+  mockedWS,
+  sendLogin,
+  sendLogout,
+} from "./utils.js";
+import { processJsonMessageOrError } from "../routes/ws.js";
 
 let filterUpdatedAt = "";
 let currentUserToken = "";
 let currentConversationId = "";
-let userId = [];
+let usersIds = [];
 let messagesIds = [];
 let messageId1 = "";
-const mockedWS = {
-  send: (data) => {
-    console.log("[WS] send mocked data", data);
-  },
-};
-async function sendLogin(ws, login) {
-  const requestData = {
-    request: {
-      user_login: {
-        deviceId: `${login}${Math.random() * 10000}`,
-        login: login,
-        password: "1um",
-      },
-      id: "0101",
-    },
-  };
-  const response = await processJsonMessageOrError(ws, requestData);
-  return response;
-}
-async function sendLogout(ws, currentUserToken) {
-  const requestData = {
-    request: {
-      user_logout: {},
-      id: "0102",
-    },
-  };
-  await processJsonMessageOrError(ws, requestData);
-}
 
 describe("Message function", async () => {
   before(async () => {
     await connectToDBPromise();
-    for (let i = 0; i < 3; i++) {
-      const requestDataCreate = {
-        request: {
-          user_create: {
-            login: `um_${i + 1}`,
-            password: "1um",
-          },
-          id: "0",
-        },
-      };
-      const responseData = await processJsonMessageOrError(
-        mockedWS,
-        requestDataCreate
-      );
-      userId[i] = responseData.response.user._id;
-    }
-    // console.log("UserId: ", userId);
-    await sendLogin(mockedWS, "um_2");
-    currentUserToken = (await sendLogin(mockedWS, "um_1")).response.user._id;
+    usersIds = await createUserArray(3);
 
-    const requestData = {
-      request: {
-        conversation_create: {
-          name: "chat5",
-          description: "for admin and users",
-          type: "g",
-          participants: [userId[0], userId[1]],
-        },
-        id: "0",
-      },
-    };
-    const responseData = await processJsonMessageOrError(mockedWS, requestData);
-    currentConversationId = responseData.response.conversation._id.toString();
+    await sendLogin(mockedWS, "user_2");
+    currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user._id;
+
+    currentConversationId = await createConversation(
+      mockedWS,
+      null,
+      null,
+      "g",
+      [usersIds[1], usersIds[0]]
+    );
   });
 
   describe("Send Message", async () => {
@@ -160,7 +118,7 @@ describe("Message function", async () => {
     });
 
     it("should fail participant not found", async () => {
-      currentUserToken = (await sendLogin(mockedWS, "um_3")).response.user
+      currentUserToken = (await sendLogin(mockedWS, "user_3")).response.user
         .token;
       const requestData = {
         message: {
@@ -179,7 +137,7 @@ describe("Message function", async () => {
         requestData
       );
       await sendLogout(mockedWS, currentUserToken);
-      currentUserToken = (await sendLogin(mockedWS, "um_1")).response.user
+      currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user
         .token;
 
       assert.equal(responseData.ask, undefined);
@@ -299,7 +257,7 @@ describe("Message function", async () => {
               cid: currentConversationId,
               type: "all",
               ids: [`messageID_${i + 1}`],
-              from: userId[0],
+              from: usersIds[0],
             },
             id: "00",
           },
@@ -316,7 +274,7 @@ describe("Message function", async () => {
               cid: currentConversationId,
               type: "all",
               ids: [`messageID_${i + 1}`],
-              from: userId[0],
+              from: usersIds[0],
             },
             id: "00",
           },
@@ -335,7 +293,7 @@ describe("Message function", async () => {
             id: `include_${i + 1}`,
             body: "hey how is going?",
             cid: currentConversationId,
-            deleted_for: [ObjectId(userId[2])],
+            deleted_for: [ObjectId(usersIds[2])],
           },
         };
         i === 3
@@ -613,7 +571,7 @@ describe("Message function", async () => {
     });
 
     it("should fail active_user is not owner message", async () => {
-      await sendLogin(mockedWS, "um_3");
+      await sendLogin(mockedWS, "user_3");
       const requestData = {
         request: {
           message_edit: {
@@ -640,7 +598,7 @@ describe("Message function", async () => {
       await Messages.clearCollection();
       await Conversation.clearCollection();
       await ConversationParticipant.clearCollection();
-      userId = [];
+      usersIds = [];
     });
   });
 
@@ -650,7 +608,7 @@ describe("Message function", async () => {
         const requestDataCreate = {
           request: {
             user_create: {
-              login: `um_${i + 1}`,
+              login: `user_${i + 1}`,
               password: "1um",
             },
             id: "0",
@@ -660,10 +618,10 @@ describe("Message function", async () => {
           mockedWS,
           requestDataCreate
         );
-        userId[i] = responseData.response.user._id;
+        usersIds[i] = responseData.response.user._id;
       }
       currentUserToken = (
-        await sendLogin(mockedWS, "um_1")
+        await sendLogin(mockedWS, "user_1")
       ).response.user._id.toString();
 
       let requestData = {
@@ -672,7 +630,7 @@ describe("Message function", async () => {
             name: "groupChat",
             description: "test aggregation",
             type: "g",
-            participants: [userId[0], userId[1], userId[2]],
+            participants: [usersIds[0], usersIds[1], usersIds[2]],
           },
           id: "0",
         },
@@ -695,7 +653,8 @@ describe("Message function", async () => {
       }
 
       //red 3/6 messages by u2
-      currentUserToken = (await sendLogin(mockedWS, "um_2")).response.user._id;
+      currentUserToken = (await sendLogin(mockedWS, "user_2")).response.user
+        ._id;
       requestData = {
         request: {
           message_read: {
@@ -712,7 +671,7 @@ describe("Message function", async () => {
       it("should work for u1", async () => {
         const responseData = await MessageStatus.getLastReadMessageByUserForCid(
           [ObjectId(currentConversationId)],
-          userId[0]
+          usersIds[0]
         );
         assert.strictEqual(responseData[currentConversationId], undefined);
       });
@@ -720,7 +679,7 @@ describe("Message function", async () => {
       it("should work for u2", async () => {
         const responseData = await MessageStatus.getLastReadMessageByUserForCid(
           [ObjectId(currentConversationId)],
-          userId[1]
+          usersIds[1]
         );
         assert.strictEqual(
           responseData[currentConversationId]?.toString(),
@@ -731,7 +690,7 @@ describe("Message function", async () => {
       it("should work for u3", async () => {
         const responseData = await MessageStatus.getLastReadMessageByUserForCid(
           [ObjectId(currentConversationId)],
-          userId[2]
+          usersIds[2]
         );
         assert.strictEqual(responseData[currentConversationId], undefined);
       });
@@ -741,7 +700,7 @@ describe("Message function", async () => {
       it("should work for sender user (u1)", async () => {
         const responseData = await Messages.getCountOfUnredMessagesByCid(
           [ObjectId(currentConversationId)],
-          userId[0]
+          usersIds[0]
         );
         assert.strictEqual(responseData[currentConversationId], undefined);
       });
@@ -749,7 +708,7 @@ describe("Message function", async () => {
       it("should work for u2 (read 3/6 messages)", async () => {
         const responseData = await Messages.getCountOfUnredMessagesByCid(
           [ObjectId(currentConversationId)],
-          userId[1]
+          usersIds[1]
         );
         assert.strictEqual(responseData[currentConversationId], 3);
       });
@@ -757,7 +716,7 @@ describe("Message function", async () => {
       it("should work for u3 (read 0/6 messages)", async () => {
         const responseData = await Messages.getCountOfUnredMessagesByCid(
           [ObjectId(currentConversationId)],
-          userId[2]
+          usersIds[2]
         );
         assert.strictEqual(responseData[currentConversationId], 6);
       });
@@ -799,6 +758,6 @@ describe("Message function", async () => {
     await MessageStatus.clearCollection();
     await Conversation.clearCollection();
     await ConversationParticipant.clearCollection();
-    userId = [];
+    usersIds = [];
   });
 });

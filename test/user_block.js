@@ -1,60 +1,18 @@
+import BlockedUser from "../models/blocked_user.js";
 import User from "../models/user.js";
 import assert from "assert";
 import { connectToDBPromise } from "../lib/db.js";
+import { createUserArray, mockedWS, sendLogin } from "./utils.js";
 import { processJsonMessageOrError } from "../routes/ws.js";
-import BlockedUser from "../models/blocked_user.js";
 
 let currentUserToken = "";
-let userId = [];
-const mockedWS = {
-  send: (data) => {
-    console.log("[WS] send mocked data", data);
-  },
-};
-async function sendLogin(ws, login) {
-  const requestData = {
-    request: {
-      user_login: {
-        deviceId: `${login}${Math.random() * 10000}`,
-        login: login,
-        password: "1um",
-      },
-      id: "0101",
-    },
-  };
-  const response = await processJsonMessageOrError(ws, requestData);
-  return response;
-}
-async function sendLogout(ws, currentUserToken) {
-  const requestData = {
-    request: {
-      user_logout: {},
-      id: "0102",
-    },
-  };
-  await processJsonMessageOrError(ws, requestData);
-}
+let usersIds = [];
 
 describe("UserBlocked functions", async () => {
   before(async () => {
     await connectToDBPromise();
-    for (let i = 0; i < 5; i++) {
-      const requestDataCreate = {
-        request: {
-          user_create: {
-            login: `um_${i + 1}`,
-            password: "1um",
-          },
-          id: "0",
-        },
-      };
-      const responseData = await processJsonMessageOrError(
-        mockedWS,
-        requestDataCreate
-      );
-      userId[i] = responseData.response.user._id;
-    }
-    currentUserToken = (await sendLogin(mockedWS, "um_1")).response.user._id;
+    usersIds = await createUserArray(5);
+    currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user._id;
   });
 
   describe("Block method", async () => {
@@ -62,7 +20,7 @@ describe("UserBlocked functions", async () => {
       const requestData = {
         request: {
           block_user: {
-            id: userId[1],
+            id: usersIds[1],
           },
           id: 2,
         },
@@ -80,7 +38,7 @@ describe("UserBlocked functions", async () => {
       const requestData = {
         request: {
           block_user: {
-            id: userId[2],
+            id: usersIds[2],
           },
           id: 3,
         },
@@ -98,7 +56,7 @@ describe("UserBlocked functions", async () => {
       const requestData = {
         request: {
           block_user: {
-            id: userId[3],
+            id: usersIds[3],
           },
           id: 4,
         },
@@ -116,7 +74,7 @@ describe("UserBlocked functions", async () => {
       const requestData = {
         request: {
           block_user: {
-            id: userId[4],
+            id: usersIds[4],
           },
           id: 5,
         },
@@ -173,7 +131,7 @@ describe("UserBlocked functions", async () => {
       const requestData = {
         request: {
           unblock_user: {
-            id: userId[1],
+            id: usersIds[1],
           },
           id: 2,
         },
@@ -191,7 +149,7 @@ describe("UserBlocked functions", async () => {
       const requestData = {
         request: {
           unblock_user: {
-            id: userId[3],
+            id: usersIds[3],
           },
           id: 3,
         },
@@ -244,6 +202,6 @@ describe("UserBlocked functions", async () => {
   after(async () => {
     await User.clearCollection();
     await BlockedUser.clearCollection();
-    userId = [];
+    usersIds = [];
   });
 });
