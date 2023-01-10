@@ -1,3 +1,6 @@
+import BlockListRepository from "../repositories/blocklist_repository.js";
+import BlockedUser from "../models/blocked_user.js";
+import LastActivityController from "./activities.js";
 import OfflineQueue from "../models/offline_queue.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
@@ -10,11 +13,18 @@ import { ACTIVE, getDeviceId, getSessionUserId } from "../store/session.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
+import { inMemoryBlockList } from "../store/in_memory.js";
 import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
 import { slice } from "../utils/req_res_utils.js";
-import LastActivityController from "./activities.js";
 
 export default class UsersController {
+  constructor() {
+    this.blockListRepository = new BlockListRepository(
+      BlockedUser,
+      inMemoryBlockList
+    );
+  }
+
   async create(ws, data) {
     const requestId = data.request.id;
 
@@ -28,8 +38,6 @@ export default class UsersController {
       userParams["recent_activity"] = Date.now();
       const user = new User(userParams);
       await user.save();
-
-      console.log("user", user)
 
       return { response: { id: requestId, user: user.visibleParams() } };
     } else {
@@ -240,6 +248,7 @@ export default class UsersController {
 
     const user = await User.findOne({ _id: userSession });
     if (user) {
+      this.blockListRepository.delete(user.params._id);
       await user.delete();
       return { response: { id: requestId, success: true } };
     } else {
@@ -259,7 +268,7 @@ export default class UsersController {
         : requestParam.limit || CONSTANTS.LIMIT_MAX;
 
     const query = {
-      login: { $regex: `^(?i)${requestParam.login}*` },
+      login: { $regex: `^${requestParam.login}.*` },
       _id: {
         $nin: [getSessionUserId(ws), ...requestParam.ignore_ids],
       },

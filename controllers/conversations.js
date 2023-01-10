@@ -1,5 +1,6 @@
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
+import ConversationRepository from "../repositories/conversation_repository.js";
 import Messages from "../models/message.js";
 import User from "../models/user.js";
 import validate, {
@@ -16,10 +17,18 @@ import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { ObjectId } from "mongodb";
-import { ACTIVE, getSessionUserId } from "../store/session.js";
+import { getSessionUserId } from "../store/session.js";
+import { inMemoryConversations } from "../store/in_memory.js";
 import { slice } from "../utils/req_res_utils.js";
 
 export default class ConversationController {
+  constructor() {
+    this.conversationRepository = new ConversationRepository(
+      Conversation,
+      inMemoryConversations
+    );
+  }
+
   async create(ws, data) {
     const requestId = data.request.id;
     const participantsParams = slice(
@@ -47,7 +56,8 @@ export default class ConversationController {
         },
         [validateParticipantsInUType, validateIsUserSendHimSelf]
       );
-      const existingConversation = await Conversation.findOne({
+
+      const existingConversation = await this.conversationRepository.findOne({
         $or: [
           {
             type: "u",
@@ -65,7 +75,7 @@ export default class ConversationController {
         return {
           response: {
             id: requestId,
-            conversation: existingConversation.visibleParams(),
+            conversation: existingConversation,
           },
         };
     } else if (conversationParams.type == "g") {
@@ -120,8 +130,11 @@ export default class ConversationController {
     const requestData = data.request.conversation_update;
     await validate(ws, requestData, [validateIsConversation]);
 
-    const conversation = await Conversation.findOne({ _id: requestData });
-    await validate(ws, conversation.params, [validateConversationisUserOwner]);
+    const conversation = await this.conversationRepository.findById(
+      requestData
+    );
+
+    await validate(ws, conversation, [validateConversationisUserOwner]);
 
     const conversationId = requestData.id;
     delete requestData.id;
@@ -168,8 +181,7 @@ export default class ConversationController {
           });
           if (!!obj) {
             if (
-              conversation.params.owner_id.toString() ===
-              obj.params.user_id.toString()
+              conversation.owner_id.toString() === obj.params.user_id.toString()
             ) {
               isOwnerChange = true;
             }
@@ -186,15 +198,12 @@ export default class ConversationController {
     }
     isOwnerChange = false;
     if (Object.keys(requestData) != 0) {
-      await Conversation.updateOne(
-        { _id: conversationId },
-        { $set: requestData }
-      );
+      await this.conversationRepository.updateOne(conversationId, requestData);
     }
 
-    const returnConversation = await Conversation.findOne({
-      _id: conversationId,
-    });
+    const returnConversation = await this.conversationRepository.findById(
+      conversationId
+    );
 
     return {
       response: {
@@ -229,13 +238,16 @@ export default class ConversationController {
       query.updated_at = { $gt: new Date(timeFromUpdate.gt) };
     }
 
-    //last message for all converastions
-    const userConversations = await Conversation.findAll(query, null, limit);
+    const userConversations = await this.conversationRepository.findAll(
+      query,
+      null,
+      limit
+    );
     const lastMessagesListByCid = await Messages.getLastMessageForConversation(
       userConversationsIds.map((el) => el.conversation_id),
       currentUser
     );
-    //count of unread messages for all conversations
+
     const countOfUnreadMessagesByCid =
       await Messages.getCountOfUnredMessagesByCid(
         userConversationsIds.map((el) => el.conversation_id),
@@ -261,14 +273,15 @@ export default class ConversationController {
 
     const conversationId = data.request.conversation_delete.id;
     await validate(ws, { id: conversationId }, [validateIsConversation]);
-    const conversation = await Conversation.findOne({
-      _id: conversationId,
-    });
+    const conversation = await this.conversationRepository.findById(
+      conversationId
+    );
 
     const conversationParticipant = await ConversationParticipant.findOne({
       user_id: getSessionUserId(ws),
       conversation_id: conversationId,
     });
+
     if (!conversationParticipant) {
       return {
         response: {
@@ -281,15 +294,13 @@ export default class ConversationController {
     const isUserInConvesation = await ConversationParticipant.findOne({
       conversation_id: conversationId,
     });
+
     if (!isUserInConvesation) {
-      await conversation.delete();
-    } else if (
-      conversation.params.owner_id.toString() === getSessionUserId(ws)
-    ) {
-      Conversation.updateOne(
-        { _id: conversationId },
-        { $set: { owner_id: isUserInConvesation.params.user_id } }
-      );
+      await this.conversationRepository.delete(conversation);
+    } else if (conversation.owner_id.toString() === getSessionUserId(ws)) {
+      await this.conversationRepository.updateOne(conversationId, {
+        owner_id: isUserInConvesation.user_id,
+      });
     }
 
     return { response: { id: requestId, success: true } };

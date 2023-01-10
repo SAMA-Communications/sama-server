@@ -1,8 +1,11 @@
+import BlockListRepository from "../repositories/blocklist_repository.js";
 import BlockedUser from "../models/blocked_user.js";
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
+import ConversationRepository from "../repositories/conversation_repository.js";
 import MessageStatus from "../models/message_status.js";
 import Messages from "../models/message.js";
+import groupBy from "../utils/groupBy.js";
 import validate, {
   validateIsConversation,
   validateIsConversationByCID,
@@ -13,7 +16,10 @@ import validate, {
   validateMessageId,
   validateIsCID,
 } from "../lib/validation.js";
-import groupBy from "../utils/groupBy.js";
+import {
+  inMemoryBlockList,
+  inMemoryConversations,
+} from "../store/in_memory.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ObjectId } from "mongodb";
@@ -23,6 +29,17 @@ import { slice } from "../utils/req_res_utils.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 
 export default class MessagesController {
+  constructor() {
+    this.conversationRepository = new ConversationRepository(
+      Conversation,
+      inMemoryConversations
+    );
+    this.blockListRepository = new BlockListRepository(
+      BlockedUser,
+      inMemoryBlockList
+    );
+  }
+
   async create(ws, data) {
     const messageParams = slice(
       data.message,
@@ -35,13 +52,14 @@ export default class MessagesController {
     await validate(ws, { id: messageId }, [validateMessageId]);
 
     const currentUserId = getSessionUserId(ws);
-    const conversation = await Conversation.findOne({
-      _id: messageParams.cid,
-    });
+    const conversation = await this.conversationRepository.findById(
+      messageParams.cid
+    );
+
     let participants;
     if (conversation) {
       participants = await ConversationParticipant.findAll({
-        conversation_id: conversation.params._id,
+        conversation_id: conversation._id,
       });
       participants = participants?.map((el) => el.user_id.toString());
       if (!participants.includes(currentUserId)) {
@@ -55,25 +73,26 @@ export default class MessagesController {
       });
     }
 
-    const blockedList = await BlockedUser.findAll(
-      { blocked_user_id: currentUserId, user_id: { $in: participants } },
-      ["user_id"]
+    const blockedUsersIds = await this.blockListRepository.getBlockingUsers(
+      currentUserId,
+      participants
     );
-    if (conversation.params.type === "u" && blockedList.length) {
+
+    if (conversation.type === "u" && blockedUsersIds.length) {
       throw new Error(ERROR_STATUES.USER_BLOCKED.message, {
         cause: ERROR_STATUES.USER_BLOCKED,
       });
     }
     if (
-      conversation.params.type === "g" &&
-      blockedList.length === participants.length - 1
+      conversation.type === "g" &&
+      blockedUsersIds.length === participants.length - 1
     ) {
       throw new Error(ERROR_STATUES.USER_BLOCKED_FOR_ALL_PARTICIPANTS.message, {
         cause: ERROR_STATUES.USER_BLOCKED_FOR_ALL_PARTICIPANTS,
       });
     }
 
-    messageParams.deleted_for = blockedList.map((u) => u.user_id);
+    messageParams.deleted_for = blockedUsersIds;
     messageParams.from = ObjectId(currentUserId);
 
     const message = new Messages(messageParams);
@@ -86,10 +105,10 @@ export default class MessagesController {
     await message.save();
     await deliverToUserOrUsers(messageParams, message.visibleParams(), ws);
 
-    await Conversation.updateOne(
-      { _id: messageParams.cid },
-      { $set: { updated_at: new Date(Date.now()).toISOString() } }
-    );
+    await this.conversationRepository.updateOne(messageParams.cid, {
+      updated_at: message.params.created_at,
+    });
+
     return {
       ask: { mid: messageId, server_mid: message.params._id, t: currentTs },
     };
