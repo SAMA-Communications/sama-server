@@ -38,7 +38,7 @@ export default class UserBlockController {
     const requestId = data.request.id;
     const currentUserId = getSessionUserId(ws);
 
-    const blockedUsersIds = await this.blockListRepository.findBlockedUserByUId(
+    const blockedUsersIds = await this.blockListRepository.getBlockList(
       currentUserId
     );
 

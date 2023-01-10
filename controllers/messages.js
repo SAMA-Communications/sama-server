@@ -73,7 +73,7 @@ export default class MessagesController {
       });
     }
 
-    const blockedUsersIds = await this.blockListRepository.findAll(
+    const blockedUsersIds = await this.blockListRepository.getBlockingUsers(
       currentUserId,
       participants
     );

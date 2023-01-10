@@ -90,7 +90,7 @@ export default class BlockListRepository extends BaseRepository {
     });
   }
 
-  async findAll(blocked_user_id, users_filter) {
+  async getBlockingUsers(blocked_user_id, users_filter) {
     const userObject = this.inMemoryStorage[blocked_user_id];
 
     return userObject
@@ -98,7 +98,7 @@ export default class BlockListRepository extends BaseRepository {
       : [];
   }
 
-  async findBlockedUserByUId(user_id) {
+  async getBlockList(user_id) {
     return (
       (await BlockedUser.findAll({ user_id }, ["blocked_user_id"]))?.map(
         (u) => u.blocked_user_id
