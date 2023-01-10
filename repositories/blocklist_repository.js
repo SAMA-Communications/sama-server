@@ -61,8 +61,12 @@ export default class BlockListRepository extends BaseRepository {
     });
     record && (await record.delete());
 
-    this.inMemoryStorage[blocked_user_id] &&
+    if (this.inMemoryStorage[blocked_user_id]) {
       delete this.inMemoryStorage[blocked_user_id][user_id];
+
+      !Object.keys(this.inMemoryStorage[blocked_user_id]).length &&
+        delete this.inMemoryStorage[blocked_user_id];
+    }
   }
 
   async delete(user_id) {
@@ -73,7 +77,12 @@ export default class BlockListRepository extends BaseRepository {
     delete this.inMemoryStorage[user_id];
 
     for (const uId in this.inMemoryStorage) {
-      this.inMemoryStorage[uId] && delete this.inMemoryStorage[uId][user_id];
+      if (this.inMemoryStorage[uId]) {
+        delete this.inMemoryStorage[uId][user_id];
+
+        !Object.keys(this.inMemoryStorage[uId]).length &&
+          delete this.inMemoryStorage[uId];
+      }
     }
 
     await BlockedUser.deleteMany({
@@ -87,5 +96,13 @@ export default class BlockListRepository extends BaseRepository {
     return userObject
       ? Object.keys(userObject).filter((u) => users_filter.includes(u))
       : [];
+  }
+
+  async findBlockedUserByUId(user_id) {
+    return (
+      (await BlockedUser.findAll({ user_id }, ["blocked_user_id"]))?.map(
+        (u) => u.blocked_user_id
+      ) || []
+    );
   }
 }

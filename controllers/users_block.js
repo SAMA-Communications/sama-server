@@ -18,7 +18,7 @@ export default class UserBlockController {
     const currentUserId = getSessionUserId(ws);
     await validate(ws, { uId }, [validateIsUserId]);
 
-    this.blockListRepository.block(currentUserId, uId);
+    this.blockListRepository.block(uId, currentUserId);
 
     return { response: { id: requestId, success: true } };
   }
@@ -38,15 +38,14 @@ export default class UserBlockController {
     const requestId = data.request.id;
     const currentUserId = getSessionUserId(ws);
 
-    const blockedUsers = await this.blockListRepository.findAll(
-      { user_id: currentUserId },
-      ["blocked_user_id"]
+    const blockedUsersIds = await this.blockListRepository.findBlockedUserByUId(
+      currentUserId
     );
 
     return {
       response: {
         id: requestId,
-        users: blockedUsers.map((el) => el.blocked_user_id),
+        users: blockedUsersIds,
       },
     };
   }
