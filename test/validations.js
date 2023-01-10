@@ -5,6 +5,12 @@ import assert from "assert";
 import { connectToDBPromise } from "../lib/db.js";
 import { processJsonMessageOrError } from "../routes/ws.js";
 import {
+  createConversation,
+  createUserArray,
+  sendLogin,
+  sendLogout,
+} from "./utils.js";
+import {
   validateConversationName,
   validateConversationType,
   validateConversationisUserOwner,
@@ -29,30 +35,6 @@ let userId = [];
 let messageId = "";
 let currentConversationId = "";
 
-async function sendLogin(ws, login) {
-  const requestData = {
-    request: {
-      user_login: {
-        deviceId: "PC",
-        login: login,
-        password: "user_paswword_1",
-      },
-      id: "0101",
-    },
-  };
-  const response = await processJsonMessageOrError(ws, requestData);
-  return response;
-}
-async function sendLogout(ws, currentUserToken) {
-  const requestData = {
-    request: {
-      user_logout: {},
-      id: "0102",
-    },
-  };
-  await processJsonMessageOrError("validate", requestData);
-}
-
 async function assertThrowsAsync(fn, regExp) {
   let f = () => {};
   try {
@@ -69,22 +51,7 @@ async function assertThrowsAsync(fn, regExp) {
 describe("Validate functions", async () => {
   before(async () => {
     await connectToDBPromise();
-    for (let i = 0; i < 3; i++) {
-      const requestDataCreate = {
-        request: {
-          user_create: {
-            login: `user_${i + 1}`,
-            password: "user_paswword_1",
-          },
-          id: "0",
-        },
-      };
-      const responseData = await processJsonMessageOrError(
-        "validate",
-        requestDataCreate
-      );
-      userId[i] = responseData.response.user._id;
-    }
+    userId = await createUserArray(3);
   });
 
   describe(" --> validateIsUserAccess", async () => {
@@ -316,22 +283,14 @@ describe("Validate functions", async () => {
     before(async () => {
       currentUserToken = (await sendLogin("validate", "user_1")).response.user
         .token;
-      const requestData = {
-        request: {
-          conversation_create: {
-            name: "validate",
-            description: "for admin and user",
-            type: "g",
-            participants: [userId[0], userId[1]],
-          },
-          id: "1_5",
-        },
-      };
-      const responseData = await processJsonMessageOrError(
+
+      currentConversationId = await createConversation(
         "validate",
-        requestData
+        null,
+        null,
+        "g",
+        [userId[1], userId[0]]
       );
-      currentConversationId = responseData.response.conversation._id.toString();
     });
 
     after(async () => {
@@ -457,23 +416,13 @@ describe("Validate functions", async () => {
     before(async () => {
       currentUserToken = (await sendLogin("validate", "user_1")).response.user
         .token;
-      let requestData = {
-        request: {
-          conversation_create: {
-            name: "validate",
-            description: "for admin and user",
-            type: "g",
-            participants: [userId[0], userId[2]],
-          },
-          id: "1_5",
-        },
-      };
-      const responseData = await processJsonMessageOrError(
+      currentConversationId = await createConversation(
         "validate",
-        requestData
+        null,
+        null,
+        "g",
+        [userId[2], userId[0]]
       );
-
-      currentConversationId = responseData.response.conversation._id.toString();
     });
 
     it("should work", async () => {
@@ -660,23 +609,16 @@ describe("Validate functions", async () => {
     before(async () => {
       currentUserToken = (await sendLogin("validate", "user_1")).response.user
         .token;
-      let requestData = {
-        request: {
-          conversation_create: {
-            name: "validate",
-            description: "for admin and user",
-            type: "g",
-            participants: [userId[0], userId[1]],
-          },
-          id: "1_5",
-        },
-      };
-      const responseData = await processJsonMessageOrError(
+
+      currentConversationId = await createConversation(
         "validate",
-        requestData
+        null,
+        null,
+        "g",
+        [userId[1], userId[0]]
       );
-      currentConversationId = responseData.response.conversation._id.toString();
-      requestData = {
+
+      const requestData = {
         message: {
           id: "xyz",
           body: "hey how is going?",

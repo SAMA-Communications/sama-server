@@ -3,6 +3,7 @@ import ConversationParticipant from "../models/conversation_participant.js";
 import User from "../models/user.js";
 import assert from "assert";
 import { connectToDBPromise } from "../lib/db.js";
+import { createUserArray, sendLogin, sendLogout } from "./utils.js";
 import { processJsonMessageOrError } from "../routes/ws.js";
 
 let currentUserToken = "";
@@ -12,49 +13,10 @@ let currentConversationId = "";
 let ArrayOfTmpConversaionts = [];
 let lastMessageInChat = "";
 
-async function sendLogin(ws, login) {
-  const requestData = {
-    request: {
-      user_login: {
-        deviceId: "PC",
-        login: login,
-        password: "user_paswword_1",
-      },
-      id: "0101",
-    },
-  };
-  const response = await processJsonMessageOrError(ws, requestData);
-  return response;
-}
-async function sendLogout(ws, currentUserToken) {
-  const requestData = {
-    request: {
-      user_logout: {},
-      id: "0102",
-    },
-  };
-  await processJsonMessageOrError("test", requestData);
-}
-
 describe("Conversation functions", async () => {
   before(async () => {
     await connectToDBPromise();
-    for (let i = 0; i < 4; i++) {
-      const requestDataCreate = {
-        request: {
-          user_create: {
-            login: `user_${i + 1}`,
-            password: "user_paswword_1",
-          },
-          id: "0",
-        },
-      };
-      const responseData = await processJsonMessageOrError(
-        "test",
-        requestDataCreate
-      );
-      userId[i] = responseData.response.user._id;
-    }
+    userId = await createUserArray(4);
     currentUserToken = (await sendLogin("test", "user_1")).response.user._id;
   });
 

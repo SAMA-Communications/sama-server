@@ -1,12 +1,19 @@
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
+import MessageStatus from "../models/message_status.js";
 import Messages from "../models/message.js";
 import User from "../models/user.js";
 import assert from "assert";
-import { connectToDBPromise } from "../lib/db.js";
-import { processJsonMessageOrError } from "../routes/ws.js";
 import { ObjectId } from "mongodb";
-import MessageStatus from "../models/message_status.js";
+import { connectToDBPromise } from "../lib/db.js";
+import {
+  createConversation,
+  createUserArray,
+  mockedWS,
+  sendLogin,
+  sendLogout,
+} from "./utils.js";
+import { processJsonMessageOrError } from "../routes/ws.js";
 
 let filterUpdatedAt = "";
 let currentUserToken = "";
@@ -14,71 +21,22 @@ let currentConversationId = "";
 let userId = [];
 let messagesIds = [];
 let messageId1 = "";
-const mockedWS = {
-  send: (data) => {
-    console.log("[WS] send mocked data", data);
-  },
-};
-async function sendLogin(ws, login) {
-  const requestData = {
-    request: {
-      user_login: {
-        deviceId: `${login}${Math.random() * 10000}`,
-        login: login,
-        password: "1um",
-      },
-      id: "0101",
-    },
-  };
-  const response = await processJsonMessageOrError(ws, requestData);
-  return response;
-}
-async function sendLogout(ws, currentUserToken) {
-  const requestData = {
-    request: {
-      user_logout: {},
-      id: "0102",
-    },
-  };
-  await processJsonMessageOrError(ws, requestData);
-}
 
 describe("Message function", async () => {
   before(async () => {
     await connectToDBPromise();
-    for (let i = 0; i < 3; i++) {
-      const requestDataCreate = {
-        request: {
-          user_create: {
-            login: `um_${i + 1}`,
-            password: "1um",
-          },
-          id: "0",
-        },
-      };
-      const responseData = await processJsonMessageOrError(
-        mockedWS,
-        requestDataCreate
-      );
-      userId[i] = responseData.response.user._id;
-    }
-    // console.log("UserId: ", userId);
-    await sendLogin(mockedWS, "um_2");
-    currentUserToken = (await sendLogin(mockedWS, "um_1")).response.user._id;
+    userId = await createUserArray(3);
 
-    const requestData = {
-      request: {
-        conversation_create: {
-          name: "chat5",
-          description: "for admin and users",
-          type: "g",
-          participants: [userId[0], userId[1]],
-        },
-        id: "0",
-      },
-    };
-    const responseData = await processJsonMessageOrError(mockedWS, requestData);
-    currentConversationId = responseData.response.conversation._id.toString();
+    await sendLogin(mockedWS, "user_2");
+    currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user._id;
+
+    currentConversationId = await createConversation(
+      mockedWS,
+      null,
+      null,
+      "g",
+      [userId[1], userId[0]]
+    );
   });
 
   describe("Send Message", async () => {
@@ -160,7 +118,7 @@ describe("Message function", async () => {
     });
 
     it("should fail participant not found", async () => {
-      currentUserToken = (await sendLogin(mockedWS, "um_3")).response.user
+      currentUserToken = (await sendLogin(mockedWS, "user_3")).response.user
         .token;
       const requestData = {
         message: {
@@ -179,7 +137,7 @@ describe("Message function", async () => {
         requestData
       );
       await sendLogout(mockedWS, currentUserToken);
-      currentUserToken = (await sendLogin(mockedWS, "um_1")).response.user
+      currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user
         .token;
 
       assert.equal(responseData.ask, undefined);
@@ -613,7 +571,7 @@ describe("Message function", async () => {
     });
 
     it("should fail active_user is not owner message", async () => {
-      await sendLogin(mockedWS, "um_3");
+      await sendLogin(mockedWS, "user_3");
       const requestData = {
         request: {
           message_edit: {
@@ -650,7 +608,7 @@ describe("Message function", async () => {
         const requestDataCreate = {
           request: {
             user_create: {
-              login: `um_${i + 1}`,
+              login: `user_${i + 1}`,
               password: "1um",
             },
             id: "0",
@@ -663,7 +621,7 @@ describe("Message function", async () => {
         userId[i] = responseData.response.user._id;
       }
       currentUserToken = (
-        await sendLogin(mockedWS, "um_1")
+        await sendLogin(mockedWS, "user_1")
       ).response.user._id.toString();
 
       let requestData = {
@@ -695,7 +653,8 @@ describe("Message function", async () => {
       }
 
       //red 3/6 messages by u2
-      currentUserToken = (await sendLogin(mockedWS, "um_2")).response.user._id;
+      currentUserToken = (await sendLogin(mockedWS, "user_2")).response.user
+        ._id;
       requestData = {
         request: {
           message_read: {

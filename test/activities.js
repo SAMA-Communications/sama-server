@@ -3,56 +3,16 @@ import assert from "assert";
 import { ACTIVITY } from "../store/activity.js";
 import { connectToDBPromise, getClient } from "../lib/db.js";
 import { processJsonMessageOrError } from "../routes/ws.js";
-import UserToken from "../models/user_token.js";
-import { ACTIVE } from "../store/session.js";
+import { createUserArray, sendLogin, sendLogout } from "./utils.js";
 
 let currentUserToken1 = "";
 let currentUserToken = "";
 let userId = [];
 
-async function sendLogin(ws, login) {
-  const requestData = {
-    request: {
-      user_login: {
-        deviceId: "PC",
-        login: login,
-        password: "user_password_1",
-      },
-      id: "0101",
-    },
-  };
-  const response = await processJsonMessageOrError(ws, requestData);
-  return response;
-}
-async function sendLogout(ws, currentUserToken) {
-  const requestData = {
-    request: {
-      user_logout: {},
-      id: "0102",
-    },
-  };
-  await processJsonMessageOrError(ws, requestData);
-}
-
 describe("User activities", async () => {
   before(async () => {
     await connectToDBPromise();
-    for (let i = 0; i < 3; i++) {
-      const requestDataCreate = {
-        request: {
-          user_create: {
-            login: `user_${i + 1}`,
-            password: "user_password_1",
-          },
-          id: "0",
-        },
-      };
-      const responseData = await processJsonMessageOrError(
-        "line_1",
-        requestDataCreate
-      );
-      userId[i] = responseData.response.user._id.toString();
-    }
+    userId = await createUserArray(3);
     currentUserToken1 = (await sendLogin("line_2", "user_3")).response.user
       .token;
     currentUserToken = (await sendLogin("line_1", "user_1")).response.user
