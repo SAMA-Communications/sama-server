@@ -6,12 +6,12 @@ import { processJsonMessageOrError } from "../routes/ws.js";
 import { createUserArray, sendLogin, sendLogout } from "./utils.js";
 
 let currentUserToken = [];
-let userId = [];
+let usersIds = [];
 
 describe("Carbons", async () => {
   before(async () => {
     await connectToDBPromise();
-    userId = await createUserArray(2);
+    usersIds = await createUserArray(2);
   });
 
   describe("Carbon login", async () => {

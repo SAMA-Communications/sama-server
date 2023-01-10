@@ -32,7 +32,7 @@ const mockedWS = {
 };
 
 async function createUserArray(count) {
-  let userId = [];
+  let usersIds = [];
 
   for (let i = 0; i < count; i++) {
     const requestData = {
@@ -46,12 +46,12 @@ async function createUserArray(count) {
       },
     };
 
-    userId[i] = (
+    usersIds[i] = (
       await processJsonMessageOrError("UserCreate", requestData)
     )?.response.user._id;
   }
 
-  return userId;
+  return usersIds;
 }
 
 async function createConversation(ws, name, description, type, participants) {

@@ -7,7 +7,7 @@ import { createUserArray, sendLogin, sendLogout } from "./utils.js";
 import { processJsonMessageOrError } from "../routes/ws.js";
 
 let currentUserToken = "";
-let userId = [];
+let usersIds = [];
 let filterUpdatedAt = "";
 let currentConversationId = "";
 let ArrayOfTmpConversaionts = [];
@@ -16,7 +16,7 @@ let lastMessageInChat = "";
 describe("Conversation functions", async () => {
   before(async () => {
     await connectToDBPromise();
-    userId = await createUserArray(4);
+    usersIds = await createUserArray(4);
     currentUserToken = (await sendLogin("test", "user_1")).response.user._id;
   });
 
@@ -28,7 +28,7 @@ describe("Conversation functions", async () => {
             name: "chat5",
             description: "for admin and users",
             type: "g",
-            participants: [userId[0], userId[1]],
+            participants: [usersIds[0], usersIds[1]],
           },
           id: "5_1",
         },
@@ -52,7 +52,7 @@ describe("Conversation functions", async () => {
             name: "123123",
             description: "asdbzxc1",
             type: "g",
-            participants: [userId[0]],
+            participants: [usersIds[0]],
           },
           id: "5_2",
         },
@@ -113,7 +113,7 @@ describe("Conversation functions", async () => {
             name: "123123",
             description: "asdbzxc1",
             type: "g",
-            participants: [userId[1]],
+            participants: [usersIds[1]],
           },
           id: "5_5",
         },
@@ -173,7 +173,7 @@ describe("Conversation functions", async () => {
             name: "chat5",
             description: "for admin and users",
             type: "g",
-            participants: [userId[0], userId[1]],
+            participants: [usersIds[0], usersIds[1]],
           },
           id: "1_1",
         },
@@ -193,8 +193,8 @@ describe("Conversation functions", async () => {
             name: "chat123",
             description: "for admin and users",
             type: "u",
-            opponent_id: userId[2],
-            participants: [userId[2]],
+            opponent_id: usersIds[2],
+            participants: [usersIds[2]],
           },
           id: "1_1",
         },
@@ -229,7 +229,7 @@ describe("Conversation functions", async () => {
             name: "testing",
             description: "test1",
             type: "g",
-            participants: [userId[1]],
+            participants: [usersIds[1]],
           },
           id: "1_2",
         },
@@ -289,7 +289,7 @@ describe("Conversation functions", async () => {
         request: {
           conversation_create: {
             description: "for admin and users",
-            participants: [userId[0]],
+            participants: [usersIds[0]],
             type: "g",
           },
           id: "1_5",
@@ -310,7 +310,7 @@ describe("Conversation functions", async () => {
           conversation_create: {
             name: "chat5",
             description: "for admin and users",
-            participants: [userId[0], userId[1]],
+            participants: [usersIds[0], usersIds[1]],
           },
           id: "1_6",
         },
@@ -331,7 +331,7 @@ describe("Conversation functions", async () => {
             name: "chat5",
             description: "for admin and users",
             type: "k",
-            participants: [userId[0], userId[1]],
+            participants: [usersIds[0], usersIds[1]],
           },
           id: "1_7",
         },
@@ -352,7 +352,7 @@ describe("Conversation functions", async () => {
             name: "chat5",
             description: "for admin and users",
             type: "u",
-            participants: [userId[0], userId[1], userId[2], userId[3]],
+            participants: [usersIds[0], usersIds[1], usersIds[2], usersIds[3]],
           },
           id: "1_8",
         },
@@ -414,7 +414,7 @@ describe("Conversation functions", async () => {
             id: currentConversationId,
             description: "test213",
             participants: {
-              add: [userId[2]],
+              add: [usersIds[2]],
             },
           },
           id: "2_3",
@@ -433,7 +433,7 @@ describe("Conversation functions", async () => {
           conversation_update: {
             id: currentConversationId,
             participants: {
-              remove: [userId[2]],
+              remove: [usersIds[2]],
             },
           },
           id: "2_4",
@@ -456,7 +456,7 @@ describe("Conversation functions", async () => {
               name: `chat_${i + 1}`,
               description: `conversation_${i + 1}`,
               type: "g",
-              participants: [userId[3]],
+              participants: [usersIds[3]],
             },
             id: "0",
           },
@@ -660,6 +660,6 @@ describe("Conversation functions", async () => {
     await User.clearCollection();
     await Conversation.clearCollection();
     await ConversationParticipant.clearCollection();
-    userId = [];
+    usersIds = [];
   });
 });

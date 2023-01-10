@@ -15,14 +15,14 @@ import {
 import { processJsonMessageOrError } from "../routes/ws.js";
 
 let currentUserToken = "";
-let userId = [];
+let usersIds = [];
 let currentConversationId = "";
 let files;
 
 describe("Attachments", async () => {
   before(async () => {
     await connectToDBPromise();
-    userId = await createUserArray(3);
+    usersIds = await createUserArray(3);
 
     currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user
       .token;
@@ -32,7 +32,7 @@ describe("Attachments", async () => {
       null,
       null,
       "g",
-      [userId[1], userId[2], userId[0]]
+      [usersIds[1], usersIds[2], usersIds[0]]
     );
   });
 
@@ -231,6 +231,6 @@ describe("Attachments", async () => {
     await Messages.clearCollection();
     await Conversation.clearCollection();
     await ConversationParticipant.clearCollection();
-    userId = [];
+    usersIds = [];
   });
 });

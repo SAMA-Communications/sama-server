@@ -7,12 +7,12 @@ import { createUserArray, sendLogin, sendLogout } from "./utils.js";
 
 let currentUserToken1 = "";
 let currentUserToken = "";
-let userId = [];
+let usersIds = [];
 
 describe("User activities", async () => {
   before(async () => {
     await connectToDBPromise();
-    userId = await createUserArray(3);
+    usersIds = await createUserArray(3);
     currentUserToken1 = (await sendLogin("line_2", "user_3")).response.user
       .token;
     currentUserToken = (await sendLogin("line_1", "user_1")).response.user
@@ -23,7 +23,7 @@ describe("User activities", async () => {
     const requestData = {
       request: {
         user_last_activity_subscribe: {
-          id: userId[1],
+          id: usersIds[1],
         },
         id: "1",
       },
@@ -31,8 +31,8 @@ describe("User activities", async () => {
     const responseData = await processJsonMessageOrError("line_1", requestData);
 
     assert.strictEqual(responseData.response.id, requestData.request.id);
-    assert.equal(ACTIVITY.SUBSCRIBED_TO[userId[0]], userId[1]);
-    assert.notEqual(ACTIVITY.SUBSCRIBERS[userId[1]][userId[0]], undefined);
+    assert.equal(ACTIVITY.SUBSCRIBED_TO[usersIds[0]], usersIds[1]);
+    assert.notEqual(ACTIVITY.SUBSCRIBERS[usersIds[1]][usersIds[0]], undefined);
     assert.notEqual(responseData.response.last_activity, undefined);
   });
 
@@ -56,7 +56,7 @@ describe("User activities", async () => {
     let requestData = {
       request: {
         user_last_activity_subscribe: {
-          id: userId[1],
+          id: usersIds[1],
         },
         id: "1",
       },
@@ -74,16 +74,16 @@ describe("User activities", async () => {
 
     assert.strictEqual(responseData.response.id, requestData.request.id);
     assert.strictEqual(responseData.response.success, true);
-    assert.equal(ACTIVITY.SUBSCRIBED_TO[userId[0]], undefined);
-    assert.notEqual(ACTIVITY.SUBSCRIBERS[userId[1]], undefined);
-    assert.equal(ACTIVITY.SUBSCRIBERS[userId[1]][userId[0]], undefined);
+    assert.equal(ACTIVITY.SUBSCRIBED_TO[usersIds[0]], undefined);
+    assert.notEqual(ACTIVITY.SUBSCRIBERS[usersIds[1]], undefined);
+    assert.equal(ACTIVITY.SUBSCRIBERS[usersIds[1]][usersIds[0]], undefined);
   });
 
   it("should work getUserStatus", async () => {
     const requestData = {
       request: {
         user_last_activity: {
-          ids: [userId[2], userId[0]],
+          ids: [usersIds[2], usersIds[0]],
         },
         id: "1",
       },
@@ -92,7 +92,7 @@ describe("User activities", async () => {
 
     assert.strictEqual(responseData.response.id, requestData.request.id);
     assert.notEqual(responseData.response.last_activity, undefined);
-    assert.equal(responseData.response.last_activity[userId[2]], "online");
+    assert.equal(responseData.response.last_activity[usersIds[2]], "online");
   });
 
   it("should work unsubscribe #2", async () => {
@@ -106,8 +106,8 @@ describe("User activities", async () => {
 
     assert.strictEqual(responseData.response.id, requestData.request.id);
     assert.strictEqual(responseData.response.success, true);
-    assert.equal(ACTIVITY.SUBSCRIBED_TO[userId[2]], undefined);
-    assert.equal(ACTIVITY.SUBSCRIBERS[userId[1]], undefined);
+    assert.equal(ACTIVITY.SUBSCRIBED_TO[usersIds[2]], undefined);
+    assert.equal(ACTIVITY.SUBSCRIBERS[usersIds[1]], undefined);
 
     await sendLogout("line_2", currentUserToken1);
   });

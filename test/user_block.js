@@ -6,12 +6,12 @@ import { createUserArray, mockedWS, sendLogin } from "./utils.js";
 import { processJsonMessageOrError } from "../routes/ws.js";
 
 let currentUserToken = "";
-let userId = [];
+let usersIds = [];
 
 describe("UserBlocked functions", async () => {
   before(async () => {
     await connectToDBPromise();
-    userId = await createUserArray(5);
+    usersIds = await createUserArray(5);
     currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user._id;
   });
 
@@ -20,7 +20,7 @@ describe("UserBlocked functions", async () => {
       const requestData = {
         request: {
           block_user: {
-            id: userId[1],
+            id: usersIds[1],
           },
           id: 2,
         },
@@ -38,7 +38,7 @@ describe("UserBlocked functions", async () => {
       const requestData = {
         request: {
           block_user: {
-            id: userId[2],
+            id: usersIds[2],
           },
           id: 3,
         },
@@ -56,7 +56,7 @@ describe("UserBlocked functions", async () => {
       const requestData = {
         request: {
           block_user: {
-            id: userId[3],
+            id: usersIds[3],
           },
           id: 4,
         },
@@ -74,7 +74,7 @@ describe("UserBlocked functions", async () => {
       const requestData = {
         request: {
           block_user: {
-            id: userId[4],
+            id: usersIds[4],
           },
           id: 5,
         },
@@ -131,7 +131,7 @@ describe("UserBlocked functions", async () => {
       const requestData = {
         request: {
           unblock_user: {
-            id: userId[1],
+            id: usersIds[1],
           },
           id: 2,
         },
@@ -149,7 +149,7 @@ describe("UserBlocked functions", async () => {
       const requestData = {
         request: {
           unblock_user: {
-            id: userId[3],
+            id: usersIds[3],
           },
           id: 3,
         },
@@ -202,6 +202,6 @@ describe("UserBlocked functions", async () => {
   after(async () => {
     await User.clearCollection();
     await BlockedUser.clearCollection();
-    userId = [];
+    usersIds = [];
   });
 });

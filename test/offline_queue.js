@@ -14,13 +14,13 @@ import {
 import { processJsonMessageOrError } from "../routes/ws.js";
 
 let currentUserToken = "";
-let userId = [];
+let usersIds = [];
 let currentConversationId = "";
 
 describe("User EXPECTED requests", async () => {
   before(async () => {
     await connectToDBPromise();
-    userId = await createUserArray(3);
+    usersIds = await createUserArray(3);
     currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user
       .token;
 
@@ -29,7 +29,7 @@ describe("User EXPECTED requests", async () => {
       null,
       null,
       "g",
-      [userId[1], userId[2], userId[0]]
+      [usersIds[1], usersIds[2], usersIds[0]]
     );
   });
 
@@ -49,7 +49,7 @@ describe("User EXPECTED requests", async () => {
       message: {
         id: "message2",
         body: "Hey! Private conversations",
-        to: userId[1],
+        to: usersIds[1],
       },
     };
     await processJsonMessageOrError(mockedWS, requestData);
@@ -58,7 +58,7 @@ describe("User EXPECTED requests", async () => {
       message: {
         id: "message3",
         body: "Hey! Private conversations (second message)",
-        to: userId[1],
+        to: usersIds[1],
       },
     };
     await processJsonMessageOrError(mockedWS, requestData);
@@ -102,6 +102,6 @@ describe("User EXPECTED requests", async () => {
     await Messages.clearCollection();
     await Conversation.clearCollection();
     await ConversationParticipant.clearCollection();
-    userId = [];
+    usersIds = [];
   });
 });
