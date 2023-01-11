@@ -152,6 +152,7 @@ export default class MessagesController {
 
     const query = {
       cid: cid,
+      deleted_for: { $nin: [getSessionUserId(ws)] },
     };
     const timeFromUpdate = data.request.message_list.updated_at;
     if (timeFromUpdate && timeFromUpdate.gt) {

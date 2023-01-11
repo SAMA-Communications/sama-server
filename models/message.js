@@ -18,7 +18,7 @@ export default class Messages extends BaseModel {
   static async getLastMessageForConversation(cids, uId) {
     const $match = {
       cid: { $in: cids },
-      // deleted_for: { $nin: [uId] }, //ObjectId!!
+      deleted_for: { $nin: [uId] },
     };
 
     const $sort = { t: -1, _id: -1 };
