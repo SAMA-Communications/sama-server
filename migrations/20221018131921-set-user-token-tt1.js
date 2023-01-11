@@ -7,4 +7,6 @@ export const up = async (db, client) => {
     );
 };
 
-export const down = async (db, client) => {};
+export const down = async (db, client) => {
+  await db.collection("user_token").dropIndex({ updated_at: 1 });
+};
