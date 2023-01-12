@@ -1,6 +1,6 @@
 import BlockListRepository from "../repositories/blocklist_repository.js";
 import BlockedUser from "../models/blocked_user.js";
-import LastActivityController from "./activities.js";
+import LastActivityiesController from "./activities.js";
 import OfflineQueue from "../models/offline_queue.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
@@ -237,7 +237,7 @@ export default class UsersController {
       });
     }
 
-    await new LastActivityController().statusUnsubscribe(ws, {
+    await new LastActivityiesController().statusUnsubscribe(ws, {
       request: { id: requestId },
     });
 

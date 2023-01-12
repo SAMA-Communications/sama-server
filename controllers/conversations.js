@@ -1,7 +1,7 @@
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import ConversationRepository from "../repositories/conversation_repository.js";
-import Messages from "../models/message.js";
+import Message from "../models/message.js";
 import User from "../models/user.js";
 import validate, {
   validateConversationisUserOwner,
@@ -21,7 +21,7 @@ import { getSessionUserId } from "../store/session.js";
 import { inMemoryConversations } from "../store/in_memory.js";
 import { slice } from "../utils/req_res_utils.js";
 
-export default class ConversationController {
+export default class ConversationsController {
   constructor() {
     this.conversationRepository = new ConversationRepository(
       Conversation,
@@ -243,13 +243,13 @@ export default class ConversationController {
       null,
       limit
     );
-    const lastMessagesListByCid = await Messages.getLastMessageForConversation(
+    const lastMessagesListByCid = await Message.getLastMessageForConversation(
       userConversationsIds.map((el) => el.conversation_id),
       currentUser
     );
 
     const countOfUnreadMessagesByCid =
-      await Messages.getCountOfUnredMessagesByCid(
+      await Message.getCountOfUnredMessagesByCid(
         userConversationsIds.map((el) => el.conversation_id),
         currentUser
       );

@@ -2,7 +2,7 @@ import BaseModel from "./base/base.js";
 import MessageStatus from "./message_status.js";
 import { ObjectId } from "mongodb";
 
-export default class Messages extends BaseModel {
+export default class Message extends BaseModel {
   constructor(params) {
     super(params);
   }
@@ -18,7 +18,7 @@ export default class Messages extends BaseModel {
   static async getLastMessageForConversation(cids, uId) {
     const $match = {
       cid: { $in: cids },
-      // deleted_for: { $nin: [uId] }, //ObjectId!!
+      deleted_for: { $nin: [uId] },
     };
 
     const $sort = { t: -1, _id: -1 };

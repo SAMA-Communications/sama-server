@@ -10,7 +10,7 @@ import { deliverToUserOrUsers } from "../routes/ws.js";
 import { getSessionUserId } from "../store/session.js";
 import { slice } from "../utils/req_res_utils.js";
 
-export default class StatusController {
+export default class StatusesController {
   async typing(ws, data) {
     const statusParams = slice(
       data.typing,
