@@ -33,6 +33,8 @@ Disclaimer: the authors behind SAMA have 10+ years experience in building messag
 - Open `http://localhost:9011/access-keys`, create Access Keys and set `MINIO_ACCESS_KEY` and `MINIO_SECRET_KEY` in `.env`.
 - `npm install` and `npm run start` to run server
 
+There is also a frontend app which can be uses with server https://github.com/SAMA-Communications/sama-client
+
 ## API
 
 ### Transport
