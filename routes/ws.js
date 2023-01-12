@@ -1,31 +1,31 @@
 import ConversationParticipant from "../models/conversation_participant.js";
-import FileController from "../controllers/files.js";
-import LastActivityController from "../controllers/activities.js";
+import ConversationsController from "../controllers/conversations.js";
+import FilesController from "../controllers/files.js";
+import LastActivityiesController from "../controllers/activities.js";
 import MessagesController from "../controllers/messages.js";
 import OfflineQueue from "../models/offline_queue.js";
-import StatusController from "../controllers/status.js";
-import UserBlockController from "../controllers/users_block.js";
+import StatusesController from "../controllers/status.js";
+import UsersBlockController from "../controllers/users_block.js";
 import UsersController from "../controllers/users.js";
 import { ACTIVE, getSessionUserId } from "../store/session.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { StringDecoder } from "string_decoder";
 import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
-import ConversationController from "../controllers/conversations.js";
 const decoder = new StringDecoder("utf8");
 
 const jsonRequest = {
   message: (ws, json) => new MessagesController().create(ws, json),
-  typing: (ws, json) => new StatusController().typing(ws, json),
+  typing: (ws, json) => new StatusesController().typing(ws, json),
   request: {
     message_edit: (ws, json) => new MessagesController().edit(ws, json),
     message_list: (ws, json) => new MessagesController().list(ws, json),
     message_read: (ws, json) => new MessagesController().read(ws, json),
     message_delete: (ws, json) => new MessagesController().delete(ws, json),
-    create_files: (ws, json) => new FileController().createUrl(ws, json),
-    get_file_urls: (ws, json) => new FileController().getDownloadUrl(ws, json),
-    block_user: (ws, json) => new UserBlockController().block(ws, json),
-    unblock_user: (ws, json) => new UserBlockController().unblock(ws, json),
-    list_blocked_users: (ws, json) => new UserBlockController().list(ws, json),
+    create_files: (ws, json) => new FilesController().createUrl(ws, json),
+    get_file_urls: (ws, json) => new FilesController().getDownloadUrl(ws, json),
+    block_user: (ws, json) => new UsersBlockController().block(ws, json),
+    unblock_user: (ws, json) => new UsersBlockController().unblock(ws, json),
+    list_blocked_users: (ws, json) => new UsersBlockController().list(ws, json),
     user_create: (ws, json) => new UsersController().create(ws, json),
     user_edit: (ws, json) => new UsersController().edit(ws, json),
     user_login: (ws, json) => new UsersController().login(ws, json),
@@ -33,21 +33,21 @@ const jsonRequest = {
     user_delete: (ws, json) => new UsersController().delete(ws, json),
     user_search: (ws, json) => new UsersController().search(ws, json),
     user_last_activity_subscribe: (ws, json) =>
-      new LastActivityController().statusSubscribe(ws, json),
+      new LastActivityiesController().statusSubscribe(ws, json),
     user_last_activity_unsubscribe: (ws, json) =>
-      new LastActivityController().statusUnsubscribe(ws, json),
+      new LastActivityiesController().statusUnsubscribe(ws, json),
     user_last_activity: (ws, json) =>
-      new LastActivityController().getUserStatus(ws, json),
+      new LastActivityiesController().getUserStatus(ws, json),
     getParticipantsByCids: (ws, json) =>
-      new ConversationController().getParticipantsByCids(ws, json),
+      new ConversationsController().getParticipantsByCids(ws, json),
     conversation_create: (ws, json) =>
-      new ConversationController().create(ws, json),
+      new ConversationsController().create(ws, json),
     conversation_delete: (ws, json) =>
-      new ConversationController().delete(ws, json),
+      new ConversationsController().delete(ws, json),
     conversation_update: (ws, json) =>
-      new ConversationController().update(ws, json),
+      new ConversationsController().update(ws, json),
     conversation_list: (ws, json) =>
-      new ConversationController().list(ws, json),
+      new ConversationsController().list(ws, json),
   },
 };
 

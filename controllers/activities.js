@@ -3,7 +3,7 @@ import validate, { validateIsUserId } from "../lib/validation.js";
 import { ACTIVE, getSessionUserId } from "../store/session.js";
 import { ACTIVITY } from "../store/activity.js";
 
-export default class LastActivityController {
+export default class LastActivitiesController {
   async statusSubscribe(ws, data) {
     const requestId = data.request.id;
     const uId = data.request.user_last_activity_subscribe.id;

@@ -1,4 +1,4 @@
-import LastActivityController from "../controllers/activities.js";
+import LastActivityiesController from "../controllers/activities.js";
 import User from "../models/user.js";
 import { ACTIVE } from "./session.js";
 
@@ -36,7 +36,7 @@ async function maybeUpdateAndSendUserActivity(ws, { uId, rId }, status) {
       { _id: uId },
       { $set: { recent_activity: Math.round(new Date() / 1000) } }
     );
-    await new LastActivityController().statusUnsubscribe(ws, {
+    await new LastActivityiesController().statusUnsubscribe(ws, {
       request: { id: rId || "Unsubscribe" },
     });
   }

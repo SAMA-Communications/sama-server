@@ -21,7 +21,7 @@ import { getSessionUserId } from "../store/session.js";
 import { inMemoryConversations } from "../store/in_memory.js";
 import { slice } from "../utils/req_res_utils.js";
 
-export default class ConversationController {
+export default class ConversationsController {
   constructor() {
     this.conversationRepository = new ConversationRepository(
       Conversation,
