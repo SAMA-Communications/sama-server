@@ -695,7 +695,7 @@ Get blocked users list:
 }
 ```
 
-### Contacts list
+### Address book (contacts list)
 
 TBA
 
