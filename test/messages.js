@@ -1,7 +1,7 @@
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import MessageStatus from "../models/message_status.js";
-import Messages from "../models/message.js";
+import Message from "../models/message.js";
 import User from "../models/user.js";
 import assert from "assert";
 import { ObjectId } from "mongodb";
@@ -169,7 +169,7 @@ describe("Message function", async () => {
         );
 
         if (i == 3) {
-          const findMessage = await Messages.findOne({
+          const findMessage = await Message.findOne({
             _id: responseData.ask.server_mid,
           });
           filterUpdatedAt = findMessage.updated_at;
@@ -286,7 +286,7 @@ describe("Message function", async () => {
 
   describe("Delete Message", async () => {
     before(async () => {
-      await Messages.clearCollection();
+      await Message.clearCollection();
       for (let i = 0; i < 4; i++) {
         const requestData = {
           message: {
@@ -595,7 +595,7 @@ describe("Message function", async () => {
 
     after(async () => {
       await User.clearCollection();
-      await Messages.clearCollection();
+      await Message.clearCollection();
       await Conversation.clearCollection();
       await ConversationParticipant.clearCollection();
       usersIds = [];
@@ -698,7 +698,7 @@ describe("Message function", async () => {
 
     describe("--> getCountOfUnredMessagesByCid", () => {
       it("should work for sender user (u1)", async () => {
-        const responseData = await Messages.getCountOfUnredMessagesByCid(
+        const responseData = await Message.getCountOfUnredMessagesByCid(
           [ObjectId(currentConversationId)],
           usersIds[0]
         );
@@ -706,7 +706,7 @@ describe("Message function", async () => {
       });
 
       it("should work for u2 (read 3/6 messages)", async () => {
-        const responseData = await Messages.getCountOfUnredMessagesByCid(
+        const responseData = await Message.getCountOfUnredMessagesByCid(
           [ObjectId(currentConversationId)],
           usersIds[1]
         );
@@ -714,7 +714,7 @@ describe("Message function", async () => {
       });
 
       it("should work for u3 (read 0/6 messages)", async () => {
-        const responseData = await Messages.getCountOfUnredMessagesByCid(
+        const responseData = await Message.getCountOfUnredMessagesByCid(
           [ObjectId(currentConversationId)],
           usersIds[2]
         );
@@ -741,7 +741,7 @@ describe("Message function", async () => {
 
     describe("--> getLastMessageForConversation", () => {
       it("should work", async () => {
-        const responseData = await Messages.getLastMessageForConversation([
+        const responseData = await Message.getLastMessageForConversation([
           ObjectId(currentConversationId),
         ]);
         assert.strictEqual(
@@ -754,7 +754,7 @@ describe("Message function", async () => {
 
   after(async () => {
     await User.clearCollection();
-    await Messages.clearCollection();
+    await Message.clearCollection();
     await MessageStatus.clearCollection();
     await Conversation.clearCollection();
     await ConversationParticipant.clearCollection();

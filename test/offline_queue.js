@@ -1,6 +1,6 @@
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
-import Messages from "../models/message.js";
+import Message from "../models/message.js";
 import OfflineQueue from "../models/offline_queue.js";
 import User from "../models/user.js";
 import { connectToDBPromise } from "../lib/db.js";
@@ -99,7 +99,7 @@ describe("User EXPECTED requests", async () => {
   after(async () => {
     await User.clearCollection();
     await OfflineQueue.clearCollection();
-    await Messages.clearCollection();
+    await Message.clearCollection();
     await Conversation.clearCollection();
     await ConversationParticipant.clearCollection();
     usersIds = [];

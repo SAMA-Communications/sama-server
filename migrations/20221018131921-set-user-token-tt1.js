@@ -11,6 +11,6 @@ export const up = async (db, client) => {
 
 export const down = async (db, client) => {
   await db.collection("user_token").dropIndex({ token: 1, device_id: 1 });
-  await db.collection("user_token").dropIndex({ token: 1, device_id: 1 });
+  await db.collection("user_token").dropIndex({ user_id: 1, device_id: 1 });
   await db.collection("user_token").dropIndex({ updated_at: 1 });
 };

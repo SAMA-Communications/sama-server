@@ -2,7 +2,7 @@ import BaseModel from "./base/base.js";
 import MessageStatus from "./message_status.js";
 import { ObjectId } from "mongodb";
 
-export default class Messages extends BaseModel {
+export default class Message extends BaseModel {
   constructor(params) {
     super(params);
   }

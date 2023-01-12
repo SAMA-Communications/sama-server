@@ -4,7 +4,7 @@ import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import ConversationRepository from "../repositories/conversation_repository.js";
 import MessageStatus from "../models/message_status.js";
-import Messages from "../models/message.js";
+import Message from "../models/message.js";
 import groupBy from "../utils/groupBy.js";
 import validate, {
   validateIsConversation,
@@ -95,7 +95,7 @@ export default class MessagesController {
     messageParams.deleted_for = blockedUsersIds;
     messageParams.from = ObjectId(currentUserId);
 
-    const message = new Messages(messageParams);
+    const message = new Message(messageParams);
     message.params.cid = message.params.cid
       ? ObjectId(message.params.cid)
       : message.params.cid;
@@ -121,10 +121,10 @@ export default class MessagesController {
     await validate(ws, messageParams, [validateMessageId, validateMessageBody]);
     const messageId = messageParams.id;
     await validate(ws, { mid: messageId }, [validateIsMessageById]);
-    let message = await Messages.findOne({ _id: messageId });
+    let message = await Message.findOne({ _id: messageId });
     await validate(ws, message.params, [validateIsUserAccess]);
 
-    await Messages.updateOne(
+    await Message.updateOne(
       { _id: messageId },
       { $set: { body: messageParams.body } }
     );
@@ -159,11 +159,7 @@ export default class MessagesController {
       query.updated_at = { $gt: new Date(timeFromUpdate.gt) };
     }
 
-    const messages = await Messages.findAll(
-      query,
-      Messages.visibleFields,
-      limit
-    );
+    const messages = await Message.findAll(query, Message.visibleFields, limit);
     const messagesStatus = await MessageStatus.getReadStatusForMids(
       messages.map((msg) => msg._id)
     );
@@ -203,7 +199,7 @@ export default class MessagesController {
       }
     }
 
-    const unreadMessages = await Messages.findAll(filters);
+    const unreadMessages = await Message.findAll(filters);
 
     if (unreadMessages.length) {
       const insertMessages = unreadMessages.map((msg) => {
@@ -279,9 +275,9 @@ export default class MessagesController {
         };
         await deliverToUser(user, request);
       }
-      await Messages.deleteMany({ _id: { $in: messagesIds } });
+      await Message.deleteMany({ _id: { $in: messagesIds } });
     } else {
-      await Messages.updateMany(
+      await Message.updateMany(
         { id: { $in: messagesIds } },
         {
           $addToSet: {
