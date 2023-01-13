@@ -31,7 +31,9 @@ Disclaimer: the authors behind SAMA have 10+ years experience in building messag
 - Copy `.env.example` to `.env`.
 - Run `docker-compose up` to run dependant services (MongoDB, Minio)
 - Open `http://localhost:9011/access-keys`, create Access Keys and set `MINIO_ACCESS_KEY` and `MINIO_SECRET_KEY` in `.env`.
-- `npm install` and `npm run start` to run server
+- `npm install` to install dependencies 
+- `npm run migrate-mongo-up` to run DB migrations 
+- `npm run start` to run server
 
 There is also a frontend app which can be uses with server https://github.com/SAMA-Communications/sama-client
 
