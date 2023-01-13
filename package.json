@@ -7,6 +7,9 @@
   "scripts": {
     "migrate-mongo": "node -r dotenv/config node_modules/migrate-mongo/bin/migrate-mongo.js",
     "migrate-mongo-up": "npm run migrate-mongo up",
+    "migrate-mongo-down": "npm run migrate-mongo down",
+    "migrate-mongo-status": "npm run migrate-mongo status",
+    "migrate-mongo-create": "npm run migrate-mongo create",
     "start": "nodemon -r dotenv/config index.js",
     "test": "nyc mocha -r dotenv/config"
   },
