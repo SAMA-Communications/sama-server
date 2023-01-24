@@ -1,12 +1,12 @@
 import BaseModel from "./base/base.js";
 
-export default class HostNmae extends BaseModel {
+export default class ClusterNode extends BaseModel {
   constructor(params) {
     super(params);
   }
 
   static get collection() {
-    return "hostname";
+    return "cluster_nodes";
   }
 
   static get visibleFields() {
