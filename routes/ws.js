@@ -151,7 +151,7 @@ export default function routes(app, wsOptions) {
       if (arrDevices) {
         ACTIVE.DEVICES[uId] = arrDevices.filter((obj) => {
           if (obj.ws === ws) {
-            redisClient.hDel(JSON.stringify(uId), JSON.stringify(obj.deviceId));
+            redisClient.hDel(`user:${uId}`, obj.deviceId + "");
             return false;
           }
           return true;

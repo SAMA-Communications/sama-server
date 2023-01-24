@@ -152,11 +152,7 @@ export default class UsersController {
       });
     }
 
-    await redisClient.hSet(
-      JSON.stringify(userId),
-      JSON.stringify(deviceId),
-      JSON.stringify(os.hostname())
-    );
+    await redisClient.hSet(`user:${userId}`, deviceId + "", os.hostname());
 
     return {
       response: { id: requestId, user: user.visibleParams(), token: jwtToken },
@@ -227,7 +223,7 @@ export default class UsersController {
       });
       userToken.delete();
 
-      await redisClient.hDel(JSON.stringify(userId), JSON.stringify(deviceId));
+      await redisClient.hDel(`user:${userId}`, deviceId + "");
 
       return { response: { id: requestId, success: true } };
     } else {
