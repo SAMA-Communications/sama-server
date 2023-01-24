@@ -21,8 +21,6 @@ if (process.env.STORAGE_DRIVER === "minio") {
 
 const APP_OPTIONS = {};
 
-const APP_PORT = 9001;
-
 const APP_LISTEN_OPTIONS = {
   LIBUS_LISTEN_EXCLUSIVE_PORT: 1,
 };
@@ -38,11 +36,15 @@ const APP = uWS.App(APP_OPTIONS);
 
 buildWSRoutes(APP, WS_OPTIONS);
 
-APP.listen(APP_PORT, APP_LISTEN_OPTIONS, (listenSocket) => {
-  if (listenSocket) {
-    console.log("Listening to port 9001");
+APP.listen(
+  parseInt(process.env.APP_PORT),
+  APP_LISTEN_OPTIONS,
+  (listenSocket) => {
+    if (listenSocket) {
+      console.log("Listening to port 9001");
+    }
   }
-});
+);
 
 // perform a database connection when the server starts
 connectToDB(async (err) => {

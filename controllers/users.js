@@ -4,7 +4,7 @@ import LastActivityiesController from "./activities.js";
 import OfflineQueue from "../models/offline_queue.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
-import redisClient from "../server.js";
+import redisClient from "../lib/redis.js";
 import jwt from "jsonwebtoken";
 import validate, {
   validateDeviceId,
@@ -152,7 +152,11 @@ export default class UsersController {
       });
     }
 
-    await redisClient.set({ [userId]: deviceId }, os.hostname());
+    await redisClient.hSet(
+      JSON.stringify(userId),
+      JSON.stringify(deviceId),
+      JSON.stringify(os.hostname())
+    );
 
     return {
       response: { id: requestId, user: user.visibleParams(), token: jwtToken },
@@ -222,6 +226,8 @@ export default class UsersController {
         device_id: deviceId,
       });
       userToken.delete();
+
+      await redisClient.hDel(JSON.stringify(userId), JSON.stringify(deviceId));
 
       return { response: { id: requestId, success: true } };
     } else {

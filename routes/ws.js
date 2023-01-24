@@ -7,6 +7,7 @@ import OfflineQueue from "../models/offline_queue.js";
 import StatusesController from "../controllers/status.js";
 import UsersBlockController from "../controllers/users_block.js";
 import UsersController from "../controllers/users.js";
+import redisClient from "../lib/redis.js";
 import { ACTIVE, getSessionUserId } from "../store/session.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { StringDecoder } from "string_decoder";
@@ -148,7 +149,13 @@ export default function routes(app, wsOptions) {
       const arrDevices = ACTIVE.DEVICES[uId];
 
       if (arrDevices) {
-        ACTIVE.DEVICES[uId] = arrDevices.filter((obj) => obj.ws !== ws);
+        ACTIVE.DEVICES[uId] = arrDevices.filter((obj) => {
+          if (obj.ws === ws) {
+            redisClient.hDel(JSON.stringify(uId), JSON.stringify(obj.deviceId));
+            return false;
+          }
+          return true;
+        });
         await maybeUpdateAndSendUserActivity(ws, { uId });
       }
       ACTIVE.SESSIONS.delete(ws);
