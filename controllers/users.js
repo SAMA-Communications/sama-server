@@ -4,6 +4,7 @@ import LastActivityiesController from "./activities.js";
 import OfflineQueue from "../models/offline_queue.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
+import redisClient from "../server.js";
 import jwt from "jsonwebtoken";
 import validate, {
   validateDeviceId,
@@ -16,6 +17,7 @@ import { ERROR_STATUES } from "../constants/http_constants.js";
 import { inMemoryBlockList } from "../store/in_memory.js";
 import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
 import { slice } from "../utils/req_res_utils.js";
+import os from "os";
 
 export default class UsersController {
   constructor() {
@@ -149,6 +151,8 @@ export default class UsersController {
         await OfflineQueue.deleteMany({ user_id: userId });
       });
     }
+
+    await redisClient.set({ [userId]: deviceId }, os.hostname());
 
     return {
       response: { id: requestId, user: user.visibleParams(), token: jwtToken },

@@ -23,18 +23,22 @@ const APP_OPTIONS = {};
 
 const APP_PORT = 9001;
 
+const APP_LISTEN_OPTIONS = {
+  LIBUS_LISTEN_EXCLUSIVE_PORT: 1,
+};
+
 const WS_OPTIONS = {
   compression: uWS.SHARED_COMPRESSOR,
-  maxPayloadLength: 16 * 1024 * 1024,
   idleTimeout: 12,
   maxBackpressure: 1024,
+  maxPayloadLength: 16 * 1024 * 1024,
 };
 
 const APP = uWS.App(APP_OPTIONS);
 
 buildWSRoutes(APP, WS_OPTIONS);
 
-APP.listen(APP_PORT, (listenSocket) => {
+APP.listen(APP_PORT, APP_LISTEN_OPTIONS, (listenSocket) => {
   if (listenSocket) {
     console.log("Listening to port 9001");
   }
