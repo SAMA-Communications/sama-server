@@ -1,5 +1,7 @@
 /* Simplified stock exchange made with uWebSockets.js pub/sub */
 import uWS from "uWebSockets.js";
+import ip from "ip";
+import os from "os";
 
 import { default as buildWSRoutes } from "./routes/ws.js";
 
@@ -12,7 +14,6 @@ import S3 from "./lib/storage/s3.js";
 import BlockListRepository from "./repositories/blocklist_repository.js";
 import ConversationRepository from "./repositories/conversation_repository.js";
 import NodeSharing from "./lib/node_sharing.js";
-import os from "os";
 
 let storageClient;
 if (process.env.STORAGE_DRIVER === "minio") {
@@ -59,7 +60,7 @@ connectToDB(async (err) => {
     await ConversationRepository.warmCache();
 
     const nodeParams = {
-      ip_address: os.networkInterfaces(),
+      ip_address: ip.address(),
       hostname: os.hostname(),
     };
     await new NodeSharing(nodeParams).startSharing();
