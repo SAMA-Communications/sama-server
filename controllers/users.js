@@ -249,6 +249,7 @@ export default class UsersController {
 
     if (ACTIVE.SESSIONS.get(ws)) {
       delete ACTIVE.DEVICES[userSession];
+      await redisClient.del(`user:${userSession}`);
       ACTIVE.SESSIONS.delete(ws);
     }
 
