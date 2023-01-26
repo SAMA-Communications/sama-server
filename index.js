@@ -1,7 +1,5 @@
 /* Simplified stock exchange made with uWebSockets.js pub/sub */
 import uWS from "uWebSockets.js";
-import ip from "ip";
-import os from "os";
 
 import { default as buildWSRoutes } from "./routes/ws.js";
 
@@ -58,12 +56,7 @@ connectToDB(async (err) => {
     console.log("[connectToDB] Ok");
     await BlockListRepository.warmCache();
     await ConversationRepository.warmCache();
-
-    const nodeParams = {
-      ip_address: ip.address(),
-      hostname: os.hostname(),
-    };
-    await new NodeSharing(nodeParams).startSharing();
+    await new NodeSharing().startSyncingClusterNodes();
   }
 });
 
