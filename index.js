@@ -11,7 +11,7 @@ import S3 from "./lib/storage/s3.js";
 //cache storage
 import BlockListRepository from "./repositories/blocklist_repository.js";
 import ConversationRepository from "./repositories/conversation_repository.js";
-import NodeSharing from "./lib/node_sharing.js";
+import ClusterManager from "./lib/node_sharing.js";
 
 let storageClient;
 if (process.env.STORAGE_DRIVER === "minio") {
@@ -56,7 +56,7 @@ connectToDB(async (err) => {
     console.log("[connectToDB] Ok");
     await BlockListRepository.warmCache();
     await ConversationRepository.warmCache();
-    await new NodeSharing().startSyncingClusterNodes();
+    await new ClusterManager().startSyncingClusterNodes();
   }
 });
 
