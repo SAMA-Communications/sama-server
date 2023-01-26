@@ -42,7 +42,7 @@ APP.listen(
   APP_LISTEN_OPTIONS,
   (listenSocket) => {
     if (listenSocket) {
-      console.log("Listening to port 9001");
+      console.log(`Listening to port ${process.env.APP_PORT}`);
     }
   }
 );
@@ -56,7 +56,7 @@ connectToDB(async (err) => {
     console.log("[connectToDB] Ok");
     await BlockListRepository.warmCache();
     await ConversationRepository.warmCache();
-    await new ClusterManager().startSyncingClusterNodes();
+    await ClusterManager.startSyncingClusterNodes();
   }
 });
 
