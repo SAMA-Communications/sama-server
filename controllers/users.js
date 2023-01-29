@@ -4,7 +4,8 @@ import LastActivityiesController from "./activities.js";
 import OfflineQueue from "../models/offline_queue.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
-import redisClient from "../lib/redis.js";
+import RedisManager from "../lib/redis.js";
+import ip from "ip";
 import jwt from "jsonwebtoken";
 import validate, {
   validateDeviceId,
@@ -17,7 +18,6 @@ import { ERROR_STATUES } from "../constants/http_constants.js";
 import { inMemoryBlockList } from "../store/in_memory.js";
 import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
 import { slice } from "../utils/req_res_utils.js";
-import os from "os";
 
 export default class UsersController {
   constructor() {
@@ -152,7 +152,7 @@ export default class UsersController {
       });
     }
 
-    await redisClient.hSet(`user:${userId}`, deviceId + "", os.hostname());
+    await RedisManager.sAdd(userId, { [deviceId]: ip.address() });
 
     return {
       response: { id: requestId, user: user.visibleParams(), token: jwtToken },
@@ -223,7 +223,7 @@ export default class UsersController {
       });
       userToken.delete();
 
-      await redisClient.hDel(`user:${userId}`, deviceId + "");
+      await RedisManager.sRem(userId, { [deviceId]: ip.address() });
 
       return { response: { id: requestId, success: true } };
     } else {
@@ -249,7 +249,7 @@ export default class UsersController {
 
     if (ACTIVE.SESSIONS.get(ws)) {
       delete ACTIVE.DEVICES[userSession];
-      await redisClient.del(`user:${userSession}`);
+      await RedisManager.del(userSession);
       ACTIVE.SESSIONS.delete(ws);
     }
 

@@ -7,8 +7,9 @@ import OfflineQueue from "../models/offline_queue.js";
 import StatusesController from "../controllers/status.js";
 import UsersBlockController from "../controllers/users_block.js";
 import UsersController from "../controllers/users.js";
-import redisClient from "../lib/redis.js";
-import { ACTIVE, getSessionUserId } from "../store/session.js";
+import RedisClient from "../lib/redis.js";
+import ip from "ip";
+import { ACTIVE, getDeviceId, getSessionUserId } from "../store/session.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { StringDecoder } from "string_decoder";
 import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
@@ -55,16 +56,43 @@ const jsonRequest = {
 async function deliverToUser(currentWS, userId, request) {
   const wsRecipient = ACTIVE.DEVICES[userId];
 
-  if (wsRecipient) {
-    wsRecipient.forEach((data) => {
-      if (data.ws !== currentWS) {
-        data.ws.send(JSON.stringify({ message: request }));
-      }
-    });
-  } else {
+  if (!wsRecipient) {
+    return;
+  }
+
+  wsRecipient.forEach((data) => {
+    if (data.ws !== currentWS) {
+      data.ws.send(JSON.stringify({ message: request }));
+    }
+  });
+}
+
+async function deliverToNode(currentWS, userId, request) {
+  const userDevices = await RedisClient.sMembers(userId);
+
+  if (!userDevices?.length) {
     request = new OfflineQueue({ user_id: userId, request: request });
     await request.save();
+    return;
   }
+
+  const deviceId = getDeviceId(currentWS, getSessionUserId(currentWS));
+  userDevices.forEach(async (data) => {
+    if (data === JSON.stringify({ [deviceId]: ip.address() })) {
+      return;
+    }
+
+    const d = JSON.parse(data);
+    const nodeIp = d[Object.keys(d)[0]];
+
+    await RedisClient.publish("G", { userId, request });
+
+    // if (nodeIp === ip.address()) {
+    //   await deliverToUser(currentWS, userId, request);
+    // } else {
+    //   await RedisClient.publish(nodeIp, request);
+    // }
+  });
 }
 
 async function deliverToUserOrUsers(dParams, message, currentWS) {
@@ -77,7 +105,8 @@ async function deliverToUserOrUsers(dParams, message, currentWS) {
       100
     );
     participants.forEach(async (participants) => {
-      await deliverToUser(currentWS, participants.user_id, message);
+      participants.user_id != getSessionUserId(currentWS) &&
+        (await deliverToNode(currentWS, participants.user_id, message));
     });
   }
 }
@@ -128,6 +157,7 @@ async function processJsonMessageOrError(ws, json) {
 export {
   processJsonMessage,
   deliverToUser,
+  deliverToNode,
   deliverToUserOrUsers,
   processJsonMessageOrError,
 };
@@ -151,7 +181,7 @@ export default function routes(app, wsOptions) {
       if (arrDevices) {
         ACTIVE.DEVICES[uId] = arrDevices.filter((obj) => {
           if (obj.ws === ws) {
-            redisClient.hDel(`user:${uId}`, obj.deviceId + "");
+            // RedisClient.hDel(uId, obj.deviceId);
             return false;
           }
           return true;
