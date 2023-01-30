@@ -67,32 +67,6 @@ async function deliverToUser(currentWS, userId, request) {
   });
 }
 
-async function deliverToNode(currentWS, userId, request) {
-  const userDevices = await RedisClient.sMembers(userId);
-
-  if (!userDevices?.length) {
-    request = new OfflineQueue({ user_id: userId, request: request });
-    await request.save();
-    return;
-  }
-
-  const deviceId = getDeviceId(currentWS, getSessionUserId(currentWS));
-  userDevices.forEach(async (data) => {
-    if (data === JSON.stringify({ [deviceId]: ip.address() })) {
-      return;
-    }
-
-    const d = JSON.parse(data);
-    const nodeIp = d[Object.keys(d)[0]];
-
-    if (nodeIp === ip.address()) {
-      await deliverToUser(currentWS, userId, request);
-    } else {
-      await RedisClient.publish(nodeIp, { userId, request });
-    }
-  });
-}
-
 async function deliverToUserOrUsers(dParams, message, currentWS) {
   if (dParams.cid) {
     const participants = await ConversationParticipant.findAll(
@@ -102,9 +76,36 @@ async function deliverToUserOrUsers(dParams, message, currentWS) {
       ["user_id"],
       100
     );
+
     participants.forEach(async (participants) => {
-      participants.user_id != getSessionUserId(currentWS) &&
-        (await deliverToNode(currentWS, participants.user_id, message));
+      const uId = participants.user_id;
+      const userDevices = await RedisClient.sMembers(uId);
+
+      if (!userDevices?.length) {
+        const request = new OfflineQueue({ user_id: uId, request: message });
+        await request.save();
+        return;
+      }
+
+      if (uId.toString() === getSessionUserId(currentWS)) {
+        return;
+      }
+
+      const deviceId = getDeviceId(currentWS, getSessionUserId(currentWS));
+      userDevices.forEach(async (data) => {
+        if (data === JSON.stringify({ [deviceId]: ip.address() })) {
+          return;
+        }
+
+        const d = JSON.parse(data);
+        const nodeIp = d[Object.keys(d)[0]];
+
+        if (nodeIp === ip.address()) {
+          await deliverToUser(currentWS, uId, message);
+        } else {
+          await RedisClient.publish(nodeIp, { userId: uId, request: message });
+        }
+      });
     });
   }
 }
@@ -155,7 +156,6 @@ async function processJsonMessageOrError(ws, json) {
 export {
   processJsonMessage,
   deliverToUser,
-  deliverToNode,
   deliverToUserOrUsers,
   processJsonMessageOrError,
 };
