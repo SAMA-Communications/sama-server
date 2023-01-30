@@ -85,13 +85,11 @@ async function deliverToNode(currentWS, userId, request) {
     const d = JSON.parse(data);
     const nodeIp = d[Object.keys(d)[0]];
 
-    await RedisClient.publish("G", { userId, request });
-
-    // if (nodeIp === ip.address()) {
-    //   await deliverToUser(currentWS, userId, request);
-    // } else {
-    //   await RedisClient.publish(nodeIp, request);
-    // }
+    if (nodeIp === ip.address()) {
+      await deliverToUser(currentWS, userId, request);
+    } else {
+      await RedisClient.publish(nodeIp, { userId, request });
+    }
   });
 }
 

@@ -152,7 +152,10 @@ export default class UsersController {
       });
     }
 
-    await RedisManager.sAdd(userId, { [deviceId]: ip.address() });
+    //TODO: remove "process.env.REDIS_HOSTNAME"
+    await RedisManager.sAdd(userId, {
+      [deviceId]: ip.address() + process.env.REDIS_HOSTNAME,
+    });
 
     return {
       response: { id: requestId, user: user.visibleParams(), token: jwtToken },
@@ -223,7 +226,10 @@ export default class UsersController {
       });
       userToken.delete();
 
-      await RedisManager.sRem(userId, { [deviceId]: ip.address() });
+      //TODO: remove "process.env.REDIS_HOSTNAME"
+      await RedisManager.sRem(userId, {
+        [deviceId]: ip.address() + process.env.REDIS_HOSTNAME,
+      });
 
       return { response: { id: requestId, success: true } };
     } else {

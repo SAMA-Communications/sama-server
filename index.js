@@ -55,10 +55,10 @@ connectToDB(async (err) => {
     process.exit();
   } else {
     console.log("[connectToDB] Ok");
+    await ClusterClient.startSyncingClusterNodes();
     await RedisClient.connect();
     await BlockListRepository.warmCache();
     await ConversationRepository.warmCache();
-    await ClusterClient.startSyncingClusterNodes();
   }
 });
 
