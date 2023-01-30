@@ -242,8 +242,8 @@ export default class UsersController {
   async delete(ws, data) {
     const requestId = data.request.id;
 
-    const userSession = getSessionUserId(ws);
-    if (!userSession) {
+    const userId = getSessionUserId(ws);
+    if (!userId) {
       throw new Error(ERROR_STATUES.FORBIDDEN.message, {
         cause: ERROR_STATUES.FORBIDDEN,
       });
@@ -254,12 +254,12 @@ export default class UsersController {
     });
 
     if (ACTIVE.SESSIONS.get(ws)) {
-      delete ACTIVE.DEVICES[userSession];
-      await RedisManager.del(userSession);
+      delete ACTIVE.DEVICES[userId];
+      await RedisManager.del(userId);
       ACTIVE.SESSIONS.delete(ws);
     }
 
-    const user = await User.findOne({ _id: userSession });
+    const user = await User.findOne({ _id: userId });
     if (user) {
       this.blockListRepository.delete(user.params._id);
       await user.delete();
