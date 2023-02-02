@@ -84,7 +84,3 @@ connectToDB(async (err) => {
 export { storageClient };
 
 // https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph
-
-// process.on("SIGINT", (code) => {
-//   console.log("Process exit event with code: ", code);
-// });

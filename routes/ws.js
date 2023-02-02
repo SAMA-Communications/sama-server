@@ -86,28 +86,8 @@ async function deliverToUserOrUsers(dParams, message, currentWS) {
 
     participants.forEach(async (participants) => {
       const uId = participants.user_id;
-      // const userDevices = await RedisClient.sMembers(uId);
-      // if (!userDevices?.length) {
-      //   const request = new OfflineQueue({ user_id: uId, request: message });
-      //   await request.save();
-      //   return;
-      // }
-      // if (uId.toString() === getSessionUserId(currentWS)) {
-      //   return;
-      // }
-      // const deviceId = getDeviceId(currentWS, getSessionUserId(currentWS));
-      // userDevices.forEach(async (data) => {
-      //   if (data === JSON.stringify({ [deviceId]: ip.address() })) {
-      //     return;
-      //   }
-      //   const d = JSON.parse(data);
-      //   const nodeIp = d[Object.keys(d)[0]];
-      //   if (nodeIp === ip.address()) {
+
       await deliverToUser(currentWS, uId, message);
-      //   } else {
-      //     await RedisClient.publish(nodeIp, { userId: uId, request: message });
-      //   }
-      // });
     });
   }
 }
