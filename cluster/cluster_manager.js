@@ -1,4 +1,27 @@
-export const clusterNodesWS = {};
+import WebSocket from "ws";
+
+const clusterClientsWs = {};
+const clusterNodesWS = {};
+
+async function createTransitionSocket(url) {
+  if (clusterClientsWs[url] || !url) {
+    return;
+  }
+
+  const ws = new WebSocket(url);
+
+  ws.on("open", () => {
+    console.log("[SubSocket] Open");
+  });
+
+  ws.on("message", (data) => {
+    console.log("received: %s", data);
+    //send to main ws
+  });
+
+  clusterClientsWs[url] = ws;
+  console.log("[SubSocket] Create connect with", url);
+}
 
 export default function clusterRoutes(app, wsOptions) {
   app.ws("/*", {
@@ -27,3 +50,5 @@ export default function clusterRoutes(app, wsOptions) {
     },
   });
 }
+
+export { clusterClientsWs, clusterNodesWS, createTransitionSocket };

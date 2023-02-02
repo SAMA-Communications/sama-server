@@ -2,7 +2,7 @@
 import uWS from "uWebSockets.js";
 
 import { default as buildWSRoutes } from "./routes/ws.js";
-import { default as buildClusterWSRoutes } from "./routes/cluster_ws.js";
+import { default as buildClusterWSRoutes } from "./cluster/cluster_manager.js";
 
 // get MongoDB driver connection
 import { connectToDB } from "./lib/db.js";
@@ -35,14 +35,11 @@ const WS_OPTIONS = {
   maxPayloadLength: 16 * 1024 * 1024,
 };
 
-const APP = uWS.App(APP_OPTIONS);
-APP.connect("/*", (req, res) => {
-  console.log(req, res);
-});
+const CLIENT_SOCKET = uWS.App(APP_OPTIONS);
 
-buildWSRoutes(APP, WS_OPTIONS);
+buildWSRoutes(CLIENT_SOCKET, WS_OPTIONS);
 
-APP.listen(
+CLIENT_SOCKET.listen(
   parseInt(process.env.APP_PORT),
   APP_LISTEN_OPTIONS,
   (listenSocket) => {
@@ -52,16 +49,18 @@ APP.listen(
   }
 );
 
-const APP_FOR_LISTEN = uWS.App(APP_OPTIONS);
+const CLUSTER_SOCKET = uWS.App(APP_OPTIONS);
 
-buildClusterWSRoutes(APP_FOR_LISTEN, WS_OPTIONS);
+buildClusterWSRoutes(CLUSTER_SOCKET, WS_OPTIONS);
 
-APP_FOR_LISTEN.listen(
-  parseInt(process.env.APP_PORT) + 100,
+CLUSTER_SOCKET.listen(
+  parseInt(process.env.CLUSTER_COMMUNICATION_PORT),
   APP_LISTEN_OPTIONS,
   (listenSocket) => {
     if (listenSocket) {
-      console.log(`Listening to port ${parseInt(process.env.APP_PORT) + 100}`);
+      console.log(
+        `Listening to port ${parseInt(process.env.CLUSTER_COMMUNICATION_PORT)}`
+      );
     }
   }
 );
