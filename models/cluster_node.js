@@ -10,6 +10,13 @@ export default class ClusterNode extends BaseModel {
   }
 
   static get visibleFields() {
-    return ["_id", "created_at", "updated_at", "ip_address", "hostname"];
+    return [
+      "_id",
+      "created_at",
+      "updated_at",
+      "ip_address",
+      "hostname",
+      "port",
+    ];
   }
 }

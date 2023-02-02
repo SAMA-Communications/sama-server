@@ -2,6 +2,7 @@
 import uWS from "uWebSockets.js";
 
 import { default as buildWSRoutes } from "./routes/ws.js";
+import { default as buildClusterWSRoutes } from "./routes/cluster_ws.js";
 
 // get MongoDB driver connection
 import { connectToDB } from "./lib/db.js";
@@ -35,6 +36,9 @@ const WS_OPTIONS = {
 };
 
 const APP = uWS.App(APP_OPTIONS);
+APP.connect("/*", (req, res) => {
+  console.log(req, res);
+});
 
 buildWSRoutes(APP, WS_OPTIONS);
 
@@ -44,6 +48,20 @@ APP.listen(
   (listenSocket) => {
     if (listenSocket) {
       console.log(`Listening to port ${process.env.APP_PORT}`);
+    }
+  }
+);
+
+const APP_FOR_LISTEN = uWS.App(APP_OPTIONS);
+
+buildClusterWSRoutes(APP_FOR_LISTEN, WS_OPTIONS);
+
+APP_FOR_LISTEN.listen(
+  parseInt(process.env.APP_PORT) + 100,
+  APP_LISTEN_OPTIONS,
+  (listenSocket) => {
+    if (listenSocket) {
+      console.log(`Listening to port ${parseInt(process.env.APP_PORT) + 100}`);
     }
   }
 );
@@ -66,3 +84,7 @@ connectToDB(async (err) => {
 export { storageClient };
 
 // https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph
+
+// process.on("SIGINT", (code) => {
+//   console.log("Process exit event with code: ", code);
+// });
