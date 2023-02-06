@@ -27,11 +27,13 @@ async function createTransitionSocket(url) {
   });
 
   ws.on("message", (data) => {
-    console.log("received: %s", data);
+    const json = JSON.parse(decoder.write(Buffer.from(data)));
+    console.log("[SubSocket.message]", json);
 
-    if (data.node) {
+    if (json.node) {
       const nodeInfo = json.node;
       clusterNodesWS[nodeInfo.ip] = { ws, hostname: nodeInfo.hostname };
+      delete clusterClientsWs[ws.url];
       return;
     }
   });
