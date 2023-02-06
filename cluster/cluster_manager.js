@@ -1,6 +1,7 @@
 import WebSocket from "ws";
 import ip from "ip";
 import { StringDecoder } from "string_decoder";
+import { saveRequestInOfflineQueue } from "../store/session.js";
 const decoder = new StringDecoder("utf8");
 
 const clusterClientsWS = {};
@@ -35,6 +36,15 @@ async function createTransitionSocket(url) {
       clusterNodesWS[nodeInfo.ip] = { ws, hostname: nodeInfo.hostname };
       return;
     }
+
+    //TODO: function deliverTo... || similar 1
+    const { userId, message: request } = json;
+    try {
+      clusterClientsWS[userId].send(JSON.stringify({ message: request }));
+    } catch (err) {
+      console.log(err);
+      saveRequestInOfflineQueue(userId, request);
+    }
   });
 
   clusterNodesWS[url] = { connect: "success" };
@@ -53,22 +63,35 @@ export default function clusterRoutes(app, wsOptions) {
 
     close: async (ws, code, message) => {
       console.log("[close]", `WebSokect connect down`);
-      // delete clusterNodesWS[
-      //   Buffer.from(ws.getRemoteAddressAsText()).toString()
-      // ];
     },
 
     message: async (ws, message, isBinary) => {
       const json = JSON.parse(decoder.write(Buffer.from(message)));
-      console.log(json);
-
       if (json.node) {
         const nodeInfo = json.node;
         clusterNodesWS[nodeInfo.ip] = { ws, hostname: nodeInfo.hostname };
+
+        //deliver back about this node
+        ws.send(
+          JSON.stringify({
+            node: {
+              hostname: process.env.REDIS_HOSTNAME,
+              ip: ip.address() + process.env.REDIS_HOSTNAME,
+            },
+          })
+        );
+
         return;
       }
 
-      clusterClientsWS?.ws.send(JSON.stringify(json));
+      //TODO: function deliverTo... || similar 1
+      const { userId, message: request } = json;
+      try {
+        clusterClientsWS[userId].send(JSON.stringify({ message: request }));
+      } catch (err) {
+        console.log(err);
+        saveRequestInOfflineQueue(userId, request);
+      }
     },
   });
 }

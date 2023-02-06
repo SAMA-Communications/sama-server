@@ -23,7 +23,7 @@ import {
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ObjectId } from "mongodb";
-import { deliverToUser, deliverToUserOrUsers } from "../routes/ws.js";
+import { deliverToUserOnThisNode, deliverToUserOrUsers } from "../routes/ws.js";
 import { ACTIVE, getSessionUserId } from "../store/session.js";
 import { slice } from "../utils/req_res_utils.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
@@ -273,7 +273,7 @@ export default class MessagesController {
             from: ObjectId(getSessionUserId(ws)),
           },
         };
-        await deliverToUser(user, request);
+        await deliverToUserOnThisNode(user, request);
       }
       await Message.deleteMany({ _id: { $in: messagesIds } });
     } else {

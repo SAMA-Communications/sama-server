@@ -15,6 +15,7 @@ import { ACTIVE, getDeviceId, getSessionUserId } from "../store/session.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
+import { clusterClientsWS } from "../cluster/cluster_manager.js";
 import { inMemoryBlockList } from "../store/in_memory.js";
 import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
 import { slice } from "../utils/req_res_utils.js";
@@ -156,6 +157,7 @@ export default class UsersController {
     await RedisManager.sAdd(userId, {
       [deviceId]: ip.address() + process.env.REDIS_HOSTNAME,
     });
+    clusterClientsWS[userId] = ws;
 
     return {
       response: { id: requestId, user: user.visibleParams(), token: jwtToken },
@@ -230,6 +232,7 @@ export default class UsersController {
       await RedisManager.sRem(userId, {
         [deviceId]: ip.address() + process.env.REDIS_HOSTNAME,
       });
+      delete clusterClientsWS[userId];
 
       return { response: { id: requestId, success: true } };
     } else {

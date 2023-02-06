@@ -3,20 +3,21 @@ import ConversationsController from "../controllers/conversations.js";
 import FilesController from "../controllers/files.js";
 import LastActivityiesController from "../controllers/activities.js";
 import MessagesController from "../controllers/messages.js";
-import OfflineQueue from "../models/offline_queue.js";
 import StatusesController from "../controllers/status.js";
 import UsersBlockController from "../controllers/users_block.js";
 import UsersController from "../controllers/users.js";
 import RedisClient from "../lib/redis.js";
 import ip from "ip";
-import { ACTIVE, getDeviceId, getSessionUserId } from "../store/session.js";
+import {
+  ACTIVE,
+  getDeviceId,
+  getSessionUserId,
+  saveRequestInOfflineQueue,
+} from "../store/session.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { StringDecoder } from "string_decoder";
+import { clusterNodesWS } from "../cluster/cluster_manager.js";
 import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
-import {
-  clusterClientsWS,
-  clusterNodesWS,
-} from "../cluster/cluster_manager.js";
 const decoder = new StringDecoder("utf8");
 
 const jsonRequest = {
@@ -57,7 +58,7 @@ const jsonRequest = {
   },
 };
 
-async function deliverToUser(currentWS, userId, request) {
+async function deliverToUserOnThisNode(userId, message, currentWS) {
   const wsRecipient = ACTIVE.DEVICES[userId];
 
   if (!wsRecipient) {
@@ -65,49 +66,69 @@ async function deliverToUser(currentWS, userId, request) {
   }
 
   wsRecipient.forEach((data) => {
-    if (data.ws !== currentWS) {
-      data.ws.send(JSON.stringify({ message: request }));
-    }
+    data.ws !== currentWS && data.ws.send(JSON.stringify({ message }));
   });
 }
 
 async function deliverToUserOrUsers(dParams, message, currentWS) {
-  if (dParams.cid) {
-    const participants = await ConversationParticipant.findAll(
-      {
-        conversation_id: dParams.cid,
-      },
-      ["user_id"],
-      100
-    );
+  if (!dParams.cid) {
+    return;
+  }
 
-    participants.forEach(async (participants) => {
-      const uId = participants.user_id;
-      const userDevices = await RedisClient.sMembers(uId);
-      if (!userDevices?.length) {
-        const request = new OfflineQueue({ user_id: uId, request: message });
-        await request.save();
-        return;
-      }
-      if (uId.toString() === getSessionUserId(currentWS)) {
-        return;
-      }
+  const participants = await ConversationParticipant.findAll(
+    {
+      conversation_id: dParams.cid,
+    },
+    ["user_id"],
+    100
+  );
+
+  participants.forEach(async (participants) => {
+    const uId = participants.user_id;
+    if (uId.toString() === getSessionUserId(currentWS)) {
+      return;
+    }
+
+    const userDevices = await RedisClient.sMembers(uId);
+    if (!userDevices?.length) {
+      saveRequestInOfflineQueue(uId, message);
+      return;
+    }
+
+    userDevices.forEach(async (data) => {
       const deviceId = getDeviceId(currentWS, getSessionUserId(currentWS));
-      userDevices.forEach(async (data) => {
-        if (data === JSON.stringify({ [deviceId]: ip.address() })) {
+      if (
+        data ===
+        JSON.stringify({
+          [deviceId]: ip.address() + process.env.REDIS_HOSTNAME,
+        })
+      ) {
+        //its this device
+        return;
+      }
+
+      const nodeInfo = JSON.parse(data);
+      const nodeIp = nodeInfo[Object.keys(nodeInfo)[0]];
+      if (nodeIp === ip.address()) {
+        //this node
+        await deliverToUserOnThisNode(uId, message, currentWS);
+      } else {
+        //other node
+        const recipientWS = clusterNodesWS[nodeIp]?.ws;
+        if (!recipientWS) {
+          saveRequestInOfflineQueue(uId, message);
           return;
         }
-        const d = JSON.parse(data);
-        const nodeIp = d[Object.keys(d)[0]];
-        if (nodeIp === ip.address()) {
-          await deliverToUser(currentWS, uId, message);
-        } else {
-          const deliveredUserWs = clusterNodesWS[nodeIp]?.ws;
-          deliveredUserWs.send(JSON.stringify({ message }));
+
+        try {
+          recipientWS.send(JSON.stringify({ userId: uId, message }));
+        } catch (err) {
+          console.log(err);
+          saveRequestInOfflineQueue(uId, message);
         }
-      });
+      }
     });
-  }
+  });
 }
 
 async function processJsonMessage(ws, json) {
@@ -154,9 +175,9 @@ async function processJsonMessageOrError(ws, json) {
 }
 
 export {
-  processJsonMessage,
-  deliverToUser,
+  deliverToUserOnThisNode,
   deliverToUserOrUsers,
+  processJsonMessage,
   processJsonMessageOrError,
 };
 
@@ -169,7 +190,6 @@ export default function routes(app, wsOptions) {
         "[open]",
         `IP: ${Buffer.from(ws.getRemoteAddressAsText()).toString()}`
       );
-      clusterClientsWS["ws"] = ws;
     },
 
     close: async (ws, code, message) => {
@@ -180,7 +200,9 @@ export default function routes(app, wsOptions) {
       if (arrDevices) {
         ACTIVE.DEVICES[uId] = arrDevices.filter((obj) => {
           if (obj.ws === ws) {
-            // RedisClient.hDel(uId, obj.deviceId);
+            RedisClient.sRem(uId, {
+              [obj.deviceId]: ip.address() + process.env.REDIS_HOSTNAME,
+            });
             return false;
           }
           return true;

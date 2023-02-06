@@ -1,3 +1,5 @@
+import OfflineQueue from "../models/offline_queue.js";
+
 const ACTIVE = {
   SESSIONS: new Map(),
   DEVICES: {},
@@ -16,4 +18,9 @@ function getDeviceId(ws, userId) {
   return null;
 }
 
-export { ACTIVE, getSessionUserId, getDeviceId };
+function saveRequestInOfflineQueue(user_id, request) {
+  const record = new OfflineQueue({ user_id, request });
+  record.save();
+}
+
+export { ACTIVE, getSessionUserId, getDeviceId, saveRequestInOfflineQueue };
