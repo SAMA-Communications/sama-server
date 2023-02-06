@@ -13,6 +13,10 @@ import { ACTIVE, getDeviceId, getSessionUserId } from "../store/session.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { StringDecoder } from "string_decoder";
 import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
+import {
+  clusterClientsWS,
+  clusterNodesWS,
+} from "../cluster/cluster_manager.js";
 const decoder = new StringDecoder("utf8");
 
 const jsonRequest = {
@@ -63,13 +67,6 @@ async function deliverToUser(currentWS, userId, request) {
   wsRecipient.forEach((data) => {
     if (data.ws !== currentWS) {
       data.ws.send(JSON.stringify({ message: request }));
-      // data.ws.publish(
-      //   "broadcast",
-      //   JSON.stringify({
-      //     user_id: participants.user_id,
-      //     message: request,
-      //   })
-      // );
     }
   });
 }
@@ -86,8 +83,29 @@ async function deliverToUserOrUsers(dParams, message, currentWS) {
 
     participants.forEach(async (participants) => {
       const uId = participants.user_id;
-
-      await deliverToUser(currentWS, uId, message);
+      const userDevices = await RedisClient.sMembers(uId);
+      if (!userDevices?.length) {
+        const request = new OfflineQueue({ user_id: uId, request: message });
+        await request.save();
+        return;
+      }
+      if (uId.toString() === getSessionUserId(currentWS)) {
+        return;
+      }
+      const deviceId = getDeviceId(currentWS, getSessionUserId(currentWS));
+      userDevices.forEach(async (data) => {
+        if (data === JSON.stringify({ [deviceId]: ip.address() })) {
+          return;
+        }
+        const d = JSON.parse(data);
+        const nodeIp = d[Object.keys(d)[0]];
+        if (nodeIp === ip.address()) {
+          await deliverToUser(currentWS, uId, message);
+        } else {
+          const deliveredUserWs = clusterNodesWS[nodeIp]?.ws;
+          deliveredUserWs.send(JSON.stringify({ message }));
+        }
+      });
     });
   }
 }
@@ -151,6 +169,7 @@ export default function routes(app, wsOptions) {
         "[open]",
         `IP: ${Buffer.from(ws.getRemoteAddressAsText()).toString()}`
       );
+      clusterClientsWS["ws"] = ws;
     },
 
     close: async (ws, code, message) => {

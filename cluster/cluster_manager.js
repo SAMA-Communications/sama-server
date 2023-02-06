@@ -3,18 +3,18 @@ import ip from "ip";
 import { StringDecoder } from "string_decoder";
 const decoder = new StringDecoder("utf8");
 
-const clusterClientsWs = {};
+const clusterClientsWS = {};
 const clusterNodesWS = {};
 
 async function createTransitionSocket(url) {
-  if (clusterClientsWs[url] || !url) {
+  if (clusterNodesWS[url] || !url) {
     return;
   }
 
   const ws = new WebSocket(url);
 
   ws.on("open", () => {
-    console.log("[SubSocket] Open");
+    console.log("[SubSocket] Open", `url ${ws.url}`);
     //deliver info about this node to other node
     ws.send(
       JSON.stringify({
@@ -33,13 +33,11 @@ async function createTransitionSocket(url) {
     if (json.node) {
       const nodeInfo = json.node;
       clusterNodesWS[nodeInfo.ip] = { ws, hostname: nodeInfo.hostname };
-      delete clusterClientsWs[ws.url];
       return;
     }
   });
 
-  clusterClientsWs[url] = ws;
-  console.log("[SubSocket] Create connect with", url);
+  clusterNodesWS[url] = { connect: "success" };
 }
 
 export default function clusterRoutes(app, wsOptions) {
@@ -70,10 +68,9 @@ export default function clusterRoutes(app, wsOptions) {
         return;
       }
 
-      const responseData = await processJsonMessageOrError(ws, json);
-      ws.send(JSON.stringify(responseData));
+      clusterClientsWS?.ws.send(JSON.stringify(json));
     },
   });
 }
 
-export { clusterClientsWs, clusterNodesWS, createTransitionSocket };
+export { clusterClientsWS, clusterNodesWS, createTransitionSocket };
