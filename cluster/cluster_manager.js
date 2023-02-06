@@ -1,4 +1,7 @@
 import WebSocket from "ws";
+import ip from "ip";
+import { StringDecoder } from "string_decoder";
+const decoder = new StringDecoder("utf8");
 
 const clusterClientsWs = {};
 const clusterNodesWS = {};
@@ -12,11 +15,25 @@ async function createTransitionSocket(url) {
 
   ws.on("open", () => {
     console.log("[SubSocket] Open");
+    //deliver info about this node to other node
+    ws.send(
+      JSON.stringify({
+        node: {
+          hostname: process.env.REDIS_HOSTNAME,
+          ip: ip.address() + process.env.REDIS_HOSTNAME,
+        },
+      })
+    );
   });
 
   ws.on("message", (data) => {
     console.log("received: %s", data);
-    //send to main ws
+
+    if (data.node) {
+      const nodeInfo = json.node;
+      clusterNodesWS[nodeInfo.ip] = { ws, hostname: nodeInfo.hostname };
+      return;
+    }
   });
 
   clusterClientsWs[url] = ws;
@@ -32,7 +49,6 @@ export default function clusterRoutes(app, wsOptions) {
         "[ClusterWS][open]",
         `IP: ${Buffer.from(ws.getRemoteAddressAsText()).toString()}`
       );
-      clusterNodesWS[Buffer.from(ws.getRemoteAddressAsText()).toString()] = ws;
     },
 
     close: async (ws, code, message) => {
@@ -44,6 +60,13 @@ export default function clusterRoutes(app, wsOptions) {
 
     message: async (ws, message, isBinary) => {
       const json = JSON.parse(decoder.write(Buffer.from(message)));
+      console.log(json);
+
+      if (json.node) {
+        const nodeInfo = json.node;
+        clusterNodesWS[nodeInfo.ip] = { ws, hostname: nodeInfo.hostname };
+        return;
+      }
 
       const responseData = await processJsonMessageOrError(ws, json);
       ws.send(JSON.stringify(responseData));
