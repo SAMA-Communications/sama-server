@@ -28,7 +28,7 @@ async function deliverMessageToUser(userId, request) {
 }
 
 async function createToNodeSocket(url) {
-  if (clusterNodesWS[url]) {
+  if (clusterNodesWS[url.split(":")[1].slice(2)]) {
     return;
   }
 
@@ -56,7 +56,10 @@ async function createToNodeSocket(url) {
     await deliverMessageToUser(json.userId, json.message);
   });
 
-  clusterNodesWS[url] = { connect: "success" };
+  ws.on("close", async () => {
+    console.log("[SubSocket] Close connect", ws.url);
+    delete clusterNodesWS[clusterNodesWS[ws.url.split(":")[1].slice(2)]];
+  });
 }
 
 function clusterRoutes(app, wsOptions) {
@@ -71,7 +74,15 @@ function clusterRoutes(app, wsOptions) {
     },
 
     close: async (ws, code, message) => {
-      console.log("[close]", `WebSokect connect down`);
+      console.log("[close] WebSokect connect down");
+      for (const nodeIp in clusterNodesWS) {
+        if (clusterNodesWS[nodeIp] !== ws) {
+          continue;
+        }
+
+        delete clusterNodesWS[nodeIp];
+        return;
+      }
     },
 
     message: async (ws, message, isBinary) => {
