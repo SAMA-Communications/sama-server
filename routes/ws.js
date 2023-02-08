@@ -99,19 +99,16 @@ async function deliverToUserOrUsers(dParams, message, currentWS) {
           [deviceId]: ip.address() + process.env.REDIS_HOSTNAME,
         })
       ) {
-        //its this device
         return;
       }
 
       const nodeInfo = JSON.parse(data);
       const nodeIp = nodeInfo[Object.keys(nodeInfo)[0]];
       if (nodeIp === ip.address()) {
-        //this node
         // ПРобелма з доставкою на одну й ту саму ноду, якщо на ні йдва користувача
         await deliverToUserOnThisNode(uId, message, currentWS);
       } else {
-        //other node
-        const recipientWS = clusterNodesWS[nodeIp]?.ws;
+        const recipientWS = clusterNodesWS[nodeIp];
         if (!recipientWS) {
           saveRequestInOfflineQueue(uId, message);
           return;

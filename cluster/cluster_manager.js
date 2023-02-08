@@ -10,9 +10,6 @@ async function shareCurrentNodeInfo(ws) {
   ws.send(
     JSON.stringify({
       node_info: {
-        //TODO: replace this line
-        // hostname: process.env.DEVICE_HOSTNAME,
-        hostname: process.env.REDIS_HOSTNAME,
         ip: ip.address() + process.env.REDIS_HOSTNAME,
       },
     })
@@ -46,11 +43,10 @@ async function createToNodeSocket(url) {
 
     if (json.node_info) {
       const nodeInfo = json.node_info;
-      clusterNodesWS[nodeInfo.ip] = { ws, hostname: nodeInfo.hostname };
+      clusterNodesWS[nodeInfo.ip] = ws;
       return;
     }
 
-    //TODO: function deliverTo... || similar 1
     const { userId, message: request } = json;
     await deliverMessageToUser(userId, request);
   });
@@ -67,15 +63,6 @@ function clusterRoutes(app, wsOptions) {
         "[ClusterWS][open]",
         `IP: ${Buffer.from(ws.getRemoteAddressAsText()).toString()}`
       );
-      console.log("ws: ", ws);
-      console.log(
-        "getRemoteAddressAsText: ",
-        Buffer.from(ws.getRemoteAddressAsText()).toString()
-      );
-      console.log(
-        "getRemoteAddress: ",
-        Buffer.from(ws.getRemoteAddress()).toString()
-      );
     },
 
     close: async (ws, code, message) => {
@@ -86,13 +73,12 @@ function clusterRoutes(app, wsOptions) {
       const json = JSON.parse(decoder.write(Buffer.from(message)));
       if (json.node_info) {
         const nodeInfo = json.node_info;
-        clusterNodesWS[nodeInfo.ip] = { ws, hostname: nodeInfo.hostname };
+        clusterNodesWS[nodeInfo.ip] = ws;
         await shareCurrentNodeInfo(ws);
 
         return;
       }
 
-      //TODO: function deliverTo... || similar 1
       const { userId, message: request } = json;
       await deliverMessageToUser(userId, request);
     },
