@@ -2,6 +2,7 @@ import WebSocket from "ws";
 import ip from "ip";
 import { StringDecoder } from "string_decoder";
 import { saveRequestInOfflineQueue } from "../store/offline_queue.js";
+import { deliverToUserOnThisNode } from "../routes/ws.js";
 const decoder = new StringDecoder("utf8");
 
 const clusterNodesWS = {};
@@ -10,6 +11,7 @@ async function shareCurrentNodeInfo(ws) {
   ws.send(
     JSON.stringify({
       node_info: {
+        //TODO: remove "process.env.REDIS_HOSTNAME"
         ip: ip.address() + process.env.REDIS_HOSTNAME,
       },
     })
@@ -26,8 +28,12 @@ async function deliverMessageToUser(userId, request) {
 }
 
 async function createToNodeSocket(url) {
-  if (clusterNodesWS[url] || !url) {
+  if (clusterNodesWS[url]) {
     return;
+  }
+
+  if (!url) {
+    throw "Can't create To Node Socket w/o url";
   }
 
   const ws = new WebSocket(url);
@@ -47,8 +53,7 @@ async function createToNodeSocket(url) {
       return;
     }
 
-    const { userId, message: request } = json;
-    await deliverMessageToUser(userId, request);
+    await deliverMessageToUser(json.userId, json.message);
   });
 
   clusterNodesWS[url] = { connect: "success" };
@@ -79,8 +84,7 @@ function clusterRoutes(app, wsOptions) {
         return;
       }
 
-      const { userId, message: request } = json;
-      await deliverMessageToUser(userId, request);
+      await deliverMessageToUser(json.userId, json.message);
     },
   });
 }

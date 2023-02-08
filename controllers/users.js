@@ -152,8 +152,8 @@ export default class UsersController {
       });
     }
 
-    //TODO: remove "process.env.REDIS_HOSTNAME"
     await RedisManager.sAdd(userId, {
+      //TODO: remove "process.env.REDIS_HOSTNAME"
       [deviceId]: ip.address() + process.env.REDIS_HOSTNAME,
     });
 
@@ -226,8 +226,8 @@ export default class UsersController {
       });
       userToken.delete();
 
-      //TODO: remove "process.env.REDIS_HOSTNAME"
       await RedisManager.sRem(userId, {
+        //TODO: remove "process.env.REDIS_HOSTNAME"
         [deviceId]: ip.address() + process.env.REDIS_HOSTNAME,
       });
 
