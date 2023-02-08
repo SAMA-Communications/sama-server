@@ -8,16 +8,12 @@ import UsersBlockController from "../controllers/users_block.js";
 import UsersController from "../controllers/users.js";
 import RedisClient from "../lib/redis.js";
 import ip from "ip";
-import {
-  ACTIVE,
-  getDeviceId,
-  getSessionUserId,
-  saveRequestInOfflineQueue,
-} from "../store/session.js";
+import { ACTIVE, getDeviceId, getSessionUserId } from "../store/session.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { StringDecoder } from "string_decoder";
 import { clusterNodesWS } from "../cluster/cluster_manager.js";
 import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
+import { saveRequestInOfflineQueue } from "../store/offline_queue.js";
 const decoder = new StringDecoder("utf8");
 
 const jsonRequest = {
@@ -111,6 +107,7 @@ async function deliverToUserOrUsers(dParams, message, currentWS) {
       const nodeIp = nodeInfo[Object.keys(nodeInfo)[0]];
       if (nodeIp === ip.address()) {
         //this node
+        // ПРобелма з доставкою на одну й ту саму ноду, якщо на ні йдва користувача
         await deliverToUserOnThisNode(uId, message, currentWS);
       } else {
         //other node

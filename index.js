@@ -2,7 +2,7 @@
 import uWS from "uWebSockets.js";
 
 import { default as buildWSRoutes } from "./routes/ws.js";
-import { default as buildClusterWSRoutes } from "./cluster/cluster_manager.js";
+import { clusterRoutes as buildClusterWSRoutes } from "./cluster/cluster_manager.js";
 
 // get MongoDB driver connection
 import { connectToDB } from "./lib/db.js";
