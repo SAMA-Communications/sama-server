@@ -31,9 +31,8 @@ async function createToNodeSocket(ip, port) {
   if (clusterNodesWS[ip]) {
     return;
   }
-  //TODO: replace this two lines
-  // const url = `ws://${ip}:${port}/`
-  const url = `ws://localhost:${port}/`;
+
+  const url = `ws://${ip}:${port}/`;
   if (!url) {
     throw "Can't create To Node Socket w/o url";
   }
