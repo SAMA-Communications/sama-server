@@ -153,8 +153,9 @@ export default class UsersController {
     }
 
     await RedisManager.sAdd(userId, {
-      //TODO: remove "process.env.REDIS_HOSTNAME"
-      [deviceId]: ip.address() + process.env.REDIS_HOSTNAME,
+      [deviceId]: `ws://${ip.address()}:${
+        process.env.CLUSTER_COMMUNICATION_PORT
+      }/`,
     });
 
     return {
@@ -227,8 +228,9 @@ export default class UsersController {
       userToken.delete();
 
       await RedisManager.sRem(userId, {
-        //TODO: remove "process.env.REDIS_HOSTNAME"
-        [deviceId]: ip.address() + process.env.REDIS_HOSTNAME,
+        [deviceId]: `ws://${ip.address()}:${
+          process.env.CLUSTER_COMMUNICATION_PORT
+        }/`,
       });
 
       return { response: { id: requestId, success: true } };

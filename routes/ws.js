@@ -14,6 +14,7 @@ import { StringDecoder } from "string_decoder";
 import { clusterNodesWS } from "../cluster/cluster_manager.js";
 import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
 import { saveRequestInOfflineQueue } from "../store/offline_queue.js";
+import getIpFromWsUrl from "../utils/get_ip_from_ws_url.js";
 const decoder = new StringDecoder("utf8");
 
 const jsonRequest = {
@@ -56,7 +57,6 @@ const jsonRequest = {
 
 async function deliverToUserOnThisNode(userId, message, currentWS) {
   const wsRecipient = ACTIVE.DEVICES[userId];
-  console.log(userId, wsRecipient);
 
   if (!wsRecipient) {
     return;
@@ -94,12 +94,14 @@ async function deliverToUserOrUsers(dParams, message, currentWS) {
 
     userDevices.forEach(async (data) => {
       const nodeInfo = JSON.parse(data);
-      const nodeIp = nodeInfo[Object.keys(nodeInfo)[0]];
-      //TODO: remove "process.env.REDIS_HOSTNAME"
-      if (nodeIp === ip.address() + process.env.REDIS_HOSTNAME) {
+      const nodeUrl = nodeInfo[Object.keys(nodeInfo)[0]];
+      const curentNodeUrl = `ws://${ip.address()}:${
+        process.env.CLUSTER_COMMUNICATION_PORT
+      }/`;
+      if (nodeUrl === curentNodeUrl) {
         await deliverToUserOnThisNode(uId, message, currentWS);
       } else {
-        const recipientWS = clusterNodesWS[nodeIp];
+        const recipientWS = clusterNodesWS[getIpFromWsUrl(nodeUrl)];
         if (!recipientWS) {
           saveRequestInOfflineQueue(uId, message);
           return;
