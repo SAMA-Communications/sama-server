@@ -4,6 +4,7 @@ import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import ConversationRepository from "../repositories/conversation_repository.js";
 import Message from "../models/message.js";
+import ip from "ip";
 import MessageStatus from "../models/message_status.js";
 import SessionController from "../repositories/session_repository.js";
 import groupBy from "../utils/groupBy.js";
@@ -23,11 +24,13 @@ import {
 } from "../store/in_memory.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
-import { ObjectId } from "mongodb";
-import { deliverToUserOnThisNode, deliverToUserOrUsers } from "../routes/ws.js";
-import { ACTIVE } from "../store/session.js";
-import { slice } from "../utils/req_res_utils.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
+import { ObjectId } from "mongodb";
+import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
+import { clusterNodesWS } from "../cluster/cluster_manager.js";
+import { deliverToUserOnThisNode, deliverToUserOrUsers } from "../routes/ws.js";
+import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
+import { slice } from "../utils/req_res_utils.js";
 
 export default class MessagesController {
   constructor() {
@@ -230,23 +233,43 @@ export default class MessagesController {
 
   async deliverStatusToUsers(midsByUId, cid, currentWS) {
     const participantsIds = Object.keys(midsByUId);
-    participantsIds.forEach((uId) => {
-      const wsRecipient = ACTIVE.DEVICES[uId];
-
-      if (wsRecipient) {
-        wsRecipient.forEach((data) => {
-          if (data.ws !== currentWS) {
-            const message = {
-              message_read: {
-                cid: ObjectId(cid),
-                ids: midsByUId[uId].map((el) => el._id),
-                from: ObjectId(uId),
-              },
-            };
-            data.ws.send(JSON.stringify({ message }));
-          }
-        });
+    participantsIds.forEach(async (uId) => {
+      const userDevices = await SessionController.getUserNodeConnections(uId);
+      if (!userDevices?.length) {
+        return;
       }
+
+      const message = {
+        message_read: {
+          cid: ObjectId(cid),
+          ids: midsByUId[uId].map((el) => el._id),
+          from: ObjectId(uId),
+        },
+      };
+
+      userDevices.forEach(async (data) => {
+        const nodeInfo = JSON.parse(data);
+        const nodeUrl = nodeInfo[Object.keys(nodeInfo)[0]];
+        const curentNodeUrl = buildWsEndpoint(
+          ip.address(),
+          process.env.CLUSTER_COMMUNICATION_PORT
+        );
+
+        if (nodeUrl === curentNodeUrl) {
+          await deliverToUserOnThisNode(uId, message, currentWS);
+        } else {
+          const recipientWS = clusterNodesWS[getIpFromWsUrl(nodeUrl)];
+          if (!recipientWS) {
+            return;
+          }
+
+          try {
+            recipientWS.send(JSON.stringify({ userId: uId, message }));
+          } catch (err) {
+            console.log(err);
+          }
+        }
+      });
     });
   }
 

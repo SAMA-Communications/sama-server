@@ -23,7 +23,8 @@ export default class LastActivitiesController {
     }
     ACTIVITY.SUBSCRIBERS[uId][currentUId] = true;
 
-    if (!!ACTIVE.DEVICES[uId]) {
+    const activeSessions = await SessionController.getUserNodeConnections(uId);
+    if (activeSessions.length) {
       obj[uId] = "online";
     } else {
       const uLastActivity = await User.findOne({ _id: uId });
@@ -61,8 +62,8 @@ export default class LastActivitiesController {
       "_id",
       "recent_activity",
     ]);
-
-    uLastActivities.forEach((u) => {
+    // TODO: in future need to update with redis store
+    uLastActivities.forEach(async (u) => {
       const uId = u._id.toString();
       obj[uId] = !!ACTIVE.DEVICES[uId] ? "online" : u.recent_activity;
     });
