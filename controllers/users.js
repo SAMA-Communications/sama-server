@@ -2,7 +2,7 @@ import BlockListRepository from "../repositories/blocklist_repository.js";
 import BlockedUser from "../models/blocked_user.js";
 import LastActivityiesController from "./activities.js";
 import OfflineQueue from "../models/offline_queue.js";
-import RedisManager from "../lib/redis.js";
+import SessionController from "../repositories/session_repository.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
 import ip from "ip";
@@ -11,7 +11,7 @@ import validate, {
   validateDeviceId,
   validateIsValidUserPassword,
 } from "../lib/validation.js";
-import { ACTIVE, getDeviceId, getSessionUserId } from "../store/session.js";
+import { ACTIVE } from "../store/session.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
@@ -153,12 +153,12 @@ export default class UsersController {
       });
     }
 
-    await RedisManager.sAdd(userId, {
-      [deviceId]: buildWsEndpoint(
-        ip.address(),
-        process.env.CLUSTER_COMMUNICATION_PORT
-      ),
-    });
+    await SessionController.storeUserNodeData(
+      userId,
+      deviceId,
+      ip.address(),
+      process.env.CLUSTER_COMMUNICATION_PORT
+    );
 
     return {
       response: { id: requestId, user: user.visibleParams(), token: jwtToken },
@@ -210,7 +210,7 @@ export default class UsersController {
     const currentUserSession = ACTIVE.SESSIONS.get(ws);
     const userId = currentUserSession.user_id;
 
-    const deviceId = getDeviceId(ws, userId);
+    const deviceId = SessionController.getDeviceId(ws, userId);
     if (currentUserSession) {
       await maybeUpdateAndSendUserActivity(ws, { uId: userId, rId: requestId });
 
@@ -229,12 +229,13 @@ export default class UsersController {
       });
       userToken.delete();
 
-      await RedisManager.sRem(userId, {
-        [deviceId]: buildWsEndpoint(
-          ip.address(),
-          process.env.CLUSTER_COMMUNICATION_PORT
-        ),
-      });
+      await SessionController.removeUserNodeData(
+        userId,
+        deviceId,
+        buildWsEndpoint,
+        ip.address(),
+        process.env.CLUSTER_COMMUNICATION_PORT
+      );
 
       return { response: { id: requestId, success: true } };
     } else {
@@ -247,7 +248,7 @@ export default class UsersController {
   async delete(ws, data) {
     const requestId = data.request.id;
 
-    const userId = getSessionUserId(ws);
+    const userId = SessionController.getSessionUserId(ws);
     if (!userId) {
       throw new Error(ERROR_STATUES.FORBIDDEN.message, {
         cause: ERROR_STATUES.FORBIDDEN,
@@ -260,7 +261,7 @@ export default class UsersController {
 
     if (ACTIVE.SESSIONS.get(ws)) {
       delete ACTIVE.DEVICES[userId];
-      await RedisManager.del(userId);
+      await SessionController.clearUserNodeData(userId);
       ACTIVE.SESSIONS.delete(ws);
     }
 
@@ -288,7 +289,10 @@ export default class UsersController {
     const query = {
       login: { $regex: `^${requestParam.login}.*` },
       _id: {
-        $nin: [getSessionUserId(ws), ...requestParam.ignore_ids],
+        $nin: [
+          SessionController.getSessionUserId(ws),
+          ...requestParam.ignore_ids,
+        ],
       },
     };
 

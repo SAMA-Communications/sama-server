@@ -1,6 +1,7 @@
 import User from "../models/user.js";
+import SessionController from "../repositories/session_repository.js";
 import validate, { validateIsUserId } from "../lib/validation.js";
-import { ACTIVE, getSessionUserId } from "../store/session.js";
+import { ACTIVE } from "../store/session.js";
 import { ACTIVITY } from "../store/activity.js";
 
 export default class LastActivitiesController {
@@ -9,7 +10,7 @@ export default class LastActivitiesController {
     const uId = data.request.user_last_activity_subscribe.id;
     await validate(ws, { uId }, [validateIsUserId]);
 
-    const currentUId = getSessionUserId(ws);
+    const currentUId = SessionController.getSessionUserId(ws);
     const obj = {};
 
     if (ACTIVITY.SUBSCRIBED_TO[currentUId]) {
@@ -34,7 +35,7 @@ export default class LastActivitiesController {
 
   async statusUnsubscribe(ws, data) {
     const requestId = data.request.id;
-    const currentUId = getSessionUserId(ws);
+    const currentUId = SessionController.getSessionUserId(ws);
 
     const oldTrackerUserId = ACTIVITY.SUBSCRIBED_TO[currentUId];
     const oldUserSubscribers = ACTIVITY.SUBSCRIBERS[oldTrackerUserId];

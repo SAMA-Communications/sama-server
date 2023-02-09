@@ -1,3 +1,4 @@
+import SessionController from "../repositories/session_repository.js";
 import Status from "../models/status.js";
 import validate, {
   validateStatusConversationType,
@@ -7,7 +8,6 @@ import validate, {
 } from "../lib/validation.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { deliverToUserOrUsers } from "../routes/ws.js";
-import { getSessionUserId } from "../store/session.js";
 import { slice } from "../utils/req_res_utils.js";
 
 export default class StatusesController {
@@ -22,7 +22,7 @@ export default class StatusesController {
       validateIsCID,
       validateIsConversationByCID,
     ]);
-    statusParams.from = getSessionUserId(ws);
+    statusParams.from = SessionController.getSessionUserId(ws);
 
     const status = new Status(statusParams);
     const currentTs = Math.round(Date.now() / 1000);

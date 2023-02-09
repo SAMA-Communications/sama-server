@@ -3,12 +3,12 @@ import ConversationsController from "../controllers/conversations.js";
 import FilesController from "../controllers/files.js";
 import LastActivityiesController from "../controllers/activities.js";
 import MessagesController from "../controllers/messages.js";
-import RedisClient from "../lib/redis.js";
+import SessionController from "../repositories/session_repository.js";
 import StatusesController from "../controllers/status.js";
 import UsersBlockController from "../controllers/users_block.js";
 import UsersController from "../controllers/users.js";
 import ip from "ip";
-import { ACTIVE, getSessionUserId } from "../store/session.js";
+import { ACTIVE } from "../store/session.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { StringDecoder } from "string_decoder";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
@@ -84,11 +84,11 @@ async function deliverToUserOrUsers(dParams, message, currentWS) {
 
   participants.forEach(async (participants) => {
     const uId = participants.user_id;
-    if (uId.toString() === getSessionUserId(currentWS)) {
+    if (uId.toString() === SessionController.getSessionUserId(currentWS)) {
       return;
     }
 
-    const userDevices = await RedisClient.sMembers(uId);
+    const userDevices = await SessionController.getUserNodeConnections(uId);
     if (!userDevices?.length) {
       saveRequestInOfflineQueue(uId, message);
       return;
@@ -184,18 +184,18 @@ export default function routes(app, wsOptions) {
 
     close: async (ws, code, message) => {
       console.log("[close]", `WebSokect connect down`);
-      const uId = getSessionUserId(ws);
+      const uId = SessionController.getSessionUserId(ws);
       const arrDevices = ACTIVE.DEVICES[uId];
 
       if (arrDevices) {
         ACTIVE.DEVICES[uId] = arrDevices.filter((obj) => {
           if (obj.ws === ws) {
-            RedisClient.sRem(uId, {
-              [obj.deviceId]: buildWsEndpoint(
-                ip.address(),
-                process.env.CLUSTER_COMMUNICATION_PORT
-              ),
-            });
+            SessionController.removeUserNodeData(
+              uId,
+              obj.deviceId,
+              ip.address(),
+              process.env.CLUSTER_COMMUNICATION_PORT
+            );
             return false;
           }
           return true;
