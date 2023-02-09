@@ -1,6 +1,7 @@
 import WebSocket from "ws";
 import ip from "ip";
 import { StringDecoder } from "string_decoder";
+import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
 import { deliverToUserOnThisNode } from "../routes/ws.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
 import { saveRequestInOfflineQueue } from "../store/offline_queue.js";
@@ -32,39 +33,39 @@ async function createToNodeSocket(ip, port) {
     return;
   }
 
-  const url = `ws://${ip}:${port}/`;
+  const url = buildWsEndpoint(ip, port);
   if (!url) {
     throw "Can't create To Node Socket w/o url";
   }
 
-  try {
-    const ws = new WebSocket(url);
+  const ws = new WebSocket(url);
 
-    ws.on("open", async () => {
-      console.log("[SubSocket] Open", `url ${ws.url}`);
-      await shareCurrentNodeInfo(ws);
-    });
+  ws.on("error", async () => {
+    console.error("[SubSocket.error] Socket offline");
+  });
 
-    ws.on("message", async (data) => {
-      const json = JSON.parse(decoder.write(Buffer.from(data)));
-      console.log("[SubSocket.message]", json);
+  ws.on("open", async () => {
+    console.log("[SubSocket] Open", `url ${ws.url}`);
+    await shareCurrentNodeInfo(ws);
+  });
 
-      if (json.node_info) {
-        const nodeInfo = json.node_info;
-        clusterNodesWS[nodeInfo.ip] = ws;
-        return;
-      }
+  ws.on("message", async (data) => {
+    const json = JSON.parse(decoder.write(Buffer.from(data)));
+    console.log("[SubSocket.message]", json);
 
-      await deliverMessageToUser(json.userId, json.message);
-    });
+    if (json.node_info) {
+      const nodeInfo = json.node_info;
+      clusterNodesWS[nodeInfo.ip] = ws;
+      return;
+    }
 
-    ws.on("close", async () => {
-      console.log("[SubSocket] Close connect", ws.url);
-      delete clusterNodesWS[getIpFromWsUrl(ws.url)];
-    });
-  } catch (err) {
-    console.log(err);
-  }
+    await deliverMessageToUser(json.userId, json.message);
+  });
+
+  ws.on("close", async () => {
+    console.log("[SubSocket] Close connect", ws.url);
+    delete clusterNodesWS[getIpFromWsUrl(ws.url)];
+  });
 }
 
 function clusterRoutes(app, wsOptions) {

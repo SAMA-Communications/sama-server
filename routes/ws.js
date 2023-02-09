@@ -60,6 +60,7 @@ async function deliverToUserOnThisNode(userId, message, currentWS) {
   const wsRecipient = ACTIVE.DEVICES[userId];
 
   if (!wsRecipient) {
+    saveRequestInOfflineQueue(userId, message);
     return;
   }
 
