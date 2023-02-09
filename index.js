@@ -23,6 +23,10 @@ if (process.env.STORAGE_DRIVER === "minio") {
 }
 
 const APP_OPTIONS = {};
+const SSL_APP_OPTIONS = {
+  key_file_name: process.env.SSL_KEY_FILE_NAME,
+  cert_file_name: process.env.SSL_CERT_FILE_NAME,
+};
 
 const APP_LISTEN_OPTIONS = {
   LIBUS_LISTEN_EXCLUSIVE_PORT: 1,
@@ -35,7 +39,16 @@ const WS_OPTIONS = {
   maxPayloadLength: 16 * 1024 * 1024,
 };
 
-const CLIENT_SOCKET = uWS.App(APP_OPTIONS);
+let CLIENT_SOCKET = null;
+let CLUSTER_SOCKET = null;
+
+if (SSL_APP_OPTIONS.key_file_name && SSL_APP_OPTIONS.cert_file_name) {
+  CLIENT_SOCKET = uWS.SSLApp(SSL_APP_OPTIONS);
+  CLUSTER_SOCKET = uWS.SSLApp(SSL_APP_OPTIONS);
+} else {
+  CLIENT_SOCKET = uWS.App(APP_OPTIONS);
+  CLUSTER_SOCKET = uWS.App(APP_OPTIONS);
+}
 
 buildWSRoutes(CLIENT_SOCKET, WS_OPTIONS);
 
@@ -48,8 +61,6 @@ CLIENT_SOCKET.listen(
     }
   }
 );
-
-const CLUSTER_SOCKET = uWS.App(APP_OPTIONS);
 
 buildClusterWSRoutes(CLUSTER_SOCKET, WS_OPTIONS);
 

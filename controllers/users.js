@@ -2,9 +2,9 @@ import BlockListRepository from "../repositories/blocklist_repository.js";
 import BlockedUser from "../models/blocked_user.js";
 import LastActivityiesController from "./activities.js";
 import OfflineQueue from "../models/offline_queue.js";
+import RedisManager from "../lib/redis.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
-import RedisManager from "../lib/redis.js";
 import ip from "ip";
 import jwt from "jsonwebtoken";
 import validate, {
@@ -15,6 +15,7 @@ import { ACTIVE, getDeviceId, getSessionUserId } from "../store/session.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
+import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
 import { inMemoryBlockList } from "../store/in_memory.js";
 import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
 import { slice } from "../utils/req_res_utils.js";
@@ -153,9 +154,10 @@ export default class UsersController {
     }
 
     await RedisManager.sAdd(userId, {
-      [deviceId]: `ws://${ip.address()}:${
+      [deviceId]: buildWsEndpoint(
+        ip.address(),
         process.env.CLUSTER_COMMUNICATION_PORT
-      }/`,
+      ),
     });
 
     return {
@@ -228,9 +230,10 @@ export default class UsersController {
       userToken.delete();
 
       await RedisManager.sRem(userId, {
-        [deviceId]: `ws://${ip.address()}:${
+        [deviceId]: buildWsEndpoint(
+          ip.address(),
           process.env.CLUSTER_COMMUNICATION_PORT
-        }/`,
+        ),
       });
 
       return { response: { id: requestId, success: true } };

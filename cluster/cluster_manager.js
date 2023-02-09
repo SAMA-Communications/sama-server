@@ -1,9 +1,9 @@
 import WebSocket from "ws";
 import ip from "ip";
-import getIpFromWsUrl from "../utils/get_ip_from_ws_url.js";
 import { StringDecoder } from "string_decoder";
-import { saveRequestInOfflineQueue } from "../store/offline_queue.js";
 import { deliverToUserOnThisNode } from "../routes/ws.js";
+import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
+import { saveRequestInOfflineQueue } from "../store/offline_queue.js";
 const decoder = new StringDecoder("utf8");
 
 const clusterNodesWS = {};
@@ -22,7 +22,7 @@ async function deliverMessageToUser(userId, request) {
   try {
     deliverToUserOnThisNode(userId, request, null);
   } catch (err) {
-    console.log(err);
+    console.error("[cluster_manager][deliverMessageToUser] error", err);
     saveRequestInOfflineQueue(userId, request);
   }
 }

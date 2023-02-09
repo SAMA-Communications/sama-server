@@ -1,6 +1,1 @@
-export default function getIpFromWsUrl(wsUrl) {
-  if (!wsUrl) {
-    return null;
-  }
-  return wsUrl.split(":")[1].slice(2);
-}
+export const getIpFromWsUrl = (wsUrl) => wsUrl.split(":")[1].slice(2);
