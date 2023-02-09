@@ -191,7 +191,10 @@ export default function routes(app, wsOptions) {
         ACTIVE.DEVICES[uId] = arrDevices.filter((obj) => {
           if (obj.ws === ws) {
             RedisClient.sRem(uId, {
-              [obj.deviceId]: ip.address() + process.env.REDIS_HOSTNAME,
+              [obj.deviceId]: buildWsEndpoint(
+                ip.address(),
+                process.env.CLUSTER_COMMUNICATION_PORT
+              ),
             });
             return false;
           }
