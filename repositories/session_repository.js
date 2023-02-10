@@ -44,6 +44,4 @@ class SessionRepository {
   }
 }
 
-const SessionController = new SessionRepository();
-
-export default SessionController;
+export default new SessionRepository();

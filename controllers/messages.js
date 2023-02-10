@@ -6,7 +6,6 @@ import ConversationRepository from "../repositories/conversation_repository.js";
 import Message from "../models/message.js";
 import ip from "ip";
 import MessageStatus from "../models/message_status.js";
-import SessionController from "../repositories/session_repository.js";
 import groupBy from "../utils/groupBy.js";
 import validate, {
   validateIsConversation,
@@ -28,6 +27,7 @@ import { ERROR_STATUES } from "../constants/http_constants.js";
 import { ObjectId } from "mongodb";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
 import { clusterNodesWS } from "../cluster/cluster_manager.js";
+import { default as SessionRepository } from "../repositories/session_repository.js";
 import { deliverToUserOnThisNode, deliverToUserOrUsers } from "../routes/ws.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
 import { slice } from "../utils/req_res_utils.js";
@@ -55,7 +55,7 @@ export default class MessagesController {
     const messageId = data.message.id;
     await validate(ws, { id: messageId }, [validateMessageId]);
 
-    const currentUserId = SessionController.getSessionUserId(ws);
+    const currentUserId = SessionRepository.getSessionUserId(ws);
     const conversation = await this.conversationRepository.findById(
       messageParams.cid
     );
@@ -136,13 +136,13 @@ export default class MessagesController {
       message_edit: {
         id: messageId,
         body: messageParams.body,
-        from: ObjectId(SessionController.getSessionUserId(ws)),
+        from: ObjectId(SessionRepository.getSessionUserId(ws)),
       },
     };
     await deliverToUserOrUsers(
       message.params,
       request,
-      SessionController.getSessionUserId(ws)
+      SessionRepository.getSessionUserId(ws)
     );
 
     return { response: { id: requestId, success: true } };
@@ -160,7 +160,7 @@ export default class MessagesController {
 
     const query = {
       cid: cid,
-      deleted_for: { $nin: [SessionController.getSessionUserId(ws)] },
+      deleted_for: { $nin: [SessionRepository.getSessionUserId(ws)] },
     };
     const timeFromUpdate = data.request.message_list.updated_at;
     if (timeFromUpdate && timeFromUpdate.gt) {
@@ -176,7 +176,7 @@ export default class MessagesController {
       response: {
         id: requestId,
         messages: messages.map((msg) => {
-          if (msg.from.toString() === SessionController.getSessionUserId(ws)) {
+          if (msg.from.toString() === SessionRepository.getSessionUserId(ws)) {
             msg["status"] = messagesStatus[msg._id]?.length ? "read" : "sent";
           }
           return msg;
@@ -188,7 +188,7 @@ export default class MessagesController {
   async read(ws, data) {
     const requestId = data.request.id;
     const cid = data.request.message_read.cid;
-    const uId = SessionController.getSessionUserId(ws);
+    const uId = SessionRepository.getSessionUserId(ws);
 
     const query = {
       cid: cid,
@@ -234,7 +234,7 @@ export default class MessagesController {
   async deliverStatusToUsers(midsByUId, cid, currentWS) {
     const participantsIds = Object.keys(midsByUId);
     participantsIds.forEach(async (uId) => {
-      const userDevices = await SessionController.getUserNodeConnections(uId);
+      const userDevices = await SessionRepository.getUserNodeConnections(uId);
       if (!userDevices?.length) {
         return;
       }
@@ -298,7 +298,7 @@ export default class MessagesController {
             cid: conversationId,
             ids: messagesIds,
             type: "all",
-            from: ObjectId(SessionController.getSessionUserId(ws)),
+            from: ObjectId(SessionRepository.getSessionUserId(ws)),
           },
         };
         await deliverToUserOnThisNode(user, request);
@@ -309,7 +309,7 @@ export default class MessagesController {
         { id: { $in: messagesIds } },
         {
           $addToSet: {
-            deleted_for: ObjectId(SessionController.getSessionUserId(ws)),
+            deleted_for: ObjectId(SessionRepository.getSessionUserId(ws)),
           },
         }
       );

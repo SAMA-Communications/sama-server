@@ -2,7 +2,6 @@ import BlockListRepository from "../repositories/blocklist_repository.js";
 import BlockedUser from "../models/blocked_user.js";
 import LastActivityiesController from "./activities.js";
 import OfflineQueue from "../models/offline_queue.js";
-import SessionController from "../repositories/session_repository.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
 import ip from "ip";
@@ -16,6 +15,7 @@ import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
+import { default as SessionRepository } from "../repositories/session_repository.js";
 import { inMemoryBlockList } from "../store/in_memory.js";
 import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
 import { slice } from "../utils/req_res_utils.js";
@@ -153,7 +153,7 @@ export default class UsersController {
       });
     }
 
-    await SessionController.storeUserNodeData(
+    await SessionRepository.storeUserNodeData(
       userId,
       deviceId,
       ip.address(),
@@ -210,7 +210,7 @@ export default class UsersController {
     const currentUserSession = ACTIVE.SESSIONS.get(ws);
     const userId = currentUserSession.user_id;
 
-    const deviceId = SessionController.getDeviceId(ws, userId);
+    const deviceId = SessionRepository.getDeviceId(ws, userId);
     if (currentUserSession) {
       await maybeUpdateAndSendUserActivity(ws, { uId: userId, rId: requestId });
 
@@ -229,10 +229,9 @@ export default class UsersController {
       });
       userToken.delete();
 
-      await SessionController.removeUserNodeData(
+      await SessionRepository.removeUserNodeData(
         userId,
         deviceId,
-        buildWsEndpoint,
         ip.address(),
         process.env.CLUSTER_COMMUNICATION_PORT
       );
@@ -248,7 +247,7 @@ export default class UsersController {
   async delete(ws, data) {
     const requestId = data.request.id;
 
-    const userId = SessionController.getSessionUserId(ws);
+    const userId = SessionRepository.getSessionUserId(ws);
     if (!userId) {
       throw new Error(ERROR_STATUES.FORBIDDEN.message, {
         cause: ERROR_STATUES.FORBIDDEN,
@@ -261,7 +260,7 @@ export default class UsersController {
 
     if (ACTIVE.SESSIONS.get(ws)) {
       delete ACTIVE.DEVICES[userId];
-      await SessionController.clearUserNodeData(userId);
+      await SessionRepository.clearUserNodeData(userId);
       ACTIVE.SESSIONS.delete(ws);
     }
 
@@ -290,7 +289,7 @@ export default class UsersController {
       login: { $regex: `^${requestParam.login}.*` },
       _id: {
         $nin: [
-          SessionController.getSessionUserId(ws),
+          SessionRepository.getSessionUserId(ws),
           ...requestParam.ignore_ids,
         ],
       },
