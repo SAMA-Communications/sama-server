@@ -14,7 +14,6 @@ import { ACTIVE } from "../store/session.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
-import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
 import { default as SessionRepository } from "../repositories/session_repository.js";
 import { inMemoryBlockList } from "../store/in_memory.js";
 import { maybeUpdateAndSendUserActivity } from "../store/activity.js";

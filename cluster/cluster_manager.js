@@ -21,7 +21,7 @@ async function shareCurrentNodeInfo(ws) {
 
 async function deliverMessageToUser(userId, request) {
   try {
-    await DeliveryManager.deliverToUserOnThisNode(userId, request, null);
+    await DeliveryManager.deliverToUserOnThisNode(null, userId, request);
   } catch (err) {
     console.error("[cluster_manager][deliverMessageToUser] error", err);
     saveRequestInOfflineQueue(userId, request);

@@ -4,7 +4,6 @@ import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import ConversationRepository from "../repositories/conversation_repository.js";
 import Message from "../models/message.js";
-import ip from "ip";
 import MessageStatus from "../models/message_status.js";
 import groupBy from "../utils/groupBy.js";
 import validate, {
@@ -105,9 +104,9 @@ export default class MessagesController {
 
     await message.save();
     await DeliveryManager.deliverToUserOrUsers(
+      ws,
       messageParams,
-      message.visibleParams(),
-      ws
+      message.visibleParams()
     );
 
     await this.conversationRepository.updateOne(messageParams.cid, {
@@ -140,11 +139,7 @@ export default class MessagesController {
         from: ObjectId(SessionRepository.getSessionUserId(ws)),
       },
     };
-    await DeliveryManager.deliverToUserOrUsers(
-      message.params,
-      request,
-      SessionRepository.getSessionUserId(ws)
-    );
+    await DeliveryManager.deliverToUserOrUsers(ws, message.params, request);
 
     return { response: { id: requestId, success: true } };
   }
@@ -222,9 +217,9 @@ export default class MessagesController {
       await MessageStatus.insertMany(insertMessages.reverse());
       const unreadMessagesGrouppedByFrom = groupBy(unreadMessages, "from");
       await DeliveryManager.deliverStatusToUsers(
-        unreadMessagesGrouppedByFrom,
+        ws,
         cid,
-        ws
+        unreadMessagesGrouppedByFrom
       );
     }
 
@@ -264,7 +259,12 @@ export default class MessagesController {
             from: ObjectId(SessionRepository.getSessionUserId(ws)),
           },
         };
-        await DeliveryManager.deliverToUserOnThisNode(user, request);
+
+        await DeliveryManager.deliverToUserOrUsers(
+          ws,
+          { cid: conversationId },
+          request
+        );
       }
       await Message.deleteMany({ _id: { $in: messagesIds } });
     } else {

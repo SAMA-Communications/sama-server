@@ -28,10 +28,6 @@ export default class StatusesController {
     const currentTs = Math.round(Date.now() / 1000);
     status.params.t = parseInt(currentTs);
 
-    await DeliveryManager.deliverToUserOrUsers(
-      statusParams,
-      status,
-      statusParams.from
-    );
+    await DeliveryManager.deliverToUserOrUsers(ws, statusParams, status);
   }
 }
