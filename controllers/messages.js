@@ -25,11 +25,8 @@ import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { ObjectId } from "mongodb";
-import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
-import { clusterNodesWS } from "../cluster/cluster_manager.js";
+import { default as DeliveryManager } from "../routes/delivery_manager.js";
 import { default as SessionRepository } from "../repositories/session_repository.js";
-import { deliverToUserOnThisNode, deliverToUserOrUsers } from "../routes/ws.js";
-import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
 import { slice } from "../utils/req_res_utils.js";
 
 export default class MessagesController {
@@ -107,7 +104,11 @@ export default class MessagesController {
     message.params.t = parseInt(currentTs);
 
     await message.save();
-    await deliverToUserOrUsers(messageParams, message.visibleParams(), ws);
+    await DeliveryManager.deliverToUserOrUsers(
+      messageParams,
+      message.visibleParams(),
+      ws
+    );
 
     await this.conversationRepository.updateOne(messageParams.cid, {
       updated_at: message.params.created_at,
@@ -139,7 +140,7 @@ export default class MessagesController {
         from: ObjectId(SessionRepository.getSessionUserId(ws)),
       },
     };
-    await deliverToUserOrUsers(
+    await DeliveryManager.deliverToUserOrUsers(
       message.params,
       request,
       SessionRepository.getSessionUserId(ws)
@@ -220,7 +221,11 @@ export default class MessagesController {
       });
       await MessageStatus.insertMany(insertMessages.reverse());
       const unreadMessagesGrouppedByFrom = groupBy(unreadMessages, "from");
-      await this.deliverStatusToUsers(unreadMessagesGrouppedByFrom, cid, ws);
+      await DeliveryManager.deliverStatusToUsers(
+        unreadMessagesGrouppedByFrom,
+        cid,
+        ws
+      );
     }
 
     return {
@@ -229,48 +234,6 @@ export default class MessagesController {
         success: true,
       },
     };
-  }
-
-  async deliverStatusToUsers(midsByUId, cid, currentWS) {
-    const participantsIds = Object.keys(midsByUId);
-    participantsIds.forEach(async (uId) => {
-      const userDevices = await SessionRepository.getUserNodeConnections(uId);
-      if (!userDevices?.length) {
-        return;
-      }
-
-      const message = {
-        message_read: {
-          cid: ObjectId(cid),
-          ids: midsByUId[uId].map((el) => el._id),
-          from: ObjectId(uId),
-        },
-      };
-
-      userDevices.forEach(async (data) => {
-        const nodeInfo = JSON.parse(data);
-        const nodeUrl = nodeInfo[Object.keys(nodeInfo)[0]];
-        const curentNodeUrl = buildWsEndpoint(
-          ip.address(),
-          process.env.CLUSTER_COMMUNICATION_PORT
-        );
-
-        if (nodeUrl === curentNodeUrl) {
-          await deliverToUserOnThisNode(uId, message, currentWS);
-        } else {
-          const recipientWS = clusterNodesWS[getIpFromWsUrl(nodeUrl)];
-          if (!recipientWS) {
-            return;
-          }
-
-          try {
-            recipientWS.send(JSON.stringify({ userId: uId, message }));
-          } catch (err) {
-            console.log(err);
-          }
-        }
-      });
-    });
   }
 
   async delete(ws, data) {
@@ -301,7 +264,7 @@ export default class MessagesController {
             from: ObjectId(SessionRepository.getSessionUserId(ws)),
           },
         };
-        await deliverToUserOnThisNode(user, request);
+        await DeliveryManager.deliverToUserOnThisNode(user, request);
       }
       await Message.deleteMany({ _id: { $in: messagesIds } });
     } else {

@@ -1,4 +1,3 @@
-import ConversationParticipant from "../models/conversation_participant.js";
 import ConversationsController from "../controllers/conversations.js";
 import FilesController from "../controllers/files.js";
 import LastActivityiesController from "../controllers/activities.js";
@@ -10,12 +9,8 @@ import ip from "ip";
 import { ACTIVE } from "../store/session.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { StringDecoder } from "string_decoder";
-import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
-import { clusterNodesWS } from "../cluster/cluster_manager.js";
 import { default as SessionRepository } from "../repositories/session_repository.js";
-import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
 import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
-import { saveRequestInOfflineQueue } from "../store/offline_queue.js";
 const decoder = new StringDecoder("utf8");
 
 const jsonRequest = {
@@ -55,71 +50,6 @@ const jsonRequest = {
       new ConversationsController().list(ws, json),
   },
 };
-
-async function deliverToUserOnThisNode(userId, message, currentWS) {
-  const wsRecipient = ACTIVE.DEVICES[userId];
-
-  if (!wsRecipient) {
-    saveRequestInOfflineQueue(userId, message);
-    return;
-  }
-
-  wsRecipient.forEach((data) => {
-    data.ws !== currentWS && data.ws.send(JSON.stringify({ message }));
-  });
-}
-
-async function deliverToUserOrUsers(dParams, message, currentWS) {
-  if (!dParams.cid) {
-    return;
-  }
-
-  const participants = await ConversationParticipant.findAll(
-    {
-      conversation_id: dParams.cid,
-    },
-    ["user_id"],
-    100
-  );
-
-  participants.forEach(async (participants) => {
-    const uId = participants.user_id;
-    if (uId.toString() === SessionRepository.getSessionUserId(currentWS)) {
-      return;
-    }
-
-    const userDevices = await SessionRepository.getUserNodeConnections(uId);
-    if (!userDevices?.length) {
-      saveRequestInOfflineQueue(uId, message);
-      return;
-    }
-
-    userDevices.forEach(async (data) => {
-      const nodeInfo = JSON.parse(data);
-      const nodeUrl = nodeInfo[Object.keys(nodeInfo)[0]];
-      const curentNodeUrl = buildWsEndpoint(
-        ip.address(),
-        process.env.CLUSTER_COMMUNICATION_PORT
-      );
-      if (nodeUrl === curentNodeUrl) {
-        await deliverToUserOnThisNode(uId, message, currentWS);
-      } else {
-        const recipientWS = clusterNodesWS[getIpFromWsUrl(nodeUrl)];
-        if (!recipientWS) {
-          saveRequestInOfflineQueue(uId, message);
-          return;
-        }
-
-        try {
-          recipientWS.send(JSON.stringify({ userId: uId, message }));
-        } catch (err) {
-          console.log(err);
-          saveRequestInOfflineQueue(uId, message);
-        }
-      }
-    });
-  });
-}
 
 async function processJsonMessage(ws, json) {
   if (
@@ -164,12 +94,7 @@ async function processJsonMessageOrError(ws, json) {
   return responseData;
 }
 
-export {
-  deliverToUserOnThisNode,
-  deliverToUserOrUsers,
-  processJsonMessage,
-  processJsonMessageOrError,
-};
+export { processJsonMessage, processJsonMessageOrError };
 
 export default function routes(app, wsOptions) {
   app.ws("/*", {

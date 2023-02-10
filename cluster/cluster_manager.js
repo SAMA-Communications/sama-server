@@ -2,7 +2,7 @@ import WebSocket from "ws";
 import ip from "ip";
 import { StringDecoder } from "string_decoder";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
-import { deliverToUserOnThisNode } from "../routes/ws.js";
+import { default as DeliveryManager } from "../routes/delivery_manager.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
 import { saveRequestInOfflineQueue } from "../store/offline_queue.js";
 const decoder = new StringDecoder("utf8");
@@ -21,7 +21,7 @@ async function shareCurrentNodeInfo(ws) {
 
 async function deliverMessageToUser(userId, request) {
   try {
-    deliverToUserOnThisNode(userId, request, null);
+    await DeliveryManager.deliverToUserOnThisNode(userId, request, null);
   } catch (err) {
     console.error("[cluster_manager][deliverMessageToUser] error", err);
     saveRequestInOfflineQueue(userId, request);
