@@ -11,7 +11,7 @@ import {
   sendLogin,
   sendLogout,
 } from "./utils.js";
-import { processJsonMessageOrError } from "../routes/ws.js";
+import { default as PacketProcessor } from "./../routes/delivery_manager.js";
 
 let currentUserToken = "";
 let usersIds = [];
@@ -42,7 +42,7 @@ describe("User EXPECTED requests", async () => {
         cid: currentConversationId,
       },
     };
-    await processJsonMessageOrError(mockedWS, requestData);
+    await PacketProcessor.processJsonMessageOrError(mockedWS, requestData);
 
     console.log("<-- user_1 sent message (private) -->");
     requestData = {
@@ -52,7 +52,7 @@ describe("User EXPECTED requests", async () => {
         to: usersIds[1],
       },
     };
-    await processJsonMessageOrError(mockedWS, requestData);
+    await PacketProcessor.processJsonMessageOrError(mockedWS, requestData);
 
     requestData = {
       message: {
@@ -61,7 +61,7 @@ describe("User EXPECTED requests", async () => {
         to: usersIds[1],
       },
     };
-    await processJsonMessageOrError(mockedWS, requestData);
+    await PacketProcessor.processJsonMessageOrError(mockedWS, requestData);
   });
 
   it("should work #2", async () => {
@@ -74,7 +74,7 @@ describe("User EXPECTED requests", async () => {
         id: "12",
       },
     };
-    await processJsonMessageOrError(mockedWS, requestData);
+    await PacketProcessor.processJsonMessageOrError(mockedWS, requestData);
 
     console.log("<-- user_2 go online -->");
     await sendLogout(mockedWS, currentUserToken);
@@ -90,7 +90,7 @@ describe("User EXPECTED requests", async () => {
         id: "21",
       },
     };
-    await processJsonMessageOrError(mockedWS, requestData);
+    await PacketProcessor.processJsonMessageOrError(mockedWS, requestData);
 
     console.log("<-- user_3 go online -->");
     await sendLogin(mockedWS, "user_3");

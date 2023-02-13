@@ -6,7 +6,7 @@ import validate, {
   validateIsCID,
 } from "../lib/validation.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
-import { default as DeliveryManager } from "../routes/delivery_manager.js";
+import { default as PacketProcessor } from "../routes/delivery_manager.js";
 import { default as SessionRepository } from "../repositories/session_repository.js";
 import { slice } from "../utils/req_res_utils.js";
 
@@ -28,6 +28,6 @@ export default class StatusesController {
     const currentTs = Math.round(Date.now() / 1000);
     status.params.t = parseInt(currentTs);
 
-    await DeliveryManager.deliverToUserOrUsers(ws, statusParams, status);
+    await PacketProcessor.deliverToUserOrUsers(ws, statusParams, status);
   }
 }

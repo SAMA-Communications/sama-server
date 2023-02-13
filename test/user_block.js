@@ -3,7 +3,7 @@ import User from "../models/user.js";
 import assert from "assert";
 import { connectToDBPromise } from "../lib/db.js";
 import { createUserArray, mockedWS, sendLogin } from "./utils.js";
-import { processJsonMessageOrError } from "../routes/ws.js";
+import { default as PacketProcessor } from "./../routes/delivery_manager.js";
 
 let currentUserToken = "";
 let usersIds = [];
@@ -25,7 +25,7 @@ describe("UserBlocked functions", async () => {
           id: 2,
         },
       };
-      const responseData = await processJsonMessageOrError(
+      const responseData = await PacketProcessor.processJsonMessageOrError(
         mockedWS,
         requestData
       );
@@ -43,7 +43,7 @@ describe("UserBlocked functions", async () => {
           id: 3,
         },
       };
-      const responseData = await processJsonMessageOrError(
+      const responseData = await PacketProcessor.processJsonMessageOrError(
         mockedWS,
         requestData
       );
@@ -61,7 +61,7 @@ describe("UserBlocked functions", async () => {
           id: 4,
         },
       };
-      const responseData = await processJsonMessageOrError(
+      const responseData = await PacketProcessor.processJsonMessageOrError(
         mockedWS,
         requestData
       );
@@ -79,7 +79,7 @@ describe("UserBlocked functions", async () => {
           id: 5,
         },
       };
-      const responseData = await processJsonMessageOrError(
+      const responseData = await PacketProcessor.processJsonMessageOrError(
         mockedWS,
         requestData
       );
@@ -97,7 +97,7 @@ describe("UserBlocked functions", async () => {
           id: 6,
         },
       };
-      const responseData = await processJsonMessageOrError(
+      const responseData = await PacketProcessor.processJsonMessageOrError(
         mockedWS,
         requestData
       );
@@ -115,7 +115,7 @@ describe("UserBlocked functions", async () => {
           id: 2,
         },
       };
-      const responseData = await processJsonMessageOrError(
+      const responseData = await PacketProcessor.processJsonMessageOrError(
         mockedWS,
         requestData
       );
@@ -136,7 +136,7 @@ describe("UserBlocked functions", async () => {
           id: 2,
         },
       };
-      const responseData = await processJsonMessageOrError(
+      const responseData = await PacketProcessor.processJsonMessageOrError(
         mockedWS,
         requestData
       );
@@ -154,7 +154,7 @@ describe("UserBlocked functions", async () => {
           id: 3,
         },
       };
-      const responseData = await processJsonMessageOrError(
+      const responseData = await PacketProcessor.processJsonMessageOrError(
         mockedWS,
         requestData
       );
@@ -172,7 +172,7 @@ describe("UserBlocked functions", async () => {
           id: 6,
         },
       };
-      const responseData = await processJsonMessageOrError(
+      const responseData = await PacketProcessor.processJsonMessageOrError(
         mockedWS,
         requestData
       );
@@ -188,7 +188,7 @@ describe("UserBlocked functions", async () => {
           id: 2,
         },
       };
-      const responseData = await processJsonMessageOrError(
+      const responseData = await PacketProcessor.processJsonMessageOrError(
         mockedWS,
         requestData
       );

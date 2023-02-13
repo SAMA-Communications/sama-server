@@ -24,7 +24,7 @@ import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { ObjectId } from "mongodb";
-import { default as DeliveryManager } from "../routes/delivery_manager.js";
+import { default as PacketProcessor } from "../routes/delivery_manager.js";
 import { default as SessionRepository } from "../repositories/session_repository.js";
 import { slice } from "../utils/req_res_utils.js";
 
@@ -103,7 +103,7 @@ export default class MessagesController {
     message.params.t = parseInt(currentTs);
 
     await message.save();
-    await DeliveryManager.deliverToUserOrUsers(
+    await PacketProcessor.deliverToUserOrUsers(
       ws,
       messageParams,
       message.visibleParams()
@@ -139,7 +139,7 @@ export default class MessagesController {
         from: ObjectId(SessionRepository.getSessionUserId(ws)),
       },
     };
-    await DeliveryManager.deliverToUserOrUsers(ws, message.params, request);
+    await PacketProcessor.deliverToUserOrUsers(ws, message.params, request);
 
     return { response: { id: requestId, success: true } };
   }
@@ -216,7 +216,7 @@ export default class MessagesController {
       });
       await MessageStatus.insertMany(insertMessages.reverse());
       const unreadMessagesGrouppedByFrom = groupBy(unreadMessages, "from");
-      await DeliveryManager.deliverStatusToUsers(
+      await PacketProcessor.deliverStatusToUsers(
         ws,
         cid,
         unreadMessagesGrouppedByFrom
@@ -260,7 +260,7 @@ export default class MessagesController {
           },
         };
 
-        await DeliveryManager.deliverToUserOrUsers(
+        await PacketProcessor.deliverToUserOrUsers(
           ws,
           { cid: conversationId },
           request

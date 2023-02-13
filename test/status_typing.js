@@ -8,7 +8,7 @@ import {
   sendLogin,
   sendLogout,
 } from "./utils.js";
-import { processJsonMessageOrError } from "../routes/ws.js";
+import { default as PacketProcessor } from "./../routes/delivery_manager.js";
 
 let currentConversationId = "";
 let currentUserToken = "";
@@ -41,7 +41,10 @@ describe("Sending 'typing' status", async () => {
         cid: currentConversationId,
       },
     };
-    const responseData = await processJsonMessageOrError(mockedWS, requestData);
+    const responseData = await PacketProcessor.processJsonMessageOrError(
+      mockedWS,
+      requestData
+    );
 
     assert.strictEqual(responseData.typing.user, undefined);
     assert.deepEqual(responseData.typing.error, {
@@ -60,7 +63,10 @@ describe("Sending 'typing' status", async () => {
         cid: currentConversationId,
       },
     };
-    const responseData = await processJsonMessageOrError(mockedWS, requestData);
+    const responseData = await PacketProcessor.processJsonMessageOrError(
+      mockedWS,
+      requestData
+    );
 
     assert.strictEqual(responseData.typing.user, undefined);
     assert.deepEqual(responseData.typing.error, {
@@ -76,7 +82,10 @@ describe("Sending 'typing' status", async () => {
         cid: currentConversationId,
       },
     };
-    const responseData = await processJsonMessageOrError(mockedWS, requestData);
+    const responseData = await PacketProcessor.processJsonMessageOrError(
+      mockedWS,
+      requestData
+    );
 
     assert.strictEqual(responseData.typing.user, undefined);
     assert.deepEqual(responseData.typing.error, {
@@ -93,7 +102,10 @@ describe("Sending 'typing' status", async () => {
         cid: currentConversationId,
       },
     };
-    const responseData = await processJsonMessageOrError(mockedWS, requestData);
+    const responseData = await PacketProcessor.processJsonMessageOrError(
+      mockedWS,
+      requestData
+    );
 
     assert.strictEqual(responseData.typing.user, undefined);
     assert.deepEqual(responseData.typing.error, {
@@ -109,7 +121,10 @@ describe("Sending 'typing' status", async () => {
         type: "start",
       },
     };
-    const responseData = await processJsonMessageOrError(mockedWS, requestData);
+    const responseData = await PacketProcessor.processJsonMessageOrError(
+      mockedWS,
+      requestData
+    );
 
     assert.strictEqual(responseData.typing.user, undefined);
     assert.deepEqual(responseData.typing.error, {
@@ -126,7 +141,10 @@ describe("Sending 'typing' status", async () => {
         cid: "currentConversationId",
       },
     };
-    const responseData = await processJsonMessageOrError(mockedWS, requestData);
+    const responseData = await PacketProcessor.processJsonMessageOrError(
+      mockedWS,
+      requestData
+    );
 
     assert.strictEqual(responseData.typing.user, undefined);
     assert.deepEqual(responseData.typing.error, {
@@ -143,7 +161,10 @@ describe("Sending 'typing' status", async () => {
         cid: currentConversationId,
       },
     };
-    const responseData = await processJsonMessageOrError(mockedWS, requestData);
+    const responseData = await PacketProcessor.processJsonMessageOrError(
+      mockedWS,
+      requestData
+    );
     assert.strictEqual(responseData, undefined);
   });
 

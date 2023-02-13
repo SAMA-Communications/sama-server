@@ -12,7 +12,7 @@ import {
   sendLogin,
   sendLogout,
 } from "./utils.js";
-import { processJsonMessageOrError } from "../routes/ws.js";
+import { default as PacketProcessor } from "./../routes/delivery_manager.js";
 
 let currentUserToken = "";
 let usersIds = [];
@@ -46,7 +46,10 @@ describe("Attachments", async () => {
         id: "createUploadUrlForFile",
       },
     };
-    const responseData = await processJsonMessageOrError(mockedWS, requestData);
+    const responseData = await PacketProcessor.processJsonMessageOrError(
+      mockedWS,
+      requestData
+    );
     files = responseData.response.files;
 
     assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -73,7 +76,10 @@ describe("Attachments", async () => {
         id: "createUploadUrlForFile",
       },
     };
-    const responseData = await processJsonMessageOrError(mockedWS, requestData);
+    const responseData = await PacketProcessor.processJsonMessageOrError(
+      mockedWS,
+      requestData
+    );
     const urls = responseData.response.file_urls;
 
     assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -110,7 +116,10 @@ describe("Attachments", async () => {
         id: "createUploadUrlForFile",
       },
     };
-    const responseData = await processJsonMessageOrError(mockedWS, requestData);
+    const responseData = await PacketProcessor.processJsonMessageOrError(
+      mockedWS,
+      requestData
+    );
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.file_urls, undefined);
     assert.deepEqual(responseData.response.error, {
@@ -128,7 +137,10 @@ describe("Attachments", async () => {
         id: "createUploadUrlForFile",
       },
     };
-    const responseData = await processJsonMessageOrError(mockedWS, requestData);
+    const responseData = await PacketProcessor.processJsonMessageOrError(
+      mockedWS,
+      requestData
+    );
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.file_urls, undefined);
     assert.deepEqual(responseData.response.error, {
@@ -163,7 +175,10 @@ describe("Attachments", async () => {
         id: "createUploadUrlForFile",
       },
     };
-    const responseData = await processJsonMessageOrError(mockedWS, requestData);
+    const responseData = await PacketProcessor.processJsonMessageOrError(
+      mockedWS,
+      requestData
+    );
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.file_urls, undefined);
     assert.deepEqual(responseData.response.error, {
@@ -179,7 +194,10 @@ describe("Attachments", async () => {
         id: "createUploadUrlForFile",
       },
     };
-    const responseData = await processJsonMessageOrError(mockedWS, requestData);
+    const responseData = await PacketProcessor.processJsonMessageOrError(
+      mockedWS,
+      requestData
+    );
 
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.files, undefined);
@@ -196,7 +214,10 @@ describe("Attachments", async () => {
         id: "createUploadUrlForFile",
       },
     };
-    const responseData = await processJsonMessageOrError(mockedWS, requestData);
+    const responseData = await PacketProcessor.processJsonMessageOrError(
+      mockedWS,
+      requestData
+    );
 
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.files, undefined);
@@ -213,7 +234,10 @@ describe("Attachments", async () => {
         id: "createUploadUrlForFile",
       },
     };
-    const responseData = await processJsonMessageOrError(mockedWS, requestData);
+    const responseData = await PacketProcessor.processJsonMessageOrError(
+      mockedWS,
+      requestData
+    );
 
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.files, undefined);
