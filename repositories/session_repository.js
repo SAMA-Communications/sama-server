@@ -21,12 +21,12 @@ class SessionRepository {
     );
   }
 
-  async getUserNodeConnections(userId) {
-    return await RedisClient.client.sMembers(`user:${userId}`);
-  }
-
   async clearUserNodeData(userId) {
     await RedisClient.client.del(`user:${userId}`);
+  }
+
+  async getUserNodeData(userId) {
+    return await RedisClient.client.sMembers(`user:${userId}`);
   }
 
   getSessionUserId(ws) {

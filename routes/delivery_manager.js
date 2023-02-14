@@ -1,4 +1,5 @@
 import ConversationParticipant from "../models/conversation_participant.js";
+import ConversationsController from "../controllers/conversations.js";
 import FilesController from "../controllers/files.js";
 import LastActivityiesController from "../controllers/activities.js";
 import MessagesController from "../controllers/messages.js";
@@ -7,7 +8,6 @@ import UsersBlockController from "../controllers/users_block.js";
 import UsersController from "../controllers/users.js";
 import ip from "ip";
 import { ACTIVE } from "../store/session.js";
-import ConversationsController from "../controllers/conversations.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { ObjectId } from "mongodb";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
@@ -60,16 +60,16 @@ class PacketProcessor {
     };
   }
 
-  async deliverToUserOnThisNode(
-    ws,
-    userId,
-    message,
-    isNoStoreReqInOfflineQueue
-  ) {
+  #isAllowedForOfflineStorage(message) {
+    return !!(message.message_edit || message.message_delete);
+  }
+
+  async deliverToUserOnThisNode(ws, userId, message) {
     const wsRecipient = ACTIVE.DEVICES[userId];
 
     if (!wsRecipient) {
-      !isNoStoreReqInOfflineQueue && saveRequestInOfflineQueue(userId, message);
+      this.#isAllowedForOfflineStorage(message) &&
+        saveRequestInOfflineQueue(userId, message);
       return;
     }
 
@@ -78,13 +78,7 @@ class PacketProcessor {
     });
   }
 
-  #deliverToUserDevices(
-    ws,
-    nodeConnections,
-    userId,
-    message,
-    isNoStoreReqInOfflineQueue
-  ) {
+  #deliverToUserDevices(ws, nodeConnections, userId, message) {
     nodeConnections.forEach(async (data) => {
       const nodeInfo = JSON.parse(data);
       const nodeUrl = nodeInfo[Object.keys(nodeInfo)[0]];
@@ -94,16 +88,11 @@ class PacketProcessor {
       );
 
       if (nodeUrl === curentNodeUrl) {
-        await this.deliverToUserOnThisNode(
-          userId,
-          message,
-          ws,
-          isNoStoreReqInOfflineQueue
-        );
+        await this.deliverToUserOnThisNode(ws, userId, message);
       } else {
         const recipientWS = clusterNodesWS[getIpFromWsUrl(nodeUrl)];
         if (!recipientWS) {
-          !isNoStoreReqInOfflineQueue &&
+          this.#isAllowedForOfflineStorage(message) &&
             saveRequestInOfflineQueue(userId, message);
           return;
         }
@@ -112,61 +101,48 @@ class PacketProcessor {
           recipientWS.send(JSON.stringify({ userId, message }));
         } catch (err) {
           console.log(err);
-          !isNoStoreReqInOfflineQueue &&
+          this.#isAllowedForOfflineStorage(message) &&
             saveRequestInOfflineQueue(userId, message);
         }
       }
     });
   }
 
-  async deliverToUserOrUsers(ws, dParams, message) {
-    if (!dParams.cid) {
+  async deliverToUserOrUsers(ws, message, cid, usersId) {
+    if (!cid && !usersId) {
       return;
     }
 
-    const participants = await ConversationParticipant.findAll(
-      {
-        conversation_id: dParams.cid,
-      },
-      ["user_id"],
-      100
-    );
+    const participants =
+      usersId ||
+      (
+        await ConversationParticipant.findAll(
+          {
+            conversation_id: cid,
+          },
+          ["user_id"],
+          100
+        )
+      ).map((obj) => obj.user_id);
 
-    participants.forEach(async (participants) => {
-      const uId = participants.user_id;
+    participants.forEach(async (uId) => {
       if (uId.toString() === SessionRepository.getSessionUserId(ws)) {
         return;
       }
 
-      const userNodeConnections =
-        await SessionRepository.getUserNodeConnections(uId);
-      if (!userNodeConnections?.length) {
-        saveRequestInOfflineQueue(uId, message);
+      const userNodeData = await SessionRepository.getUserNodeData(uId);
+      if (!userNodeData?.length) {
+        this.#isAllowedForOfflineStorage(message[uId] || message) &&
+          saveRequestInOfflineQueue(uId, message[uId] || message);
         return;
       }
 
-      this.#deliverToUserDevices(ws, userNodeConnections, uId, message);
-    });
-  }
-
-  async deliverStatusToUsers(ws, cid, midsByUId) {
-    const participantsIds = Object.keys(midsByUId);
-    participantsIds.forEach(async (uId) => {
-      const userNodeConnections =
-        await SessionRepository.getUserNodeConnections(uId);
-      if (!userNodeConnections?.length) {
-        return;
-      }
-
-      const message = {
-        message_read: {
-          cid: ObjectId(cid),
-          ids: midsByUId[uId].map((el) => el._id),
-          from: ObjectId(uId),
-        },
-      };
-
-      this.#deliverToUserDevices(ws, userNodeConnections, uId, message, true);
+      this.#deliverToUserDevices(
+        ws,
+        userNodeData,
+        uId,
+        message[uId] || message
+      );
     });
   }
 

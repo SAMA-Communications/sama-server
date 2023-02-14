@@ -105,8 +105,8 @@ export default class MessagesController {
     await message.save();
     await PacketProcessor.deliverToUserOrUsers(
       ws,
-      messageParams,
-      message.visibleParams()
+      message.visibleParams(),
+      messageParams.cid
     );
 
     await this.conversationRepository.updateOne(messageParams.cid, {
@@ -139,7 +139,7 @@ export default class MessagesController {
         from: ObjectId(SessionRepository.getSessionUserId(ws)),
       },
     };
-    await PacketProcessor.deliverToUserOrUsers(ws, message.params, request);
+    await PacketProcessor.deliverToUserOrUsers(ws, request, message.params.cid);
 
     return { response: { id: requestId, success: true } };
   }
@@ -216,10 +216,24 @@ export default class MessagesController {
       });
       await MessageStatus.insertMany(insertMessages.reverse());
       const unreadMessagesGrouppedByFrom = groupBy(unreadMessages, "from");
-      await PacketProcessor.deliverStatusToUsers(
+
+      const messagesToDeliver = {};
+      for (const uId in unreadMessagesGrouppedByFrom) {
+        const mids = unreadMessagesGrouppedByFrom[uId].map((el) => el._id);
+        messagesToDeliver[uId] = {
+          message_read: {
+            cid: ObjectId(cid),
+            ids: mids,
+            from: ObjectId(uId),
+          },
+        };
+      }
+
+      await PacketProcessor.deliverToUserOrUsers(
         ws,
+        messagesToDeliver,
         cid,
-        unreadMessagesGrouppedByFrom
+        Object.keys(unreadMessagesGrouppedByFrom)
       );
     }
 
@@ -260,11 +274,7 @@ export default class MessagesController {
           },
         };
 
-        await PacketProcessor.deliverToUserOrUsers(
-          ws,
-          { cid: conversationId },
-          request
-        );
+        await PacketProcessor.deliverToUserOrUsers(ws, request, conversationId);
       }
       await Message.deleteMany({ _id: { $in: messagesIds } });
     } else {

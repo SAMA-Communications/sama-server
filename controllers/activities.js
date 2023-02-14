@@ -23,7 +23,7 @@ export default class LastActivitiesController {
     }
     ACTIVITY.SUBSCRIBERS[uId][currentUId] = true;
 
-    const activeSessions = await SessionRepository.getUserNodeConnections(uId);
+    const activeSessions = await SessionRepository.getUserNodeData(uId);
     if (activeSessions.length) {
       obj[uId] = "online";
     } else {
