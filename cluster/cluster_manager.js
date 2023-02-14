@@ -4,7 +4,7 @@ import { StringDecoder } from "string_decoder";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
 import { default as PacketProcessor } from "../routes/delivery_manager.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
-import { saveRequestInOpLog } from "../store/op_log.js";
+import { saveRequestInOpLog } from "../store/operations_log.js";
 const decoder = new StringDecoder("utf8");
 
 const clusterNodesWS = {};

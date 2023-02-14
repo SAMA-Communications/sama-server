@@ -9,12 +9,11 @@ import UsersController from "../controllers/users.js";
 import ip from "ip";
 import { ACTIVE } from "../store/session.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
-import { ObjectId } from "mongodb";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
 import { clusterNodesWS } from "../cluster/cluster_manager.js";
 import { default as SessionRepository } from "../repositories/session_repository.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
-import { saveRequestInOpLog } from "../store/op_log.js";
+import { saveRequestInOpLog } from "../store/operations_log.js";
 
 class PacketProcessor {
   constructor() {

@@ -6,7 +6,7 @@ export default class OpLog extends BaseModel {
   }
 
   static get collection() {
-    return "op_log";
+    return "operations_log";
   }
 
   static get visibleFields() {
