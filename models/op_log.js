@@ -1,12 +1,12 @@
 import BaseModel from "./base/base.js";
 
-export default class OfflineQueue extends BaseModel {
+export default class OpLog extends BaseModel {
   constructor(params) {
     super(params);
   }
 
   static get collection() {
-    return "offline_queue";
+    return "op_log";
   }
 
   static get visibleFields() {

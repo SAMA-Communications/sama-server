@@ -1,7 +1,7 @@
 import BlockListRepository from "../repositories/blocklist_repository.js";
 import BlockedUser from "../models/blocked_user.js";
 import LastActivityiesController from "./activities.js";
-import OfflineQueue from "../models/offline_queue.js";
+import OpLog from "../models/op_log.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
 import ip from "ip";
@@ -140,7 +140,7 @@ export default class UsersController {
       );
     }
 
-    const expectedReqs = await OfflineQueue.findAll({
+    const expectedReqs = await OpLog.findAll({
       user_id: userId,
     });
     if (expectedReqs && expectedReqs.length) {
@@ -148,7 +148,7 @@ export default class UsersController {
         for (const current in expectedReqs) {
           ws.send(JSON.stringify(expectedReqs[current].request));
         }
-        await OfflineQueue.deleteMany({ user_id: userId });
+        await OpLog.deleteMany({ user_id: userId });
       });
     }
 

@@ -14,7 +14,7 @@ import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
 import { clusterNodesWS } from "../cluster/cluster_manager.js";
 import { default as SessionRepository } from "../repositories/session_repository.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
-import { saveRequestInOfflineQueue } from "../store/offline_queue.js";
+import { saveRequestInOpLog } from "../store/op_log.js";
 
 class PacketProcessor {
   constructor() {
@@ -69,7 +69,7 @@ class PacketProcessor {
 
     if (!wsRecipient) {
       this.#isAllowedForOfflineStorage(message) &&
-        saveRequestInOfflineQueue(userId, message);
+        saveRequestInOpLog(userId, message);
       return;
     }
 
@@ -93,7 +93,7 @@ class PacketProcessor {
         const recipientWS = clusterNodesWS[getIpFromWsUrl(nodeUrl)];
         if (!recipientWS) {
           this.#isAllowedForOfflineStorage(message) &&
-            saveRequestInOfflineQueue(userId, message);
+            saveRequestInOpLog(userId, message);
           return;
         }
 
@@ -102,7 +102,7 @@ class PacketProcessor {
         } catch (err) {
           console.log(err);
           this.#isAllowedForOfflineStorage(message) &&
-            saveRequestInOfflineQueue(userId, message);
+            saveRequestInOpLog(userId, message);
         }
       }
     });
@@ -133,7 +133,7 @@ class PacketProcessor {
       const userNodeData = await SessionRepository.getUserNodeData(uId);
       if (!userNodeData?.length) {
         this.#isAllowedForOfflineStorage(message[uId] || message) &&
-          saveRequestInOfflineQueue(uId, message[uId] || message);
+          saveRequestInOpLog(uId, message[uId] || message);
         return;
       }
 
