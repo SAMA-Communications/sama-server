@@ -1,16 +1,20 @@
+import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
 import validate, { validateIsUserId } from "../lib/validation.js";
 import { ACTIVE } from "../store/session.js";
 import { ACTIVITY } from "../store/activity.js";
-import { default as SessionRepository } from "../repositories/session_repository.js";
 
 export default class LastActivitiesController {
+  constructor() {
+    this.sessionRepository = new SessionRepository(ACTIVE);
+  }
+
   async statusSubscribe(ws, data) {
     const requestId = data.request.id;
     const uId = data.request.user_last_activity_subscribe.id;
     await validate(ws, { uId }, [validateIsUserId]);
 
-    const currentUId = SessionRepository.getSessionUserId(ws);
+    const currentUId = this.sessionRepository.getSessionUserId(ws);
     const obj = {};
 
     if (ACTIVITY.SUBSCRIBED_TO[currentUId]) {
@@ -23,7 +27,7 @@ export default class LastActivitiesController {
     }
     ACTIVITY.SUBSCRIBERS[uId][currentUId] = true;
 
-    const activeSessions = await SessionRepository.getUserNodeData(uId);
+    const activeSessions = await this.sessionRepository.getUserNodeData(uId);
     if (activeSessions.length) {
       obj[uId] = "online";
     } else {
@@ -36,7 +40,7 @@ export default class LastActivitiesController {
 
   async statusUnsubscribe(ws, data) {
     const requestId = data.request.id;
-    const currentUId = SessionRepository.getSessionUserId(ws);
+    const currentUId = this.sessionRepository.getSessionUserId(ws);
 
     const oldTrackerUserId = ACTIVITY.SUBSCRIBED_TO[currentUId];
     const oldUserSubscribers = ACTIVITY.SUBSCRIBERS[oldTrackerUserId];

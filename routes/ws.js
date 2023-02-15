@@ -1,9 +1,10 @@
+import SessionRepository from "../repositories/session_repository.js";
 import ip from "ip";
 import { ACTIVE } from "../store/session.js";
 import { StringDecoder } from "string_decoder";
 import { default as PacketProcessor } from "./delivery_manager.js";
-import { default as SessionRepository } from "../repositories/session_repository.js";
 const decoder = new StringDecoder("utf8");
+const sessionRepository = new SessionRepository(ACTIVE);
 
 export default function routes(app, wsOptions) {
   app.ws("/*", {
@@ -18,13 +19,13 @@ export default function routes(app, wsOptions) {
 
     close: async (ws, code, message) => {
       console.log("[close]", `WebSokect connect down`);
-      const uId = SessionRepository.getSessionUserId(ws);
+      const uId = sessionRepository.getSessionUserId(ws);
       const arrDevices = ACTIVE.DEVICES[uId];
 
       if (arrDevices) {
         ACTIVE.DEVICES[uId] = arrDevices.filter((obj) => {
           if (obj.ws === ws) {
-            SessionRepository.removeUserNodeData(
+            sessionRepository.removeUserNodeData(
               uId,
               obj.deviceId,
               ip.address(),

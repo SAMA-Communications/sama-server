@@ -2,6 +2,7 @@ import ConversationParticipant from "../models/conversation_participant.js";
 import ConversationsController from "../controllers/conversations.js";
 import FilesController from "../controllers/files.js";
 import LastActivityiesController from "../controllers/activities.js";
+import SessionRepository from "../repositories/session_repository.js";
 import MessagesController from "../controllers/messages.js";
 import OpLog from "../models/operations_log.js";
 import OperationsLogController from "../controllers/operations_log.js";
@@ -16,7 +17,6 @@ import { ACTIVITY } from "../store/activity.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
 import { clusterNodesWS } from "../cluster/cluster_manager.js";
-import { default as SessionRepository } from "../repositories/session_repository.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
 
 class PacketProcessor {
@@ -26,6 +26,7 @@ class PacketProcessor {
       process.env.CLUSTER_COMMUNICATION_PORT
     );
     this.operationsLogRepository = new OperationsLogRepository(OpLog);
+    this.sessionRepository = new SessionRepository(ACTIVE);
     this.jsonRequest = {
       message: (ws, json) => new MessagesController().create(ws, json),
       typing: (ws, json) => new StatusesController().typing(ws, json),
@@ -133,11 +134,11 @@ class PacketProcessor {
       ).map((obj) => obj.user_id);
 
     participants.forEach(async (uId) => {
-      if (uId.toString() === SessionRepository.getSessionUserId(ws)) {
+      if (uId.toString() === this.sessionRepository.getSessionUserId(ws)) {
         return;
       }
 
-      const userNodeData = await SessionRepository.getUserNodeData(uId);
+      const userNodeData = await this.sessionRepository.getUserNodeData(uId);
       if (!userNodeData?.length) {
         this.isAllowedForOfflineStorage(
           packetsMapOrPacket[uId] || packetsMapOrPacket
@@ -203,13 +204,13 @@ class PacketProcessor {
 
   async deliverClusterMessageToUser(userId, message) {
     try {
-      await PacketProcessor.deliverToUserOnThisNode(null, userId, message);
+      await this.deliverToUserOnThisNode(null, userId, message);
     } catch (err) {
       console.error(
         "[cluster_manager][deliverClusterMessageToUser] error",
         err
       );
-      PacketProcessor.isAllowedForOfflineStorage(request) &&
+      this.isAllowedForOfflineStorage(request) &&
         this.perationsLogRepository.savePacket(userId, message);
     }
   }
