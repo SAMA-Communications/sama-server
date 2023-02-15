@@ -10,6 +10,6 @@ export default class OpLog extends BaseModel {
   }
 
   static get visibleFields() {
-    return ["_id", "created_at", "updated_at", "user_id", "request"];
+    return ["_id", "created_at", "updated_at", "user_id", "packet"];
   }
 }
