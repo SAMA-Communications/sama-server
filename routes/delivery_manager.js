@@ -3,6 +3,7 @@ import ConversationsController from "../controllers/conversations.js";
 import FilesController from "../controllers/files.js";
 import LastActivityiesController from "../controllers/activities.js";
 import MessagesController from "../controllers/messages.js";
+import OperationsLogController from "../controllers/operations_log.js";
 import StatusesController from "../controllers/status.js";
 import UsersBlockController from "../controllers/users_block.js";
 import UsersController from "../controllers/users.js";
@@ -11,9 +12,9 @@ import { ACTIVE } from "../store/session.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
 import { clusterNodesWS } from "../cluster/cluster_manager.js";
+import { default as OperationsLogRepository } from "../repositories/operations_log_repository.js";
 import { default as SessionRepository } from "../repositories/session_repository.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
-import { saveRequestInOpLog } from "../store/operations_log.js";
 
 class PacketProcessor {
   constructor() {
@@ -43,7 +44,7 @@ class PacketProcessor {
         user_logout: (ws, json) => new UsersController().logout(ws, json),
         user_delete: (ws, json) => new UsersController().delete(ws, json),
         user_search: (ws, json) => new UsersController().search(ws, json),
-        user_logs: (ws, json) => new UsersController().logs(ws, json),
+        op_log_list: (ws, json) => new OperationsLogController().logs(ws, json),
         user_last_activity_subscribe: (ws, json) =>
           new LastActivityiesController().statusSubscribe(ws, json),
         user_last_activity_unsubscribe: (ws, json) =>
@@ -73,7 +74,7 @@ class PacketProcessor {
 
     if (!wsRecipient) {
       this.#isAllowedForOfflineStorage(message) &&
-        saveRequestInOpLog(userId, message);
+        OperationsLogRepository.savePacket(userId, message);
       return;
     }
 
@@ -93,7 +94,7 @@ class PacketProcessor {
         const recipientClusterNodeWS = clusterNodesWS[getIpFromWsUrl(nodeUrl)];
         if (!recipientClusterNodeWS) {
           this.#isAllowedForOfflineStorage(packet) &&
-            saveRequestInOpLog(userId, packet);
+            OperationsLogRepository.savePacket(userId, packet);
           return;
         }
 
@@ -104,7 +105,7 @@ class PacketProcessor {
         } catch (err) {
           console.log(err);
           this.#isAllowedForOfflineStorage(packet) &&
-            saveRequestInOpLog(userId, packet);
+            OperationsLogRepository.savePacket(userId, packet);
         }
       }
     });
@@ -137,7 +138,7 @@ class PacketProcessor {
         this.#isAllowedForOfflineStorage(
           packetsMapOrPacket[uId] || packetsMapOrPacket
         ) &&
-          saveRequestInOpLog(
+          OperationsLogRepository.savePacket(
             uId,
             packetsMapOrPacket[uId] || packetsMapOrPacket
           );

@@ -2,9 +2,9 @@ import WebSocket from "ws";
 import ip from "ip";
 import { StringDecoder } from "string_decoder";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
+import { default as OperationsLogRepository } from "../repositories/operations_log_repository.js";
 import { default as PacketProcessor } from "../routes/delivery_manager.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
-import { saveRequestInOpLog } from "../store/operations_log.js";
 const decoder = new StringDecoder("utf8");
 
 const clusterNodesWS = {};
@@ -24,7 +24,7 @@ async function deliverMessageToUser(userId, request) {
     await PacketProcessor.deliverToUserOnThisNode(null, userId, request);
   } catch (err) {
     console.error("[cluster_manager][deliverMessageToUser] error", err);
-    saveRequestInOpLog(userId, request);
+    OperationsLogRepository.savePacket(userId, request);
   }
 }
 

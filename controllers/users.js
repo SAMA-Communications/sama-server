@@ -1,7 +1,6 @@
 import BlockListRepository from "../repositories/blocklist_repository.js";
 import BlockedUser from "../models/blocked_user.js";
 import LastActivityiesController from "./activities.js";
-import OpLog from "../models/operations_log.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
 import ip from "ip";
@@ -9,7 +8,6 @@ import jwt from "jsonwebtoken";
 import validate, {
   validateDeviceId,
   validateIsValidUserPassword,
-  valideteTimestampQueary,
 } from "../lib/validation.js";
 import { ACTIVE } from "../store/session.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
@@ -139,18 +137,6 @@ export default class UsersController {
         },
         { $set: { token: jwtToken } }
       );
-    }
-
-    const expectedReqs = await OpLog.findAll({
-      user_id: userId,
-    });
-    if (expectedReqs && expectedReqs.length) {
-      setImmediate(async () => {
-        for (const current in expectedReqs) {
-          ws.send(JSON.stringify(expectedReqs[current].request));
-        }
-        await OpLog.deleteMany({ user_id: userId });
-      });
     }
 
     await SessionRepository.storeUserNodeData(
@@ -302,20 +288,5 @@ export default class UsersController {
     const users = await User.findAll(query, ["_id", "login"], limit);
 
     return { response: { id: requestId, users: users } };
-  }
-
-  async logs(ws, data) {
-    const requestId = data.request.id;
-    const { gt, lt } = data.request.user_logs;
-
-    await validate(ws, { gt, lt }, [valideteTimestampQueary]);
-
-    let query = { user_id: SessionRepository.getSessionUserId(ws) };
-    gt
-      ? (query.created_at = { $gt: new Date(gt) })
-      : (query.created_at = { $lt: new Date(lt) });
-    const logs = await OpLog.findAll(query, ["user_id", "packet"]);
-
-    return { response: { id: requestId, logs: logs } };
   }
 }
