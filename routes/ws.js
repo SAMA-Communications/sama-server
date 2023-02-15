@@ -47,7 +47,8 @@ export default function routes(app, wsOptions) {
         ws,
         json
       );
-      ws.send(JSON.stringify(responseData));
+
+      responseData && ws.send(JSON.stringify(responseData));
     },
   });
 }

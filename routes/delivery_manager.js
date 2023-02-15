@@ -17,6 +17,10 @@ import { saveRequestInOpLog } from "../store/operations_log.js";
 
 class PacketProcessor {
   constructor() {
+    this.curentNodeUrl = buildWsEndpoint(
+      ip.address(),
+      process.env.CLUSTER_COMMUNICATION_PORT
+    );
     this.jsonRequest = {
       message: (ws, json) => new MessagesController().create(ws, json),
       typing: (ws, json) => new StatusesController().typing(ws, json),
@@ -39,6 +43,7 @@ class PacketProcessor {
         user_logout: (ws, json) => new UsersController().logout(ws, json),
         user_delete: (ws, json) => new UsersController().delete(ws, json),
         user_search: (ws, json) => new UsersController().search(ws, json),
+        user_logs: (ws, json) => new UsersController().logs(ws, json),
         user_last_activity_subscribe: (ws, json) =>
           new LastActivityiesController().statusSubscribe(ws, json),
         user_last_activity_unsubscribe: (ws, json) =>
@@ -77,37 +82,35 @@ class PacketProcessor {
     });
   }
 
-  #deliverToUserDevices(ws, nodeConnections, userId, message) {
+  #deliverToUserDevices(ws, nodeConnections, userId, packet) {
     nodeConnections.forEach(async (data) => {
       const nodeInfo = JSON.parse(data);
       const nodeUrl = nodeInfo[Object.keys(nodeInfo)[0]];
-      const curentNodeUrl = buildWsEndpoint(
-        ip.address(),
-        process.env.CLUSTER_COMMUNICATION_PORT
-      );
 
-      if (nodeUrl === curentNodeUrl) {
-        await this.deliverToUserOnThisNode(ws, userId, message);
+      if (nodeUrl === this.curentNodeUrl) {
+        await this.deliverToUserOnThisNode(ws, userId, packet);
       } else {
-        const recipientWS = clusterNodesWS[getIpFromWsUrl(nodeUrl)];
-        if (!recipientWS) {
-          this.#isAllowedForOfflineStorage(message) &&
-            saveRequestInOpLog(userId, message);
+        const recipientClusterNodeWS = clusterNodesWS[getIpFromWsUrl(nodeUrl)];
+        if (!recipientClusterNodeWS) {
+          this.#isAllowedForOfflineStorage(packet) &&
+            saveRequestInOpLog(userId, packet);
           return;
         }
 
         try {
-          recipientWS.send(JSON.stringify({ userId, message }));
+          recipientClusterNodeWS.send(
+            JSON.stringify({ userId, message: packet })
+          );
         } catch (err) {
           console.log(err);
-          this.#isAllowedForOfflineStorage(message) &&
-            saveRequestInOpLog(userId, message);
+          this.#isAllowedForOfflineStorage(packet) &&
+            saveRequestInOpLog(userId, packet);
         }
       }
     });
   }
 
-  async deliverToUserOrUsers(ws, message, cid, usersId) {
+  async deliverToUserOrUsers(ws, packetsMapOrPacket, cid, usersId) {
     if (!cid && !usersId) {
       return;
     }
@@ -131,8 +134,13 @@ class PacketProcessor {
 
       const userNodeData = await SessionRepository.getUserNodeData(uId);
       if (!userNodeData?.length) {
-        this.#isAllowedForOfflineStorage(message[uId] || message) &&
-          saveRequestInOpLog(uId, message[uId] || message);
+        this.#isAllowedForOfflineStorage(
+          packetsMapOrPacket[uId] || packetsMapOrPacket
+        ) &&
+          saveRequestInOpLog(
+            uId,
+            packetsMapOrPacket[uId] || packetsMapOrPacket
+          );
         return;
       }
 
@@ -140,7 +148,7 @@ class PacketProcessor {
         ws,
         userNodeData,
         uId,
-        message[uId] || message
+        packetsMapOrPacket[uId] || packetsMapOrPacket
       );
     });
   }
