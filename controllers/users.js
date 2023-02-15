@@ -13,9 +13,9 @@ import { ACTIVE } from "../store/session.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
+import { default as PacketProcessor } from "./../routes/delivery_manager.js";
 import { default as SessionRepository } from "../repositories/session_repository.js";
 import { inMemoryBlockList } from "../store/in_memory.js";
-import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
 import { slice } from "../utils/req_res_utils.js";
 
 export default class UsersController {
@@ -87,7 +87,7 @@ export default class UsersController {
     const userId = user.params._id;
     const deviceId = userInfo.deviceId;
 
-    await maybeUpdateAndSendUserActivity(
+    await PacketProcessor.maybeUpdateAndSendUserActivity(
       ws,
       { uId: userId, rId: requestId },
       "online"
@@ -198,7 +198,10 @@ export default class UsersController {
 
     const deviceId = SessionRepository.getDeviceId(ws, userId);
     if (currentUserSession) {
-      await maybeUpdateAndSendUserActivity(ws, { uId: userId, rId: requestId });
+      await PacketProcessor.maybeUpdateAndSendUserActivity(ws, {
+        uId: userId,
+        rId: requestId,
+      });
 
       if (ACTIVE.DEVICES[userId].length > 1) {
         ACTIVE.DEVICES[userId] = ACTIVE.DEVICES[userId].filter((obj) => {

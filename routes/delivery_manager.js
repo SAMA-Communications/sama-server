@@ -5,10 +5,12 @@ import LastActivityiesController from "../controllers/activities.js";
 import MessagesController from "../controllers/messages.js";
 import OperationsLogController from "../controllers/operations_log.js";
 import StatusesController from "../controllers/status.js";
+import User from "../models/user.js";
 import UsersBlockController from "../controllers/users_block.js";
 import UsersController from "../controllers/users.js";
 import ip from "ip";
 import { ACTIVE } from "../store/session.js";
+import { ACTIVITY } from "../store/activity.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
 import { clusterNodesWS } from "../cluster/cluster_manager.js";
@@ -65,7 +67,7 @@ class PacketProcessor {
     };
   }
 
-  #isAllowedForOfflineStorage(message) {
+  isAllowedForOfflineStorage(message) {
     return !!(message.message_edit || message.message_delete);
   }
 
@@ -73,7 +75,7 @@ class PacketProcessor {
     const wsRecipient = ACTIVE.DEVICES[userId];
 
     if (!wsRecipient) {
-      this.#isAllowedForOfflineStorage(message) &&
+      this.isAllowedForOfflineStorage(message) &&
         OperationsLogRepository.savePacket(userId, message);
       return;
     }
@@ -93,7 +95,7 @@ class PacketProcessor {
       } else {
         const recipientClusterNodeWS = clusterNodesWS[getIpFromWsUrl(nodeUrl)];
         if (!recipientClusterNodeWS) {
-          this.#isAllowedForOfflineStorage(packet) &&
+          this.isAllowedForOfflineStorage(packet) &&
             OperationsLogRepository.savePacket(userId, packet);
           return;
         }
@@ -104,7 +106,7 @@ class PacketProcessor {
           );
         } catch (err) {
           console.log(err);
-          this.#isAllowedForOfflineStorage(packet) &&
+          this.isAllowedForOfflineStorage(packet) &&
             OperationsLogRepository.savePacket(userId, packet);
         }
       }
@@ -135,7 +137,7 @@ class PacketProcessor {
 
       const userNodeData = await SessionRepository.getUserNodeData(uId);
       if (!userNodeData?.length) {
-        this.#isAllowedForOfflineStorage(
+        this.isAllowedForOfflineStorage(
           packetsMapOrPacket[uId] || packetsMapOrPacket
         ) &&
           OperationsLogRepository.savePacket(
@@ -197,8 +199,29 @@ class PacketProcessor {
     return responseData;
   }
 
-  // deliverActivityStatusToSubscribers??
-  //  maybeUpdateAndSendUserActivity??
+  async maybeUpdateAndSendUserActivity(ws, { uId, rId }, status) {
+    if (!ACTIVITY.SUBSCRIBERS[uId]) {
+      return;
+    }
+
+    const currentTime = Math.round(new Date() / 1000);
+    if (status !== "online") {
+      await User.updateOne(
+        { _id: uId },
+        { $set: { recent_activity: currentTime } }
+      );
+      await new LastActivityiesController().statusUnsubscribe(ws, {
+        request: { id: rId || "Unsubscribe" },
+      });
+    }
+
+    const message = { last_activity: { [uId]: status || currentTime } };
+    const arrSubscribers = Object.keys(ACTIVITY.SUBSCRIBERS[uId]);
+
+    arrSubscribers.forEach((uId) =>
+      this.deliverToUserOnThisNode(ws, uId, message)
+    );
+  }
 }
 
 export default new PacketProcessor();

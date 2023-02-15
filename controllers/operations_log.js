@@ -5,7 +5,7 @@ import { default as SessionRepository } from "../repositories/session_repository
 export default class OperationsLogController {
   async logs(ws, data) {
     const requestId = data.request.id;
-    const { gt, lt } = data.request.user_logs;
+    const { gt, lt } = data.request.op_log_list.created_at;
 
     await validate(ws, { gt, lt }, [valideteTimestampQueary]);
 

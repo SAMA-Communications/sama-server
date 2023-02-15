@@ -19,12 +19,13 @@ async function shareCurrentNodeInfo(ws) {
   );
 }
 
-async function deliverMessageToUser(userId, request) {
+async function deliverMessageToUser(userId, message) {
   try {
-    await PacketProcessor.deliverToUserOnThisNode(null, userId, request);
+    await PacketProcessor.deliverToUserOnThisNode(null, userId, message);
   } catch (err) {
     console.error("[cluster_manager][deliverMessageToUser] error", err);
-    OperationsLogRepository.savePacket(userId, request);
+    PacketProcessor.isAllowedForOfflineStorage(request) &&
+      OperationsLogRepository.savePacket(userId, message);
   }
 }
 

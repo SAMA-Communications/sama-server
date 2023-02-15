@@ -1,8 +1,13 @@
+import BaseRepository from "./base.js";
 import RedisClient from "../lib/redis.js";
 import { ACTIVE } from "../store/session.js";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
 
-class SessionRepository {
+class SessionRepository extends BaseRepository {
+  constructor(model, inMemoryStorage) {
+    super(model, inMemoryStorage);
+  }
+
   async storeUserNodeData(userId, deviceId, nodeIp, nodePort) {
     await RedisClient.client.sAdd(
       `user:${userId}`,

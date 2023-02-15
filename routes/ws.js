@@ -3,7 +3,6 @@ import { ACTIVE } from "../store/session.js";
 import { StringDecoder } from "string_decoder";
 import { default as PacketProcessor } from "./delivery_manager.js";
 import { default as SessionRepository } from "../repositories/session_repository.js";
-import { maybeUpdateAndSendUserActivity } from "../store/activity.js";
 const decoder = new StringDecoder("utf8");
 
 export default function routes(app, wsOptions) {
@@ -35,7 +34,7 @@ export default function routes(app, wsOptions) {
           }
           return true;
         });
-        await maybeUpdateAndSendUserActivity(ws, { uId });
+        await PacketProcessor.maybeUpdateAndSendUserActivity(ws, { uId });
       }
       ACTIVE.SESSIONS.delete(ws);
     },
