@@ -3,7 +3,9 @@ import ConversationsController from "../controllers/conversations.js";
 import FilesController from "../controllers/files.js";
 import LastActivityiesController from "../controllers/activities.js";
 import MessagesController from "../controllers/messages.js";
+import OpLog from "../models/operations_log.js";
 import OperationsLogController from "../controllers/operations_log.js";
+import OperationsLogRepository from "../repositories/operations_log_repository.js";
 import StatusesController from "../controllers/status.js";
 import User from "../models/user.js";
 import UsersBlockController from "../controllers/users_block.js";
@@ -14,7 +16,6 @@ import { ACTIVITY } from "../store/activity.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
 import { clusterNodesWS } from "../cluster/cluster_manager.js";
-import { default as OperationsLogRepository } from "../repositories/operations_log_repository.js";
 import { default as SessionRepository } from "../repositories/session_repository.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
 
@@ -24,6 +25,7 @@ class PacketProcessor {
       ip.address(),
       process.env.CLUSTER_COMMUNICATION_PORT
     );
+    this.operationsLogRepository = new OperationsLogRepository(OpLog);
     this.jsonRequest = {
       message: (ws, json) => new MessagesController().create(ws, json),
       typing: (ws, json) => new StatusesController().typing(ws, json),
@@ -76,7 +78,7 @@ class PacketProcessor {
 
     if (!wsRecipient) {
       this.isAllowedForOfflineStorage(message) &&
-        OperationsLogRepository.savePacket(userId, message);
+        this.operationsLogRepository.savePacket(userId, message);
       return;
     }
 
@@ -96,7 +98,7 @@ class PacketProcessor {
         const recipientClusterNodeWS = clusterNodesWS[getIpFromWsUrl(nodeUrl)];
         if (!recipientClusterNodeWS) {
           this.isAllowedForOfflineStorage(packet) &&
-            OperationsLogRepository.savePacket(userId, packet);
+            this.operationsLogRepository.savePacket(userId, packet);
           return;
         }
 
@@ -107,7 +109,7 @@ class PacketProcessor {
         } catch (err) {
           console.log(err);
           this.isAllowedForOfflineStorage(packet) &&
-            OperationsLogRepository.savePacket(userId, packet);
+            this.operationsLogRepository.savePacket(userId, packet);
         }
       }
     });
@@ -140,7 +142,7 @@ class PacketProcessor {
         this.isAllowedForOfflineStorage(
           packetsMapOrPacket[uId] || packetsMapOrPacket
         ) &&
-          OperationsLogRepository.savePacket(
+          this.perationsLogRepository.savePacket(
             uId,
             packetsMapOrPacket[uId] || packetsMapOrPacket
           );
@@ -197,6 +199,19 @@ class PacketProcessor {
     }
 
     return responseData;
+  }
+
+  async deliverClusterMessageToUser(userId, message) {
+    try {
+      await PacketProcessor.deliverToUserOnThisNode(null, userId, message);
+    } catch (err) {
+      console.error(
+        "[cluster_manager][deliverClusterMessageToUser] error",
+        err
+      );
+      PacketProcessor.isAllowedForOfflineStorage(request) &&
+        this.perationsLogRepository.savePacket(userId, message);
+    }
   }
 
   async maybeUpdateAndSendUserActivity(ws, { uId, rId }, status) {

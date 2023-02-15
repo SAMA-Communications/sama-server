@@ -2,7 +2,6 @@ import WebSocket from "ws";
 import ip from "ip";
 import { StringDecoder } from "string_decoder";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
-import { default as OperationsLogRepository } from "../repositories/operations_log_repository.js";
 import { default as PacketProcessor } from "../routes/delivery_manager.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
 const decoder = new StringDecoder("utf8");
@@ -17,16 +16,6 @@ async function shareCurrentNodeInfo(ws) {
       },
     })
   );
-}
-
-async function deliverMessageToUser(userId, message) {
-  try {
-    await PacketProcessor.deliverToUserOnThisNode(null, userId, message);
-  } catch (err) {
-    console.error("[cluster_manager][deliverMessageToUser] error", err);
-    PacketProcessor.isAllowedForOfflineStorage(request) &&
-      OperationsLogRepository.savePacket(userId, message);
-  }
 }
 
 async function createToNodeSocket(ip, port) {
@@ -60,7 +49,10 @@ async function createToNodeSocket(ip, port) {
       return;
     }
 
-    await deliverMessageToUser(json.userId, json.message);
+    await PacketProcessor.deliverClusterMessageToUser(
+      json.userId,
+      json.message
+    );
   });
 
   ws.on("close", async () => {
@@ -102,7 +94,10 @@ function clusterRoutes(app, wsOptions) {
         return;
       }
 
-      await deliverMessageToUser(json.userId, json.message);
+      await PacketProcessor.deliverClusterMessageToUser(
+        json.userId,
+        json.message
+      );
     },
   });
 }

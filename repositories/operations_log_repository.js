@@ -1,8 +1,8 @@
 import BaseRepository from "./base.js";
 
-class OperationsLogRepository extends BaseRepository {
-  constructor(model, inMemoryStorage) {
-    super(model, inMemoryStorage);
+export default class OperationsLogRepository extends BaseRepository {
+  constructor(model) {
+    super(model, null);
   }
 
   savePacket(user_id, packet) {
@@ -10,5 +10,3 @@ class OperationsLogRepository extends BaseRepository {
     record.save();
   }
 }
-
-export default new OperationsLogRepository();
