@@ -11,15 +11,15 @@ export default class OperationsLogController {
   async logs(ws, data) {
     const requestId = data.request.id;
     const { gt, lt } = data.request.op_log_list.created_at;
-
     await validate(ws, { gt, lt }, [valideteTimestampQueary]);
 
-    let query = { user_id: this.sessionRepository.getSessionUserId(ws) };
-    gt
-      ? (query.created_at = { $gt: new Date(gt) })
-      : (query.created_at = { $lt: new Date(lt) });
-    const logs = await OpLog.findAll(query, ["user_id", "packet"]);
+    let query = {
+      user_id: this.sessionRepository.getSessionUserId(ws),
+      created_at: gt ? { $gt: new Date(gt) } : { $lt: new Date(lt) },
+    };
 
-    return { response: { id: requestId, logs: logs } };
+    const packets = await OpLog.findAll(query, ["user_id", "packet"]);
+    console.log(packets);
+    return { response: { id: requestId, logs: packets } };
   }
 }

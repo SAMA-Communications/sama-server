@@ -1,7 +1,7 @@
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import Message from "../models/message.js";
-import OfflineQueue from "../models/offline_queue.js";
+import OpLog from "../models/operations_log.js";
 import User from "../models/user.js";
 import assert from "assert";
 import { connectToDBPromise } from "../lib/db.js";
@@ -251,7 +251,7 @@ describe("Attachments", async () => {
 
   after(async () => {
     await User.clearCollection();
-    await OfflineQueue.clearCollection();
+    await OpLog.clearCollection();
     await Message.clearCollection();
     await Conversation.clearCollection();
     await ConversationParticipant.clearCollection();

@@ -1,7 +1,8 @@
 import BlockListRepository from "../repositories/blocklist_repository.js";
 import BlockedUser from "../models/blocked_user.js";
-import validate, { validateIsUserId } from "../lib/validation.js";
 import SessionRepository from "../repositories/session_repository.js";
+import validate, { validateIsUserId } from "../lib/validation.js";
+import { ACTIVE } from "../store/session.js";
 import { inMemoryBlockList } from "../store/in_memory.js";
 
 export default class UsersBlockController {

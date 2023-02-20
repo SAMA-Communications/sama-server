@@ -1,3 +1,4 @@
+import OpLog from "../models/operations_log.js";
 import BaseRepository from "./base.js";
 
 export default class OperationsLogRepository extends BaseRepository {
