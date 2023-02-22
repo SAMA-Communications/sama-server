@@ -58,7 +58,7 @@ CLIENT_SOCKET.listen(
   APP_LISTEN_OPTIONS,
   (listenSocket) => {
     if (listenSocket) {
-      console.log(`Listening on port ${uWS.us_socket_local_port(listenSocket)}`);
+      console.log(`    APP listening on port ${uWS.us_socket_local_port(listenSocket)}, pid=${process.pid}`);
     } else {
       throw "CLIENT_SOCKET.listen error"
     }
@@ -74,7 +74,7 @@ CLUSTER_SOCKET.listen(
     if (listenSocket) {
       const clusterPort = uWS.us_socket_local_port(listenSocket);
       console.log(
-        `Listening cluster on port ${clusterPort}`
+        `CLUSTER listening on port ${clusterPort}`
       );
       setClusterPort(clusterPort)
     } else {
