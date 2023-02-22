@@ -6,7 +6,17 @@ import { default as PacketProcessor } from "../routes/delivery_manager.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
 const decoder = new StringDecoder("utf8");
 
-const clusterNodesWS = {};
+export const clusterNodesWS = {};
+
+let clusterPort;
+//
+export function setClusterPort(port) {
+  clusterPort = port;
+}
+//
+export function getClusterPort() {
+  return clusterPort;
+}
 
 async function shareCurrentNodeInfo(ws) {
   ws.send(
@@ -18,7 +28,7 @@ async function shareCurrentNodeInfo(ws) {
   );
 }
 
-async function createToNodeSocket(ip, port) {
+export async function createToNodeSocket(ip, port) {
   if (clusterNodesWS[ip]) {
     return;
   }
@@ -61,7 +71,7 @@ async function createToNodeSocket(ip, port) {
   });
 }
 
-function clusterRoutes(app, wsOptions) {
+export function clusterRoutes(app, wsOptions) {
   app.ws("/*", {
     ...wsOptions,
 
@@ -101,5 +111,3 @@ function clusterRoutes(app, wsOptions) {
     },
   });
 }
-
-export { clusterRoutes, clusterNodesWS, createToNodeSocket };

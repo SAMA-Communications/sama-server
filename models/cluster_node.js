@@ -17,6 +17,7 @@ export default class ClusterNode extends BaseModel {
       "ip_address",
       "hostname",
       "port",
+      "users_count"
     ];
   }
 }

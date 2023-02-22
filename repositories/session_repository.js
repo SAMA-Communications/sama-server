@@ -7,6 +7,10 @@ export default class SessionRepository extends BaseRepository {
     super(null, inMemoryStorage);
   }
 
+  get sessionsTotal() {
+    return Object.keys(this.inMemoryStorage.SESSIONS).length;
+  }
+
   async storeUserNodeData(userId, deviceId, nodeIp, nodePort) {
     await RedisClient.client.sAdd(
       `user:${userId}`,

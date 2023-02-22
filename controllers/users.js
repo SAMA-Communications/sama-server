@@ -17,6 +17,7 @@ import { ERROR_STATUES } from "../constants/http_constants.js";
 import { default as PacketProcessor } from "./../routes/delivery_manager.js";
 import { inMemoryBlockList } from "../store/in_memory.js";
 import { slice } from "../utils/req_res_utils.js";
+import { getClusterPort } from "../cluster/cluster_manager.js";
 
 export default class UsersController {
   constructor() {
@@ -144,7 +145,7 @@ export default class UsersController {
       userId,
       deviceId,
       ip.address(),
-      process.env.CLUSTER_COMMUNICATION_PORT
+      getClusterPort()
     );
 
     return {
@@ -223,7 +224,7 @@ export default class UsersController {
         userId,
         deviceId,
         ip.address(),
-        process.env.CLUSTER_COMMUNICATION_PORT
+        getClusterPort()
       );
 
       return { response: { id: requestId, success: true } };

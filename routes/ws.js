@@ -3,6 +3,7 @@ import ip from "ip";
 import { ACTIVE } from "../store/session.js";
 import { StringDecoder } from "string_decoder";
 import { default as PacketProcessor } from "./delivery_manager.js";
+import { getClusterPort } from "../cluster/cluster_manager.js";
 const decoder = new StringDecoder("utf8");
 const sessionRepository = new SessionRepository(ACTIVE);
 
@@ -29,7 +30,7 @@ export default function routes(app, wsOptions) {
               uId,
               obj.deviceId,
               ip.address(),
-              process.env.CLUSTER_COMMUNICATION_PORT
+              getClusterPort()
             );
             return false;
           }
