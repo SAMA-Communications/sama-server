@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  nginx:
+    restart: always
+    build:
+      context: ./nginx
+    ports:
+      - "9000:9000"
