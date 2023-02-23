@@ -63,11 +63,11 @@ export default class Message extends BaseModel {
       unred_messages: { $push: "$_id" },
     };
     const aggregatedResult = await this.aggregate([
-      { $match: { $or: arrayParams } },
+      { $match: arrayParams.length ? { $or: arrayParams } : {} },
       { $group },
     ]);
     const result = {};
-    aggregatedResult.forEach((obj) => {
+    aggregatedResult?.forEach((obj) => {
       result[obj._id] = [...new Set(obj.unred_messages)].length;
     });
     return result;

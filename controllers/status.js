@@ -1,3 +1,4 @@
+import SessionRepository from "../repositories/session_repository.js";
 import Status from "../models/status.js";
 import validate, {
   validateStatusConversationType,
@@ -5,12 +6,16 @@ import validate, {
   validateStatusId,
   validateIsCID,
 } from "../lib/validation.js";
+import { ACTIVE } from "../store/session.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
-import { deliverToUserOrUsers } from "../routes/ws.js";
-import { getSessionUserId } from "../store/session.js";
+import { default as PacketProcessor } from "../routes/delivery_manager.js";
 import { slice } from "../utils/req_res_utils.js";
 
 export default class StatusesController {
+  constructor() {
+    this.sessionRepository = new SessionRepository(ACTIVE);
+  }
+
   async typing(ws, data) {
     const statusParams = slice(
       data.typing,
@@ -22,12 +27,12 @@ export default class StatusesController {
       validateIsCID,
       validateIsConversationByCID,
     ]);
-    statusParams.from = getSessionUserId(ws);
+    statusParams.from = this.sessionRepository.getSessionUserId(ws);
 
     const status = new Status(statusParams);
     const currentTs = Math.round(Date.now() / 1000);
     status.params.t = parseInt(currentTs);
 
-    await deliverToUserOrUsers(statusParams, status, statusParams.from);
+    await PacketProcessor.deliverToUserOrUsers(ws, status, statusParams.cid);
   }
 }

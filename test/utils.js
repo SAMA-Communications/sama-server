@@ -1,4 +1,4 @@
-import { processJsonMessageOrError } from "../routes/ws.js";
+import { default as PacketProcessor } from "./../routes/delivery_manager.js";
 
 async function sendLogin(ws, login, device) {
   const requestData = {
@@ -11,7 +11,10 @@ async function sendLogin(ws, login, device) {
       id: "UserLogin",
     },
   };
-  const response = await processJsonMessageOrError(ws, requestData);
+  const response = await PacketProcessor.processJsonMessageOrError(
+    ws,
+    requestData
+  );
   return response;
 }
 
@@ -22,7 +25,7 @@ async function sendLogout(ws, currentUserToken) {
       id: "UserLogout",
     },
   };
-  await processJsonMessageOrError(ws, requestData);
+  await PacketProcessor.processJsonMessageOrError(ws, requestData);
 }
 
 const mockedWS = {
@@ -47,7 +50,7 @@ async function createUserArray(count) {
     };
 
     usersIds[i] = (
-      await processJsonMessageOrError("UserCreate", requestData)
+      await PacketProcessor.processJsonMessageOrError("UserCreate", requestData)
     )?.response.user._id;
   }
 
@@ -72,7 +75,7 @@ async function createConversation(ws, name, description, type, participants) {
   };
 
   return (
-    await processJsonMessageOrError(ws, requestData)
+    await PacketProcessor.processJsonMessageOrError(ws, requestData)
   )?.response.conversation._id.toString();
 }
 

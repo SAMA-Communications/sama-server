@@ -3,8 +3,8 @@ import BlockedUser from "../models/blocked_user.js";
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import ConversationRepository from "../repositories/conversation_repository.js";
-import MessageStatus from "../models/message_status.js";
 import Message from "../models/message.js";
+import MessageStatus from "../models/message_status.js";
 import groupBy from "../utils/groupBy.js";
 import validate, {
   validateIsConversation,
@@ -20,13 +20,14 @@ import {
   inMemoryBlockList,
   inMemoryConversations,
 } from "../store/in_memory.js";
+import { ACTIVE } from "../store/session.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
-import { ObjectId } from "mongodb";
-import { deliverToUser, deliverToUserOrUsers } from "../routes/ws.js";
-import { ACTIVE, getSessionUserId } from "../store/session.js";
-import { slice } from "../utils/req_res_utils.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
+import { ObjectId } from "mongodb";
+import { default as PacketProcessor } from "../routes/delivery_manager.js";
+import SessionRepository from "../repositories/session_repository.js";
+import { slice } from "../utils/req_res_utils.js";
 
 export default class MessagesController {
   constructor() {
@@ -38,6 +39,7 @@ export default class MessagesController {
       BlockedUser,
       inMemoryBlockList
     );
+    this.sessionRepository = new SessionRepository(ACTIVE);
   }
 
   async create(ws, data) {
@@ -51,7 +53,7 @@ export default class MessagesController {
     const messageId = data.message.id;
     await validate(ws, { id: messageId }, [validateMessageId]);
 
-    const currentUserId = getSessionUserId(ws);
+    const currentUserId = this.sessionRepository.getSessionUserId(ws);
     const conversation = await this.conversationRepository.findById(
       messageParams.cid
     );
@@ -103,7 +105,11 @@ export default class MessagesController {
     message.params.t = parseInt(currentTs);
 
     await message.save();
-    await deliverToUserOrUsers(messageParams, message.visibleParams(), ws);
+    await PacketProcessor.deliverToUserOrUsers(
+      ws,
+      message.visibleParams(),
+      messageParams.cid
+    );
 
     await this.conversationRepository.updateOne(messageParams.cid, {
       updated_at: message.params.created_at,
@@ -132,10 +138,10 @@ export default class MessagesController {
       message_edit: {
         id: messageId,
         body: messageParams.body,
-        from: ObjectId(getSessionUserId(ws)),
+        from: ObjectId(this.sessionRepository.getSessionUserId(ws)),
       },
     };
-    await deliverToUserOrUsers(message.params, request, getSessionUserId(ws));
+    await PacketProcessor.deliverToUserOrUsers(ws, request, message.params.cid);
 
     return { response: { id: requestId, success: true } };
   }
@@ -152,7 +158,7 @@ export default class MessagesController {
 
     const query = {
       cid: cid,
-      deleted_for: { $nin: [getSessionUserId(ws)] },
+      deleted_for: { $nin: [this.sessionRepository.getSessionUserId(ws)] },
     };
     const timeFromUpdate = data.request.message_list.updated_at;
     if (timeFromUpdate && timeFromUpdate.gt) {
@@ -168,7 +174,9 @@ export default class MessagesController {
       response: {
         id: requestId,
         messages: messages.map((msg) => {
-          if (msg.from.toString() === getSessionUserId(ws)) {
+          if (
+            msg.from.toString() === this.sessionRepository.getSessionUserId(ws)
+          ) {
             msg["status"] = messagesStatus[msg._id]?.length ? "read" : "sent";
           }
           return msg;
@@ -180,7 +188,7 @@ export default class MessagesController {
   async read(ws, data) {
     const requestId = data.request.id;
     const cid = data.request.message_read.cid;
-    const uId = getSessionUserId(ws);
+    const uId = this.sessionRepository.getSessionUserId(ws);
 
     const query = {
       cid: cid,
@@ -212,7 +220,25 @@ export default class MessagesController {
       });
       await MessageStatus.insertMany(insertMessages.reverse());
       const unreadMessagesGrouppedByFrom = groupBy(unreadMessages, "from");
-      await this.deliverStatusToUsers(unreadMessagesGrouppedByFrom, cid, ws);
+
+      const messagesToDeliver = {};
+      for (const uId in unreadMessagesGrouppedByFrom) {
+        const mids = unreadMessagesGrouppedByFrom[uId].map((el) => el._id);
+        messagesToDeliver[uId] = {
+          message_read: {
+            cid: ObjectId(cid),
+            ids: mids,
+            from: ObjectId(uId),
+          },
+        };
+      }
+
+      await PacketProcessor.deliverToUserOrUsers(
+        ws,
+        messagesToDeliver,
+        cid,
+        Object.keys(unreadMessagesGrouppedByFrom)
+      );
     }
 
     return {
@@ -221,28 +247,6 @@ export default class MessagesController {
         success: true,
       },
     };
-  }
-
-  async deliverStatusToUsers(midsByUId, cid, currentWS) {
-    const participantsIds = Object.keys(midsByUId);
-    participantsIds.forEach((uId) => {
-      const wsRecipient = ACTIVE.DEVICES[uId];
-
-      if (wsRecipient) {
-        wsRecipient.forEach((data) => {
-          if (data.ws !== currentWS) {
-            const message = {
-              message_read: {
-                cid: ObjectId(cid),
-                ids: midsByUId[uId].map((el) => el._id),
-                from: ObjectId(uId),
-              },
-            };
-            data.ws.send(JSON.stringify({ message }));
-          }
-        });
-      }
-    });
   }
 
   async delete(ws, data) {
@@ -270,10 +274,11 @@ export default class MessagesController {
             cid: conversationId,
             ids: messagesIds,
             type: "all",
-            from: ObjectId(getSessionUserId(ws)),
+            from: ObjectId(this.sessionRepository.getSessionUserId(ws)),
           },
         };
-        await deliverToUser(user, request);
+
+        await PacketProcessor.deliverToUserOrUsers(ws, request, conversationId);
       }
       await Message.deleteMany({ _id: { $in: messagesIds } });
     } else {
@@ -281,7 +286,7 @@ export default class MessagesController {
         { id: { $in: messagesIds } },
         {
           $addToSet: {
-            deleted_for: ObjectId(getSessionUserId(ws)),
+            deleted_for: ObjectId(this.sessionRepository.getSessionUserId(ws)),
           },
         }
       );

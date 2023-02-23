@@ -3,7 +3,7 @@ import ConversationParticipant from "../models/conversation_participant.js";
 import User from "../models/user.js";
 import assert from "assert";
 import { connectToDBPromise } from "../lib/db.js";
-import { processJsonMessageOrError } from "../routes/ws.js";
+import { default as PacketProcessor } from "./../routes/delivery_manager.js";
 import {
   createConversation,
   createUserArray,
@@ -629,8 +629,9 @@ describe("Validate functions", async () => {
           },
         },
       };
-      messageId = (await processJsonMessageOrError("validate", requestData)).ask
-        .server_mid;
+      messageId = (
+        await PacketProcessor.processJsonMessageOrError("validate", requestData)
+      ).ask.server_mid;
     });
 
     after(async () => {

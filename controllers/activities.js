@@ -1,15 +1,20 @@
+import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
 import validate, { validateIsUserId } from "../lib/validation.js";
-import { ACTIVE, getSessionUserId } from "../store/session.js";
+import { ACTIVE } from "../store/session.js";
 import { ACTIVITY } from "../store/activity.js";
 
 export default class LastActivitiesController {
+  constructor() {
+    this.sessionRepository = new SessionRepository(ACTIVE);
+  }
+
   async statusSubscribe(ws, data) {
     const requestId = data.request.id;
     const uId = data.request.user_last_activity_subscribe.id;
     await validate(ws, { uId }, [validateIsUserId]);
 
-    const currentUId = getSessionUserId(ws);
+    const currentUId = this.sessionRepository.getSessionUserId(ws);
     const obj = {};
 
     if (ACTIVITY.SUBSCRIBED_TO[currentUId]) {
@@ -22,7 +27,8 @@ export default class LastActivitiesController {
     }
     ACTIVITY.SUBSCRIBERS[uId][currentUId] = true;
 
-    if (!!ACTIVE.DEVICES[uId]) {
+    const activeSessions = await this.sessionRepository.getUserNodeData(uId);
+    if (activeSessions.length) {
       obj[uId] = "online";
     } else {
       const uLastActivity = await User.findOne({ _id: uId });
@@ -34,7 +40,7 @@ export default class LastActivitiesController {
 
   async statusUnsubscribe(ws, data) {
     const requestId = data.request.id;
-    const currentUId = getSessionUserId(ws);
+    const currentUId = this.sessionRepository.getSessionUserId(ws);
 
     const oldTrackerUserId = ACTIVITY.SUBSCRIBED_TO[currentUId];
     const oldUserSubscribers = ACTIVITY.SUBSCRIBERS[oldTrackerUserId];
@@ -60,8 +66,8 @@ export default class LastActivitiesController {
       "_id",
       "recent_activity",
     ]);
-
-    uLastActivities.forEach((u) => {
+    // TODO: in future need to update with redis store
+    uLastActivities.forEach(async (u) => {
       const uId = u._id.toString();
       obj[uId] = !!ACTIVE.DEVICES[uId] ? "online" : u.recent_activity;
     });

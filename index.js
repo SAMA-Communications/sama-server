@@ -2,6 +2,7 @@
 import uWS from "uWebSockets.js";
 
 import { default as buildWSRoutes } from "./routes/ws.js";
+import { clusterRoutes as buildClusterWSRoutes, setClusterPort } from "./cluster/cluster_manager.js";
 
 // get MongoDB driver connection
 import { connectToDB } from "./lib/db.js";
@@ -11,6 +12,8 @@ import S3 from "./lib/storage/s3.js";
 //cache storage
 import BlockListRepository from "./repositories/blocklist_repository.js";
 import ConversationRepository from "./repositories/conversation_repository.js";
+import RedisClient from "./lib/redis.js";
+import ClusterClient from "./lib/node_sharing.js";
 
 let storageClient;
 if (process.env.STORAGE_DRIVER === "minio") {
@@ -20,25 +23,65 @@ if (process.env.STORAGE_DRIVER === "minio") {
 }
 
 const APP_OPTIONS = {};
+const SSL_APP_OPTIONS = {
+  key_file_name: process.env.SSL_KEY_FILE_NAME,
+  cert_file_name: process.env.SSL_CERT_FILE_NAME,
+};
 
-const APP_PORT = 9001;
+const APP_LISTEN_OPTIONS = {
+  LIBUS_LISTEN_EXCLUSIVE_PORT: 1
+};
 
 const WS_OPTIONS = {
   compression: uWS.SHARED_COMPRESSOR,
-  maxPayloadLength: 16 * 1024 * 1024,
   idleTimeout: 12,
   maxBackpressure: 1024,
+  maxPayloadLength: 16 * 1024 * 1024,
 };
 
-const APP = uWS.App(APP_OPTIONS);
+let CLIENT_SOCKET = null;
+let CLUSTER_SOCKET = null;
 
-buildWSRoutes(APP, WS_OPTIONS);
+if (SSL_APP_OPTIONS.key_file_name && SSL_APP_OPTIONS.cert_file_name) {
+  CLIENT_SOCKET = uWS.SSLApp(SSL_APP_OPTIONS);
+  CLUSTER_SOCKET = uWS.SSLApp(SSL_APP_OPTIONS);
+} else {
+  CLIENT_SOCKET = uWS.App(APP_OPTIONS);
+  CLUSTER_SOCKET = uWS.App(APP_OPTIONS);
+}
 
-APP.listen(APP_PORT, (listenSocket) => {
-  if (listenSocket) {
-    console.log("Listening to port 9001");
+buildWSRoutes(CLIENT_SOCKET, WS_OPTIONS);
+
+const appPort = parseInt(process.env.APP_PORT || process.env.PORT);
+CLIENT_SOCKET.listen(
+  appPort,
+  APP_LISTEN_OPTIONS,
+  (listenSocket) => {
+    if (listenSocket) {
+      console.log(`    APP listening on port ${uWS.us_socket_local_port(listenSocket)}, pid=${process.pid}`);
+    } else {
+      throw "CLIENT_SOCKET.listen error"
+    }
   }
-});
+);
+
+buildClusterWSRoutes(CLUSTER_SOCKET, WS_OPTIONS);
+
+CLUSTER_SOCKET.listen(
+  0,
+  APP_LISTEN_OPTIONS,
+  (listenSocket) => {
+    if (listenSocket) {
+      const clusterPort = uWS.us_socket_local_port(listenSocket);
+      console.log(
+        `CLUSTER listening on port ${clusterPort}`
+      );
+      setClusterPort(clusterPort)
+    } else {
+      throw "CLUSTER_SOCKET.listen error"
+    }
+  }
+);
 
 // perform a database connection when the server starts
 connectToDB(async (err) => {
@@ -47,6 +90,9 @@ connectToDB(async (err) => {
     process.exit();
   } else {
     console.log("[connectToDB] Ok");
+    await ClusterClient.startSyncingClusterNodes();
+    await RedisClient.connect();
+    //need to delete cluster record when node shut down
     await BlockListRepository.warmCache();
     await ConversationRepository.warmCache();
   }

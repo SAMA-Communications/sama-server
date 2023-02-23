@@ -39,12 +39,12 @@ services:
     ports:
       - "27017:27017"
 
-  # redis:
-  #   image: redis
-  #   container_name: server_redis_database
-  #   restart: always
-  #   ports:
-  #     - "6379:6379"
+  redis:
+    image: redis
+    container_name: server_redis_database
+    restart: always
+    ports:
+      - "6379:6379"
 
 volumes:
   data:

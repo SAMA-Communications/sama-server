@@ -2,6 +2,7 @@ import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import ConversationRepository from "../repositories/conversation_repository.js";
 import Message from "../models/message.js";
+import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
 import validate, {
   validateConversationisUserOwner,
@@ -17,9 +18,9 @@ import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { ObjectId } from "mongodb";
-import { getSessionUserId } from "../store/session.js";
 import { inMemoryConversations } from "../store/in_memory.js";
 import { slice } from "../utils/req_res_utils.js";
+import { ACTIVE } from "../store/session.js";
 
 export default class ConversationsController {
   constructor() {
@@ -27,6 +28,7 @@ export default class ConversationsController {
       Conversation,
       inMemoryConversations
     );
+    this.sessionRepository = new SessionRepository(ACTIVE);
   }
 
   async create(ws, data) {
@@ -46,7 +48,9 @@ export default class ConversationsController {
     await validate(ws, conversationParams, [validateConversationType]);
     await validate(ws, participantsParams, [validateParticipants]);
 
-    conversationParams.owner_id = ObjectId(getSessionUserId(ws));
+    conversationParams.owner_id = ObjectId(
+      this.sessionRepository.getSessionUserId(ws)
+    );
     if (conversationParams.type == "u") {
       await validate(
         ws,
@@ -61,13 +65,13 @@ export default class ConversationsController {
         $or: [
           {
             type: "u",
-            owner_id: ObjectId(getSessionUserId(ws)),
+            owner_id: ObjectId(this.sessionRepository.getSessionUserId(ws)),
             opponent_id: conversationParams.opponent_id,
           },
           {
             type: "u",
             owner_id: ObjectId(conversationParams.opponent_id),
-            opponent_id: getSessionUserId(ws),
+            opponent_id: this.sessionRepository.getSessionUserId(ws),
           },
         ],
       });
@@ -216,7 +220,7 @@ export default class ConversationsController {
   async list(ws, data) {
     const requestId = data.request.id;
 
-    const currentUser = getSessionUserId(ws);
+    const currentUser = this.sessionRepository.getSessionUserId(ws);
     const limit =
       data.request.conversation_list.limit > CONSTANTS.LIMIT_MAX
         ? CONSTANTS.LIMIT_MAX
@@ -278,7 +282,7 @@ export default class ConversationsController {
     );
 
     const conversationParticipant = await ConversationParticipant.findOne({
-      user_id: getSessionUserId(ws),
+      user_id: this.sessionRepository.getSessionUserId(ws),
       conversation_id: conversationId,
     });
 
@@ -297,7 +301,10 @@ export default class ConversationsController {
 
     if (!isUserInConvesation) {
       await this.conversationRepository.delete(conversation);
-    } else if (conversation.owner_id.toString() === getSessionUserId(ws)) {
+    } else if (
+      conversation.owner_id.toString() ===
+      this.sessionRepository.getSessionUserId(ws)
+    ) {
       await this.conversationRepository.updateOne(conversationId, {
         owner_id: isUserInConvesation.user_id,
       });
