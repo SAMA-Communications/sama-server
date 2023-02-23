@@ -52,7 +52,7 @@ if (SSL_APP_OPTIONS.key_file_name && SSL_APP_OPTIONS.cert_file_name) {
 
 buildWSRoutes(CLIENT_SOCKET, WS_OPTIONS);
 
-const appPort = parseInt(process.env.APP_PORT);
+const appPort = parseInt(process.env.APP_PORT || process.env.PORT);
 CLIENT_SOCKET.listen(
   appPort,
   APP_LISTEN_OPTIONS,

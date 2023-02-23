@@ -44,6 +44,8 @@ export default function routes(app, wsOptions) {
     message: async (ws, message, isBinary) => {
       const json = JSON.parse(decoder.write(Buffer.from(message)));
 
+      console.log(`[message](pid=${process.pid})`, json);
+
       const responseData = await PacketProcessor.processJsonMessageOrError(
         ws,
         json

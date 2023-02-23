@@ -3,7 +3,11 @@ module.exports = {
     name      : 'sama-server',
     script    : 'index.js',
     node_args : '-r dotenv/config',
-    instances: 0,
+    instances: 2,
     exec_mode: "cluster",
+    increment_var : 'PORT',
+      env: {
+        "PORT": 9001,
+      }
   }]
 }
