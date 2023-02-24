@@ -8,7 +8,7 @@ export default class SessionRepository extends BaseRepository {
   }
 
   get sessionsTotal() {
-    return Object.keys(this.inMemoryStorage.SESSIONS).length;
+    return this.inMemoryStorage.SESSIONS.size;
   }
 
   async storeUserNodeData(userId, deviceId, nodeIp, nodePort) {

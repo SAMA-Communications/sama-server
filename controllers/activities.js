@@ -66,10 +66,10 @@ export default class LastActivitiesController {
       "_id",
       "recent_activity",
     ]);
-    // TODO: in future need to update with redis store
+
     uLastActivities.forEach(async (u) => {
       const uId = u._id.toString();
-      obj[uId] = !!ACTIVE.DEVICES[uId] ? "online" : u.recent_activity;
+      obj[uId] = !!(await getUserNodeData(uId)) ? "online" : u.recent_activity;
     });
 
     return { response: { id: requestId, last_activity: obj } };
