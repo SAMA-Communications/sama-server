@@ -2,7 +2,10 @@
 import uWS from "uWebSockets.js";
 
 import { default as buildWSRoutes } from "./routes/ws.js";
-import { clusterRoutes as buildClusterWSRoutes, setClusterPort } from "./cluster/cluster_manager.js";
+import {
+  clusterRoutes as buildClusterWSRoutes,
+  setClusterPort,
+} from "./cluster/cluster_manager.js";
 
 // get MongoDB driver connection
 import { connectToDB } from "./lib/db.js";
@@ -29,7 +32,7 @@ const SSL_APP_OPTIONS = {
 };
 
 const APP_LISTEN_OPTIONS = {
-  LIBUS_LISTEN_EXCLUSIVE_PORT: 1
+  LIBUS_LISTEN_EXCLUSIVE_PORT: 1,
 };
 
 const WS_OPTIONS = {
@@ -53,35 +56,29 @@ if (SSL_APP_OPTIONS.key_file_name && SSL_APP_OPTIONS.cert_file_name) {
 buildWSRoutes(CLIENT_SOCKET, WS_OPTIONS);
 
 const appPort = parseInt(process.env.APP_PORT || process.env.PORT);
-CLIENT_SOCKET.listen(
-  appPort,
-  APP_LISTEN_OPTIONS,
-  (listenSocket) => {
-    if (listenSocket) {
-      console.log(`    APP listening on port ${uWS.us_socket_local_port(listenSocket)}, pid=${process.pid}`);
-    } else {
-      throw "CLIENT_SOCKET.listen error"
-    }
+CLIENT_SOCKET.listen(appPort, APP_LISTEN_OPTIONS, (listenSocket) => {
+  if (listenSocket) {
+    console.log(
+      `    APP listening on port ${uWS.us_socket_local_port(
+        listenSocket
+      )}, pid=${process.pid}`
+    );
+  } else {
+    throw "CLIENT_SOCKET.listen error";
   }
-);
+});
 
 buildClusterWSRoutes(CLUSTER_SOCKET, WS_OPTIONS);
 
-CLUSTER_SOCKET.listen(
-  0,
-  APP_LISTEN_OPTIONS,
-  (listenSocket) => {
-    if (listenSocket) {
-      const clusterPort = uWS.us_socket_local_port(listenSocket);
-      console.log(
-        `CLUSTER listening on port ${clusterPort}`
-      );
-      setClusterPort(clusterPort)
-    } else {
-      throw "CLUSTER_SOCKET.listen error"
-    }
+CLUSTER_SOCKET.listen(0, APP_LISTEN_OPTIONS, (listenSocket) => {
+  if (listenSocket) {
+    const clusterPort = uWS.us_socket_local_port(listenSocket);
+    console.log(`CLUSTER listening on port ${clusterPort}`);
+    setClusterPort(clusterPort);
+  } else {
+    throw "CLUSTER_SOCKET.listen error";
   }
-);
+});
 
 // perform a database connection when the server starts
 connectToDB(async (err) => {

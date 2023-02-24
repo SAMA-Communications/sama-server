@@ -22,10 +22,6 @@ import { getClusterPort } from "../cluster/cluster_manager.js";
 
 class PacketProcessor {
   constructor() {
-    // this.curentNodeUrl = buildWsEndpoint(
-    //   ip.address(),
-    //   process.env.CLUSTER_COMMUNICATION_PORT
-    // );
     this.operationsLogRepository = new OperationsLogRepository(OpLog);
     this.sessionRepository = new SessionRepository(ACTIVE);
     this.jsonRequest = {
@@ -94,10 +90,7 @@ class PacketProcessor {
       const nodeInfo = JSON.parse(data);
       const nodeUrl = nodeInfo[Object.keys(nodeInfo)[0]];
 
-      this.curentNodeUrl = buildWsEndpoint(
-        ip.address(),
-        getClusterPort()
-      );
+      this.curentNodeUrl = buildWsEndpoint(ip.address(), getClusterPort());
 
       if (nodeUrl === this.curentNodeUrl) {
         await this.deliverToUserOnThisNode(ws, userId, packet);
