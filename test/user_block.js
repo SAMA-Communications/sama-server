@@ -5,14 +5,13 @@ import { connectToDBPromise } from "../lib/db.js";
 import { createUserArray, mockedWS, sendLogin } from "./utils.js";
 import { default as PacketProcessor } from "./../routes/delivery_manager.js";
 
-let currentUserToken = "";
 let usersIds = [];
 
 describe("UserBlocked functions", async () => {
   before(async () => {
     await connectToDBPromise();
     usersIds = await createUserArray(5);
-    currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user._id;
+    await sendLogin(mockedWS, "user_1");
   });
 
   describe("Block method", async () => {

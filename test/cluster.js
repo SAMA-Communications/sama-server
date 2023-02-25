@@ -1,31 +1,25 @@
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
-import MessageStatus from "../models/message_status.js";
 import Message from "../models/message.js";
+import MessageStatus from "../models/message_status.js";
+import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
 import assert from "assert";
+import ip from "ip";
+import uWS from "uWebSockets.js";
 import { connectToDBPromise } from "../lib/db.js";
 import {
   createConversation,
   createUserArray,
   mockedWS,
   sendLogin,
-  sendLogout,
 } from "./utils.js";
-import ip from "ip";
+import { ACTIVE } from "../store/session.js";
+import { clusterNodesWS } from "../cluster/cluster_manager.js";
 import { default as PacketProcessor } from "./../routes/delivery_manager.js";
-import { clusterNodesWS, getClusterPort } from "../cluster/cluster_manager.js";
-import { ACTIVE } from "../store/session.js"; /* Simplified stock exchange made with uWebSockets.js pub/sub */
-import uWS from "uWebSockets.js";
-import { clusterRoutes as buildClusterWSRoutes } from "./../cluster/cluster_manager.js";
-import SessionRepository from "../repositories/session_repository.js";
 
-let filterUpdatedAt = "";
-let currentUserToken = "";
 let currentConversationId = "";
 let usersIds = [];
-let messagesIds = [];
-let messageId1 = "";
 let deviceId = null;
 let secondClusterPort = null;
 let secondSocketResponse = null;
@@ -35,7 +29,7 @@ describe("Message function", async () => {
     await connectToDBPromise();
     usersIds = await createUserArray(2);
 
-    currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user._id;
+    await sendLogin(mockedWS, "user_1");
 
     currentConversationId = await createConversation(
       mockedWS,

@@ -52,8 +52,7 @@ describe("Sending 'typing' status", async () => {
       message: "Unauthorized",
     });
 
-    currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user
-      .token;
+    await sendLogin(mockedWS, "user_1");
   });
 
   it("should fail id missed", async () => {
