@@ -91,7 +91,6 @@ class PacketProcessor {
       const nodeUrl = nodeInfo[Object.keys(nodeInfo)[0]];
 
       this.curentNodeUrl = buildWsEndpoint(ip.address(), getClusterPort());
-
       if (nodeUrl === this.curentNodeUrl) {
         await this.deliverToUserOnThisNode(ws, userId, packet);
       } else {
