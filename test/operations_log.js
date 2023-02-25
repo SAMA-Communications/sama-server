@@ -8,6 +8,7 @@ import OpLog from "../models/operations_log.js";
 
 let timeWhenUserOff = null;
 let usersIds = [];
+let currentUserToken = null;
 const controller = new OperationsLogRepository(OpLog);
 
 describe("Operations Log functions", async () => {

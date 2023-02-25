@@ -67,10 +67,13 @@ export default class LastActivitiesController {
       "recent_activity",
     ]);
 
-    uLastActivities.forEach(async (u) => {
-      const uId = u._id.toString();
-      obj[uId] = !!(await getUserNodeData(uId)) ? "online" : u.recent_activity;
-    });
+    for (let i = 0; i < uLastActivities.length; i++) {
+      const user = uLastActivities[i];
+      const uId = user._id.toString();
+      obj[uId] = !!(await this.sessionRepository.getUserNodeData(uId))
+        ? "online"
+        : user.recent_activity;
+    }
 
     return { response: { id: requestId, last_activity: obj } };
   }
