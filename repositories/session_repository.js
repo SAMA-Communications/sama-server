@@ -37,6 +37,10 @@ export default class SessionRepository extends BaseRepository {
     return await RedisClient.client.sMembers(`user:${userId}`);
   }
 
+  async dropUserNodeDataBase() {
+    await RedisClient.client.flushDb();
+  }
+
   getSessionUserId(ws) {
     if (this.inMemoryStorage.SESSIONS.get(ws)) {
       return this.inMemoryStorage.SESSIONS.get(ws).user_id.toString();

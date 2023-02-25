@@ -29,6 +29,7 @@ import {
   validateIsCID,
   validateIsUserSendHimSelf,
 } from "../lib/validation.js";
+import SessionRepository from "../repositories/session_repository.js";
 
 let currentUserToken = "";
 let usersIds = [];
@@ -822,5 +823,6 @@ describe("Validate functions", async () => {
     await User.clearCollection();
     await Conversation.clearCollection();
     await ConversationParticipant.clearCollection();
+    await new SessionRepository().dropUserNodeDataBase();
   });
 });
