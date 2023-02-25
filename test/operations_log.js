@@ -8,7 +8,6 @@ import OpLog from "../models/operations_log.js";
 
 let timeWhenUserOff = null;
 let usersIds = [];
-let currentUserToken = null;
 const controller = new OperationsLogRepository(OpLog);
 
 describe("Operations Log functions", async () => {
@@ -17,7 +16,7 @@ describe("Operations Log functions", async () => {
     await OpLog.clearCollection();
     usersIds = await createUserArray(2);
 
-    currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user._id;
+    await sendLogin(mockedWS, "user_1");
 
     for (let i = 0; i < 2; i++) {
       controller.savePacket(usersIds[1], {
@@ -31,8 +30,8 @@ describe("Operations Log functions", async () => {
 
   describe("Get record from OpLog", async () => {
     it("should fail", async () => {
-      currentUserToken = (await sendLogin(mockedWS, "user_2")).response.user
-        ._id;
+      await sendLogin(mockedWS, "user_2");
+
       const requestData = {
         request: {
           op_log_list: {
@@ -88,8 +87,7 @@ describe("Operations Log functions", async () => {
     });
 
     it("should work gt param", async () => {
-      currentUserToken = (await sendLogin(mockedWS, "user_2")).response.user
-        ._id;
+      await sendLogin(mockedWS, "user_2");
 
       const requestData = {
         request: {
