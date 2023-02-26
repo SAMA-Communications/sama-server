@@ -1,10 +1,10 @@
-import Conversation from "../models/conversation.js";
-import ConversationParticipant from "../models/conversation_participant.js";
-import Message from "../models/message.js";
-import OpLog from "../models/operations_log.js";
-import User from "../models/user.js";
+import Conversation from "./../app/models/conversation.js";
+import ConversationParticipant from "./../app/models/conversation_participant.js";
+import Message from "./../app/models/message.js";
+import OpLog from "./../app/models/operations_log.js";
+import User from "./../app/models/user.js";
 import assert from "assert";
-import { connectToDBPromise } from "../lib/db.js";
+import { connectToDBPromise } from "./../app/lib/db.js";
 import {
   createConversation,
   createUserArray,
@@ -12,7 +12,7 @@ import {
   sendLogin,
   sendLogout,
 } from "./utils.js";
-import { default as PacketProcessor } from "./../routes/delivery_manager.js";
+import { default as PacketProcessor } from "./../app/routes/delivery_manager.js";
 
 let currentUserToken = "";
 let usersIds = [];

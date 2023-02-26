@@ -1,22 +1,22 @@
-import Conversation from "../models/conversation.js";
-import ConversationParticipant from "../models/conversation_participant.js";
-import Message from "../models/message.js";
-import MessageStatus from "../models/message_status.js";
-import SessionRepository from "../repositories/session_repository.js";
-import User from "../models/user.js";
+import Conversation from "./../app/models/conversation.js";
+import ConversationParticipant from "./../app/models/conversation_participant.js";
+import Message from "./../app/models/message.js";
+import MessageStatus from "./../app/models/message_status.js";
+import SessionRepository from "./../app/repositories/session_repository.js";
+import User from "./../app/models/user.js";
 import assert from "assert";
 import ip from "ip";
 import uWS from "uWebSockets.js";
-import { connectToDBPromise } from "../lib/db.js";
+import { connectToDBPromise } from "./../app/lib/db.js";
 import {
   createConversation,
   createUserArray,
   mockedWS,
   sendLogin,
 } from "./utils.js";
-import { ACTIVE } from "../store/session.js";
-import { clusterNodesWS } from "../cluster/cluster_manager.js";
-import { default as PacketProcessor } from "./../routes/delivery_manager.js";
+import { ACTIVE } from "./../app/store/session.js";
+import { clusterNodesWS } from "./../app/cluster/cluster_manager.js";
+import { default as PacketProcessor } from "./../app/routes/delivery_manager.js";
 
 let currentConversationId = "";
 let usersIds = [];

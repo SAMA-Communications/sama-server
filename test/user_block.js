@@ -1,9 +1,9 @@
-import BlockedUser from "../models/blocked_user.js";
-import User from "../models/user.js";
+import BlockedUser from "./../app/models/blocked_user.js";
+import User from "./../app/models/user.js";
 import assert from "assert";
-import { connectToDBPromise } from "../lib/db.js";
+import { connectToDBPromise } from "./../app/lib/db.js";
 import { createUserArray, mockedWS, sendLogin } from "./utils.js";
-import { default as PacketProcessor } from "./../routes/delivery_manager.js";
+import { default as PacketProcessor } from "./../app/routes/delivery_manager.js";
 
 let usersIds = [];
 

@@ -1,8 +1,8 @@
-import User from "../models/user.js";
+import User from "./../app/models/user.js";
 import assert from "assert";
-import { ACTIVITY } from "../store/activity.js";
-import { connectToDBPromise, getClient } from "../lib/db.js";
-import { default as PacketProcessor } from "./../routes/delivery_manager.js";
+import { ACTIVITY } from "./../app/store/activity.js";
+import { connectToDBPromise, getClient } from "./../app/lib/db.js";
+import { default as PacketProcessor } from "./../app/routes/delivery_manager.js";
 import { createUserArray, sendLogin, sendLogout } from "./utils.js";
 
 let currentUserToken1 = "";

@@ -1,6 +1,6 @@
-import User from "../models/user.js";
+import User from "./../app/models/user.js";
 import assert from "assert";
-import { connectToDBPromise, getClient } from "../lib/db.js";
+import { connectToDBPromise, getClient } from "./../app/lib/db.js";
 import {
   createConversation,
   createUserArray,
@@ -8,7 +8,7 @@ import {
   sendLogin,
   sendLogout,
 } from "./utils.js";
-import { default as PacketProcessor } from "./../routes/delivery_manager.js";
+import { default as PacketProcessor } from "./../app/routes/delivery_manager.js";
 
 let currentConversationId = "";
 let currentUserToken = "";

@@ -1,10 +1,10 @@
-import OpLog from "../models/operations_log.js";
-import OperationsLogRepository from "../repositories/operations_log_repository.js";
-import User from "../models/user.js";
+import OpLog from "./../app/models/operations_log.js";
+import OperationsLogRepository from "./../app/repositories/operations_log_repository.js";
+import User from "./../app/models/user.js";
 import assert from "assert";
-import { connectToDBPromise } from "../lib/db.js";
+import { connectToDBPromise } from "./../app/lib/db.js";
 import { createUserArray, mockedWS, sendLogin } from "./utils.js";
-import { default as PacketProcessor } from "./../routes/delivery_manager.js";
+import { default as PacketProcessor } from "./../app/routes/delivery_manager.js";
 
 let timeWhenUserOff = null;
 let usersIds = [];

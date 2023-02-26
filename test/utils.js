@@ -1,4 +1,4 @@
-import { default as PacketProcessor } from "./../routes/delivery_manager.js";
+import { default as PacketProcessor } from "./../app/routes/delivery_manager.js";
 
 async function sendLogin(ws, login, device) {
   const requestData = {
