@@ -1,8 +1,8 @@
-import User from "../models/user.js";
+import User from "./../app/models/user.js";
 import assert from "assert";
-import { ACTIVITY } from "../store/activity.js";
-import { connectToDBPromise, getClient } from "../lib/db.js";
-import { default as PacketProcessor } from "./../routes/delivery_manager.js";
+import { ACTIVITY } from "./../app/store/activity.js";
+import { connectToDBPromise, getClient } from "./../app/lib/db.js";
+import { default as PacketProcessor } from "./../app/routes/delivery_manager.js";
 import { createUserArray, sendLogin, sendLogout } from "./utils.js";
 
 let currentUserToken1 = "";
@@ -105,6 +105,7 @@ describe("User activities", async () => {
       requestData
     );
 
+    console.log(responseData.response.last_activity);
     assert.strictEqual(responseData.response.id, requestData.request.id);
     assert.notEqual(responseData.response.last_activity, undefined);
     assert.equal(responseData.response.last_activity[usersIds[2]], "online");

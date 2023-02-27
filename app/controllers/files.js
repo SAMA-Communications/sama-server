@@ -1,13 +1,13 @@
-import File from "../models/file.js";
-import { ALLOW_FIELDS } from "../constants/fields_constants.js";
-import { slice } from "../utils/req_res_utils.js";
-import { storageClient } from "../index.js";
+import File from "./../models/file.js";
+import { ALLOW_FIELDS } from "./../constants/fields_constants.js";
+import { slice } from "./../utils/req_res_utils.js";
+import { storageClient } from "./../../index.js";
 import validate, {
   validateCountOfFileIds,
   validateCountOfFileObjects,
   validateFileFields,
   validateFileIds,
-} from "../lib/validation.js";
+} from "./../lib/validation.js";
 
 export default class FilesController {
   async createUrl(ws, data) {

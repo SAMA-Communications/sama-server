@@ -1,9 +1,9 @@
-import Conversation from "../models/conversation.js";
-import ConversationParticipant from "../models/conversation_participant.js";
-import User from "../models/user.js";
+import Conversation from "./../app/models/conversation.js";
+import ConversationParticipant from "./../app/models/conversation_participant.js";
+import User from "./../app/models/user.js";
 import assert from "assert";
-import { connectToDBPromise } from "../lib/db.js";
-import { default as PacketProcessor } from "./../routes/delivery_manager.js";
+import { connectToDBPromise } from "./../app/lib/db.js";
+import { default as PacketProcessor } from "./../app/routes/delivery_manager.js";
 import {
   createConversation,
   createUserArray,
@@ -28,7 +28,8 @@ import {
   validateStatusId,
   validateIsCID,
   validateIsUserSendHimSelf,
-} from "../lib/validation.js";
+} from "./../app/lib/validation.js";
+import SessionRepository from "./../app/repositories/session_repository.js";
 
 let currentUserToken = "";
 let usersIds = [];
@@ -822,5 +823,6 @@ describe("Validate functions", async () => {
     await User.clearCollection();
     await Conversation.clearCollection();
     await ConversationParticipant.clearCollection();
+    await new SessionRepository().dropUserNodeDataBase();
   });
 });

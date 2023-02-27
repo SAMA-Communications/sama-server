@@ -1,22 +1,22 @@
 /* Simplified stock exchange made with uWebSockets.js pub/sub */
 import uWS from "uWebSockets.js";
 
-import { default as buildWSRoutes } from "./routes/ws.js";
+import { default as buildWSRoutes } from "./app/routes/ws.js";
 import {
   clusterRoutes as buildClusterWSRoutes,
   setClusterPort,
-} from "./cluster/cluster_manager.js";
+} from "./app/cluster/cluster_manager.js";
 
 // get MongoDB driver connection
-import { connectToDB } from "./lib/db.js";
-import Minio from "./lib/storage/minio.js";
-import S3 from "./lib/storage/s3.js";
+import { connectToDB } from "./app/lib/db.js";
+import Minio from "./app/lib/storage/minio.js";
+import S3 from "./app/lib/storage/s3.js";
 
 //cache storage
-import BlockListRepository from "./repositories/blocklist_repository.js";
-import ConversationRepository from "./repositories/conversation_repository.js";
-import RedisClient from "./lib/redis.js";
-import ClusterClient from "./lib/node_sharing.js";
+import BlockListRepository from "./app/repositories/blocklist_repository.js";
+import ConversationRepository from "./app/repositories/conversation_repository.js";
+import RedisClient from "./app/lib/redis.js";
+import ClusterClient from "./app/lib/node_sharing.js";
 
 let storageClient;
 if (process.env.STORAGE_DRIVER === "minio") {

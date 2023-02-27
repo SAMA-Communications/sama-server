@@ -1,10 +1,10 @@
-import User from "../models/user.js";
+import OpLog from "./../app/models/operations_log.js";
+import OperationsLogRepository from "./../app/repositories/operations_log_repository.js";
+import User from "./../app/models/user.js";
 import assert from "assert";
-import { connectToDBPromise } from "../lib/db.js";
+import { connectToDBPromise } from "./../app/lib/db.js";
 import { createUserArray, mockedWS, sendLogin } from "./utils.js";
-import { default as PacketProcessor } from "./../routes/delivery_manager.js";
-import OperationsLogRepository from "../repositories/operations_log_repository.js";
-import OpLog from "../models/operations_log.js";
+import { default as PacketProcessor } from "./../app/routes/delivery_manager.js";
 
 let timeWhenUserOff = null;
 let usersIds = [];
@@ -16,7 +16,7 @@ describe("Operations Log functions", async () => {
     await OpLog.clearCollection();
     usersIds = await createUserArray(2);
 
-    currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user._id;
+    await sendLogin(mockedWS, "user_1");
 
     for (let i = 0; i < 2; i++) {
       controller.savePacket(usersIds[1], {
@@ -30,8 +30,8 @@ describe("Operations Log functions", async () => {
 
   describe("Get record from OpLog", async () => {
     it("should fail", async () => {
-      currentUserToken = (await sendLogin(mockedWS, "user_2")).response.user
-        ._id;
+      await sendLogin(mockedWS, "user_2");
+
       const requestData = {
         request: {
           op_log_list: {
@@ -87,8 +87,7 @@ describe("Operations Log functions", async () => {
     });
 
     it("should work gt param", async () => {
-      currentUserToken = (await sendLogin(mockedWS, "user_2")).response.user
-        ._id;
+      await sendLogin(mockedWS, "user_2");
 
       const requestData = {
         request: {

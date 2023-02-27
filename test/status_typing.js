@@ -1,6 +1,6 @@
-import User from "../models/user.js";
+import User from "./../app/models/user.js";
 import assert from "assert";
-import { connectToDBPromise, getClient } from "../lib/db.js";
+import { connectToDBPromise, getClient } from "./../app/lib/db.js";
 import {
   createConversation,
   createUserArray,
@@ -8,7 +8,7 @@ import {
   sendLogin,
   sendLogout,
 } from "./utils.js";
-import { default as PacketProcessor } from "./../routes/delivery_manager.js";
+import { default as PacketProcessor } from "./../app/routes/delivery_manager.js";
 
 let currentConversationId = "";
 let currentUserToken = "";
@@ -52,8 +52,7 @@ describe("Sending 'typing' status", async () => {
       message: "Unauthorized",
     });
 
-    currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user
-      .token;
+    await sendLogin(mockedWS, "user_1");
   });
 
   it("should fail id missed", async () => {
