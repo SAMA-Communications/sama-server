@@ -1,6 +1,6 @@
 # Clustering
 
-The Sama server supports clustering out of the box.
+The SAMA server supports clustering out of the box.
 You either can run a cluster between separated phisical servers or run it on a same machine with multipel SAMA-server instances running.
 
 The following commands are the way to go:
