@@ -1,7 +1,7 @@
 export default class Validation {
   constructor() {}
 
-  async validate() {
+  validate() {
     console.log("Validate working!");
     return this;
   }
