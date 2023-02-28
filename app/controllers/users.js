@@ -18,7 +18,6 @@ import { default as PacketProcessor } from "./../routes/delivery_manager.js";
 import { inMemoryBlockList } from "../store/in_memory.js";
 import { slice } from "../utils/req_res_utils.js";
 import { getClusterPort } from "../cluster/cluster_manager.js";
-import { userSchema } from "../../validations/users.js";
 
 export default class UsersController {
   constructor() {
@@ -54,12 +53,6 @@ export default class UsersController {
   async login(ws, data) {
     const requestId = data.request.id;
     const userInfo = data.request.user_login;
-
-    try {
-      await userSchema.validateAsync(userInfo);
-    } catch (e) {
-      return { response: { id: requestId, error: e.details[0] } };
-    }
 
     await validate(ws, userInfo, [validateDeviceId]);
 

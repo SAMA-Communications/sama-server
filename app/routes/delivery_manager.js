@@ -2,23 +2,24 @@ import ConversationParticipant from "../models/conversation_participant.js";
 import ConversationsController from "../controllers/conversations.js";
 import FilesController from "../controllers/files.js";
 import LastActivityiesController from "../controllers/activities.js";
-import SessionRepository from "../repositories/session_repository.js";
 import MessagesController from "../controllers/messages.js";
 import OpLog from "../models/operations_log.js";
 import OperationsLogController from "../controllers/operations_log.js";
 import OperationsLogRepository from "../repositories/operations_log_repository.js";
+import SessionRepository from "../repositories/session_repository.js";
 import StatusesController from "../controllers/status.js";
 import User from "../models/user.js";
 import UsersBlockController from "../controllers/users_block.js";
 import UsersController from "../controllers/users.js";
+import ValidationController from "../controllers/validation.js";
 import ip from "ip";
 import { ACTIVE } from "../store/session.js";
 import { ACTIVITY } from "../store/activity.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
 import { clusterNodesWS } from "../cluster/cluster_manager.js";
-import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
 import { getClusterPort } from "../cluster/cluster_manager.js";
+import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
 
 class PacketProcessor {
   constructor() {
@@ -157,7 +158,7 @@ class PacketProcessor {
     });
   }
 
-  #processJsonMessage(ws, json) {
+  async #processJsonMessage(ws, json) {
     if (
       !ACTIVE.SESSIONS.get(ws) &&
       !json.request?.user_create &&
@@ -169,6 +170,19 @@ class PacketProcessor {
     }
 
     const reqFirstParams = Object.keys(json)[0];
+    const validationResult =
+      reqFirstParams === "request"
+        ? await ValidationController.validate(
+            Object.keys(json.request)[0],
+            "request",
+            json
+          )
+        : await ValidationController.validate(reqFirstParams, null, json);
+
+    if (validationResult.response.error) {
+      return validationResult;
+    }
+
     return reqFirstParams === "request"
       ? this.jsonRequest.request[Object.keys(json.request)[0]](ws, json)
       : this.jsonRequest[reqFirstParams](ws, json);
