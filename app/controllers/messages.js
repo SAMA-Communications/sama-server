@@ -301,4 +301,4 @@ class MessagesController {
   }
 }
 
-export default new MessageChannel();
+export default new MessagesController();

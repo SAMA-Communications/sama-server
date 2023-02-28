@@ -3,6 +3,7 @@ import BlockedUser from "../models/blocked_user.js";
 import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
+import Validation from "../validations/validation.js";
 import ip from "ip";
 import jwt from "jsonwebtoken";
 import validate, {
@@ -13,14 +14,15 @@ import { ACTIVE } from "../store/session.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
+import { default as LastActivityiesController } from "./activities.js";
 import { default as PacketProcessor } from "./../routes/delivery_manager.js";
 import { getClusterPort } from "../cluster/cluster_manager.js";
 import { inMemoryBlockList } from "../store/in_memory.js";
 import { slice } from "../utils/req_res_utils.js";
-import { default as LastActivityiesController } from "./activities.js";
 
-class UsersController {
+class UsersController extends Validation {
   constructor() {
+    super();
     this.blockListRepository = new BlockListRepository(
       BlockedUser,
       inMemoryBlockList

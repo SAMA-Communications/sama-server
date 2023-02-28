@@ -3,7 +3,6 @@ import OpLog from "../models/operations_log.js";
 import OperationsLogRepository from "../repositories/operations_log_repository.js";
 import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
-import ValidationController from "../controllers/validation.js";
 import ip from "ip";
 import { ACTIVE } from "../store/session.js";
 import { ACTIVITY } from "../store/activity.js";
@@ -40,7 +39,7 @@ class PacketProcessor {
         list_blocked_users: (ws, json) => UsersBlockController.list(ws, json),
         user_create: (ws, json) => UsersController.create(ws, json),
         user_edit: (ws, json) => UsersController.edit(ws, json),
-        user_login: (ws, json) => UsersController.login(ws, json),
+        user_login: (ws, json) => UsersController.validate().login(ws, json),
         user_logout: (ws, json) => UsersController.logout(ws, json),
         user_delete: (ws, json) => UsersController.delete(ws, json),
         user_search: (ws, json) => UsersController.search(ws, json),
@@ -166,19 +165,6 @@ class PacketProcessor {
     }
 
     const reqFirstParams = Object.keys(json)[0];
-    const validationResult =
-      reqFirstParams === "request"
-        ? await ValidationController.validate(
-            Object.keys(json.request)[0],
-            "request",
-            json
-          )
-        : await ValidationController.validate(reqFirstParams, null, json);
-
-    if (validationResult.response.error) {
-      return validationResult;
-    }
-
     return reqFirstParams === "request"
       ? this.jsonRequest.request[Object.keys(json.request)[0]](ws, json)
       : this.jsonRequest[reqFirstParams](ws, json);
@@ -189,6 +175,7 @@ class PacketProcessor {
     try {
       responseData = await this.#processJsonMessage(ws, json);
     } catch (e) {
+      console.log(e);
       if (json.request) {
         responseData = {
           response: {
