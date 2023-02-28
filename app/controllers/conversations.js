@@ -22,7 +22,7 @@ import { inMemoryConversations } from "../store/in_memory.js";
 import { slice } from "../utils/req_res_utils.js";
 import { ACTIVE } from "../store/session.js";
 
-export default class ConversationsController {
+class ConversationsController {
   constructor() {
     this.conversationRepository = new ConversationRepository(
       Conversation,
@@ -337,3 +337,5 @@ export default class ConversationsController {
     };
   }
 }
+
+export default new ConversationsController();

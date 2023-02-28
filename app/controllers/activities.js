@@ -4,7 +4,7 @@ import validate, { validateIsUserId } from "../lib/validation.js";
 import { ACTIVE } from "../store/session.js";
 import { ACTIVITY } from "../store/activity.js";
 
-export default class LastActivitiesController {
+class LastActivitiesController {
   constructor() {
     this.sessionRepository = new SessionRepository(ACTIVE);
   }
@@ -78,3 +78,5 @@ export default class LastActivitiesController {
     return { response: { id: requestId, last_activity: obj } };
   }
 }
+
+export default new LastActivitiesController();

@@ -1,6 +1,5 @@
 import BlockListRepository from "../repositories/blocklist_repository.js";
 import BlockedUser from "../models/blocked_user.js";
-import LastActivityiesController from "./activities.js";
 import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
@@ -15,11 +14,12 @@ import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { default as PacketProcessor } from "./../routes/delivery_manager.js";
+import { getClusterPort } from "../cluster/cluster_manager.js";
 import { inMemoryBlockList } from "../store/in_memory.js";
 import { slice } from "../utils/req_res_utils.js";
-import { getClusterPort } from "../cluster/cluster_manager.js";
+import { default as LastActivityiesController } from "./activities.js";
 
-export default class UsersController {
+class UsersController {
   constructor() {
     this.blockListRepository = new BlockListRepository(
       BlockedUser,
@@ -245,7 +245,7 @@ export default class UsersController {
       });
     }
 
-    await new LastActivityiesController().statusUnsubscribe(ws, {
+    await LastActivityiesController.statusUnsubscribe(ws, {
       request: { id: requestId },
     });
 
@@ -295,3 +295,5 @@ export default class UsersController {
     return { response: { id: requestId, users: users } };
   }
 }
+
+export default new UsersController();

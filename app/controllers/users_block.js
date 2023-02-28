@@ -5,7 +5,7 @@ import validate, { validateIsUserId } from "../lib/validation.js";
 import { ACTIVE } from "../store/session.js";
 import { inMemoryBlockList } from "../store/in_memory.js";
 
-export default class UsersBlockController {
+class UsersBlockController {
   constructor() {
     this.blockListRepository = new BlockListRepository(
       BlockedUser,
@@ -52,3 +52,5 @@ export default class UsersBlockController {
     };
   }
 }
+
+export default new UsersBlockController();

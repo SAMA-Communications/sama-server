@@ -9,7 +9,7 @@ import validate, {
   validateFileIds,
 } from "./../lib/validation.js";
 
-export default class FilesController {
+class FilesController {
   async createUrl(ws, data) {
     const requestId = data.request.id;
     const reqFiles = data.request.create_files.map((file) =>
@@ -55,3 +55,5 @@ export default class FilesController {
     return { response: { id: requestId, file_urls: urls } };
   }
 }
+
+export default new FilesController();

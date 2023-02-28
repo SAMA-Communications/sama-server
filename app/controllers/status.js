@@ -11,7 +11,7 @@ import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { default as PacketProcessor } from "../routes/delivery_manager.js";
 import { slice } from "../utils/req_res_utils.js";
 
-export default class StatusesController {
+class StatusesController {
   constructor() {
     this.sessionRepository = new SessionRepository(ACTIVE);
   }
@@ -36,3 +36,5 @@ export default class StatusesController {
     await PacketProcessor.deliverToUserOrUsers(ws, status, statusParams.cid);
   }
 }
+
+export default new StatusesController();

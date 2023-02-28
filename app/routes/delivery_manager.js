@@ -1,16 +1,8 @@
 import ConversationParticipant from "../models/conversation_participant.js";
-import ConversationsController from "../controllers/conversations.js";
-import FilesController from "../controllers/files.js";
-import LastActivityiesController from "../controllers/activities.js";
-import MessagesController from "../controllers/messages.js";
 import OpLog from "../models/operations_log.js";
-import OperationsLogController from "../controllers/operations_log.js";
 import OperationsLogRepository from "../repositories/operations_log_repository.js";
 import SessionRepository from "../repositories/session_repository.js";
-import StatusesController from "../controllers/status.js";
 import User from "../models/user.js";
-import UsersBlockController from "../controllers/users_block.js";
-import UsersController from "../controllers/users.js";
 import ValidationController from "../controllers/validation.js";
 import ip from "ip";
 import { ACTIVE } from "../store/session.js";
@@ -18,6 +10,14 @@ import { ACTIVITY } from "../store/activity.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
 import { clusterNodesWS } from "../cluster/cluster_manager.js";
+import { default as ConversationsController } from "../controllers/conversations.js";
+import { default as FilesController } from "../controllers/files.js";
+import { default as LastActivityiesController } from "../controllers/activities.js";
+import { default as MessagesController } from "../controllers/messages.js";
+import { default as OperationsLogController } from "../controllers/operations_log.js";
+import { default as StatusesController } from "../controllers/status.js";
+import { default as UsersBlockController } from "../controllers/users_block.js";
+import { default as UsersController } from "../controllers/users.js";
 import { getClusterPort } from "../cluster/cluster_manager.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
 
@@ -26,44 +26,40 @@ class PacketProcessor {
     this.operationsLogRepository = new OperationsLogRepository(OpLog);
     this.sessionRepository = new SessionRepository(ACTIVE);
     this.jsonRequest = {
-      message: (ws, json) => new MessagesController().create(ws, json),
-      typing: (ws, json) => new StatusesController().typing(ws, json),
+      message: (ws, json) => MessagesController.create(ws, json),
+      typing: (ws, json) => StatusesController.typing(ws, json),
       request: {
-        message_edit: (ws, json) => new MessagesController().edit(ws, json),
-        message_list: (ws, json) => new MessagesController().list(ws, json),
-        message_read: (ws, json) => new MessagesController().read(ws, json),
-        message_delete: (ws, json) => new MessagesController().delete(ws, json),
-        create_files: (ws, json) => new FilesController().createUrl(ws, json),
-        get_file_urls: (ws, json) =>
-          new FilesController().getDownloadUrl(ws, json),
-        block_user: (ws, json) => new UsersBlockController().block(ws, json),
-        unblock_user: (ws, json) =>
-          new UsersBlockController().unblock(ws, json),
-        list_blocked_users: (ws, json) =>
-          new UsersBlockController().list(ws, json),
-        user_create: (ws, json) => new UsersController().create(ws, json),
-        user_edit: (ws, json) => new UsersController().edit(ws, json),
-        user_login: (ws, json) => new UsersController().login(ws, json),
-        user_logout: (ws, json) => new UsersController().logout(ws, json),
-        user_delete: (ws, json) => new UsersController().delete(ws, json),
-        user_search: (ws, json) => new UsersController().search(ws, json),
-        op_log_list: (ws, json) => new OperationsLogController().logs(ws, json),
+        message_edit: (ws, json) => MessagesController.edit(ws, json),
+        message_list: (ws, json) => MessagesController.list(ws, json),
+        message_read: (ws, json) => MessagesController.read(ws, json),
+        message_delete: (ws, json) => MessagesController.delete(ws, json),
+        create_files: (ws, json) => FilesController.createUrl(ws, json),
+        get_file_urls: (ws, json) => FilesController.getDownloadUrl(ws, json),
+        block_user: (ws, json) => UsersBlockController.block(ws, json),
+        unblock_user: (ws, json) => UsersBlockController.unblock(ws, json),
+        list_blocked_users: (ws, json) => UsersBlockController.list(ws, json),
+        user_create: (ws, json) => UsersController.create(ws, json),
+        user_edit: (ws, json) => UsersController.edit(ws, json),
+        user_login: (ws, json) => UsersController.login(ws, json),
+        user_logout: (ws, json) => UsersController.logout(ws, json),
+        user_delete: (ws, json) => UsersController.delete(ws, json),
+        user_search: (ws, json) => UsersController.search(ws, json),
+        op_log_list: (ws, json) => OperationsLogController.logs(ws, json),
         user_last_activity_subscribe: (ws, json) =>
-          new LastActivityiesController().statusSubscribe(ws, json),
+          LastActivityiesController.statusSubscribe(ws, json),
         user_last_activity_unsubscribe: (ws, json) =>
-          new LastActivityiesController().statusUnsubscribe(ws, json),
+          LastActivityiesController.statusUnsubscribe(ws, json),
         user_last_activity: (ws, json) =>
-          new LastActivityiesController().getUserStatus(ws, json),
+          LastActivityiesController.getUserStatus(ws, json),
         getParticipantsByCids: (ws, json) =>
-          new ConversationsController().getParticipantsByCids(ws, json),
+          ConversationsController.getParticipantsByCids(ws, json),
         conversation_create: (ws, json) =>
-          new ConversationsController().create(ws, json),
+          ConversationsController.create(ws, json),
         conversation_delete: (ws, json) =>
-          new ConversationsController().delete(ws, json),
+          ConversationsController.delete(ws, json),
         conversation_update: (ws, json) =>
-          new ConversationsController().update(ws, json),
-        conversation_list: (ws, json) =>
-          new ConversationsController().list(ws, json),
+          ConversationsController.update(ws, json),
+        conversation_list: (ws, json) => ConversationsController.list(ws, json),
       },
     };
   }
@@ -238,7 +234,7 @@ class PacketProcessor {
         { _id: uId },
         { $set: { recent_activity: currentTime } }
       );
-      await new LastActivityiesController().statusUnsubscribe(ws, {
+      await LastActivityiesController.statusUnsubscribe(ws, {
         request: { id: rId || "Unsubscribe" },
       });
     }

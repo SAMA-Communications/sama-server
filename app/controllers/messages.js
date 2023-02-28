@@ -5,6 +5,7 @@ import ConversationParticipant from "../models/conversation_participant.js";
 import ConversationRepository from "../repositories/conversation_repository.js";
 import Message from "../models/message.js";
 import MessageStatus from "../models/message_status.js";
+import SessionRepository from "../repositories/session_repository.js";
 import groupBy from "../utils/groupBy.js";
 import validate, {
   validateIsConversation,
@@ -26,10 +27,9 @@ import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { ObjectId } from "mongodb";
 import { default as PacketProcessor } from "../routes/delivery_manager.js";
-import SessionRepository from "../repositories/session_repository.js";
 import { slice } from "../utils/req_res_utils.js";
 
-export default class MessagesController {
+class MessagesController {
   constructor() {
     this.conversationRepository = new ConversationRepository(
       Conversation,
@@ -300,3 +300,5 @@ export default class MessagesController {
     };
   }
 }
+
+export default new MessageChannel();

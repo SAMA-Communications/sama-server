@@ -3,7 +3,7 @@ import SessionRepository from "../repositories/session_repository.js";
 import validate, { valideteTimestampQueary } from "../lib/validation.js";
 import { ACTIVE } from "../store/session.js";
 
-export default class OperationsLogController {
+class OperationsLogController {
   constructor() {
     this.sessionRepository = new SessionRepository(ACTIVE);
   }
@@ -23,3 +23,5 @@ export default class OperationsLogController {
     return { response: { id: requestId, logs: packets } };
   }
 }
+
+export default new OperationsLogController();
