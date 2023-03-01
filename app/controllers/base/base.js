@@ -1,4 +1,4 @@
-export default class Validation {
+export default class BaseController {
   constructor() {}
 
   validate(data, schema) {

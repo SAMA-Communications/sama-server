@@ -33,11 +33,31 @@ class PacketProcessor {
           json.user_create,
           usersSchemaValidation.create
         ).create(ws, json),
+      user_edit: (ws, json) =>
+        UsersController.validate(
+          json.user_edit,
+          usersSchemaValidation.edit
+        ).edit(ws, json),
       user_login: (ws, json) =>
         UsersController.validate(
           json.user_login,
           usersSchemaValidation.login
         ).login(ws, json),
+      user_logout: (ws, json) =>
+        UsersController.validate(
+          json.user_logout,
+          usersSchemaValidation.logout
+        ).logout(ws, json),
+      user_delete: (ws, json) =>
+        UsersController.validate(
+          json.user_delete,
+          usersSchemaValidation.delete
+        ).delete(ws, json),
+      user_search: (ws, json) =>
+        UsersController.validate(
+          json.user_search,
+          usersSchemaValidation.search
+        ).search(ws, json),
       request: {
         message_edit: (ws, json) => MessagesController.edit(ws, json),
         message_list: (ws, json) => MessagesController.list(ws, json),
@@ -48,12 +68,6 @@ class PacketProcessor {
         block_user: (ws, json) => UsersBlockController.block(ws, json),
         unblock_user: (ws, json) => UsersBlockController.unblock(ws, json),
         list_blocked_users: (ws, json) => UsersBlockController.list(ws, json),
-        user_create: (ws, json) => UsersController.create(ws, json),
-        user_edit: (ws, json) => UsersController.edit(ws, json),
-        user_login: (ws, json) => UsersController.login(ws, json),
-        user_logout: (ws, json) => UsersController.logout(ws, json),
-        user_delete: (ws, json) => UsersController.delete(ws, json),
-        user_search: (ws, json) => UsersController.search(ws, json),
         op_log_list: (ws, json) => OperationsLogController.logs(ws, json),
         user_last_activity_subscribe: (ws, json) =>
           LastActivityiesController.statusSubscribe(ws, json),
@@ -177,16 +191,13 @@ class PacketProcessor {
 
     let reqFirstParams = Object.keys(json)[0];
     let reqData = null;
+
     if (reqFirstParams === "request") {
       reqData = json.request;
       reqFirstParams = Object.keys(reqData)[0];
     } else {
       reqData = json;
     }
-
-    // return reqFirstParams === "request"
-    //   ? this.jsonRequest.request[Object.keys(json.request)[0]](ws, json)
-    //   : this.jsonRequest[reqFirstParams](ws, json);
 
     return this.jsonRequest[reqFirstParams](ws, reqData);
   }
@@ -196,6 +207,8 @@ class PacketProcessor {
     try {
       responseData = await this.#processJsonMessage(ws, json);
     } catch (e) {
+      //TODO: remove this line
+      console.log(e);
       if (json.request) {
         responseData = {
           response: {

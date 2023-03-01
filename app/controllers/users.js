@@ -1,15 +1,11 @@
+import BaseController from "./base/base.js";
 import BlockListRepository from "../repositories/blocklist_repository.js";
 import BlockedUser from "../models/blocked_user.js";
 import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
-import Validation from "../validations/validation.js";
 import ip from "ip";
 import jwt from "jsonwebtoken";
-import validate, {
-  validateDeviceId,
-  validateIsValidUserPassword,
-} from "../lib/validation.js";
 import { ACTIVE } from "../store/session.js";
 import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
@@ -19,7 +15,8 @@ import { default as PacketProcessor } from "./../routes/delivery_manager.js";
 import { getClusterPort } from "../cluster/cluster_manager.js";
 import { inMemoryBlockList } from "../store/in_memory.js";
 import { slice } from "../utils/req_res_utils.js";
-class UsersController extends Validation {
+
+class UsersController extends BaseController {
   constructor() {
     super();
     this.blockListRepository = new BlockListRepository(
@@ -50,8 +47,6 @@ class UsersController extends Validation {
 
   async login(ws, data) {
     const { id: requestId, user_login: userInfo } = data;
-
-    await validate(ws, userInfo, [validateDeviceId]);
 
     let user, token;
     if (!userInfo.token) {
@@ -151,18 +146,7 @@ class UsersController extends Validation {
   }
 
   async edit(ws, data) {
-    const requestId = data.request.id;
-    const userParams = data.request.user_edit;
-
-    await validate(
-      ws,
-      {
-        login: userParams.login,
-        password: userParams.current_password,
-        new_password: userParams.new_password,
-      },
-      [validateIsValidUserPassword]
-    );
+    const { id: requestId, user_edit: userParams } = data;
 
     const updateUser = new User({
       login: userParams.login,
@@ -190,7 +174,7 @@ class UsersController extends Validation {
   }
 
   async logout(ws, data) {
-    const requestId = data.request.id;
+    const { id: requestId } = data;
 
     const currentUserSession = ACTIVE.SESSIONS.get(ws);
     const userId = currentUserSession.user_id;
@@ -233,7 +217,7 @@ class UsersController extends Validation {
   }
 
   async delete(ws, data) {
-    const requestId = data.request.id;
+    const { id: requestId } = data;
 
     const userId = this.sessionRepository.getSessionUserId(ws);
     if (!userId) {
@@ -265,8 +249,7 @@ class UsersController extends Validation {
   }
 
   async search(ws, data) {
-    const requestId = data.request.id;
-    const requestParam = data.request.user_search;
+    const { id: requestId, user_search: requestParam } = data;
 
     const limit =
       requestParam.limit > CONSTANTS.LIMIT_MAX
