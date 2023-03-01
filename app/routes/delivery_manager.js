@@ -19,6 +19,7 @@ import { default as UsersBlockController } from "../controllers/users_block.js";
 import { default as UsersController } from "../controllers/users.js";
 import { getClusterPort } from "../cluster/cluster_manager.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
+import { usersSchemaValidation } from "../validations/users_schema_validation.js";
 
 class PacketProcessor {
   constructor() {
@@ -27,6 +28,16 @@ class PacketProcessor {
     this.jsonRequest = {
       message: (ws, json) => MessagesController.create(ws, json),
       typing: (ws, json) => StatusesController.typing(ws, json),
+      user_create: (ws, json) =>
+        UsersController.validate(
+          json.user_create,
+          usersSchemaValidation.create
+        ).create(ws, json),
+      user_login: (ws, json) =>
+        UsersController.validate(
+          json.user_login,
+          usersSchemaValidation.login
+        ).login(ws, json),
       request: {
         message_edit: (ws, json) => MessagesController.edit(ws, json),
         message_list: (ws, json) => MessagesController.list(ws, json),
@@ -39,8 +50,7 @@ class PacketProcessor {
         list_blocked_users: (ws, json) => UsersBlockController.list(ws, json),
         user_create: (ws, json) => UsersController.create(ws, json),
         user_edit: (ws, json) => UsersController.edit(ws, json),
-        user_login: (ws, json) =>
-          UsersController.validate(json, "login").login(ws, json),
+        user_login: (ws, json) => UsersController.login(ws, json),
         user_logout: (ws, json) => UsersController.logout(ws, json),
         user_delete: (ws, json) => UsersController.delete(ws, json),
         user_search: (ws, json) => UsersController.search(ws, json),
@@ -165,10 +175,20 @@ class PacketProcessor {
       });
     }
 
-    const reqFirstParams = Object.keys(json)[0];
-    return reqFirstParams === "request"
-      ? this.jsonRequest.request[Object.keys(json.request)[0]](ws, json)
-      : this.jsonRequest[reqFirstParams](ws, json);
+    let reqFirstParams = Object.keys(json)[0];
+    let reqData = null;
+    if (reqFirstParams === "request") {
+      reqData = json.request;
+      reqFirstParams = Object.keys(reqData)[0];
+    } else {
+      reqData = json;
+    }
+
+    // return reqFirstParams === "request"
+    //   ? this.jsonRequest.request[Object.keys(json.request)[0]](ws, json)
+    //   : this.jsonRequest[reqFirstParams](ws, json);
+
+    return this.jsonRequest[reqFirstParams](ws, reqData);
   }
 
   async processJsonMessageOrError(ws, json) {

@@ -19,10 +19,9 @@ import { default as PacketProcessor } from "./../routes/delivery_manager.js";
 import { getClusterPort } from "../cluster/cluster_manager.js";
 import { inMemoryBlockList } from "../store/in_memory.js";
 import { slice } from "../utils/req_res_utils.js";
-import { usersSchemaValidation } from "../validations/users_schema_validation.js";
 class UsersController extends Validation {
   constructor() {
-    super(usersSchemaValidation);
+    super();
     this.blockListRepository = new BlockListRepository(
       BlockedUser,
       inMemoryBlockList
@@ -31,12 +30,9 @@ class UsersController extends Validation {
   }
 
   async create(ws, data) {
-    const requestId = data.request.id;
+    const { id: requestId, user_create: reqData } = data;
 
-    const userParams = slice(
-      data.request.user_create,
-      ALLOW_FIELDS.ALLOWED_FIELDS_USER_CREATE
-    );
+    const userParams = slice(reqData, ALLOW_FIELDS.ALLOWED_FIELDS_USER_CREATE);
 
     const isUserCreate = await User.findOne({ login: userParams.login });
     if (!isUserCreate) {
@@ -53,8 +49,7 @@ class UsersController extends Validation {
   }
 
   async login(ws, data) {
-    const requestId = data.request.id;
-    const userInfo = data.request.user_login;
+    const { id: requestId, user_login: userInfo } = data;
 
     await validate(ws, userInfo, [validateDeviceId]);
 
