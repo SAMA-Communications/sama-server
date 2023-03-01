@@ -39,7 +39,8 @@ class PacketProcessor {
         list_blocked_users: (ws, json) => UsersBlockController.list(ws, json),
         user_create: (ws, json) => UsersController.create(ws, json),
         user_edit: (ws, json) => UsersController.edit(ws, json),
-        user_login: (ws, json) => UsersController.validate().login(ws, json),
+        user_login: (ws, json) =>
+          UsersController.validate(json, "login").login(ws, json),
         user_logout: (ws, json) => UsersController.logout(ws, json),
         user_delete: (ws, json) => UsersController.delete(ws, json),
         user_search: (ws, json) => UsersController.search(ws, json),
@@ -175,7 +176,6 @@ class PacketProcessor {
     try {
       responseData = await this.#processJsonMessage(ws, json);
     } catch (e) {
-      console.log(e);
       if (json.request) {
         responseData = {
           response: {

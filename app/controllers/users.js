@@ -19,10 +19,10 @@ import { default as PacketProcessor } from "./../routes/delivery_manager.js";
 import { getClusterPort } from "../cluster/cluster_manager.js";
 import { inMemoryBlockList } from "../store/in_memory.js";
 import { slice } from "../utils/req_res_utils.js";
-
+import { usersSchemaValidation } from "../validations/users_schema_validation.js";
 class UsersController extends Validation {
   constructor() {
-    super();
+    super(usersSchemaValidation);
     this.blockListRepository = new BlockListRepository(
       BlockedUser,
       inMemoryBlockList

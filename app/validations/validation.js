@@ -1,23 +1,20 @@
-import Joi from "joi";
-
 export default class Validation {
-  constructor() {
-    this.shem;
+  constructor(schema) {
+    this.schema = schema;
   }
 
-  validate() {
-    const shema = Joi.object({
-      login: Joi.string().min(10).max(30).required(),
-      password: Joi.string().required(),
-      deviceId: Joi.number(),
-    });
-    const res = shema.validate({
-      login: "123",
-      password: "123",
-      deviceId: 123412,
-    });
-    console.log("result:", res);
-    console.log("Validate working!");
+  validate(json, schemaName) {
+    const reqFirstParams = Object.keys(json)[0];
+    const request =
+      reqFirstParams === "request"
+        ? json.request[Object.keys(json.request)[0]]
+        : json[reqFirstParams];
+
+    const res = this.schema[schemaName].validate(request);
+    if (res.error) {
+      throw res.error;
+    }
+
     return this;
   }
 }
