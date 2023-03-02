@@ -86,6 +86,7 @@ export const ERROR_STATUES = {
   // Status -->
   STATUS_ID_MISSED: { status: 422, message: "Status ID missed" },
   STATUS_TYPE_MISSED: { status: 422, message: "Status Type missed" },
+  STATUS_T_MISSED: { status: 422, message: "Status 't' missed" },
   // Other -->
   LOG_TIMETAMP_MISSED: { status: 422, message: "Gt or lt query missed" },
   CID_REQUIRED: {

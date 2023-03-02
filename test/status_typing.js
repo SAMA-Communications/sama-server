@@ -138,6 +138,7 @@ describe("Sending 'typing' status", async () => {
         id: "xyz",
         type: "start",
         cid: "currentConversationId",
+        t: 15673838833,
       },
     };
     const responseData = await PacketProcessor.processJsonMessageOrError(
@@ -158,6 +159,7 @@ describe("Sending 'typing' status", async () => {
         id: "xyz",
         type: "start",
         cid: currentConversationId,
+        t: 15673838833,
       },
     };
     const responseData = await PacketProcessor.processJsonMessageOrError(
