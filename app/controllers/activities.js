@@ -10,15 +10,16 @@ class LastActivitiesController {
   }
 
   async statusSubscribe(ws, data) {
-    const requestId = data.request.id;
-    const uId = data.request.user_last_activity_subscribe.id;
-    await validate(ws, { uId }, [validateIsUserId]);
+    const {
+      id: requestId,
+      user_last_activity_subscribe: { id: uId },
+    } = data;
 
     const currentUId = this.sessionRepository.getSessionUserId(ws);
     const obj = {};
 
     if (ACTIVITY.SUBSCRIBED_TO[currentUId]) {
-      this.statusUnsubscribe(ws, { request: { id: requestId } });
+      this.statusUnsubscribe(ws, { id: requestId });
     }
     ACTIVITY.SUBSCRIBED_TO[currentUId] = uId;
 
@@ -39,7 +40,7 @@ class LastActivitiesController {
   }
 
   async statusUnsubscribe(ws, data) {
-    const requestId = data.request.id;
+    const { id: requestId } = data;
     const currentUId = this.sessionRepository.getSessionUserId(ws);
 
     const oldTrackerUserId = ACTIVITY.SUBSCRIBED_TO[currentUId];
@@ -58,8 +59,10 @@ class LastActivitiesController {
   }
 
   async getUserStatus(ws, data) {
-    const requestId = data.request.id;
-    const uIds = data.request.user_last_activity.ids;
+    const {
+      id: requestId,
+      user_last_activity: { ids: uIds },
+    } = data;
     const obj = {};
 
     const uLastActivities = await User.findAll({ _id: { $in: uIds } }, [

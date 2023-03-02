@@ -24,6 +24,7 @@ import { messagesSchemaValidation } from "../validations/messages_schema_validat
 import { statusSchemaValidation } from "../validations/status_schema_validation.js";
 import { filesSchemaValidation } from "../validations/files_schema_validation.js";
 import { usersBlockSchemaValidation } from "../validations/users_block_schema_validation.js";
+import { activitiesSchemaValidation } from "../validations/activities_schema_validation.js";
 
 class PacketProcessor {
   constructor() {
@@ -120,13 +121,22 @@ class PacketProcessor {
           json.list_blocked_users,
           usersBlockSchemaValidation.list
         ).list(ws, json),
+      user_last_activity_subscribe: (ws, json) =>
+        LastActivityiesController.validate(
+          json.user_last_activity_subscribe,
+          activitiesSchemaValidation.statusSubscribe
+        ).statusSubscribe(ws, json),
+      user_last_activity_unsubscribe: (ws, json) =>
+        LastActivityiesController.validate(
+          json.user_last_activity_unsubscribe,
+          activitiesSchemaValidation.statusUnsubscribe
+        ).statusUnsubscribe(ws, json),
+      user_last_activity: (ws, json) =>
+        LastActivityiesController.validate(
+          json.user_last_activity,
+          activitiesSchemaValidation.getUserStatus
+        ).getUserStatus(ws, json),
       request: {
-        user_last_activity_subscribe: (ws, json) =>
-          LastActivityiesController.statusSubscribe(ws, json),
-        user_last_activity_unsubscribe: (ws, json) =>
-          LastActivityiesController.statusUnsubscribe(ws, json),
-        user_last_activity: (ws, json) =>
-          LastActivityiesController.getUserStatus(ws, json),
         getParticipantsByCids: (ws, json) =>
           ConversationsController.getParticipantsByCids(ws, json),
         conversation_create: (ws, json) =>
