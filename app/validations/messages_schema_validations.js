@@ -7,7 +7,15 @@ export const messagesSchemaValidation = {
       id: Joi.string().min(1).required(),
       cid: Joi.string().required(),
       x: Joi.object(),
-      attachments: Joi.array().items(Joi.object().required()).required(),
+      attachments: Joi.array()
+        .items(
+          Joi.object({
+            file_id: Joi.string().required(),
+            file_name: Joi.string().max(40).required(),
+          }).required()
+        )
+        .min(1)
+        .required(),
     }),
     Joi.object({
       id: Joi.string().min(1).required(),

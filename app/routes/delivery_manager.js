@@ -22,6 +22,7 @@ import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
 import { usersSchemaValidation } from "../validations/users_schema_validation.js";
 import { messagesSchemaValidation } from "../validations/messages_schema_validations.js";
 import { statusSchemaValidation } from "../validations/status_schema_validation.js";
+import { filesSchemaValidation } from "../validations/files_schema_validation.js";
 
 class PacketProcessor {
   constructor() {
@@ -88,9 +89,17 @@ class PacketProcessor {
           json.user_search,
           usersSchemaValidation.search
         ).search(ws, json),
+      create_files: (ws, json) =>
+        FilesController.validate(
+          json.create_files,
+          filesSchemaValidation.createUrl
+        ).createUrl(ws, json),
+      get_file_urls: (ws, json) =>
+        FilesController.validate(
+          json.user_search,
+          filesSchemaValidation.getDownloadUrl
+        ).getDownloadUrl(ws, json),
       request: {
-        create_files: (ws, json) => FilesController.createUrl(ws, json),
-        get_file_urls: (ws, json) => FilesController.getDownloadUrl(ws, json),
         block_user: (ws, json) => UsersBlockController.block(ws, json),
         unblock_user: (ws, json) => UsersBlockController.unblock(ws, json),
         list_blocked_users: (ws, json) => UsersBlockController.list(ws, json),
