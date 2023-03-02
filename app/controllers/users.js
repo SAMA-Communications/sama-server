@@ -146,18 +146,21 @@ class UsersController extends BaseController {
   }
 
   async edit(ws, data) {
-    const { id: requestId, user_edit: userParams } = data;
+    const {
+      id: requestId,
+      user_edit: { login, current_password, new_password },
+    } = data;
 
-    const updateUser = new User({
-      login: userParams.login,
-      password: userParams.new_password,
-    });
-
+    const updateUser = await User.findOne({ login })?.params;
+    if (!(await updateUser.isValidPassword(current_password))) {
+      throw new Error(ERROR_STATUES.UNAUTHORIZED.message, {
+        cause: ERROR_STATUES.UNAUTHORIZED,
+      });
+    }
+    updateUser.password = new_password;
     await updateUser.encryptAndSetPassword();
     await User.updateOne(
-      {
-        login: userParams.login,
-      },
+      { login },
       {
         $set: {
           password_salt: updateUser.params.password_salt,
@@ -166,7 +169,7 @@ class UsersController extends BaseController {
         },
       }
     );
-    const updatedUser = await User.findOne({ login: userParams.login });
+    const updatedUser = await User.findOne({ login });
 
     return {
       response: { id: requestId, user: updatedUser.visibleParams() },

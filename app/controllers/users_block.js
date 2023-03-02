@@ -1,12 +1,13 @@
+import BaseController from "./base/base.js";
 import BlockListRepository from "../repositories/blocklist_repository.js";
 import BlockedUser from "../models/blocked_user.js";
 import SessionRepository from "../repositories/session_repository.js";
-import validate, { validateIsUserId } from "../lib/validation.js";
 import { ACTIVE } from "../store/session.js";
 import { inMemoryBlockList } from "../store/in_memory.js";
 
-class UsersBlockController {
+class UsersBlockController extends BaseController {
   constructor() {
+    super();
     this.blockListRepository = new BlockListRepository(
       BlockedUser,
       inMemoryBlockList

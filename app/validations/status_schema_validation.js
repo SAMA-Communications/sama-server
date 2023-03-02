@@ -6,5 +6,5 @@ export const statusSchemaValidation = {
     cid: Joi.string().required(),
     type: Joi.string().allow("start", "stop"),
     t: Joi.number().required(),
-  }),
+  }).required(),
 };

@@ -1,11 +1,13 @@
+import BaseController from "./base/base.js";
 import SessionRepository from "../repositories/session_repository.js";
 import Status from "../models/status.js";
 import validate, { validateIsConversationByCID } from "../lib/validation.js";
 import { ACTIVE } from "../store/session.js";
 import { default as PacketProcessor } from "../routes/delivery_manager.js";
 
-class StatusesController {
+class StatusesController extends BaseController {
   constructor() {
+    super();
     this.sessionRepository = new SessionRepository(ACTIVE);
   }
 

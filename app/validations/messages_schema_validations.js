@@ -28,18 +28,18 @@ export const messagesSchemaValidation = {
   edit: Joi.object({
     id: Joi.string().min(1).required(),
     body: Joi.string().required(),
-  }),
+  }).required(),
   list: Joi.object({
     cid: Joi.string().required(),
     ids: Joi.array().items(Joi.string()).required(),
-  }),
+  }).required(),
   read: Joi.object({
     cid: Joi.string().required(),
     ids: Joi.array().items(Joi.string()).required(),
-  }),
+  }).required(),
   delete: Joi.object({
     cid: Joi.string().required(),
     type: Joi.string().min(1).required(),
     ids: Joi.array().items(Joi.string()).required(),
-  }),
+  }).required(),
 };

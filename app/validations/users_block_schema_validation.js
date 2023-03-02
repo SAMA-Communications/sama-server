@@ -7,5 +7,5 @@ export const usersBlockSchemaValidation = {
   unblock: Joi.object({
     id: Joi.string().required(),
   }).required(),
-  list: Joi.object({}),
+  list: Joi.object({}).required(),
 };

@@ -25,6 +25,7 @@ import { statusSchemaValidation } from "../validations/status_schema_validation.
 import { filesSchemaValidation } from "../validations/files_schema_validation.js";
 import { usersBlockSchemaValidation } from "../validations/users_block_schema_validation.js";
 import { activitiesSchemaValidation } from "../validations/activities_schema_validation.js";
+import { conversationsSchemaValidation } from "../validations/conversations_schema_validation.js";
 
 class PacketProcessor {
   constructor() {
@@ -136,17 +137,31 @@ class PacketProcessor {
           json.user_last_activity,
           activitiesSchemaValidation.getUserStatus
         ).getUserStatus(ws, json),
-      request: {
-        getParticipantsByCids: (ws, json) =>
-          ConversationsController.getParticipantsByCids(ws, json),
-        conversation_create: (ws, json) =>
-          ConversationsController.create(ws, json),
-        conversation_delete: (ws, json) =>
-          ConversationsController.delete(ws, json),
-        conversation_update: (ws, json) =>
-          ConversationsController.update(ws, json),
-        conversation_list: (ws, json) => ConversationsController.list(ws, json),
-      },
+      getParticipantsByCids: (ws, json) =>
+        ConversationsController.validate(
+          json.getParticipantsByCids,
+          conversationsSchemaValidation.getParticipantsByCids
+        ).getParticipantsByCids(ws, json),
+      conversation_create: (ws, json) =>
+        ConversationsController.validate(
+          json.conversation_create,
+          conversationsSchemaValidation.create
+        ).create(ws, json),
+      conversation_delete: (ws, json) =>
+        ConversationsController.validate(
+          json.conversation_delete,
+          conversationsSchemaValidation.delete
+        ).delete(ws, json),
+      conversation_update: (ws, json) =>
+        ConversationsController.validate(
+          json.conversation_update,
+          conversationsSchemaValidation.update
+        ).update(ws, json),
+      conversation_list: (ws, json) =>
+        ConversationsController.validate(
+          json.conversation_update,
+          conversationsSchemaValidation.list
+        ).list(ws, json),
     };
   }
 

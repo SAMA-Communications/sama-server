@@ -1,11 +1,12 @@
+import BaseController from "./base/base.js";
 import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
-import validate, { validateIsUserId } from "../lib/validation.js";
 import { ACTIVE } from "../store/session.js";
 import { ACTIVITY } from "../store/activity.js";
 
-class LastActivitiesController {
+class LastActivitiesController extends BaseController {
   constructor() {
+    super();
     this.sessionRepository = new SessionRepository(ACTIVE);
   }
 

@@ -1,9 +1,11 @@
+import BaseController from "./base/base.js";
 import OpLog from "../models/operations_log.js";
 import SessionRepository from "../repositories/session_repository.js";
 import { ACTIVE } from "../store/session.js";
 
-class OperationsLogController {
+class OperationsLogController extends BaseController {
   constructor() {
+    super();
     this.sessionRepository = new SessionRepository(ACTIVE);
   }
 

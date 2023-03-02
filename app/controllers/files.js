@@ -1,7 +1,12 @@
+import BaseController from "./base/base.js";
 import File from "./../models/file.js";
 import { storageClient } from "./../../index.js";
 
-class FilesController {
+class FilesController extends BaseController {
+  constructor() {
+    super();
+  }
+
   async createUrl(ws, data) {
     const { id: requestId, create_files: reqFiles } = data;
 

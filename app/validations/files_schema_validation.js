@@ -14,5 +14,5 @@ export const filesSchemaValidation = {
     .required(),
   getDownloadUrl: Joi.object({
     file_ids: Joi.array().items(Joi.string()).max(10).required(),
-  }),
+  }).required(),
 };
