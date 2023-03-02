@@ -96,14 +96,18 @@ class PacketProcessor {
         ).createUrl(ws, json),
       get_file_urls: (ws, json) =>
         FilesController.validate(
-          json.user_search,
+          json.get_file_urls,
           filesSchemaValidation.getDownloadUrl
         ).getDownloadUrl(ws, json),
+      op_log_list: (ws, json) =>
+        OperationsLogController.validate(
+          json.op_log_list,
+          operationsLogSchemaValidation.logs
+        ).logs(ws, json),
       request: {
         block_user: (ws, json) => UsersBlockController.block(ws, json),
         unblock_user: (ws, json) => UsersBlockController.unblock(ws, json),
         list_blocked_users: (ws, json) => UsersBlockController.list(ws, json),
-        op_log_list: (ws, json) => OperationsLogController.logs(ws, json),
         user_last_activity_subscribe: (ws, json) =>
           LastActivityiesController.statusSubscribe(ws, json),
         user_last_activity_unsubscribe: (ws, json) =>

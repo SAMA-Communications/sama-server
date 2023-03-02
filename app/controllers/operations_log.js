@@ -1,6 +1,5 @@
 import OpLog from "../models/operations_log.js";
 import SessionRepository from "../repositories/session_repository.js";
-import validate, { valideteTimestampQueary } from "../lib/validation.js";
 import { ACTIVE } from "../store/session.js";
 
 class OperationsLogController {
@@ -9,9 +8,12 @@ class OperationsLogController {
   }
 
   async logs(ws, data) {
-    const requestId = data.request.id;
-    const { gt, lt } = data.request.op_log_list.created_at;
-    await validate(ws, { gt, lt }, [valideteTimestampQueary]);
+    const {
+      id: requestId,
+      op_log_list: {
+        created_at: { gt, lt },
+      },
+    } = data;
 
     let query = {
       user_id: this.sessionRepository.getSessionUserId(ws),
@@ -19,7 +21,6 @@ class OperationsLogController {
     };
 
     const packets = await OpLog.findAll(query, ["user_id", "packet"]);
-    console.log(packets);
     return { response: { id: requestId, logs: packets } };
   }
 }

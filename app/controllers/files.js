@@ -1,8 +1,4 @@
 import File from "./../models/file.js";
-import validate, {
-  validateCountOfFileIds,
-  validateFileIds,
-} from "./../lib/validation.js";
 import { storageClient } from "./../../index.js";
 
 class FilesController {
