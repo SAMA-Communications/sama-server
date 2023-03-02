@@ -1,15 +1,8 @@
 import SessionRepository from "../repositories/session_repository.js";
 import Status from "../models/status.js";
-import validate, {
-  validateStatusConversationType,
-  validateIsConversationByCID,
-  validateStatusId,
-  validateIsCID,
-} from "../lib/validation.js";
+import validate, { validateIsConversationByCID } from "../lib/validation.js";
 import { ACTIVE } from "../store/session.js";
-import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { default as PacketProcessor } from "../routes/delivery_manager.js";
-import { slice } from "../utils/req_res_utils.js";
 
 class StatusesController {
   constructor() {
@@ -17,14 +10,8 @@ class StatusesController {
   }
 
   async typing(ws, data) {
-    const statusParams = slice(
-      data.typing,
-      ALLOW_FIELDS.ALLOWED_FILEDS_TYPINGS
-    );
-    await validate(ws, statusParams, [
-      validateStatusId,
-      validateStatusConversationType,
-      validateIsCID,
+    const statusParams = data.typing;
+    await validate(ws, { cid: statusParams.cid }, [
       validateIsConversationByCID,
     ]);
     statusParams.from = this.sessionRepository.getSessionUserId(ws);

@@ -21,12 +21,18 @@ import { getClusterPort } from "../cluster/cluster_manager.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
 import { usersSchemaValidation } from "../validations/users_schema_validation.js";
 import { messagesSchemaValidation } from "../validations/messages_schema_validations.js";
+import { statusSchemaValidation } from "../validations/status_schema_validation.js";
 
 class PacketProcessor {
   constructor() {
     this.operationsLogRepository = new OperationsLogRepository(OpLog);
     this.sessionRepository = new SessionRepository(ACTIVE);
     this.jsonRequest = {
+      typing: (ws, json) =>
+        StatusesController.validate(
+          json.typing,
+          statusSchemaValidation.typing
+        ).typing(ws, json),
       message: (ws, json) =>
         MessagesController.validate(
           json.message,
@@ -52,7 +58,6 @@ class PacketProcessor {
           json.message_delete,
           messagesSchemaValidation.delete
         ).delete(ws, json),
-      typing: (ws, json) => StatusesController.typing(ws, json),
       user_create: (ws, json) =>
         UsersController.validate(
           json.user_create,

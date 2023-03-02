@@ -11,24 +11,17 @@ import groupBy from "../utils/groupBy.js";
 import validate, {
   validateIsConversation,
   validateIsConversationByCID,
-  validateIsMessageById,
   validateIsUserAccess,
-  validateMessageBody,
-  validateMessageDeleteType,
-  validateMessageId,
-  validateIsCID,
 } from "../lib/validation.js";
 import {
   inMemoryBlockList,
   inMemoryConversations,
 } from "../store/in_memory.js";
 import { ACTIVE } from "../store/session.js";
-import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { ObjectId } from "mongodb";
 import { default as PacketProcessor } from "../routes/delivery_manager.js";
-import { slice } from "../utils/req_res_utils.js";
 
 class MessagesController extends BaseController {
   constructor() {
