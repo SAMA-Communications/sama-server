@@ -23,6 +23,7 @@ import { usersSchemaValidation } from "../validations/users_schema_validation.js
 import { messagesSchemaValidation } from "../validations/messages_schema_validations.js";
 import { statusSchemaValidation } from "../validations/status_schema_validation.js";
 import { filesSchemaValidation } from "../validations/files_schema_validation.js";
+import { usersBlockSchemaValidation } from "../validations/users_block_schema_validation.js";
 
 class PacketProcessor {
   constructor() {
@@ -104,10 +105,22 @@ class PacketProcessor {
           json.op_log_list,
           operationsLogSchemaValidation.logs
         ).logs(ws, json),
+      block_user: (ws, json) =>
+        UsersBlockController.validate(
+          json.block_user,
+          usersBlockSchemaValidation.block
+        ).block(ws, json),
+      unblock_user: (ws, json) =>
+        UsersBlockController.validate(
+          json.unblock_user,
+          usersBlockSchemaValidation.unblock
+        ).unblock(ws, json),
+      list_blocked_users: (ws, json) =>
+        UsersBlockController.validate(
+          json.list_blocked_users,
+          usersBlockSchemaValidation.list
+        ).list(ws, json),
       request: {
-        block_user: (ws, json) => UsersBlockController.block(ws, json),
-        unblock_user: (ws, json) => UsersBlockController.unblock(ws, json),
-        list_blocked_users: (ws, json) => UsersBlockController.list(ws, json),
         user_last_activity_subscribe: (ws, json) =>
           LastActivityiesController.statusSubscribe(ws, json),
         user_last_activity_unsubscribe: (ws, json) =>
