@@ -39,7 +39,7 @@ class FilesController extends BaseController {
       const fileUrl = await storageClient.getDownloadUrl(objectIds[i]);
       urls[objectIds[i]] = fileUrl;
     }
-
+    console.log("urls: ", urls);
     return { response: { id: requestId, file_urls: urls } };
   }
 }

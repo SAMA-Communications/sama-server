@@ -22,6 +22,7 @@ describe("User cycle", async () => {
           user_create: {
             login: userLogin,
             password: "user_paswword_1",
+            deviceId: "deveice1",
           },
           id: "1_1",
         },
@@ -42,6 +43,7 @@ describe("User cycle", async () => {
           user_create: {
             login: userLogin,
             password: "user_paswword_1",
+            deviceId: "deveice1",
           },
           id: "1_2",
         },
@@ -119,7 +121,7 @@ describe("User cycle", async () => {
         },
       };
       const responseData = await PacketProcessor.processJsonMessageOrError(
-        "xc",
+        "test",
         requestData
       );
 
@@ -179,7 +181,7 @@ describe("User cycle", async () => {
       const requestData = {
         request: {
           user_login: {
-            deviceId: 123,
+            deviceId: "123",
             login: userLogin,
             password: "312sad",
           },
@@ -202,7 +204,7 @@ describe("User cycle", async () => {
         request: {
           user_edit: {
             login: "dasdsad",
-            // current_password: "user_paswword_1",
+            current_password: "user_paswword_1",
             new_password: "312sad",
           },
           id: "5_1",

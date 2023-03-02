@@ -7,14 +7,12 @@ import UserToken from "../models/user_token.js";
 import ip from "ip";
 import jwt from "jsonwebtoken";
 import { ACTIVE } from "../store/session.js";
-import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { default as LastActivityiesController } from "./activities.js";
 import { default as PacketProcessor } from "./../routes/delivery_manager.js";
 import { getClusterPort } from "../cluster/cluster_manager.js";
 import { inMemoryBlockList } from "../store/in_memory.js";
-import { slice } from "../utils/req_res_utils.js";
 
 class UsersController extends BaseController {
   constructor() {
@@ -29,12 +27,10 @@ class UsersController extends BaseController {
   async create(ws, data) {
     const { id: requestId, user_create: reqData } = data;
 
-    const userParams = slice(reqData, ALLOW_FIELDS.ALLOWED_FIELDS_USER_CREATE);
-
-    const isUserCreate = await User.findOne({ login: userParams.login });
+    const isUserCreate = await User.findOne({ login: reqData.login });
     if (!isUserCreate) {
-      userParams["recent_activity"] = Date.now();
-      const user = new User(userParams);
+      reqData["recent_activity"] = Date.now();
+      const user = new User(reqData);
       await user.save();
 
       return { response: { id: requestId, user: user.visibleParams() } };
@@ -151,13 +147,20 @@ class UsersController extends BaseController {
       user_edit: { login, current_password, new_password },
     } = data;
 
-    const updateUser = await User.findOne({ login })?.params;
-    if (!(await updateUser.isValidPassword(current_password))) {
-      throw new Error(ERROR_STATUES.UNAUTHORIZED.message, {
-        cause: ERROR_STATUES.UNAUTHORIZED,
+    const currentUser = await User.findOne({ login });
+    if (!currentUser) {
+      throw new Error(ERROR_STATUES.USER_LOGIN_OR_PASS.message, {
+        cause: ERROR_STATUES.USER_LOGIN_OR_PASS,
       });
     }
-    updateUser.password = new_password;
+
+    if (!(await currentUser.isValidPassword(current_password))) {
+      throw new Error(ERROR_STATUES.INCORRECT_CURRENT_PASSWORD.message, {
+        cause: ERROR_STATUES.INCORRECT_CURRENT_PASSWORD,
+      });
+    }
+
+    const updateUser = new User({ login, password: new_password });
     await updateUser.encryptAndSetPassword();
     await User.updateOne(
       { login },

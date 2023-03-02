@@ -7,20 +7,15 @@ import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
 import validate, {
   validateConversationisUserOwner,
-  validateConversationName,
-  validateConversationType,
   validateIsConversation,
   validateIsUserSendHimSelf,
-  validateParticipants,
   validateParticipantsInUType,
   validateParticipantsLimit,
 } from "../lib/validation.js";
-import { ALLOW_FIELDS } from "../constants/fields_constants.js";
 import { CONSTANTS } from "../constants/constants.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { ObjectId } from "mongodb";
 import { inMemoryConversations } from "../store/in_memory.js";
-import { slice } from "../utils/req_res_utils.js";
 import { ACTIVE } from "../store/session.js";
 
 class ConversationsController extends BaseController {
