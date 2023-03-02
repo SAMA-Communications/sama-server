@@ -20,13 +20,38 @@ import { default as UsersController } from "../controllers/users.js";
 import { getClusterPort } from "../cluster/cluster_manager.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
 import { usersSchemaValidation } from "../validations/users_schema_validation.js";
+import { messagesSchemaValidation } from "../validations/messages_schema_validations.js";
 
 class PacketProcessor {
   constructor() {
     this.operationsLogRepository = new OperationsLogRepository(OpLog);
     this.sessionRepository = new SessionRepository(ACTIVE);
     this.jsonRequest = {
-      message: (ws, json) => MessagesController.create(ws, json),
+      message: (ws, json) =>
+        MessagesController.validate(
+          json.message,
+          messagesSchemaValidation.create
+        ).create(ws, json),
+      message_edit: (ws, json) =>
+        MessagesController.validate(
+          json.message_edit,
+          messagesSchemaValidation.edit
+        ).edit(ws, json),
+      message_list: (ws, json) =>
+        MessagesController.validate(
+          json.message_list,
+          messagesSchemaValidation.list
+        ).list(ws, json),
+      message_read: (ws, json) =>
+        MessagesController.validate(
+          json.message_read,
+          messagesSchemaValidation.read
+        ).read(ws, json),
+      message_delete: (ws, json) =>
+        MessagesController.validate(
+          json.message_delete,
+          messagesSchemaValidation.delete
+        ).delete(ws, json),
       typing: (ws, json) => StatusesController.typing(ws, json),
       user_create: (ws, json) =>
         UsersController.validate(
@@ -59,10 +84,6 @@ class PacketProcessor {
           usersSchemaValidation.search
         ).search(ws, json),
       request: {
-        message_edit: (ws, json) => MessagesController.edit(ws, json),
-        message_list: (ws, json) => MessagesController.list(ws, json),
-        message_read: (ws, json) => MessagesController.read(ws, json),
-        message_delete: (ws, json) => MessagesController.delete(ws, json),
         create_files: (ws, json) => FilesController.createUrl(ws, json),
         get_file_urls: (ws, json) => FilesController.getDownloadUrl(ws, json),
         block_user: (ws, json) => UsersBlockController.block(ws, json),
