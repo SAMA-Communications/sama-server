@@ -159,7 +159,7 @@ class PacketProcessor {
         ).update(ws, json),
       conversation_list: (ws, json) =>
         ConversationsController.validate(
-          json.conversation_update,
+          json.conversation_list,
           conversationsSchemaValidation.list
         ).list(ws, json),
     };
@@ -285,7 +285,7 @@ class PacketProcessor {
       responseData = await this.#processJsonMessage(ws, json);
     } catch (e) {
       //TODO: remove this line
-      console.log(e);
+      // console.log(e);
       if (json.request) {
         responseData = {
           response: {
