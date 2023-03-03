@@ -26,6 +26,7 @@ import { filesSchemaValidation } from "../validations/files_schema_validation.js
 import { usersBlockSchemaValidation } from "../validations/users_block_schema_validation.js";
 import { activitiesSchemaValidation } from "../validations/activities_schema_validation.js";
 import { conversationsSchemaValidation } from "../validations/conversations_schema_validation.js";
+import { operationsLogSchemaValidation } from "../validations/operations_log_schema_validation.js";
 
 class PacketProcessor {
   constructor() {
