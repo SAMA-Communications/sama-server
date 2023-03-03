@@ -2,46 +2,49 @@ import Joi from "joi";
 import { ERROR_STATUES } from "./../constants/http_constants.js";
 
 export const messagesSchemaValidation = {
-  // test this options
-  create: Joi.object({
-    id: Joi.string()
-      .min(1)
-      .required()
-      .error(
-        new Error(ERROR_STATUES.MESSAGE_ID_MISSED.message, {
-          cause: ERROR_STATUES.MESSAGE_ID_MISSED,
-        })
+  create: Joi.object()
+    .keys({
+      id: Joi.string()
+        .min(1)
+        .required()
+        .error(
+          new Error(ERROR_STATUES.MESSAGE_ID_MISSED.message, {
+            cause: ERROR_STATUES.MESSAGE_ID_MISSED,
+          })
+        ),
+      cid: Joi.string()
+        .required()
+        .error(
+          new Error(ERROR_STATUES.CID_REQUIRED.message, {
+            cause: ERROR_STATUES.CID_REQUIRED,
+          })
+        ),
+      x: Joi.object(),
+      body: Joi.string()
+        .allow("")
+        .error(
+          new Error(ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY.message, {
+            cause: ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY,
+          })
+        ),
+      attachments: Joi.array()
+        .items(
+          Joi.object({
+            file_id: Joi.string(),
+            file_name: Joi.string().max(40),
+          })
+        )
+        .min(1)
+        .error(
+          new Error(ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY.message, {
+            cause: ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY,
+          })
+        ),
+      deleted_for: Joi.array().items(
+        Joi.alternatives().try(Joi.object(), Joi.string()).required()
       ),
-    cid: Joi.string()
-      .required()
-      .error(
-        new Error(ERROR_STATUES.CID_REQUIRED.message, {
-          cause: ERROR_STATUES.CID_REQUIRED,
-        })
-      ),
-    body: Joi.string().error(
-      new Error(ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY.message, {
-        cause: ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY,
-      })
-    ),
-    x: Joi.object(),
-    attachments: Joi.array()
-      .items(
-        Joi.object({
-          file_id: Joi.string().required(),
-          file_name: Joi.string().max(40).required(),
-        })
-      )
-      .min(1)
-      .error(
-        new Error(ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY.message, {
-          cause: ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY,
-        })
-      ),
-    deleted_for: Joi.array().items(
-      Joi.alternatives().try(Joi.object(), Joi.string()).required()
-    ),
-  }).or("body", "attachments"),
+    })
+    .or("body", "attachments"),
   edit: Joi.object({
     id: Joi.alternatives()
       .try(Joi.object(), Joi.string())
@@ -78,9 +81,7 @@ export const messagesSchemaValidation = {
           cause: ERROR_STATUES.CID_REQUIRED,
         })
       ),
-    ids: Joi.array()
-      .items(Joi.alternatives().try(Joi.object(), Joi.string()).required())
-      .required(),
+    ids: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string())),
   }).required(),
   delete: Joi.object({
     cid: Joi.string()

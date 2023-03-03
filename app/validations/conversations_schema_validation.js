@@ -3,15 +3,6 @@ import { ERROR_STATUES } from "./../constants/http_constants.js";
 
 export const conversationsSchemaValidation = {
   create: Joi.object({
-    name: Joi.string()
-      .max(40)
-      .required()
-      .error(
-        new Error(ERROR_STATUES.CONVERSATION_NAME_MISSED.message, {
-          cause: ERROR_STATUES.CONVERSATION_NAME_MISSED,
-        })
-      ),
-    description: Joi.string().max(255).required(),
     type: Joi.string()
       .valid("u", "g")
       .required()
@@ -29,6 +20,19 @@ export const conversationsSchemaValidation = {
           }
         });
       }),
+    name: Joi.alternatives().conditional("type", {
+      is: "g",
+      then: Joi.string()
+        .max(40)
+        .required()
+        .error(
+          new Error(ERROR_STATUES.CONVERSATION_NAME_MISSED.message, {
+            cause: ERROR_STATUES.CONVERSATION_NAME_MISSED,
+          })
+        ),
+      otherwise: Joi.string().max(40),
+    }),
+    description: Joi.string().max(255),
     opponent_id: Joi.alternatives().conditional("type", {
       is: "u",
       then: Joi.alternatives().try(Joi.object(), Joi.string()).required(),
@@ -69,6 +73,8 @@ export const conversationsSchemaValidation = {
     id: Joi.string().required(),
   }).required(),
   getParticipantsByCids: Joi.object({
-    cids: Joi.array().items(Joi.string().required()).required(),
+    cids: Joi.array()
+      .items(Joi.alternatives().try(Joi.object(), Joi.string()))
+      .required(),
   }).required(),
 };
