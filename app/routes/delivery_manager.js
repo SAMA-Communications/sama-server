@@ -285,7 +285,7 @@ class PacketProcessor {
       responseData = await this.#processJsonMessage(ws, json);
     } catch (e) {
       //TODO: remove this line
-      // console.log(e);
+      console.log(e);
       if (json.request) {
         responseData = {
           response: {

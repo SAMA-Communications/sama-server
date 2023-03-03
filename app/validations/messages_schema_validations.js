@@ -1,41 +1,123 @@
 import Joi from "joi";
+import { ERROR_STATUES } from "./../constants/http_constants.js";
 
 export const messagesSchemaValidation = {
   // test this options
   create: Joi.object({
-    id: Joi.string().min(1).required(),
-    cid: Joi.string().required(),
-    body: Joi.string().required(),
+    id: Joi.string()
+      .min(1)
+      .required()
+      .error(
+        new Error(ERROR_STATUES.MESSAGE_ID_MISSED.message, {
+          cause: ERROR_STATUES.MESSAGE_ID_MISSED,
+        })
+      ),
+    cid: Joi.string()
+      .required()
+      .error(
+        new Error(ERROR_STATUES.CID_REQUIRED.message, {
+          cause: ERROR_STATUES.CID_REQUIRED,
+        })
+      ),
+    body: Joi.string().error(
+      new Error(ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY.message, {
+        cause: ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY,
+      })
+    ),
     x: Joi.object(),
-    attachments: Joi.alternatives().conditional("body", {
-      is: Joi.string(),
-      then: Joi.array(),
-      otherwise: Joi.array()
-        .items(
-          Joi.object({
-            file_id: Joi.string().required(),
-            file_name: Joi.string().max(40).required(),
-          }).required()
-        )
-        .min(1)
-        .required(),
-    }),
-  }),
+    attachments: Joi.array()
+      .items(
+        Joi.object({
+          file_id: Joi.string().required(),
+          file_name: Joi.string().max(40).required(),
+        })
+      )
+      .min(1)
+      .error(
+        new Error(ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY.message, {
+          cause: ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY,
+        })
+      ),
+    deleted_for: Joi.array().items(
+      Joi.alternatives().try(Joi.object(), Joi.string()).required()
+    ),
+  }).or("body", "attachments"),
   edit: Joi.object({
-    id: Joi.string().min(1).required(),
-    body: Joi.string().required(),
+    id: Joi.alternatives()
+      .try(Joi.object(), Joi.string())
+      .required()
+      .error(
+        new Error(ERROR_STATUES.MESSAGE_ID_MISSED.message, {
+          cause: ERROR_STATUES.MESSAGE_ID_MISSED,
+        })
+      ),
+    body: Joi.string()
+      .required()
+      .error(
+        new Error(ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY.message, {
+          cause: ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY,
+        })
+      ),
   }).required(),
   list: Joi.object({
-    cid: Joi.string().required(),
-    ids: Joi.array().items(Joi.string()).required(),
+    cid: Joi.string()
+      .required()
+      .error(
+        new Error(ERROR_STATUES.CID_REQUIRED.message, {
+          cause: ERROR_STATUES.CID_REQUIRED,
+        })
+      ),
+    limit: Joi.number(),
+    updated_at: Joi.object({ gt: Joi.date() }),
   }).required(),
   read: Joi.object({
-    cid: Joi.string().required(),
-    ids: Joi.array().items(Joi.string()).required(),
+    cid: Joi.string()
+      .required()
+      .error(
+        new Error(ERROR_STATUES.CID_REQUIRED.message, {
+          cause: ERROR_STATUES.CID_REQUIRED,
+        })
+      ),
+    ids: Joi.array()
+      .items(Joi.alternatives().try(Joi.object(), Joi.string()).required())
+      .required(),
   }).required(),
   delete: Joi.object({
-    cid: Joi.string().required(),
-    type: Joi.string().min(1).required(),
-    ids: Joi.array().items(Joi.string()).required(),
+    cid: Joi.string()
+      .required()
+      .error(
+        new Error(ERROR_STATUES.CID_REQUIRED.message, {
+          cause: ERROR_STATUES.CID_REQUIRED,
+        })
+      ),
+    type: Joi.string()
+      .valid("all", "myself")
+      .required()
+      .error((errors) => {
+        return errors.map((error) => {
+          switch (error.code) {
+            case "any.only":
+              return new Error(ERROR_STATUES.INCORRECT_TYPE.message, {
+                cause: ERROR_STATUES.INCORRECT_TYPE,
+              });
+            default:
+              return new Error(ERROR_STATUES.MESSAGE_TYPE_MISSED.message, {
+                cause: ERROR_STATUES.MESSAGE_TYPE_MISSED,
+              });
+          }
+        });
+      }),
+    ids: Joi.array()
+      .items(Joi.alternatives().try(Joi.object(), Joi.string()).required())
+      .min(1)
+      .required()
+      .error(
+        new Error(ERROR_STATUES.MESSAGE_ID_MISSED.message, {
+          cause: ERROR_STATUES.MESSAGE_ID_MISSED,
+        })
+      ),
+    deleted_for: Joi.array().items(
+      Joi.alternatives().try(Joi.object(), Joi.string()).required()
+    ),
   }).required(),
 };

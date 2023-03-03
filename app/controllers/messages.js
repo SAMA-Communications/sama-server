@@ -114,6 +114,11 @@ class MessagesController extends BaseController {
     const messageId = messageParams.id;
 
     let message = await Message.findOne({ _id: messageId });
+    if (!message) {
+      throw new Error(ERROR_STATUES.MESSAGE_ID_NOT_FOUND.message, {
+        cause: ERROR_STATUES.MESSAGE_ID_NOT_FOUND,
+      });
+    }
     await validate(ws, message.params, [validateIsUserAccess]);
 
     await Message.updateOne(
@@ -246,7 +251,7 @@ class MessagesController extends BaseController {
     } = data;
     await validate(ws, { cid }, [validateIsConversationByCID]);
 
-    if (requestType == "all") {
+    if (type == "all") {
       const participants = await ConversationParticipant.findAll(
         { conversation_id: cid },
         ["user_id"],
