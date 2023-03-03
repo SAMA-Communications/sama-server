@@ -2,7 +2,6 @@ import Joi from "joi";
 import { ERROR_STATUES } from "./../constants/http_constants.js";
 
 export const usersSchemaValidation = {
-  //error message for this block
   create: Joi.object({
     login: Joi.string()
       .max(40)

@@ -2,7 +2,7 @@
 
 ## Transport
 
-* WSS
+- WSS
 
 ## Create user
 
@@ -17,15 +17,15 @@
   },
 };
 
-{ 
-  response: { 
-    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c", 
+{
+  response: {
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c",
     user: {
       created_at: "2022-10-13T13:11:04.447Z",
       updated_at: "2022-10-13T13:11:04.447Z",
       login :"user_1",
-      id: "63480e68f4794709f802a2fa", 
-    } 
+      id: "63480e68f4794709f802a2fa",
+    }
   }
 }
 ```
@@ -43,16 +43,16 @@
   },
 };
 
-{ 
-  response: { 
-    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c", 
+{
+  response: {
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c",
     user: {
       created_at: "2022-10-13T13:11:04.447Z",
       updated_at: "2022-10-13T13:11:04.447Z",
       login :"user_1",
-      id: "63480e68f4794709f802a2fa", 
-    }, 
-    token: "..." 
+      id: "63480e68f4794709f802a2fa",
+    },
+    token: "..."
   }
 }
 ```
@@ -99,15 +99,15 @@ Later, the subsequent logins can be done via `token`:
   },
 };
 
-{ 
-  response: { 
-    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c", 
+{
+  response: {
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c",
     user: {
       created_at: "2022-10-13T13:11:04.447Z",
       updated_at: "2022-10-13T13:11:04.447Z",
       login :"user_1",
-      id: "63480e68f4794709f802a2fa", 
-    } 
+      id: "63480e68f4794709f802a2fa",
+    }
   }
 }
 ```
@@ -138,7 +138,7 @@ Later, the subsequent logins can be done via `token`:
       updated_at: {
         gt: timestamp1,
       },
-      ignore_ids: [45, 98]
+      ignore_ids: [ "63077ad836b78c3d82af0866", "63077ad836b78c3d82af0868" ]
     },
     id: "3",
   },
@@ -147,7 +147,7 @@ Later, the subsequent logins can be done via `token`:
 { response: { id: "3", users: [...]}
 ```
 
-## Conversation create 
+## Conversation create
 
 ```
 {
@@ -166,8 +166,11 @@ Later, the subsequent logins can be done via `token`:
 ```
 
 A `type` param must have only one of two values:
-* `u` - (user) - a private conversations for two people only
-* `g` - (group) - conversations for a group of users, two or more.
+
+- `u` - (user) - a private conversations for two people only
+- `g` - (group) - conversations for a group of users, two or more.
+
+If the value of the `type` field is equal to `y`, then the `opponent_id` field is required
 
 ## Conversation update
 
@@ -205,7 +208,7 @@ A `type` param must have only one of two values:
 { response: { id: "4", success: true } }
 ```
 
-## List conversations 
+## List conversations
 
 ```
 {
@@ -220,29 +223,29 @@ A `type` param must have only one of two values:
   },
 };
 
-{ 
-  response: { 
-    id: "7", 
-    conversations: [ 
+{
+  response: {
+    id: "7",
+    conversations: [
       {
-        "_id": "507f1f77bcf86cd799439011",
-        "created_at": "",
-        "updated_at": "",
-        "name": "General",
-        "type": "g",
-        "description": "General discuss chat",
-        "owner_id": "507f191e810c19729de860ea",
-        "opponent_id": "507f191e810c19729de880ee",
-        "last_message": {
-          "_id" :"507f191e810c19729de860ea", 
-          "body": "Any news on the recent decision?", 
-          "from": "507f191e810c19729de880ee", 
-          "t": 15673838833,
+        _id: "507f1f77bcf86cd799439011",
+        created_at: "",
+        updated_at: "",
+        name: "General",
+        type: "g",
+        description: "General discuss chat",
+        owner_id: "507f191e810c19729de860ea",
+        opponent_id: "507f191e810c19729de880ee",
+        last_message: {
+          _id :"507f191e810c19729de860ea",
+          body: "Any news on the recent decision?",
+          from: "507f191e810c19729de880ee",
+          t: 15673838833,
         },
-        "unread_messages_count": 2
+        unread_messages_count: 2
       }
-    ] 
-  } 
+    ]
+  }
 }
 ```
 
@@ -250,29 +253,29 @@ A `type` param must have only one of two values:
 
 ```
 {
-    "request": {
-        "getParticipantsByCids": {
-            "cids": [
+    request: {
+        getParticipantsByCids: {
+            cids: [
                 "635a3b4cb15254ebe43e76ff",
                 "63563a2ad745dc1c6ad01b5f",
                 "63563a0cd745dc1c6ad01b5c"
             ]
         },
-        "id": "e3a1fcbf-bb1a-4c6d-b13a-8952db609585"
+        id: "e3a1fcbf-bb1a-4c6d-b13a-8952db609585"
     }
 }
 
 {
-    "response": {
-        "id": "e3a1fcbf-bb1a-4c6d-b13a-8952db609585",
-        "users": [
+    response: {
+        id: "e3a1fcbf-bb1a-4c6d-b13a-8952db609585",
+        users: [
             {
-                "_id": "634ec51c0b65918393dca5bf",
-                "login": "carol18"
+                _id: "634ec51c0b65918393dca5bf",
+                login: "carol18"
             },
             {
-                "_id": "63480e68f4794709f802a2fa",
-                "login": "breadpit"
+                _id: "63480e68f4794709f802a2fa",
+                login: "breadpit"
             }
         ]
     }
@@ -283,13 +286,17 @@ A `type` param must have only one of two values:
 
 ```
 {
-  'message': {
-    'body': 'hey how is going?',
-    'cid': '63480e68f4794709f802a2fa',
-    'x': {
-      'param1': 'value',
-      'param2': 'value'
+  message: {
+    body: "hey how is going?",
+    cid: "63480e68f4794709f802a2fa'",
+    x: {
+      param1: "value",
+      param2: "value"
     }
+    attachments: [
+      { name: "file_1", size: 240, content_type: "type" },
+      { name: "file_2", size: 126, content_type: "type" }
+    ]
   }
 }
 ```
@@ -298,30 +305,33 @@ All conversation's participants who is online will receive the following message
 
 ```
 {
-  'message': {
-    'id': '63480e68f4794709f802a2fa', 
-    't': 15673838833,
-    'from': '634ec51c0b65918393dca5bf',
-    'body': 'hey how is going?',
-    'cid': 'xcv',
-    'x': {
-      'param1': 'value',
-      'param2': 'value'
+  message: {
+    id: "63480e68f4794709f802a2fa",
+    t: 15673838833,
+    from: "634ec51c0b65918393dca5bf",
+    body: "hey how is going?",
+    cid: "xcv",
+    x: {
+      param1: "value",
+      param2: "value"
     }
+    attachments: [
+      { file_id: "123123_file_1", file_name: "fil_1" },
+      { file_name: "653534_file_2", file_name: "fil_1" }
+    ]
   }
 }
 ```
 
 All offline participants can retrieve the messages via below `List messages` API.
 
-
 ## Sent status
 
 On each message sent to server - a server will deliver back to client a simple packet with message id and timestamp at which the message was stored in DB so both sender & recipient will have same date sent time stored:
 
-`{'ack': {'mid': '63480e68f4794709f802a2fa', 't': 15673838833}}`
+`{ ack: { mid: "63480e68f4794709f802a2fa", t: 15673838833}}`
 
-## List messages 
+## List messages
 
 ```
 {
@@ -337,20 +347,20 @@ On each message sent to server - a server will deliver back to client a simple p
   };
 }
 
-{ 
-  response: { 
-    id: 'ef5326a5-b16b-4f75-9e88-cc42e5fea016', 
+{
+  response: {
+    id: "ef5326a5-b16b-4f75-9e88-cc42e5fea016",
     messages: [
       {
-        "_id": "63760c34c35e750877677925",
-        "body": "How is going?",
-        "cid": "63563a2ad745dc1c6ad01b5f",
-        "from": "63480e68f4794709f802a2fa",
-        "status": "sent",
-        "t": 1668680757,
+        _id: "63760c34c35e750877677925",
+        body: "How is going?",
+        cid: "63563a2ad745dc1c6ad01b5f",
+        from: "63480e68f4794709f802a2fa",
+        status: "sent",
+        t: 1668680757,
       }
-    ] 
-  } 
+    ]
+  }
 }
 
 ```
@@ -391,11 +401,11 @@ A user either can send typing or stop typing packets:
 
 ```
 {
-  'typing': {
-    'id': 'xyz', 
-    't': 15673838833,
-    'type': 'start/stop',
-    'cid': 'xcv'
+  typing: {
+    id: "xyz",
+    t: 15673838833,
+    type: "start/stop",
+    cid: "xcv"
   }
 }
 ```
@@ -447,7 +457,7 @@ A message sender can edit own message.
   request: {
     message_edit: {
       id: "63077ad836b78c3d82af0812",
-      body: 'updated message body'
+      body: "updated message body"
     },
     id: "4",
   },
@@ -462,7 +472,7 @@ Then other users in this conversation who is online will receive the following m
 {
   message_edit: {
     id: "63077ad836b78c3d82af0812",
-    body: 'updated message body'
+    body: "updated message body"
     from: "634ec51c0b65918393dca5bf"
   },
 };
@@ -472,7 +482,7 @@ If users are offline, they will receive a message once became online.
 
 ## Carbons
 
-Carbons is enabled by default.  On send - a message will be delivered back to all active sender's devices except the current one.  
+Carbons is enabled by default. On send - a message will be delivered back to all active sender's devices except the current one.
 
 ## Last activity
 
@@ -534,9 +544,20 @@ last_activity: {
 
 TBA
 
-## Offline queue
+## Operations log
 
-TBA
+```
+request: {
+  op_log_list: {
+    created_at: {
+       gt: timeWhenUserOff,
+    },
+  },
+  id: "453",
+},
+```
+
+`gt` or `lt`param is required
 
 ## Attachments
 
@@ -596,7 +617,6 @@ Get file download url:
    ]
 }
 ```
-
 
 ## Block list
 
@@ -659,7 +679,7 @@ Get blocked users list:
 
 TBA
 
-## Push notifications 
+## Push notifications
 
 TBA
 
