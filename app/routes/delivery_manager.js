@@ -188,10 +188,13 @@ class PacketProcessor {
     nodeConnections.forEach(async (data) => {
       const nodeInfo = JSON.parse(data);
       const nodeUrl = nodeInfo[Object.keys(nodeInfo)[0]];
+      const nodeDeviceId = parseInt(Object.keys(nodeInfo)[0]);
+      const currentDeviceId = this.sessionRepository.getDeviceId(ws, userId);
 
       this.curentNodeUrl = buildWsEndpoint(ip.address(), getClusterPort());
       if (nodeUrl === this.curentNodeUrl) {
-        await this.deliverToUserOnThisNode(ws, userId, packet);
+        nodeDeviceId !== currentDeviceId &&
+          (await this.deliverToUserOnThisNode(ws, userId, packet));
       } else {
         const recipientClusterNodeWS = clusterNodesWS[getIpFromWsUrl(nodeUrl)];
         if (!recipientClusterNodeWS) {
@@ -231,10 +234,6 @@ class PacketProcessor {
       ).map((obj) => obj.user_id);
 
     participants.forEach(async (uId) => {
-      if (uId.toString() === this.sessionRepository.getSessionUserId(ws)) {
-        return;
-      }
-
       const userNodeData = await this.sessionRepository.getUserNodeData(uId);
       if (!userNodeData?.length) {
         this.isAllowedForOfflineStorage(

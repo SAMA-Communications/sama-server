@@ -51,7 +51,7 @@ export default class SessionRepository extends BaseRepository {
   getDeviceId(ws, userId) {
     if (this.inMemoryStorage.DEVICES[userId]) {
       return this.inMemoryStorage.DEVICES[userId].find((el) => el.ws === ws)
-        .deviceId;
+        ?.deviceId;
     }
     return null;
   }
