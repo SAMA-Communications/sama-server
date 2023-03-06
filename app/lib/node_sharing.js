@@ -26,11 +26,11 @@ class ClusterManager {
       "hostname",
       "port",
     ]);
+
     nodeList.forEach(async (n) => {
-      this.nodes[n.ip_address] = n.hostname;
       if (
         getClusterPort() !== n.port &&
-        `${this.hostname}${this.port}` < `${n.hostname}${n.port}`
+        `${this.hostname}${getClusterPort()}` < `${n.hostname}${n.port}`
       )
         await createToNodeSocket(n.ip_address, n.port);
     });
