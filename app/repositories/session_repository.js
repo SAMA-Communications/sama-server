@@ -12,6 +12,22 @@ export default class SessionRepository extends BaseRepository {
   }
 
   async storeUserNodeData(userId, deviceId, nodeIp, nodePort) {
+    const userConnectsString = await this.getUserNodeData(userId);
+
+    let isRecordFromThisDevice = false;
+    let record = null;
+    userConnectsString.forEach((d) => {
+      const data = JSON.parse(d);
+      if (Object.keys(data)[0] === "" + deviceId) {
+        record = d;
+
+        isRecordFromThisDevice = true;
+        return;
+      }
+    });
+
+    isRecordFromThisDevice && (await this.removeMember(userId, record));
+
     await RedisClient.client.sAdd(
       `user:${userId}`,
       JSON.stringify({
@@ -39,6 +55,10 @@ export default class SessionRepository extends BaseRepository {
 
   async dropUserNodeDataBase() {
     await RedisClient.client.flushDb();
+  }
+
+  async removeMember(userId, member) {
+    return await RedisClient.client.sRem(`user:${userId}`, member);
   }
 
   getSessionUserId(ws) {
