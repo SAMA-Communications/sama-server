@@ -208,6 +208,7 @@ class PacketProcessor {
             );
             recClusterNodeWs.send(JSON.stringify({ userId, message: packet }));
           } catch (err) {
+            await this.sessionRepository.clearNodeUsersSession(nodeUrl);
             this.isAllowedForOfflineStorage(packet) &&
               this.operationsLogRepository.savePacket(userId, packet);
           }
@@ -219,7 +220,7 @@ class PacketProcessor {
             JSON.stringify({ userId, message: packet })
           );
         } catch (err) {
-          console.log(err);
+          await this.sessionRepository.clearNodeUsersSession(nodeUrl);
           this.isAllowedForOfflineStorage(packet) &&
             this.operationsLogRepository.savePacket(userId, packet);
         }
