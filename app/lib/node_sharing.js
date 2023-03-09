@@ -32,7 +32,11 @@ class ClusterManager {
         getClusterPort() !== n.port &&
         `${this.hostname}${getClusterPort()}` < `${n.hostname}${n.port}`
       )
-        await createToNodeSocket(n.ip_address, n.port);
+        try {
+          await createToNodeSocket(n.ip_address, n.port);
+        } catch (err) {
+          console.log(err);
+        }
     });
   }
 

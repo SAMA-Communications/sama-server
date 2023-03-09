@@ -202,11 +202,11 @@ class PacketProcessor {
         const recipientClusterNodeWS = clusterNodesWS[getIpFromWsUrl(nodeUrl)];
         if (!recipientClusterNodeWS) {
           try {
-            const ws = await createToNodeSocket(
+            const recClusterNodeWs = await createToNodeSocket(
               getIpFromWsUrl(nodeUrl),
               nodeUrl.split(":")[2]
             );
-            ws.send(JSON.stringify({ userId, message: packet }));
+            recClusterNodeWs.send(JSON.stringify({ userId, message: packet }));
           } catch (err) {
             this.isAllowedForOfflineStorage(packet) &&
               this.operationsLogRepository.savePacket(userId, packet);
