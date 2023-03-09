@@ -8,7 +8,10 @@ import { ACTIVE } from "../store/session.js";
 import { ACTIVITY } from "../store/activity.js";
 import { ERROR_STATUES } from "../constants/http_constants.js";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
-import { clusterNodesWS } from "../cluster/cluster_manager.js";
+import {
+  clusterNodesWS,
+  createToNodeSocket,
+} from "../cluster/cluster_manager.js";
 import { default as ConversationsController } from "../controllers/conversations.js";
 import { default as FilesController } from "../controllers/files.js";
 import { default as LastActivityiesController } from "../controllers/activities.js";
@@ -198,8 +201,16 @@ class PacketProcessor {
       } else {
         const recipientClusterNodeWS = clusterNodesWS[getIpFromWsUrl(nodeUrl)];
         if (!recipientClusterNodeWS) {
-          this.isAllowedForOfflineStorage(packet) &&
-            this.operationsLogRepository.savePacket(userId, packet);
+          try {
+            const ws = await createToNodeSocket(
+              getIpFromWsUrl(nodeUrl),
+              nodeUrl.split(":")[2]
+            );
+            ws.send(JSON.stringify({ userId, message: packet }));
+          } catch (err) {
+            this.isAllowedForOfflineStorage(packet) &&
+              this.operationsLogRepository.savePacket(userId, packet);
+          }
           return;
         }
 
