@@ -73,7 +73,7 @@ export const messagesSchemaValidation = {
         })
       ),
     limit: Joi.number(),
-    updated_at: Joi.object({ gt: Joi.number() }),
+    updated_at: Joi.object({ gt: Joi.date() }),
   }).required(),
   read: Joi.object({
     cid: Joi.string()

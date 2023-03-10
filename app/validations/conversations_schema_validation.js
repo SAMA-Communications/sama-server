@@ -66,7 +66,7 @@ export const conversationsSchemaValidation = {
   list: Joi.object({
     limit: Joi.number(),
     updated_at: Joi.object({
-      gt: Joi.number(),
+      gt: Joi.date(),
     }),
   }).required(),
   delete: Joi.object({

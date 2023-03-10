@@ -51,7 +51,6 @@ describe("Attachments", async () => {
       requestData
     );
     files = responseData.response.files;
-    console.log(files);
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.notEqual(responseData.response.files, undefined);
 
