@@ -43,6 +43,7 @@ class UsersController extends BaseController {
 
   async login(ws, data) {
     const { id: requestId, user_login: userInfo } = data;
+    const deviceId = userInfo.deviceId.toString();
 
     let user, token;
     if (!userInfo.token) {
@@ -60,12 +61,12 @@ class UsersController extends BaseController {
       }
       token = await UserToken.findOne({
         user_id: user.params._id,
-        device_id: userInfo.deviceId,
+        device_id: deviceId,
       });
     } else {
       token = await UserToken.findOne({
         token: userInfo.token,
-        device_id: userInfo.deviceId,
+        device_id: deviceId,
       });
       if (!token) {
         throw new Error(ERROR_STATUES.TOKEN_EXPIRED.message, {
@@ -75,7 +76,6 @@ class UsersController extends BaseController {
       user = await User.findOne({ _id: token.params.user_id });
     }
     const userId = user.params._id;
-    const deviceId = userInfo.deviceId;
 
     await PacketProcessor.maybeUpdateAndSendUserActivity(
       ws,

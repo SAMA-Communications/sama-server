@@ -117,9 +117,7 @@ Later, the subsequent logins can be done via `token`:
 ```
 {
   request: {
-    user_delete: {
-      id: "63077ad836b78c3d82af0866",
-    },
+    user_delete: {},
     id: "3",
   },
 };
@@ -287,6 +285,7 @@ If the value of the `type` field is equal to `y`, then the `opponent_id` field i
 ```
 {
   message: {
+    id: '5а34p21m0xj23'
     body: "hey how is going?",
     cid: "63480e68f4794709f802a2fa'",
     x: {
@@ -553,6 +552,24 @@ request: {
        gt: timeWhenUserOff,
     },
   },
+  id: "453",
+},
+```
+
+```
+response: {
+  logs: [
+    {
+      _id: 325,
+      user_id: 634ec51c0b65918393dca5bf,
+      packet: { ... }
+    },
+    {
+      _id: 5432,
+      user_id: 634ec51c0b65918393dca5bf,
+      packet: { ... }
+    }
+  ],
   id: "453",
 },
 ```

@@ -21,6 +21,7 @@ export const messagesSchemaValidation = {
         ),
       x: Joi.object(),
       body: Joi.string()
+        .max(65536)
         .allow("")
         .error(
           new Error(ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY.message, {
@@ -55,6 +56,7 @@ export const messagesSchemaValidation = {
         })
       ),
     body: Joi.string()
+      .max(65536)
       .required()
       .error(
         new Error(ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY.message, {
@@ -71,7 +73,7 @@ export const messagesSchemaValidation = {
         })
       ),
     limit: Joi.number(),
-    updated_at: Joi.object({ gt: Joi.date() }),
+    updated_at: Joi.object({ gt: Joi.number() }),
   }).required(),
   read: Joi.object({
     cid: Joi.string()

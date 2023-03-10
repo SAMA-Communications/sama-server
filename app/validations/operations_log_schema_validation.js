@@ -4,8 +4,8 @@ import { ERROR_STATUES } from "./../constants/http_constants.js";
 export const operationsLogSchemaValidation = {
   logs: Joi.object({
     created_at: Joi.object({
-      gt: Joi.date(),
-      lt: Joi.date(),
+      gt: Joi.number(),
+      lt: Joi.number(),
     })
       .oxor("gt", "lt")
       .error(

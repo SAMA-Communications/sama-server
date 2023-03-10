@@ -23,14 +23,14 @@ export const conversationsSchemaValidation = {
     name: Joi.alternatives().conditional("type", {
       is: "g",
       then: Joi.string()
-        .max(40)
+        .max(255)
         .required()
         .error(
           new Error(ERROR_STATUES.CONVERSATION_NAME_MISSED.message, {
             cause: ERROR_STATUES.CONVERSATION_NAME_MISSED,
           })
         ),
-      otherwise: Joi.string().max(40),
+      otherwise: Joi.string().max(255),
     }),
     description: Joi.string().max(255),
     opponent_id: Joi.alternatives().conditional("type", {
@@ -52,7 +52,7 @@ export const conversationsSchemaValidation = {
   }).required(),
   update: Joi.object({
     id: Joi.string().required(),
-    name: Joi.string().max(40),
+    name: Joi.string().max(255),
     description: Joi.string().max(255),
     participants: Joi.object({
       add: Joi.array().items(
@@ -66,7 +66,7 @@ export const conversationsSchemaValidation = {
   list: Joi.object({
     limit: Joi.number(),
     updated_at: Joi.object({
-      gt: Joi.date(),
+      gt: Joi.number(),
     }),
   }).required(),
   delete: Joi.object({

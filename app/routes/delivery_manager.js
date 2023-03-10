@@ -191,7 +191,7 @@ class PacketProcessor {
     nodeConnections.forEach(async (data) => {
       const nodeInfo = JSON.parse(data);
       const nodeUrl = nodeInfo[Object.keys(nodeInfo)[0]];
-      const nodeDeviceId = parseInt(Object.keys(nodeInfo)[0]);
+      const nodeDeviceId = Object.keys(nodeInfo)[0];
       const currentDeviceId = this.sessionRepository.getDeviceId(ws, userId);
 
       this.curentNodeUrl = buildWsEndpoint(ip.address(), getClusterPort());

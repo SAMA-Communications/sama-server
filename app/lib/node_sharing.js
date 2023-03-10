@@ -35,9 +35,7 @@ class ClusterManager {
         try {
           await createToNodeSocket(n.ip_address, n.port);
         } catch (err) {
-          await this.sessionRepository.clearNodeUsersSession(
-            buildWsEndpoint(n.ip_address, n.port)
-          );
+          console.log(err);
         }
     });
   }

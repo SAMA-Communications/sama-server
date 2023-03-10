@@ -4,6 +4,7 @@ import { ERROR_STATUES } from "./../constants/http_constants.js";
 export const usersSchemaValidation = {
   create: Joi.object({
     login: Joi.string()
+      .min(3)
       .max(40)
       .required()
       .error(
@@ -29,6 +30,7 @@ export const usersSchemaValidation = {
   }),
   edit: Joi.object({
     login: Joi.string()
+      .min(3)
       .max(40)
       .required()
       .error(
@@ -72,7 +74,7 @@ export const usersSchemaValidation = {
     login: Joi.string().required(),
     limit: Joi.number().min(1).max(100),
     updated_at: Joi.object({
-      gt: Joi.date(),
+      gt: Joi.number(),
     }),
     ignore_ids: Joi.array().items(
       Joi.alternatives().try(Joi.object(), Joi.string())
