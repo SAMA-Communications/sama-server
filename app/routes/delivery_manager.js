@@ -16,6 +16,7 @@ import { default as LastActivityiesController } from "../controllers/activities.
 import { getClusterPort } from "../cluster/cluster_manager.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
 import { routes } from "../constants/json_routes.js";
+
 class PacketProcessor {
   constructor() {
     this.operationsLogRepository = new OperationsLogRepository(OpLog);
