@@ -1,70 +1,27 @@
 import ConversationParticipant from "../models/conversation_participant.js";
-import ConversationsController from "../controllers/conversations.js";
-import FilesController from "../controllers/files.js";
-import LastActivityiesController from "../controllers/activities.js";
-import SessionRepository from "../repositories/session_repository.js";
-import MessagesController from "../controllers/messages.js";
 import OpLog from "../models/operations_log.js";
-import OperationsLogController from "../controllers/operations_log.js";
 import OperationsLogRepository from "../repositories/operations_log_repository.js";
-import StatusesController from "../controllers/status.js";
+import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
-import UsersBlockController from "../controllers/users_block.js";
-import UsersController from "../controllers/users.js";
 import ip from "ip";
 import { ACTIVE } from "../store/session.js";
 import { ACTIVITY } from "../store/activity.js";
-import { ERROR_STATUES } from "../constants/http_constants.js";
+import { ERROR_STATUES } from "../validations/constants/errors.js";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
-import { clusterNodesWS } from "../cluster/cluster_manager.js";
-import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
+import {
+  clusterNodesWS,
+  createToNodeSocket,
+} from "../cluster/cluster_manager.js";
+import { default as LastActivityiesController } from "../controllers/activities.js";
 import { getClusterPort } from "../cluster/cluster_manager.js";
+import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
+import { routes } from "./routes.js";
 
 class PacketProcessor {
   constructor() {
     this.operationsLogRepository = new OperationsLogRepository(OpLog);
     this.sessionRepository = new SessionRepository(ACTIVE);
-    this.jsonRequest = {
-      message: (ws, json) => new MessagesController().create(ws, json),
-      typing: (ws, json) => new StatusesController().typing(ws, json),
-      request: {
-        message_edit: (ws, json) => new MessagesController().edit(ws, json),
-        message_list: (ws, json) => new MessagesController().list(ws, json),
-        message_read: (ws, json) => new MessagesController().read(ws, json),
-        message_delete: (ws, json) => new MessagesController().delete(ws, json),
-        create_files: (ws, json) => new FilesController().createUrl(ws, json),
-        get_file_urls: (ws, json) =>
-          new FilesController().getDownloadUrl(ws, json),
-        block_user: (ws, json) => new UsersBlockController().block(ws, json),
-        unblock_user: (ws, json) =>
-          new UsersBlockController().unblock(ws, json),
-        list_blocked_users: (ws, json) =>
-          new UsersBlockController().list(ws, json),
-        user_create: (ws, json) => new UsersController().create(ws, json),
-        user_edit: (ws, json) => new UsersController().edit(ws, json),
-        user_login: (ws, json) => new UsersController().login(ws, json),
-        user_logout: (ws, json) => new UsersController().logout(ws, json),
-        user_delete: (ws, json) => new UsersController().delete(ws, json),
-        user_search: (ws, json) => new UsersController().search(ws, json),
-        op_log_list: (ws, json) => new OperationsLogController().logs(ws, json),
-        user_last_activity_subscribe: (ws, json) =>
-          new LastActivityiesController().statusSubscribe(ws, json),
-        user_last_activity_unsubscribe: (ws, json) =>
-          new LastActivityiesController().statusUnsubscribe(ws, json),
-        user_last_activity: (ws, json) =>
-          new LastActivityiesController().getUserStatus(ws, json),
-        getParticipantsByCids: (ws, json) =>
-          new ConversationsController().getParticipantsByCids(ws, json),
-        conversation_create: (ws, json) =>
-          new ConversationsController().create(ws, json),
-        conversation_delete: (ws, json) =>
-          new ConversationsController().delete(ws, json),
-        conversation_update: (ws, json) =>
-          new ConversationsController().update(ws, json),
-        conversation_list: (ws, json) =>
-          new ConversationsController().list(ws, json),
-      },
-    };
+    this.jsonRequest = routes;
   }
 
   isAllowedForOfflineStorage(message) {
@@ -89,15 +46,27 @@ class PacketProcessor {
     nodeConnections.forEach(async (data) => {
       const nodeInfo = JSON.parse(data);
       const nodeUrl = nodeInfo[Object.keys(nodeInfo)[0]];
+      const nodeDeviceId = Object.keys(nodeInfo)[0];
+      const currentDeviceId = this.sessionRepository.getDeviceId(ws, userId);
 
       this.curentNodeUrl = buildWsEndpoint(ip.address(), getClusterPort());
       if (nodeUrl === this.curentNodeUrl) {
-        await this.deliverToUserOnThisNode(ws, userId, packet);
+        nodeDeviceId !== currentDeviceId &&
+          (await this.deliverToUserOnThisNode(ws, userId, packet));
       } else {
         const recipientClusterNodeWS = clusterNodesWS[getIpFromWsUrl(nodeUrl)];
         if (!recipientClusterNodeWS) {
-          this.isAllowedForOfflineStorage(packet) &&
-            this.operationsLogRepository.savePacket(userId, packet);
+          try {
+            const recClusterNodeWs = await createToNodeSocket(
+              getIpFromWsUrl(nodeUrl),
+              nodeUrl.split(":")[2]
+            );
+            recClusterNodeWs.send(JSON.stringify({ userId, message: packet }));
+          } catch (err) {
+            await this.sessionRepository.clearNodeUsersSession(nodeUrl);
+            this.isAllowedForOfflineStorage(packet) &&
+              this.operationsLogRepository.savePacket(userId, packet);
+          }
           return;
         }
 
@@ -106,7 +75,7 @@ class PacketProcessor {
             JSON.stringify({ userId, message: packet })
           );
         } catch (err) {
-          console.log(err);
+          await this.sessionRepository.clearNodeUsersSession(nodeUrl);
           this.isAllowedForOfflineStorage(packet) &&
             this.operationsLogRepository.savePacket(userId, packet);
         }
@@ -132,10 +101,6 @@ class PacketProcessor {
       ).map((obj) => obj.user_id);
 
     participants.forEach(async (uId) => {
-      if (uId.toString() === this.sessionRepository.getSessionUserId(ws)) {
-        return;
-      }
-
       const userNodeData = await this.sessionRepository.getUserNodeData(uId);
       if (!userNodeData?.length) {
         this.isAllowedForOfflineStorage(
@@ -157,7 +122,7 @@ class PacketProcessor {
     });
   }
 
-  #processJsonMessage(ws, json) {
+  async #processJsonMessage(ws, json) {
     if (
       !ACTIVE.SESSIONS.get(ws) &&
       !json.request?.user_create &&
@@ -168,10 +133,17 @@ class PacketProcessor {
       });
     }
 
-    const reqFirstParams = Object.keys(json)[0];
-    return reqFirstParams === "request"
-      ? this.jsonRequest.request[Object.keys(json.request)[0]](ws, json)
-      : this.jsonRequest[reqFirstParams](ws, json);
+    let reqFirstParams = Object.keys(json)[0];
+    let reqData = null;
+
+    if (reqFirstParams === "request") {
+      reqData = json.request;
+      reqFirstParams = Object.keys(reqData)[0];
+    } else {
+      reqData = json;
+    }
+
+    return this.jsonRequest[reqFirstParams](ws, reqData);
   }
 
   async processJsonMessageOrError(ws, json) {
@@ -224,7 +196,7 @@ class PacketProcessor {
         { _id: uId },
         { $set: { recent_activity: currentTime } }
       );
-      await new LastActivityiesController().statusUnsubscribe(ws, {
+      await LastActivityiesController.statusUnsubscribe(ws, {
         request: { id: rId || "Unsubscribe" },
       });
     }

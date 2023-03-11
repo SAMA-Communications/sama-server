@@ -1,24 +1,14 @@
+import BaseController from "./base/base.js";
 import File from "./../models/file.js";
-import { ALLOW_FIELDS } from "./../constants/fields_constants.js";
-import { slice } from "./../utils/req_res_utils.js";
 import { storageClient } from "./../../index.js";
-import validate, {
-  validateCountOfFileIds,
-  validateCountOfFileObjects,
-  validateFileFields,
-  validateFileIds,
-} from "./../lib/validation.js";
 
-export default class FilesController {
+class FilesController extends BaseController {
+  constructor() {
+    super();
+  }
+
   async createUrl(ws, data) {
-    const requestId = data.request.id;
-    const reqFiles = data.request.create_files.map((file) =>
-      slice(file, ALLOW_FIELDS.ALLOWED_FILEDS_FILE)
-    );
-    await validate(ws, { files: reqFiles }, [
-      validateCountOfFileObjects,
-      validateFileFields,
-    ]);
+    const { id: requestId, create_files: reqFiles } = data;
 
     const resFiles = [];
     for (let i = 0; i < reqFiles.length; i++) {
@@ -38,12 +28,10 @@ export default class FilesController {
   }
 
   async getDownloadUrl(ws, data) {
-    const requestId = data.request.id;
-    const objectIds = data.request.get_file_urls.file_ids;
-    await validate(ws, { ids: objectIds }, [
-      validateCountOfFileIds,
-      validateFileIds,
-    ]);
+    const {
+      id: requestId,
+      get_file_urls: { file_ids: objectIds },
+    } = data;
 
     let urls = {};
     for (let i = 0; i < objectIds.length; i++) {
@@ -51,7 +39,9 @@ export default class FilesController {
       const fileUrl = await storageClient.getDownloadUrl(objectIds[i]);
       urls[objectIds[i]] = fileUrl;
     }
-
+    console.log("urls: ", urls);
     return { response: { id: requestId, file_urls: urls } };
   }
 }
+
+export default new FilesController();

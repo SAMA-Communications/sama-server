@@ -1,26 +1,22 @@
+import BaseController from "./base/base.js";
 import BlockListRepository from "../repositories/blocklist_repository.js";
 import BlockedUser from "../models/blocked_user.js";
-import LastActivityiesController from "./activities.js";
 import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
 import ip from "ip";
 import jwt from "jsonwebtoken";
-import validate, {
-  validateDeviceId,
-  validateIsValidUserPassword,
-} from "../lib/validation.js";
 import { ACTIVE } from "../store/session.js";
-import { ALLOW_FIELDS } from "../constants/fields_constants.js";
-import { CONSTANTS } from "../constants/constants.js";
-import { ERROR_STATUES } from "../constants/http_constants.js";
-import { default as PacketProcessor } from "./../routes/delivery_manager.js";
-import { inMemoryBlockList } from "../store/in_memory.js";
-import { slice } from "../utils/req_res_utils.js";
+import { CONSTANTS } from "../validations/constants/constants.js";
+import { ERROR_STATUES } from "../validations/constants/errors.js";
+import { default as LastActivityiesController } from "./activities.js";
+import { default as PacketProcessor } from "../routes/packet_processor.js";
 import { getClusterPort } from "../cluster/cluster_manager.js";
+import { inMemoryBlockList } from "../store/in_memory.js";
 
-export default class UsersController {
+class UsersController extends BaseController {
   constructor() {
+    super();
     this.blockListRepository = new BlockListRepository(
       BlockedUser,
       inMemoryBlockList
@@ -29,17 +25,12 @@ export default class UsersController {
   }
 
   async create(ws, data) {
-    const requestId = data.request.id;
+    const { id: requestId, user_create: reqData } = data;
 
-    const userParams = slice(
-      data.request.user_create,
-      ALLOW_FIELDS.ALLOWED_FIELDS_USER_CREATE
-    );
-
-    const isUserCreate = await User.findOne({ login: userParams.login });
+    const isUserCreate = await User.findOne({ login: reqData.login });
     if (!isUserCreate) {
-      userParams["recent_activity"] = Date.now();
-      const user = new User(userParams);
+      reqData["recent_activity"] = Date.now();
+      const user = new User(reqData);
       await user.save();
 
       return { response: { id: requestId, user: user.visibleParams() } };
@@ -51,10 +42,8 @@ export default class UsersController {
   }
 
   async login(ws, data) {
-    const requestId = data.request.id;
-    const userInfo = data.request.user_login;
-
-    await validate(ws, userInfo, [validateDeviceId]);
+    const { id: requestId, user_login: userInfo } = data;
+    const deviceId = userInfo.deviceId.toString();
 
     let user, token;
     if (!userInfo.token) {
@@ -72,12 +61,12 @@ export default class UsersController {
       }
       token = await UserToken.findOne({
         user_id: user.params._id,
-        device_id: userInfo.deviceId,
+        device_id: deviceId,
       });
     } else {
       token = await UserToken.findOne({
         token: userInfo.token,
-        device_id: userInfo.deviceId,
+        device_id: deviceId,
       });
       if (!token) {
         throw new Error(ERROR_STATUES.TOKEN_EXPIRED.message, {
@@ -87,7 +76,6 @@ export default class UsersController {
       user = await User.findOne({ _id: token.params.user_id });
     }
     const userId = user.params._id;
-    const deviceId = userInfo.deviceId;
 
     await PacketProcessor.maybeUpdateAndSendUserActivity(
       ws,
@@ -154,29 +142,28 @@ export default class UsersController {
   }
 
   async edit(ws, data) {
-    const requestId = data.request.id;
-    const userParams = data.request.user_edit;
+    const {
+      id: requestId,
+      user_edit: { login, current_password, new_password },
+    } = data;
 
-    await validate(
-      ws,
-      {
-        login: userParams.login,
-        password: userParams.current_password,
-        new_password: userParams.new_password,
-      },
-      [validateIsValidUserPassword]
-    );
+    const currentUser = await User.findOne({ login });
+    if (!currentUser) {
+      throw new Error(ERROR_STATUES.USER_LOGIN_OR_PASS.message, {
+        cause: ERROR_STATUES.USER_LOGIN_OR_PASS,
+      });
+    }
 
-    const updateUser = new User({
-      login: userParams.login,
-      password: userParams.new_password,
-    });
+    if (!(await currentUser.isValidPassword(current_password))) {
+      throw new Error(ERROR_STATUES.INCORRECT_CURRENT_PASSWORD.message, {
+        cause: ERROR_STATUES.INCORRECT_CURRENT_PASSWORD,
+      });
+    }
 
+    const updateUser = new User({ login, password: new_password });
     await updateUser.encryptAndSetPassword();
     await User.updateOne(
-      {
-        login: userParams.login,
-      },
+      { login },
       {
         $set: {
           password_salt: updateUser.params.password_salt,
@@ -185,7 +172,7 @@ export default class UsersController {
         },
       }
     );
-    const updatedUser = await User.findOne({ login: userParams.login });
+    const updatedUser = await User.findOne({ login });
 
     return {
       response: { id: requestId, user: updatedUser.visibleParams() },
@@ -193,7 +180,7 @@ export default class UsersController {
   }
 
   async logout(ws, data) {
-    const requestId = data.request.id;
+    const { id: requestId } = data;
 
     const currentUserSession = ACTIVE.SESSIONS.get(ws);
     const userId = currentUserSession.user_id;
@@ -236,7 +223,7 @@ export default class UsersController {
   }
 
   async delete(ws, data) {
-    const requestId = data.request.id;
+    const { id: requestId } = data;
 
     const userId = this.sessionRepository.getSessionUserId(ws);
     if (!userId) {
@@ -245,7 +232,7 @@ export default class UsersController {
       });
     }
 
-    await new LastActivityiesController().statusUnsubscribe(ws, {
+    await LastActivityiesController.statusUnsubscribe(ws, {
       request: { id: requestId },
     });
 
@@ -268,8 +255,7 @@ export default class UsersController {
   }
 
   async search(ws, data) {
-    const requestId = data.request.id;
-    const requestParam = data.request.user_search;
+    const { id: requestId, user_search: requestParam } = data;
 
     const limit =
       requestParam.limit > CONSTANTS.LIMIT_MAX
@@ -295,3 +281,5 @@ export default class UsersController {
     return { response: { id: requestId, users: users } };
   }
 }
+
+export default new UsersController();

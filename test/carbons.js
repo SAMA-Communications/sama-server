@@ -2,16 +2,16 @@ import User from "./../app/models/user.js";
 import assert from "assert";
 import { ACTIVE } from "./../app/store/session.js";
 import { connectToDBPromise } from "./../app/lib/db.js";
-import { default as PacketProcessor } from "./../app/routes/delivery_manager.js";
+import { default as PacketProcessor } from "./../app/routes/packet_processor.js";
 import { createUserArray, sendLogin, sendLogout } from "./utils.js";
 
 let currentUserToken = [];
-let usersIds = [];
 
 describe("Carbons", async () => {
   before(async () => {
     await connectToDBPromise();
-    usersIds = await createUserArray(2);
+    await createUserArray(2);
+    ACTIVE.DEVICES = {};
   });
 
   describe("Carbon login", async () => {

@@ -1,3 +1,4 @@
+import BaseController from "./base/base.js";
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import ConversationRepository from "../repositories/conversation_repository.js";
@@ -6,24 +7,20 @@ import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
 import validate, {
   validateConversationisUserOwner,
-  validateConversationName,
-  validateConversationType,
   validateIsConversation,
   validateIsUserSendHimSelf,
-  validateParticipants,
   validateParticipantsInUType,
   validateParticipantsLimit,
 } from "../lib/validation.js";
-import { ALLOW_FIELDS } from "../constants/fields_constants.js";
-import { CONSTANTS } from "../constants/constants.js";
-import { ERROR_STATUES } from "../constants/http_constants.js";
+import { CONSTANTS } from "../validations/constants/constants.js";
+import { ERROR_STATUES } from "../validations/constants/errors.js";
 import { ObjectId } from "mongodb";
 import { inMemoryConversations } from "../store/in_memory.js";
-import { slice } from "../utils/req_res_utils.js";
 import { ACTIVE } from "../store/session.js";
 
-export default class ConversationsController {
+class ConversationsController extends BaseController {
   constructor() {
+    super();
     this.conversationRepository = new ConversationRepository(
       Conversation,
       inMemoryConversations
@@ -32,21 +29,10 @@ export default class ConversationsController {
   }
 
   async create(ws, data) {
-    const requestId = data.request.id;
-    const participantsParams = slice(
-      data.request.conversation_create,
-      ALLOW_FIELDS.ALLOWED_FIELDS_PARTICIPANTS_CREATE
-    );
-    participantsParams.participants = await User.getAllIdsBy({
-      _id: { $in: participantsParams.participants },
+    const { id: requestId, conversation_create: conversationParams } = data;
+    const participants = await User.getAllIdsBy({
+      _id: { $in: conversationParams.participants },
     });
-    const conversationParams = slice(
-      data.request.conversation_create,
-      ALLOW_FIELDS.ALLOWED_FIELDS_CONVERSATION_CREATE
-    );
-
-    await validate(ws, conversationParams, [validateConversationType]);
-    await validate(ws, participantsParams, [validateParticipants]);
 
     conversationParams.owner_id = ObjectId(
       this.sessionRepository.getSessionUserId(ws)
@@ -54,10 +40,7 @@ export default class ConversationsController {
     if (conversationParams.type == "u") {
       await validate(
         ws,
-        {
-          participants: participantsParams.participants,
-          opponent_id: conversationParams.opponent_id,
-        },
+        { participants, opponent_id: conversationParams.opponent_id },
         [validateParticipantsInUType, validateIsUserSendHimSelf]
       );
 
@@ -82,22 +65,18 @@ export default class ConversationsController {
             conversation: existingConversation,
           },
         };
-    } else if (conversationParams.type == "g") {
-      await validate(ws, conversationParams, [validateConversationName]);
     }
 
     let isOwnerInArray = false;
-    participantsParams.participants.forEach((el) => {
+    participants.forEach((el) => {
       if (JSON.stringify(el) === JSON.stringify(conversationParams.owner_id)) {
         isOwnerInArray = true;
         return;
       }
     });
     if (!isOwnerInArray) {
-      participantsParams.participants.push(
-        ObjectId(conversationParams.owner_id)
-      );
-    } else if (participantsParams.participants.length === 1) {
+      participants.push(ObjectId(conversationParams.owner_id));
+    } else if (participants.length === 1) {
       return {
         response: {
           id: requestId,
@@ -106,14 +85,10 @@ export default class ConversationsController {
       };
     }
 
-    await validate(ws, participantsParams.participants.length, [
-      validateParticipantsLimit,
-    ]);
-
     const conversationObj = new Conversation(conversationParams);
     await conversationObj.save();
 
-    for (let userId of participantsParams.participants) {
+    for (let userId of participants) {
       const participant = new ConversationParticipant({
         user_id: userId,
         conversation_id: conversationObj.params._id,
@@ -130,17 +105,15 @@ export default class ConversationsController {
   }
 
   async update(ws, data) {
-    const requestId = data.request.id;
-    const requestData = data.request.conversation_update;
+    const { id: requestId, conversation_update: requestData } = data;
     await validate(ws, requestData, [validateIsConversation]);
 
+    const conversationId = requestData.id;
     const conversation = await this.conversationRepository.findById(
-      requestData
+      conversationId
     );
-
     await validate(ws, conversation, [validateConversationisUserOwner]);
 
-    const conversationId = requestData.id;
     delete requestData.id;
 
     let isOwnerChange = false;
@@ -151,8 +124,7 @@ export default class ConversationsController {
       const participantsToUpdate = requestData.participants;
       delete requestData.participants;
 
-      const addUsers = participantsToUpdate.add;
-      const removeUsers = participantsToUpdate.remove;
+      const { add: addUsers, remove: removeUsers } = participantsToUpdate;
       const countParticipants = await ConversationParticipant.count({
         conversation_id: conversationId,
       });
@@ -218,13 +190,16 @@ export default class ConversationsController {
   }
 
   async list(ws, data) {
-    const requestId = data.request.id;
+    const {
+      id: requestId,
+      conversation_list: { limit, updated_at },
+    } = data;
 
     const currentUser = this.sessionRepository.getSessionUserId(ws);
-    const limit =
-      data.request.conversation_list.limit > CONSTANTS.LIMIT_MAX
+    const limitParam =
+      limit > CONSTANTS.LIMIT_MAX
         ? CONSTANTS.LIMIT_MAX
-        : data.request.conversation_list.limit || CONSTANTS.LIMIT_MAX;
+        : limit || CONSTANTS.LIMIT_MAX;
     const userConversationsIds = await ConversationParticipant.findAll(
       {
         user_id: currentUser,
@@ -237,7 +212,7 @@ export default class ConversationsController {
         $in: userConversationsIds.map((p) => p.conversation_id),
       },
     };
-    const timeFromUpdate = data.request.conversation_list.updated_at;
+    const timeFromUpdate = updated_at;
     if (timeFromUpdate && timeFromUpdate.gt) {
       query.updated_at = { $gt: new Date(timeFromUpdate.gt) };
     }
@@ -245,7 +220,7 @@ export default class ConversationsController {
     const userConversations = await this.conversationRepository.findAll(
       query,
       null,
-      limit
+      limitParam
     );
     const lastMessagesListByCid = await Message.getLastMessageForConversation(
       userConversationsIds.map((el) => el.conversation_id),
@@ -273,10 +248,12 @@ export default class ConversationsController {
   }
 
   async delete(ws, data) {
-    const requestId = data.request.id;
-
-    const conversationId = data.request.conversation_delete.id;
+    const {
+      id: requestId,
+      conversation_delete: { id: conversationId },
+    } = data;
     await validate(ws, { id: conversationId }, [validateIsConversation]);
+
     const conversation = await this.conversationRepository.findById(
       conversationId
     );
@@ -314,8 +291,10 @@ export default class ConversationsController {
   }
 
   async getParticipantsByCids(ws, data) {
-    const requestId = data.request.id;
-    const cids = data.request.getParticipantsByCids.cids;
+    const {
+      id: requestId,
+      getParticipantsByCids: { cids },
+    } = data;
 
     const participantIds = await ConversationParticipant.findAll(
       { conversation_id: { $in: cids } },
@@ -337,3 +316,5 @@ export default class ConversationsController {
     };
   }
 }
+
+export default new ConversationsController();

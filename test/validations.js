@@ -3,7 +3,7 @@ import ConversationParticipant from "./../app/models/conversation_participant.js
 import User from "./../app/models/user.js";
 import assert from "assert";
 import { connectToDBPromise } from "./../app/lib/db.js";
-import { default as PacketProcessor } from "./../app/routes/delivery_manager.js";
+import { default as PacketProcessor } from "./../app/routes/packet_processor.js";
 import {
   createConversation,
   createUserArray,

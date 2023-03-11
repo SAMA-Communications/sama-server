@@ -8,7 +8,7 @@ import {
   sendLogin,
   sendLogout,
 } from "./utils.js";
-import { default as PacketProcessor } from "./../app/routes/delivery_manager.js";
+import { default as PacketProcessor } from "./../app/routes/packet_processor.js";
 
 let currentConversationId = "";
 let currentUserToken = "";
@@ -138,6 +138,7 @@ describe("Sending 'typing' status", async () => {
         id: "xyz",
         type: "start",
         cid: "currentConversationId",
+        t: 15673838833,
       },
     };
     const responseData = await PacketProcessor.processJsonMessageOrError(
@@ -158,6 +159,7 @@ describe("Sending 'typing' status", async () => {
         id: "xyz",
         type: "start",
         cid: currentConversationId,
+        t: 15673838833,
       },
     };
     const responseData = await PacketProcessor.processJsonMessageOrError(

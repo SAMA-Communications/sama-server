@@ -1,3 +1,4 @@
+import BaseController from "./base/base.js";
 import BlockListRepository from "../repositories/blocklist_repository.js";
 import BlockedUser from "../models/blocked_user.js";
 import Conversation from "../models/conversation.js";
@@ -5,32 +6,26 @@ import ConversationParticipant from "../models/conversation_participant.js";
 import ConversationRepository from "../repositories/conversation_repository.js";
 import Message from "../models/message.js";
 import MessageStatus from "../models/message_status.js";
+import SessionRepository from "../repositories/session_repository.js";
 import groupBy from "../utils/groupBy.js";
 import validate, {
   validateIsConversation,
   validateIsConversationByCID,
-  validateIsMessageById,
   validateIsUserAccess,
-  validateMessageBody,
-  validateMessageDeleteType,
-  validateMessageId,
-  validateIsCID,
 } from "../lib/validation.js";
 import {
   inMemoryBlockList,
   inMemoryConversations,
 } from "../store/in_memory.js";
 import { ACTIVE } from "../store/session.js";
-import { ALLOW_FIELDS } from "../constants/fields_constants.js";
-import { CONSTANTS } from "../constants/constants.js";
-import { ERROR_STATUES } from "../constants/http_constants.js";
+import { CONSTANTS } from "../validations/constants/constants.js";
+import { ERROR_STATUES } from "../validations/constants/errors.js";
 import { ObjectId } from "mongodb";
-import { default as PacketProcessor } from "../routes/delivery_manager.js";
-import SessionRepository from "../repositories/session_repository.js";
-import { slice } from "../utils/req_res_utils.js";
+import { default as PacketProcessor } from "../routes/packet_processor.js";
 
-export default class MessagesController {
+class MessagesController extends BaseController {
   constructor() {
+    super();
     this.conversationRepository = new ConversationRepository(
       Conversation,
       inMemoryConversations
@@ -43,15 +38,8 @@ export default class MessagesController {
   }
 
   async create(ws, data) {
-    const messageParams = slice(
-      data.message,
-      ALLOW_FIELDS.ALLOWED_FILEDS_MESSAGE
-    );
-
-    await validate(ws, messageParams, [validateMessageBody, validateIsCID]);
-
-    const messageId = data.message.id;
-    await validate(ws, { id: messageId }, [validateMessageId]);
+    const { message: messageParams } = data;
+    const messageId = messageParams.id;
 
     const currentUserId = this.sessionRepository.getSessionUserId(ws);
     const conversation = await this.conversationRepository.findById(
@@ -120,14 +108,17 @@ export default class MessagesController {
     };
   }
 
+  //TODO: add attachments change support
   async edit(ws, data) {
-    const requestId = data.request.id;
-    const messageParams = data.request.message_edit;
-
-    await validate(ws, messageParams, [validateMessageId, validateMessageBody]);
+    const { id: requestId, message_edit: messageParams } = data;
     const messageId = messageParams.id;
-    await validate(ws, { mid: messageId }, [validateIsMessageById]);
+
     let message = await Message.findOne({ _id: messageId });
+    if (!message) {
+      throw new Error(ERROR_STATUES.MESSAGE_ID_NOT_FOUND.message, {
+        cause: ERROR_STATUES.MESSAGE_ID_NOT_FOUND,
+      });
+    }
     await validate(ws, message.params, [validateIsUserAccess]);
 
     await Message.updateOne(
@@ -147,25 +138,31 @@ export default class MessagesController {
   }
 
   async list(ws, data) {
-    const requestId = data.request.id;
-
-    const cid = data.request.message_list.cid;
+    const {
+      id: requestId,
+      message_list: { cid, limit, updated_at },
+    } = data;
     await validate(ws, { id: cid }, [validateIsConversation]);
-    const limit =
-      data.request.message_list.limit > CONSTANTS.LIMIT_MAX
+
+    const limitParam =
+      limit > CONSTANTS.LIMIT_MAX
         ? CONSTANTS.LIMIT_MAX
-        : data.request.message_list.limit || CONSTANTS.LIMIT_MAX;
+        : limit || CONSTANTS.LIMIT_MAX;
 
     const query = {
-      cid: cid,
+      cid,
       deleted_for: { $nin: [this.sessionRepository.getSessionUserId(ws)] },
     };
-    const timeFromUpdate = data.request.message_list.updated_at;
+    const timeFromUpdate = updated_at;
     if (timeFromUpdate && timeFromUpdate.gt) {
       query.updated_at = { $gt: new Date(timeFromUpdate.gt) };
     }
 
-    const messages = await Message.findAll(query, Message.visibleFields, limit);
+    const messages = await Message.findAll(
+      query,
+      Message.visibleFields,
+      limitParam
+    );
     const messagesStatus = await MessageStatus.getReadStatusForMids(
       messages.map((msg) => msg._id)
     );
@@ -186,18 +183,16 @@ export default class MessagesController {
   }
 
   async read(ws, data) {
-    const requestId = data.request.id;
-    const cid = data.request.message_read.cid;
+    const {
+      id: requestId,
+      message_read: { cid, ids: mids },
+    } = data;
     const uId = this.sessionRepository.getSessionUserId(ws);
 
-    const query = {
-      cid: cid,
-      user_id: uId,
-    };
-
-    const filters = { cid: cid, from: { $ne: uId } };
-    if (data.request.message_read.ids) {
-      filters._id = { $in: data.request.message_read.ids };
+    const query = { cid, user_id: uId };
+    const filters = { cid, from: { $ne: uId } };
+    if (mids) {
+      filters._id = { $in: mids };
     } else {
       const lastReadMessage = (
         await MessageStatus.findAll(query, ["mid"], 1)
@@ -250,40 +245,34 @@ export default class MessagesController {
   }
 
   async delete(ws, data) {
-    const requestId = data.request.id;
-    const requestType = data.request.message_delete.type;
-    await validate(ws, { type: requestType }, [validateMessageDeleteType]);
+    const {
+      id: requestId,
+      message_delete: { type, cid, ids },
+    } = data;
+    await validate(ws, { cid }, [validateIsConversationByCID]);
 
-    const conversationId = data.request.message_delete.cid;
-    await validate(ws, { cid: conversationId }, [validateIsConversationByCID]);
-
-    const messagesIds = data.request.message_delete.ids;
-    await validate(ws, { id: messagesIds }, [validateMessageId]);
-
-    if (requestType == "all") {
+    if (type == "all") {
       const participants = await ConversationParticipant.findAll(
-        {
-          conversation_id: conversationId,
-        },
+        { conversation_id: cid },
         ["user_id"],
         100
       );
       for (const user in participants) {
         const request = {
           message_delete: {
-            cid: conversationId,
-            ids: messagesIds,
+            cid,
+            ids,
             type: "all",
             from: ObjectId(this.sessionRepository.getSessionUserId(ws)),
           },
         };
 
-        await PacketProcessor.deliverToUserOrUsers(ws, request, conversationId);
+        await PacketProcessor.deliverToUserOrUsers(ws, request, cid);
       }
-      await Message.deleteMany({ _id: { $in: messagesIds } });
+      await Message.deleteMany({ _id: { $in: ids } });
     } else {
       await Message.updateMany(
-        { id: { $in: messagesIds } },
+        { id: { $in: ids } },
         {
           $addToSet: {
             deleted_for: ObjectId(this.sessionRepository.getSessionUserId(ws)),
@@ -300,3 +289,5 @@ export default class MessagesController {
     };
   }
 }
+
+export default new MessagesController();

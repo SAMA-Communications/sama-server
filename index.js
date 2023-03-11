@@ -89,7 +89,6 @@ connectToDB(async (err) => {
     console.log("[connectToDB] Ok");
     await ClusterClient.startSyncingClusterNodes();
     await RedisClient.connect();
-    //need to delete cluster record when node shut down
     await BlockListRepository.warmCache();
     await ConversationRepository.warmCache();
   }

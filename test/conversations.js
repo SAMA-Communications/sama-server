@@ -4,7 +4,7 @@ import User from "./../app/models/user.js";
 import assert from "assert";
 import { connectToDBPromise } from "./../app/lib/db.js";
 import { createUserArray, sendLogin, sendLogout } from "./utils.js";
-import { default as PacketProcessor } from "./../app/routes/delivery_manager.js";
+import { default as PacketProcessor } from "./../app/routes/packet_processor.js";
 
 let currentUserToken = "";
 let usersIds = [];
@@ -124,8 +124,7 @@ describe("Conversation functions", async () => {
             id: currentConversationId,
             name: "123123",
             description: "asdbzxc1",
-            type: "g",
-            participants: [usersIds[1]],
+            participants: {},
           },
           id: "5_5",
         },
@@ -423,7 +422,7 @@ describe("Conversation functions", async () => {
 
   describe("Update Conversation", async () => {
     it("should fail because conversation not found", async () => {
-      await sendLogin("test", "user_1");
+      await sendLogin("test", "user_2");
       const requestData = {
         request: {
           conversation_update: {
@@ -538,7 +537,6 @@ describe("Conversation functions", async () => {
         let requestData = {
           message: {
             id: `messages_${i}`,
-            from: "",
             body: `this is messages ${i + 1}`,
             cid: ArrayOfTmpConversaionts[0],
           },

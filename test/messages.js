@@ -13,7 +13,7 @@ import {
   sendLogin,
   sendLogout,
 } from "./utils.js";
-import { default as PacketProcessor } from "./../app/routes/delivery_manager.js";
+import { default as PacketProcessor } from "./../app/routes/packet_processor.js";
 
 let filterUpdatedAt = "";
 let currentUserToken = "";
@@ -44,7 +44,6 @@ describe("Message function", async () => {
       const requestData = {
         message: {
           id: "xyz",
-          from: "",
           body: "hey how is going?",
           cid: currentConversationId,
           x: {
@@ -75,7 +74,6 @@ describe("Message function", async () => {
     it("should fail ID not found", async () => {
       const requestData = {
         message: {
-          from: "",
           body: "hey how is going?",
           cid: currentConversationId,
           x: {
@@ -100,7 +98,6 @@ describe("Message function", async () => {
       const requestData = {
         message: {
           id: "xyz",
-          from: "",
           body: "hey how is going?",
           x: {
             param1: "value",
@@ -126,7 +123,6 @@ describe("Message function", async () => {
       const requestData = {
         message: {
           id: "xyz",
-          from: "",
           body: "hey how is going?",
           cid: currentConversationId,
           x: {
@@ -157,7 +153,6 @@ describe("Message function", async () => {
         const requestData = {
           message: {
             id: `messageID_${i + 1}`,
-            from: "",
             body: `hey bro, this is message #${i + 1}`,
             cid: currentConversationId,
             x: {
@@ -340,7 +335,7 @@ describe("Message function", async () => {
           message_delete: {
             cid: currentConversationId,
             ids: ["include_2", "include_3"],
-            type: "me",
+            type: "myself",
           },
           id: "2",
         },
@@ -450,6 +445,7 @@ describe("Message function", async () => {
       const requestData = {
         request: {
           message_delete: {
+            cid: "asd",
             ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
             type: "all",
           },
@@ -619,6 +615,7 @@ describe("Message function", async () => {
             user_create: {
               login: `user_${i + 1}`,
               password: "1um",
+              deviceId: "device1",
             },
             id: "0",
           },
@@ -655,7 +652,6 @@ describe("Message function", async () => {
         requestData = {
           message: {
             id: `messages_${i}`,
-            from: "",
             body: `this is messages ${i + 1}`,
             cid: currentConversationId,
           },

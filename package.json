@@ -22,6 +22,7 @@
   "dependencies": {
     "crypto": "^1.0.1",
     "dotenv": "^16.0.1",
+    "joi": "^17.8.3",
     "jsonwebtoken": "^8.5.1",
     "migrate-mongo": "^9.0.0",
     "minio": "^7.0.32",

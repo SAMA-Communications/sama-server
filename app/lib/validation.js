@@ -4,8 +4,8 @@ import Message from "../models/message.js";
 import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
 import { ACTIVE } from "../store/session.js";
-import { CONSTANTS } from "../constants/constants.js";
-import { ERROR_STATUES } from "../constants/http_constants.js";
+import { CONSTANTS } from "../validations/constants/constants.js";
+import { ERROR_STATUES } from "../validations/constants/errors.js";
 
 const sessionRepository = new SessionRepository(ACTIVE);
 

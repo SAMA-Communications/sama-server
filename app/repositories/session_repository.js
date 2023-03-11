@@ -11,13 +11,60 @@ export default class SessionRepository extends BaseRepository {
     return this.inMemoryStorage.SESSIONS.size;
   }
 
+  async addUserToList(userId, deviceId, nodeIp, nodePort) {
+    await RedisClient.client.sAdd(
+      `node:${buildWsEndpoint(nodeIp, nodePort)}`,
+      JSON.stringify(userId + ":" + deviceId)
+    );
+  }
+
+  async removeUserFromList(userId, deviceId, nodeIp, nodePort) {
+    await RedisClient.client.sRem(
+      `node:${buildWsEndpoint(nodeIp, nodePort)}`,
+      JSON.stringify(userId + ":" + deviceId)
+    );
+  }
+
+  async clearNodeUsersSession(nodeUrl) {
+    const users = await RedisClient.client.sMembers(`node:${nodeUrl}`);
+
+    if (!users.length) {
+      return;
+    }
+
+    users.forEach((u) => {
+      const [userId, deviceId] = u.split(":");
+      this.removeUserNodeData(userId, deviceId, nodeIp, nodePort);
+    });
+
+    await RedisClient.client.del(`node:${nodeUrl}`);
+  }
+
   async storeUserNodeData(userId, deviceId, nodeIp, nodePort) {
+    const userConnectsString = await this.getUserNodeData(userId);
+
+    let isRecordFromThisDevice = false;
+    let record = null;
+    userConnectsString.forEach((d) => {
+      const data = JSON.parse(d);
+      if (Object.keys(data)[0] === "" + deviceId) {
+        record = d;
+
+        isRecordFromThisDevice = true;
+        return;
+      }
+    });
+
+    isRecordFromThisDevice && (await this.removeMember(userId, record));
+
     await RedisClient.client.sAdd(
       `user:${userId}`,
       JSON.stringify({
         [deviceId]: buildWsEndpoint(nodeIp, nodePort),
       })
     );
+
+    await this.addUserToList(userId, deviceId, nodeIp, nodePort);
   }
 
   async removeUserNodeData(userId, deviceId, nodeIp, nodePort) {
@@ -27,6 +74,8 @@ export default class SessionRepository extends BaseRepository {
         [deviceId]: buildWsEndpoint(nodeIp, nodePort),
       })
     );
+
+    await this.removeUserFromList(userId, deviceId, nodeIp, nodePort);
   }
 
   async clearUserNodeData(userId) {
@@ -41,6 +90,10 @@ export default class SessionRepository extends BaseRepository {
     await RedisClient.client.flushDb();
   }
 
+  async removeMember(userId, member) {
+    return await RedisClient.client.sRem(`user:${userId}`, member);
+  }
+
   getSessionUserId(ws) {
     if (this.inMemoryStorage.SESSIONS.get(ws)) {
       return this.inMemoryStorage.SESSIONS.get(ws).user_id.toString();
@@ -51,7 +104,7 @@ export default class SessionRepository extends BaseRepository {
   getDeviceId(ws, userId) {
     if (this.inMemoryStorage.DEVICES[userId]) {
       return this.inMemoryStorage.DEVICES[userId].find((el) => el.ws === ws)
-        .deviceId;
+        ?.deviceId;
     }
     return null;
   }
