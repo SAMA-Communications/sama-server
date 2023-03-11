@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { ERROR_STATUES } from "./../constants/http_constants.js";
+import { ERROR_STATUES } from "./constants/errors.js";
 
 export const filesSchemaValidation = {
   createUrl: Joi.array()

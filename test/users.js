@@ -1,6 +1,6 @@
 import assert from "assert";
 import { connectToDBPromise, getClient } from "./../app/lib/db.js";
-import { default as PacketProcessor } from "./../app/routes/delivery_manager.js";
+import { default as PacketProcessor } from "./../app/routes/packet_processor.js";
 
 const userLogin = [...Array(30)]
   .map(() => Math.random().toString(36)[2])

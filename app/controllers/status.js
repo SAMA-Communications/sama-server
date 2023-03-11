@@ -3,7 +3,7 @@ import SessionRepository from "../repositories/session_repository.js";
 import Status from "../models/status.js";
 import validate, { validateIsConversationByCID } from "../lib/validation.js";
 import { ACTIVE } from "../store/session.js";
-import { default as PacketProcessor } from "../routes/delivery_manager.js";
+import { default as PacketProcessor } from "../routes/packet_processor.js";
 
 class StatusesController extends BaseController {
   constructor() {

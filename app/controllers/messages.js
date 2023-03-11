@@ -18,10 +18,10 @@ import {
   inMemoryConversations,
 } from "../store/in_memory.js";
 import { ACTIVE } from "../store/session.js";
-import { CONSTANTS } from "../constants/constants.js";
-import { ERROR_STATUES } from "../constants/http_constants.js";
+import { CONSTANTS } from "../validations/constants/constants.js";
+import { ERROR_STATUES } from "../validations/constants/errors.js";
 import { ObjectId } from "mongodb";
-import { default as PacketProcessor } from "../routes/delivery_manager.js";
+import { default as PacketProcessor } from "../routes/packet_processor.js";
 
 class MessagesController extends BaseController {
   constructor() {

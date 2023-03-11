@@ -2,7 +2,7 @@ import SessionRepository from "../repositories/session_repository.js";
 import ip from "ip";
 import { ACTIVE } from "../store/session.js";
 import { StringDecoder } from "string_decoder";
-import { default as PacketProcessor } from "./delivery_manager.js";
+import { default as PacketProcessor } from "./packet_processor.js";
 import { getClusterPort } from "../cluster/cluster_manager.js";
 const decoder = new StringDecoder("utf8");
 const sessionRepository = new SessionRepository(ACTIVE);

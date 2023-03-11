@@ -2,7 +2,7 @@ import User from "./../app/models/user.js";
 import assert from "assert";
 import { ACTIVITY } from "./../app/store/activity.js";
 import { connectToDBPromise, getClient } from "./../app/lib/db.js";
-import { default as PacketProcessor } from "./../app/routes/delivery_manager.js";
+import { default as PacketProcessor } from "./../app/routes/packet_processor.js";
 import { createUserArray, sendLogin, sendLogout } from "./utils.js";
 
 let currentUserToken1 = "";

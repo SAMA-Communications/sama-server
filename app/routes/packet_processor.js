@@ -6,7 +6,7 @@ import User from "../models/user.js";
 import ip from "ip";
 import { ACTIVE } from "../store/session.js";
 import { ACTIVITY } from "../store/activity.js";
-import { ERROR_STATUES } from "../constants/http_constants.js";
+import { ERROR_STATUES } from "../validations/constants/errors.js";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
 import {
   clusterNodesWS,
@@ -15,7 +15,7 @@ import {
 import { default as LastActivityiesController } from "../controllers/activities.js";
 import { getClusterPort } from "../cluster/cluster_manager.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
-import { routes } from "../constants/json_routes.js";
+import { routes } from "./routes.js";
 
 class PacketProcessor {
   constructor() {

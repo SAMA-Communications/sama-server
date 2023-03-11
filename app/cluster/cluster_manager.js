@@ -2,7 +2,7 @@ import WebSocket from "ws";
 import ip from "ip";
 import { StringDecoder } from "string_decoder";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
-import { default as PacketProcessor } from "../routes/delivery_manager.js";
+import { default as PacketProcessor } from "../routes/packet_processor.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
 const decoder = new StringDecoder("utf8");
 

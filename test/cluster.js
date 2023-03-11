@@ -16,7 +16,7 @@ import {
 } from "./utils.js";
 import { ACTIVE } from "./../app/store/session.js";
 import { clusterNodesWS } from "./../app/cluster/cluster_manager.js";
-import { default as PacketProcessor } from "./../app/routes/delivery_manager.js";
+import { default as PacketProcessor } from "./../app/routes/packet_processor.js";
 
 let currentConversationId = "";
 let usersIds = [];
