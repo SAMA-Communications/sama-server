@@ -1,4 +1,5 @@
 import WebSocket from "ws";
+import uWS from "uWebSockets.js";
 import ip from "ip";
 import { StringDecoder } from "string_decoder";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
@@ -9,6 +10,8 @@ const decoder = new StringDecoder("utf8");
 class ClusterManager {
   #clusterPort = -1;
   #clusterNodesWS = {};
+
+  #localSocket = null;
 
   set clusterPort(port) {
     this.#clusterPort = port;
@@ -82,19 +85,25 @@ class ClusterManager {
     });
   }
 
-  buildRoutes(app, wsOptions) {
-    app.ws("/*", {
+  async createLocalSocket(wsOptions, listenOptions, isSSL) {
+    if (isSSL) {
+      this.#localSocket = uWS.SSLApp(wsOptions);
+    } else {
+      this.#localSocket = uWS.App(wsOptions);
+    }
+
+    this.#localSocket.ws("/*", {
       ...wsOptions,
 
       open: (ws) => {
         console.log(
-          "[ClusterManager][clusterRoutes] ws on Open",
+          "[ClusterManager][createLocalSocket] ws on Open",
           `IP: ${Buffer.from(ws.getRemoteAddressAsText()).toString()}`
         );
       },
 
       close: async (ws, code, message) => {
-        console.log("[ClusterManager][clusterRoutes] ws on Close");
+        console.log("[ClusterManager][createLocalSocket] ws on Close");
         for (const nodeIp in this.clusterNodesWS) {
           if (this.clusterNodesWS[nodeIp] !== ws) {
             continue;
@@ -120,6 +129,16 @@ class ClusterManager {
           json.message
         );
       },
+    });
+
+    this.#localSocket.listen(0, listenOptions, (listenSocket) => {
+      if (listenSocket) {
+        const clusterPort = uWS.us_socket_local_port(listenSocket);
+        console.log(`[ClusterManager][createLocalSocket] listening on port ${clusterPort}`);
+        this.clusterPort = clusterPort;
+      } else {
+        throw "[ClusterManager][createLocalSocket] socket.listen error: can't allocate port";
+      }
     });
   }
 }

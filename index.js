@@ -40,14 +40,13 @@ const WS_OPTIONS = {
 };
 
 let CLIENT_SOCKET = null;
-let CLUSTER_SOCKET = null;
 
-if (SSL_APP_OPTIONS.key_file_name && SSL_APP_OPTIONS.cert_file_name) {
+const isSSL = SSL_APP_OPTIONS.key_file_name && SSL_APP_OPTIONS.cert_file_name;
+
+if (isSSL) {
   CLIENT_SOCKET = uWS.SSLApp(SSL_APP_OPTIONS);
-  CLUSTER_SOCKET = uWS.SSLApp(SSL_APP_OPTIONS);
 } else {
   CLIENT_SOCKET = uWS.App(APP_OPTIONS);
-  CLUSTER_SOCKET = uWS.App(APP_OPTIONS);
 }
 
 buildWSRoutes(CLIENT_SOCKET, WS_OPTIONS);
@@ -65,17 +64,7 @@ CLIENT_SOCKET.listen(appPort, APP_LISTEN_OPTIONS, (listenSocket) => {
   }
 });
 
-clusterManager.buildRoutes(CLUSTER_SOCKET, WS_OPTIONS);
-
-CLUSTER_SOCKET.listen(0, APP_LISTEN_OPTIONS, (listenSocket) => {
-  if (listenSocket) {
-    const clusterPort = uWS.us_socket_local_port(listenSocket);
-    console.log(`CLUSTER listening on port ${clusterPort}`);
-    clusterManager.clusterPort = clusterPort;
-  } else {
-    throw "CLUSTER_SOCKET.listen error";
-  }
-});
+clusterManager.createLocalSocket(isSSL ? SSL_APP_OPTIONS : APP_OPTIONS, APP_LISTEN_OPTIONS, isSSL);
 
 // perform a database connection when the server starts
 connectToDB(async (err) => {
