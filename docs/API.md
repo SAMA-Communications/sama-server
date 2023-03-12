@@ -134,7 +134,7 @@ Later, the subsequent logins can be done via `token`:
       login: "sam",
       limit: 100,
       updated_at: {
-        gt: timestamp1,
+        gt: timestamp_in_ms,
       },
       ignore_ids: [ "63077ad836b78c3d82af0866", "63077ad836b78c3d82af0868" ]
     },
@@ -214,7 +214,7 @@ If the value of the `type` field is equal to `y`, then the `opponent_id` field i
     conversation_list: {
       limit: 67,
       updated_at: {
-        gt: timestamp1,
+        gt: timestamp_in_ms,
       },
     },
     id: "7",
@@ -339,7 +339,7 @@ On each message sent to server - a server will deliver back to client a simple p
       cid: "63077ad836b78c3d82af0812",
       limit: 27,
       updated_at: {
-        gt: timestamp1,
+        gt: timestamp_in_ms,
       },
     },
     id: "ef5326a5-b16b-4f75-9e88-cc42e5fea016",
@@ -549,7 +549,7 @@ TBA
 request: {
   op_log_list: {
     created_at: {
-       gt: timeWhenUserOff,
+       gt: timestamp_in_ms,
     },
   },
   id: "453",
