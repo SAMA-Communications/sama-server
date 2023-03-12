@@ -85,11 +85,11 @@ class ClusterManager {
     });
   }
 
-  async createLocalSocket(wsOptions, listenOptions, isSSL) {
+  async createLocalSocket(appOptions, wsOptions, listenOptions, isSSL) {
     if (isSSL) {
-      this.#localSocket = uWS.SSLApp(wsOptions);
+      this.#localSocket = uWS.SSLApp(appOptions);
     } else {
-      this.#localSocket = uWS.App(wsOptions);
+      this.#localSocket = uWS.App(appOptions);
     }
 
     this.#localSocket.ws("/*", {

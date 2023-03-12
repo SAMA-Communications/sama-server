@@ -1,7 +1,7 @@
 /* Simplified stock exchange made with uWebSockets.js pub/sub */
 import uWS from "uWebSockets.js";
 
-import { default as buildWSRoutes } from "./app/routes/ws.js";
+import clientManager from "./app/routes/client_manager.js";
 import clusterManager from "./app/cluster/cluster_manager.js";
 
 // get MongoDB driver connection
@@ -27,44 +27,22 @@ const SSL_APP_OPTIONS = {
   key_file_name: process.env.SSL_KEY_FILE_NAME,
   cert_file_name: process.env.SSL_CERT_FILE_NAME,
 };
-
-const APP_LISTEN_OPTIONS = {
-  LIBUS_LISTEN_EXCLUSIVE_PORT: 1,
-};
-
 const WS_OPTIONS = {
   compression: uWS.SHARED_COMPRESSOR,
   idleTimeout: 12,
   maxBackpressure: 1024,
   maxPayloadLength: 16 * 1024 * 1024,
 };
+const WS_LISTEN_OPTIONS = {
+  LIBUS_LISTEN_EXCLUSIVE_PORT: 1,
+};
 
-let CLIENT_SOCKET = null;
-
-const isSSL = SSL_APP_OPTIONS.key_file_name && SSL_APP_OPTIONS.cert_file_name;
-
-if (isSSL) {
-  CLIENT_SOCKET = uWS.SSLApp(SSL_APP_OPTIONS);
-} else {
-  CLIENT_SOCKET = uWS.App(APP_OPTIONS);
-}
-
-buildWSRoutes(CLIENT_SOCKET, WS_OPTIONS);
+const isSSL = !!SSL_APP_OPTIONS.key_file_name && !!SSL_APP_OPTIONS.cert_file_name;
 
 const appPort = parseInt(process.env.APP_PORT || process.env.PORT);
-CLIENT_SOCKET.listen(appPort, APP_LISTEN_OPTIONS, (listenSocket) => {
-  if (listenSocket) {
-    console.log(
-      `    APP listening on port ${uWS.us_socket_local_port(
-        listenSocket
-      )}, pid=${process.pid}`
-    );
-  } else {
-    throw "CLIENT_SOCKET.listen error";
-  }
-});
-
-clusterManager.createLocalSocket(isSSL ? SSL_APP_OPTIONS : APP_OPTIONS, APP_LISTEN_OPTIONS, isSSL);
+clientManager.createLocalSocket(isSSL ? SSL_APP_OPTIONS : APP_OPTIONS, WS_OPTIONS, WS_LISTEN_OPTIONS, isSSL, appPort);
+//
+clusterManager.createLocalSocket(isSSL ? SSL_APP_OPTIONS : APP_OPTIONS, WS_OPTIONS, WS_LISTEN_OPTIONS, isSSL);
 
 // perform a database connection when the server starts
 connectToDB(async (err) => {
