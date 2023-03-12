@@ -100,6 +100,4 @@ class ClusterSyncer {
   }
 }
 
-const ClusterSyncer = new ClusterSyncer();
-
-export default ClusterSyncer;
+export default new ClusterSyncer();
