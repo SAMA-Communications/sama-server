@@ -2,10 +2,7 @@
 import uWS from "uWebSockets.js";
 
 import { default as buildWSRoutes } from "./app/routes/ws.js";
-import {
-  clusterRoutes as buildClusterWSRoutes,
-  setClusterPort,
-} from "./app/cluster/cluster_manager.js";
+import clusterManager from "./app/cluster/cluster_manager.js";
 
 // get MongoDB driver connection
 import { connectToDB } from "./app/lib/db.js";
@@ -68,13 +65,13 @@ CLIENT_SOCKET.listen(appPort, APP_LISTEN_OPTIONS, (listenSocket) => {
   }
 });
 
-buildClusterWSRoutes(CLUSTER_SOCKET, WS_OPTIONS);
+clusterManager.buildRoutes(CLUSTER_SOCKET, WS_OPTIONS);
 
 CLUSTER_SOCKET.listen(0, APP_LISTEN_OPTIONS, (listenSocket) => {
   if (listenSocket) {
     const clusterPort = uWS.us_socket_local_port(listenSocket);
     console.log(`CLUSTER listening on port ${clusterPort}`);
-    setClusterPort(clusterPort);
+    clusterManager.clusterPort = clusterPort;
   } else {
     throw "CLUSTER_SOCKET.listen error";
   }

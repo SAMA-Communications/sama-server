@@ -1,10 +1,7 @@
 import ClusterNode from "../models/cluster_node.js";
 import ip from "ip";
 import os from "os";
-import {
-  createToNodeSocket,
-  getClusterPort,
-} from "./cluster_manager.js";
+import clusterManager from "./cluster_manager.js";
 import SessionRepository from "../repositories/session_repository.js";
 import { ACTIVE } from "../store/session.js";
 
@@ -50,11 +47,11 @@ class ClusterSyncer {
     // initiate connect to other node
     nodeList.forEach(async (n) => {
       if (
-        getClusterPort() !== n.port &&
-        `${this.hostname}${getClusterPort()}` < `${n.hostname}${n.port}`
+        clusterManager.clusterPort !== n.port &&
+        `${this.hostname}${clusterManager.clusterPort}` < `${n.hostname}${n.port}`
       )
         try {
-          await createToNodeSocket(n.ip_address, n.port);
+          await clusterManager.createSocketWithNode(n.ip_address, n.port);
         } catch (err) {
           console.log(err);
         }
@@ -94,7 +91,7 @@ class ClusterSyncer {
     const clusterNodeParams = {
       ip_address: this.ip_address,
       hostname: this.hostname,
-      port: getClusterPort(),
+      port: clusterManager.clusterPort,
       users_count: this.sessionRepository.sessionsTotal,
     };
     await this.#storeCurrentNode(clusterNodeParams);

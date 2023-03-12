@@ -11,7 +11,7 @@ import { CONSTANTS } from "../validations/constants/constants.js";
 import { ERROR_STATUES } from "../validations/constants/errors.js";
 import { default as LastActivityiesController } from "./activities.js";
 import { default as PacketProcessor } from "../routes/packet_processor.js";
-import { getClusterPort } from "../cluster/cluster_manager.js";
+import clusterManager from "../cluster/cluster_manager.js";
 import { inMemoryBlockList } from "../store/in_memory.js";
 
 class UsersController extends BaseController {
@@ -133,7 +133,7 @@ class UsersController extends BaseController {
       userId,
       deviceId,
       ip.address(),
-      getClusterPort()
+      clusterManager.clusterPort
     );
 
     return {
@@ -211,7 +211,7 @@ class UsersController extends BaseController {
         userId,
         deviceId,
         ip.address(),
-        getClusterPort()
+        clusterManager.clusterPort
       );
 
       return { response: { id: requestId, success: true } };

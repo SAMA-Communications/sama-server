@@ -8,12 +8,8 @@ import { ACTIVE } from "../store/session.js";
 import { ACTIVITY } from "../store/activity.js";
 import { ERROR_STATUES } from "../validations/constants/errors.js";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
-import {
-  clusterNodesWS,
-  createToNodeSocket,
-} from "../cluster/cluster_manager.js";
 import { default as LastActivityiesController } from "../controllers/activities.js";
-import { getClusterPort } from "../cluster/cluster_manager.js";
+import clusterManager from "../cluster/cluster_manager.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
 import { routes } from "./routes.js";
 
@@ -49,20 +45,23 @@ class PacketProcessor {
       const nodeDeviceId = Object.keys(nodeInfo)[0];
       const currentDeviceId = this.sessionRepository.getDeviceId(ws, userId);
 
-      this.curentNodeUrl = buildWsEndpoint(ip.address(), getClusterPort());
+      this.curentNodeUrl = buildWsEndpoint(ip.address(), clusterManager.clusterPort);
       if (nodeUrl === this.curentNodeUrl) {
         nodeDeviceId !== currentDeviceId &&
           (await this.deliverToUserOnThisNode(ws, userId, packet));
       } else {
-        const recipientClusterNodeWS = clusterNodesWS[getIpFromWsUrl(nodeUrl)];
+        const recipientClusterNodeWS = clusterManager.clusterNodesWS[getIpFromWsUrl(nodeUrl)];
         if (!recipientClusterNodeWS) {
           try {
-            const recClusterNodeWs = await createToNodeSocket(
+            // force create connection with cluster node
+            const recClusterNodeWs = await clusterManager.createSocketWithNode(
               getIpFromWsUrl(nodeUrl),
               nodeUrl.split(":")[2]
             );
             recClusterNodeWs.send(JSON.stringify({ userId, message: packet }));
           } catch (err) {
+            console.error("[PacketProcessor][deliverToUserDevices] createSocketWithNode error", err);
+
             await this.sessionRepository.clearNodeUsersSession(nodeUrl);
             this.isAllowedForOfflineStorage(packet) &&
               this.operationsLogRepository.savePacket(userId, packet);

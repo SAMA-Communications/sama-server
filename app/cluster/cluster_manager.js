@@ -6,114 +6,122 @@ import { default as PacketProcessor } from "../routes/packet_processor.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
 const decoder = new StringDecoder("utf8");
 
-export const clusterNodesWS = {};
+class ClusterManager {
+  #clusterPort = -1;
+  #clusterNodesWS = {};
 
-let clusterPort;
+  set clusterPort(port) {
+    this.#clusterPort = port;
+  }
 
-export function setClusterPort(port) {
-  clusterPort = port;
-}
+  get clusterPort() {
+    return this.#clusterPort;
+  }
 
-export function getClusterPort() {
-  return clusterPort;
-}
+  get clusterNodesWS() {
+    return this.#clusterNodesWS;
+  }
 
-async function shareCurrentNodeInfo(ws) {
-  ws.send(
-    JSON.stringify({
-      node_info: {
-        ip: ip.address(),
-      },
-    })
-  );
-}
+  #shareCurrentNodeInfo(ws) {
+    ws.send(
+      JSON.stringify({
+        node_info: {
+          ip: ip.address(),
+        },
+      })
+    );
+  }
 
-export async function createToNodeSocket(ip, port) {
-  return new Promise((resolve, reject) => {
-    if (clusterNodesWS[ip]) {
-      resolve();
-      return;
-    }
-
-    const url = buildWsEndpoint(ip, port);
-    if (!url) {
-      reject("Can't create To Node Socket w/o url");
-      return;
-    }
-
-    const ws = new WebSocket(url);
-
-    ws.on("error", async () => {
-      reject("Error while setuping socket");
-      console.error("[SubSocket.error] Socket offline");
-    });
-
-    ws.on("open", async () => {
-      console.log("[SubSocket] Open", `url ${ws.url}`);
-      await shareCurrentNodeInfo(ws);
-    });
-
-    ws.on("message", async (data) => {
-      const json = JSON.parse(decoder.write(Buffer.from(data)));
-      console.log("[SubSocket.message]", json);
-
-      if (json.node_info) {
-        const nodeInfo = json.node_info;
-        clusterNodesWS[nodeInfo.ip] = ws;
-        resolve(ws);
+  async createSocketWithNode(ip, port) {
+    return new Promise((resolve, reject) => {
+      const existingWS = this.clusterNodesWS[ip];
+      if (existingWS) {
+        resolve(existingWS);
         return;
       }
 
-      await PacketProcessor.deliverClusterMessageToUser(
-        json.userId,
-        json.message
-      );
-    });
+      const url = buildWsEndpoint(ip, port);
+      if (!url) {
+        reject("[ClusterManager][createSocketWithNode] can't create To Node Socket w/o url");
+        return;
+      }
 
-    ws.on("close", async () => {
-      console.log("[SubSocket] Close connect", ws.url);
-      delete clusterNodesWS[getIpFromWsUrl(ws.url)];
-    });
-  });
-}
+      const ws = new WebSocket(url);
 
-export function clusterRoutes(app, wsOptions) {
-  app.ws("/*", {
-    ...wsOptions,
+      ws.on("error", async (event) => {
+        console.error("[ClusterManager][createSocketWithNode] ws on Error", event);
+        reject("[ClusterManager][createSocketWithNode] ws on error");
+      });
 
-    open: (ws) => {
-      console.log(
-        "[ClusterWS][open]",
-        `IP: ${Buffer.from(ws.getRemoteAddressAsText()).toString()}`
-      );
-    },
+      ws.on("open", async () => {
+        console.log("[ClusterManager][createSocketWithNode] ws on Open", `url ${ws.url}`);
+        this.#shareCurrentNodeInfo(ws);
+      });
 
-    close: async (ws, code, message) => {
-      console.log("[close] WebSokect connect down");
-      for (const nodeIp in clusterNodesWS) {
-        if (clusterNodesWS[nodeIp] !== ws) {
-          continue;
+      ws.on("message", async (data) => {
+        const json = JSON.parse(decoder.write(Buffer.from(data)));
+        console.log("[ClusterManager] ws on Message", json);
+
+        if (json.node_info) {
+          const nodeInfo = json.node_info;
+          this.clusterNodesWS[nodeInfo.ip] = ws;
+          resolve(ws);
+          return;
         }
 
-        delete clusterNodesWS[nodeIp];
-        return;
-      }
-    },
+        await PacketProcessor.deliverClusterMessageToUser(
+          json.userId,
+          json.message
+        );
+      });
 
-    message: async (ws, message, isBinary) => {
-      const json = JSON.parse(decoder.write(Buffer.from(message)));
-      if (json.node_info) {
-        const nodeInfo = json.node_info;
-        clusterNodesWS[nodeInfo.ip] = ws;
-        await shareCurrentNodeInfo(ws);
+      ws.on("close", async () => {
+        console.log("[ClusterManager][createSocketWithNode] ws on Close", ws.url);
+        delete this.clusterNodesWS[getIpFromWsUrl(ws.url)];
+      });
+    });
+  }
 
-        return;
-      }
+  buildRoutes(app, wsOptions) {
+    app.ws("/*", {
+      ...wsOptions,
 
-      await PacketProcessor.deliverClusterMessageToUser(
-        json.userId,
-        json.message
-      );
-    },
-  });
+      open: (ws) => {
+        console.log(
+          "[ClusterManager][clusterRoutes] ws on Open",
+          `IP: ${Buffer.from(ws.getRemoteAddressAsText()).toString()}`
+        );
+      },
+
+      close: async (ws, code, message) => {
+        console.log("[ClusterManager][clusterRoutes] ws on Close");
+        for (const nodeIp in this.clusterNodesWS) {
+          if (this.clusterNodesWS[nodeIp] !== ws) {
+            continue;
+          }
+
+          delete this.clusterNodesWS[nodeIp];
+          return;
+        }
+      },
+
+      message: async (ws, message, isBinary) => {
+        const json = JSON.parse(decoder.write(Buffer.from(message)));
+        if (json.node_info) {
+          const nodeInfo = json.node_info;
+          this.clusterNodesWS[nodeInfo.ip] = ws;
+          this.#shareCurrentNodeInfo(ws);
+
+          return;
+        }
+
+        await PacketProcessor.deliverClusterMessageToUser(
+          json.userId,
+          json.message
+        );
+      },
+    });
+  }
 }
+
+export default new ClusterManager();
