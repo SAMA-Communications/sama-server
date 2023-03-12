@@ -23,13 +23,14 @@ class ClientManager {
 
       open: (ws) => {
         console.log(
-          "[open]",
+          "[ClientManager] ws on Open",
           `IP: ${Buffer.from(ws.getRemoteAddressAsText()).toString()}`
         );
       },
 
       close: async (ws, code, message) => {
-        console.log("[close]", `WebSokect connect down`);
+        console.log("[ClientManager] ws on Close");
+
         const uId = sessionRepository.getSessionUserId(ws);
         const arrDevices = ACTIVE.DEVICES[uId];
 
@@ -54,14 +55,16 @@ class ClientManager {
       message: async (ws, message, isBinary) => {
         const json = JSON.parse(decoder.write(Buffer.from(message)));
 
-        console.log(`[message](pid=${process.pid})`, json);
+        console.log(`[ClientManager] ws on message (pid=${process.pid})`, json);
 
         const responseData = await PacketProcessor.processJsonMessageOrError(
           ws,
           json
         );
 
-        responseData && ws.send(JSON.stringify(responseData));
+        if (responseData) {
+          ws.send(JSON.stringify(responseData));
+        }
       },
     });
 
