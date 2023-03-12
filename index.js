@@ -16,7 +16,7 @@ import S3 from "./app/lib/storage/s3.js";
 import BlockListRepository from "./app/repositories/blocklist_repository.js";
 import ConversationRepository from "./app/repositories/conversation_repository.js";
 import RedisClient from "./app/lib/redis.js";
-import ClusterSyncer from "./app/lib/cluster_syncer.js";
+import ClusterSyncer from "./app/cluster/cluster_syncer.js";
 
 let storageClient;
 if (process.env.STORAGE_DRIVER === "minio") {

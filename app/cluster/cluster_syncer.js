@@ -4,7 +4,7 @@ import os from "os";
 import {
   createToNodeSocket,
   getClusterPort,
-} from "../cluster/cluster_manager.js";
+} from "./cluster_manager.js";
 import SessionRepository from "../repositories/session_repository.js";
 import { ACTIVE } from "../store/session.js";
 
@@ -61,6 +61,9 @@ class ClusterSyncer {
     });
 
     this.nodes = nodeList;
+
+    // TODO
+    // if some node is gone, we may need to do some cleaning ?
   }
 
   async #storeCurrentNode({
