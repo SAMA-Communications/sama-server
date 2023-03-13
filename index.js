@@ -15,12 +15,8 @@ import ConversationRepository from "./app/repositories/conversation_repository.j
 import RedisClient from "./app/lib/redis.js";
 import ClusterSyncer from "./app/cluster/cluster_syncer.js";
 
-let storageClient;
-if (process.env.STORAGE_DRIVER === "minio") {
-  storageClient = new Minio();
-} else {
-  storageClient = new S3();
-}
+global.storageClient =
+  process.env.STORAGE_DRIVER === "minio" ? new Minio() : new S3();
 
 const APP_OPTIONS = {};
 const SSL_APP_OPTIONS = {
@@ -37,12 +33,24 @@ const WS_LISTEN_OPTIONS = {
   LIBUS_LISTEN_EXCLUSIVE_PORT: 1,
 };
 
-const isSSL = !!SSL_APP_OPTIONS.key_file_name && !!SSL_APP_OPTIONS.cert_file_name;
+const isSSL =
+  !!SSL_APP_OPTIONS.key_file_name && !!SSL_APP_OPTIONS.cert_file_name;
 
 const appPort = parseInt(process.env.APP_PORT || process.env.PORT);
-clientManager.createLocalSocket(isSSL ? SSL_APP_OPTIONS : APP_OPTIONS, WS_OPTIONS, WS_LISTEN_OPTIONS, isSSL, appPort);
+clientManager.createLocalSocket(
+  isSSL ? SSL_APP_OPTIONS : APP_OPTIONS,
+  WS_OPTIONS,
+  WS_LISTEN_OPTIONS,
+  isSSL,
+  appPort
+);
 //
-clusterManager.createLocalSocket(isSSL ? SSL_APP_OPTIONS : APP_OPTIONS, WS_OPTIONS, WS_LISTEN_OPTIONS, isSSL);
+clusterManager.createLocalSocket(
+  isSSL ? SSL_APP_OPTIONS : APP_OPTIONS,
+  WS_OPTIONS,
+  WS_LISTEN_OPTIONS,
+  isSSL
+);
 
 // perform a database connection when the server starts
 connectToDB(async (err) => {
@@ -57,7 +65,5 @@ connectToDB(async (err) => {
     await ConversationRepository.warmCache();
   }
 });
-
-export { storageClient };
 
 // https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph
