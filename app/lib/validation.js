@@ -264,31 +264,13 @@ function validateStatusConversationType(vParams) {
 }
 
 export {
-  validateConversationName,
-  validateConversationType,
   validateConversationisUserOwner,
-  validateCountOfFileIds,
-  validateCountOfFileObjects,
-  validateDeviceId,
-  validateFileFields,
-  validateFileIds,
-  validateIsCID,
   validateIsConversation,
   validateIsConversationByCID,
-  validateIsMessageById,
   validateIsUserAccess,
-  validateIsUserId,
   validateIsUserSendHimSelf,
-  validateIsValidUserPassword,
-  validateMessageBody,
-  validateMessageDeleteType,
-  validateMessageId,
-  validateParticipants,
   validateParticipantsInUType,
   validateParticipantsLimit,
-  validateStatusConversationType,
-  validateStatusId,
-  valideteTimestampQueary,
 };
 
 export default async function validate(ws, vParams, functionsValidate) {
