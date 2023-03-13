@@ -1,8 +1,8 @@
-import Conversation from "./../app/models/conversation.js";
-import ConversationParticipant from "./../app/models/conversation_participant.js";
-import User from "./../app/models/user.js";
+import Conversation from "../app/models/conversation.js";
+import ConversationParticipant from "../app/models/conversation_participant.js";
+import User from "../app/models/user.js";
 import assert from "assert";
-import { connectToDBPromise } from "./../app/lib/db.js";
+import { connectToDBPromise } from "../app/lib/db.js";
 import {
   createConversation,
   createUserArray,
@@ -17,8 +17,8 @@ import {
   validateIsUserSendHimSelf,
   validateParticipantsInUType,
   validateParticipantsLimit,
-} from "./../app/lib/validation.js";
-import SessionRepository from "./../app/repositories/session_repository.js";
+} from "../app/lib/validation.js";
+import SessionRepository from "../app/repositories/session_repository.js";
 
 let currentUserToken = "";
 let usersIds = [];
@@ -37,7 +37,7 @@ async function assertThrowsAsync(fn, regExp) {
   }
 }
 
-describe("Validate functions", async () => {
+describe("Custom validate functions", async () => {
   before(async () => {
     await connectToDBPromise();
     usersIds = await createUserArray(3);
