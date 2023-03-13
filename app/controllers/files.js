@@ -1,5 +1,6 @@
 import BaseController from "./base/base.js";
 import File from "./../models/file.js";
+import { storageClient } from "./../../index.js";
 
 class FilesController extends BaseController {
   constructor() {
@@ -12,7 +13,7 @@ class FilesController extends BaseController {
     const resFiles = [];
     for (let i = 0; i < reqFiles.length; i++) {
       //TODO: update from many to one request if it posible
-      const { objectId, url } = await global.storageClient.getUploadUrl(
+      const { objectId, url } = await storageClient.getUploadUrl(
         reqFiles[i].name
       );
       reqFiles[i]["object_id"] = objectId;
@@ -35,7 +36,7 @@ class FilesController extends BaseController {
     let urls = {};
     for (let i = 0; i < objectIds.length; i++) {
       //TODO: update from many to one request if it posible
-      const fileUrl = await global.storageClient.getDownloadUrl(objectIds[i]);
+      const fileUrl = await storageClient.getDownloadUrl(objectIds[i]);
       urls[objectIds[i]] = fileUrl;
     }
     console.log("urls: ", urls);
