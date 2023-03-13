@@ -15,7 +15,6 @@ export const filesSchemaValidation = {
     .required()
     .error((errors) => {
       return errors.map((error) => {
-        console.log(error);
         switch (error.code) {
           case "array.max":
             return new Error(ERROR_STATUES.FILE_LIMIT_EXCEEDED.message, {
