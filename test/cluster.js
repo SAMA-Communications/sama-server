@@ -15,7 +15,7 @@ import {
   sendLogin,
 } from "./utils.js";
 import { ACTIVE } from "./../app/store/session.js";
-import { clusterNodesWS } from "./../app/cluster/cluster_manager.js";
+import clusterManager from "./../app/cluster/cluster_manager.js";
 import { default as PacketProcessor } from "./../app/routes/packet_processor.js";
 
 let currentConversationId = "";
@@ -57,7 +57,7 @@ describe("Message function", async () => {
       }
     });
 
-    clusterNodesWS[ip.address()] = {
+    clusterManager.clusterNodesWS[ip.address()] = {
       send: (data) => (secondSocketResponse = data),
     };
     await new SessionRepository().storeUserNodeData(
