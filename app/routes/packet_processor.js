@@ -45,12 +45,16 @@ class PacketProcessor {
       const nodeDeviceId = Object.keys(nodeInfo)[0];
       const currentDeviceId = this.sessionRepository.getDeviceId(ws, userId);
 
-      this.curentNodeUrl = buildWsEndpoint(ip.address(), clusterManager.clusterPort);
+      this.curentNodeUrl = buildWsEndpoint(
+        ip.address(),
+        clusterManager.clusterPort
+      );
       if (nodeUrl === this.curentNodeUrl) {
         nodeDeviceId !== currentDeviceId &&
           (await this.deliverToUserOnThisNode(ws, userId, packet));
       } else {
-        const recipientClusterNodeWS = clusterManager.clusterNodesWS[getIpFromWsUrl(nodeUrl)];
+        const recipientClusterNodeWS =
+          clusterManager.clusterNodesWS[getIpFromWsUrl(nodeUrl)];
         if (!recipientClusterNodeWS) {
           try {
             // force create connection with cluster node
@@ -60,7 +64,10 @@ class PacketProcessor {
             );
             recClusterNodeWs.send(JSON.stringify({ userId, message: packet }));
           } catch (err) {
-            console.error("[PacketProcessor][deliverToUserDevices] createSocketWithNode error", err);
+            console.error(
+              "[PacketProcessor][deliverToUserDevices] createSocketWithNode error",
+              err
+            );
 
             await this.sessionRepository.clearNodeUsersSession(nodeUrl);
             this.isAllowedForOfflineStorage(packet) &&

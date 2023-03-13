@@ -4,9 +4,7 @@ export const ERROR_STATUES = {
   FORBIDDEN: { status: 403, message: "Forbidden" },
   BAD_REQUEST: { status: 400, message: "Bad Request" },
   INCORRECT_TYPE: { status: 422, message: "Incorrect type" },
-  TOKEN_EXPIRED: { status: 422, message: "Token has expired" },
   // Users -->
-  USER_MISSED: { status: 422, message: "User already exists" },
   USER_ID_MISSED: { status: 422, message: "User ID missed" },
   USER_LOGIN_OR_PASS: {
     status: 422,
@@ -56,7 +54,6 @@ export const ERROR_STATUES = {
     status: 422,
     message: "File ids for get download url exceeded",
   },
-  FILE_URL_NOT_FOUND: { status: 422, message: "File URL not found" },
   FILE_NAME_MISSED: { status: 422, message: "File name missed" },
   FILE_SIZE_MISSED: { status: 422, message: "File size missed" },
   FILE_CONTENT_TYPE_MISSED: {
@@ -64,10 +61,6 @@ export const ERROR_STATUES = {
     message: "File content type missed",
   },
   // Message -->
-  MESSAGE_PARTICIPANT_NOT_FOUND: {
-    status: 403,
-    message: "Participant not found",
-  },
   MESSAGE_ID_NOT_FOUND: { status: 422, message: "Message ID not found" },
   MESSAGE_ID_MISSED: { status: 422, message: "Message ID missed" },
   MESSAGE_TYPE_MISSED: { status: 422, message: "Message Type missed" },
