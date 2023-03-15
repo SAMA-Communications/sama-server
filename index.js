@@ -15,12 +15,8 @@ import ConversationRepository from "./app/repositories/conversation_repository.j
 import RedisClient from "./app/lib/redis.js";
 import ClusterSyncer from "./app/cluster/cluster_syncer.js";
 
-let storageClient;
-if (process.env.STORAGE_DRIVER === "minio") {
-  storageClient = new Minio();
-} else {
-  storageClient = new S3();
-}
+globalThis.storageClient =
+  process.env.STORAGE_DRIVER === "minio" ? new Minio() : new S3();
 
 const APP_OPTIONS = {};
 const SSL_APP_OPTIONS = {
@@ -69,7 +65,5 @@ connectToDB(async (err) => {
     await ConversationRepository.warmCache();
   }
 });
-
-export { storageClient };
 
 // https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph
