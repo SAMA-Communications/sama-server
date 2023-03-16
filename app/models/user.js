@@ -13,7 +13,15 @@ export default class User extends BaseModel {
   }
 
   static get visibleFields() {
-    return ["_id", "created_at", "updated_at", "login", "recent_activity"];
+    return [
+      "_id",
+      "created_at",
+      "updated_at",
+      "login",
+      "email",
+      "phone",
+      "recent_activity",
+    ];
   }
 
   async _beforeSaveActions() {
