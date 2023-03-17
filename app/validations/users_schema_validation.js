@@ -23,6 +23,8 @@ export const usersSchemaValidation = {
         })
       ),
     // .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,40}$/),
+    email: Joi.string(),
+    phone: Joi.string(),
     deviceId: Joi.alternatives().try(
       Joi.number().max(255).required(),
       Joi.string().max(255).required()

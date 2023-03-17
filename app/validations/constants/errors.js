@@ -24,6 +24,14 @@ export const ERROR_STATUES = {
     message: "Incorrect current password",
   },
   DEVICE_ID_MISSED: { status: 422, message: "'deviceId' is required" },
+  // Contacts -->
+  CONTACT_ALREADY_EXISTS: { status: 422, message: "Contact already exists" },
+  CONTACT_IS_MISSED: { status: 422, message: "Contact is missed" },
+  CONTACT_NOT_FOUND: { status: 422, message: "Contact not found" },
+  EMAIL_OR_PHONE_IS_MISSED: {
+    status: 422,
+    message: "Email or phone is missed",
+  },
   // Conversation -->
   CONVERSATION_NOT_FOUND: { status: 404, message: "Conversation not found" },
   CONVERSATION_NAME_MISSED: {

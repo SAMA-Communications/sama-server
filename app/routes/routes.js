@@ -1,5 +1,6 @@
 import { activitiesSchemaValidation } from "../validations/activities_schema_validation.js";
 import { conversationsSchemaValidation } from "../validations/conversations_schema_validation.js";
+import { default as ContactsController } from "../controllers/users.js";
 import { default as ConversationsController } from "../controllers/conversations.js";
 import { default as FilesController } from "../controllers/files.js";
 import { default as LastActivityiesController } from "../controllers/activities.js";
@@ -14,6 +15,7 @@ import { operationsLogSchemaValidation } from "../validations/operations_log_sch
 import { statusSchemaValidation } from "../validations/status_schema_validation.js";
 import { usersBlockSchemaValidation } from "../validations/users_block_schema_validation.js";
 import { usersSchemaValidation } from "../validations/users_schema_validation.js";
+import { contactsSchemaValidation } from "../validations/contacts_schema_validations.js";
 
 export const routes = {
   typing: (ws, json) =>
@@ -75,6 +77,31 @@ export const routes = {
     UsersController.validate(
       json.user_search,
       usersSchemaValidation.search
+    ).search(ws, json),
+  contact_add: (ws, json) =>
+    ContactsController.validate(
+      json.contact_add,
+      contactsSchemaValidation.contact_add
+    ).search(ws, json),
+  contact_batch_add: (ws, json) =>
+    ContactsController.validate(
+      json.contact_batch_add,
+      contactsSchemaValidation.contact_batch_add
+    ).search(ws, json),
+  contact_update: (ws, json) =>
+    ContactsController.validate(
+      json.contact_update,
+      contactsSchemaValidation.contact_update
+    ).search(ws, json),
+  contact_delete: (ws, json) =>
+    ContactsController.validate(
+      json.contact_delete,
+      contactsSchemaValidation.contact_delete
+    ).search(ws, json),
+  contact_list: (ws, json) =>
+    ContactsController.validate(
+      json.contact_list,
+      contactsSchemaValidation.contact_list
     ).search(ws, json),
   create_files: (ws, json) =>
     FilesController.validate(
