@@ -186,6 +186,8 @@ Later, the subsequent logins can be done via `token`:
 }
 ```
 
+`email` or `phone` param is required, as well as `first_name` or `last_name`.
+
 ## Contact batch add
 
 ```
@@ -367,7 +369,7 @@ A `type` param must have only one of two values:
 - `u` - (user) - a private conversations for two people only
 - `g` - (group) - conversations for a group of users, two or more.
 
-If the value of the `type` field is equal to `y`, then the `opponent_id` field is required
+If the value of the `type` param is equal to `y`, then the `opponent_id` param is required
 
 ## Conversation update
 
