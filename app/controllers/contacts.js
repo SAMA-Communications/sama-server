@@ -110,7 +110,7 @@ class ContactsController extends BaseController {
     const updatedContact = await Contact.findOne({ _id: recordId });
 
     return {
-      response: { id: requestId, user: updatedContact.visibleParams() },
+      response: { id: requestId, contact: updatedContact.visibleParams() },
     };
   }
 
