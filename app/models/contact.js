@@ -15,6 +15,7 @@ export default class Contact extends BaseModel {
       "first_name",
       "last_name",
       "company",
+      "user_id",
       "email",
       "phone",
       "created_at",

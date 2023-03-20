@@ -6,6 +6,7 @@ export const ERROR_STATUES = {
   INCORRECT_TYPE: { status: 422, message: "Incorrect type" },
   // Users -->
   USER_ID_MISSED: { status: 422, message: "User ID missed" },
+  USER_NOT_FOUND: { status: 422, message: "User not found" },
   USER_LOGIN_OR_PASS: {
     status: 422,
     message: "User 'login' or 'password' field missed",
