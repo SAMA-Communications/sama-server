@@ -301,7 +301,34 @@ describe("Contacts functions", async () => {
         usersIds[3].toString()
       );
     });
-    // add validation if contact id not founded
+
+    it("should fail id not found", async () => {
+      const requestData = {
+        request: {
+          contact_update: {
+            id: "123",
+            first_name: "Updated_name",
+            last_name: "Updated_surname",
+            company: "newCompany",
+            email: [{ type: "work", value: "email_2" }],
+            phone: [{ type: "home", value: "phone_3" }],
+          },
+          id: "1",
+        },
+      };
+
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        mockedWS,
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "User not found",
+      });
+    });
+
     it("should fail id is missed", async () => {
       const requestData = {
         request: {

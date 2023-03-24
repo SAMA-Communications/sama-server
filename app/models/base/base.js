@@ -149,7 +149,20 @@ export default class BaseModel {
       if (query._id) {
         query._id = new ObjectId(query._id);
       }
-      await getDb().collection(this.collection).updateOne(query, update);
+      return await getDb().collection(this.collection).updateOne(query, update);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static async findOneAndUpdate(query, update) {
+    try {
+      if (query._id) {
+        query._id = new ObjectId(query._id);
+      }
+      return await getDb()
+        .collection(this.collection)
+        .findOneAndUpdate(query, update, { returnDocument: "after" });
     } catch (e) {
       return null;
     }
@@ -157,7 +170,9 @@ export default class BaseModel {
 
   static async updateMany(query, update) {
     try {
-      await getDb().collection(this.collection).updateMany(query, update);
+      return await getDb()
+        .collection(this.collection)
+        .updateMany(query, update);
     } catch (e) {
       return null;
     }

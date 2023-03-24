@@ -13,61 +13,41 @@ class ContactsController extends BaseController {
     this.sessionRepository = new SessionRepository(ACTIVE);
   }
 
+  async #matched(data) {
+    async function matchedLogic(field, data) {
+      data[field] = [];
+      const findedUsersList = await User.findAll(
+        { [field]: { $in: data.map((el) => el.value) } },
+        ["_id", field]
+      );
+
+      const findedUsersObj = {};
+      for (let i = 0; i < findedUsersList.length; i++) {
+        const obj = findedUsersList[i];
+        findedUsersObj[obj[field]] = obj._id;
+      }
+
+      for (let i = 0; i < data.length; i++) {
+        const obj = data[i];
+        if (findedUsersObj[obj.value]) {
+          obj["matched_user_id"] = findedUsersObj[obj.value];
+        }
+
+        data[field].push(obj);
+      }
+    }
+
+    data.email && (await matchedLogic("email", data.email));
+    data.phone && (await matchedLogic("phone", data.phone));
+  }
+
   async contact_add(ws, data) {
-    const {
-      id: requestId,
-      contact_add: { email, phone },
-    } = data;
+    const { id: requestId, contact_add: contactData } = data;
     const currentUser = this.sessionRepository.getSessionUserId(ws);
-    const contactData = data.contact_add;
 
-    if (email) {
-      contactData.email = [];
-      const findedUsersList = await User.findAll(
-        { email: { $in: email.map((el) => el.value) } },
-        ["_id", "email"]
-      );
-
-      const findedUsersObj = {};
-      for (let i = 0; i < findedUsersList.length; i++) {
-        const obj = findedUsersList[i];
-        findedUsersObj[obj.email] = obj._id;
-      }
-
-      for (let i = 0; i < email.length; i++) {
-        const obj = email[i];
-        if (findedUsersObj[obj.value]) {
-          obj["matched_user_id"] = findedUsersObj[obj.value];
-        }
-
-        contactData.email.push(obj);
-      }
-    }
-
-    if (phone) {
-      contactData.phone = [];
-      const findedUsersList = await User.findAll(
-        { phone: { $in: phone.map((el) => el.value) } },
-        ["_id", "phone"]
-      );
-
-      const findedUsersObj = {};
-      for (let i = 0; i < findedUsersList.length; i++) {
-        const obj = findedUsersList[i];
-        findedUsersObj[obj.phone] = obj._id;
-      }
-
-      for (let i = 0; i < phone.length; i++) {
-        const obj = phone[i];
-        if (findedUsersObj[obj.value]) {
-          obj["matched_user_id"] = findedUsersObj[obj.value];
-        }
-
-        contactData.phone.push(obj);
-      }
-    }
-
+    await this.#matched(contactData);
     contactData.user_id = ObjectId(currentUser);
+
     const contact = new Contact(contactData);
     await contact.save();
 
@@ -100,68 +80,23 @@ class ContactsController extends BaseController {
   async contact_update(ws, data) {
     const { id: requestId, contact_update: updatedData } = data;
     const recordId = updatedData.id;
-    const email = updatedData.email;
-    const phone = updatedData.phone;
 
-    const contact = await Contact.findOne({ _id: recordId });
-    if (!contact) {
+    delete updatedData["id"];
+    await this.#matched(updatedData);
+
+    const updatedResult = await Contact.findOneAndUpdate(
+      { _id: recordId },
+      { $set: updatedData }
+    );
+
+    if (!updatedResult) {
       throw new Error(ERROR_STATUES.USER_NOT_FOUND.message, {
         cause: ERROR_STATUES.USER_NOT_FOUND,
       });
     }
-    delete updatedData["id"];
-
-    if (email) {
-      updatedData.email = [];
-      const findedUsersList = await User.findAll(
-        { email: { $in: email.map((el) => el.value) } },
-        ["id", "email"]
-      );
-
-      const findedUsersObj = {};
-      for (let i = 0; i < findedUsersList.length; i++) {
-        const obj = findedUsersList[i];
-        findedUsersObj[obj.email] = obj._id;
-      }
-
-      for (let i = 0; i < email.length; i++) {
-        const obj = email[i];
-        if (findedUsersObj[obj.value]) {
-          obj["matched_user_id"] = findedUsersObj[obj.value];
-        }
-
-        updatedData.email.push(obj);
-      }
-    }
-
-    if (phone) {
-      updatedData.phone = [];
-      const findedUsersList = await User.findAll(
-        { phone: { $in: phone.map((el) => el.value) } },
-        ["_id", "phone"]
-      );
-
-      const findedUsersObj = {};
-      for (let i = 0; i < findedUsersList.length; i++) {
-        const obj = findedUsersList[i];
-        findedUsersObj[obj.phone] = obj._id;
-      }
-
-      for (let i = 0; i < phone.length; i++) {
-        const obj = phone[i];
-        if (findedUsersObj[obj.value]) {
-          obj["matched_user_id"] = findedUsersObj[obj.value];
-        }
-
-        updatedData.phone.push(obj);
-      }
-    }
-
-    await Contact.updateOne({ _id: recordId }, { $set: updatedData });
-    const updatedContact = await Contact.findOne({ _id: recordId });
 
     return {
-      response: { id: requestId, contact: updatedContact.visibleParams() },
+      response: { id: requestId, contact: updatedResult.value },
     };
   }
 
