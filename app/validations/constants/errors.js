@@ -29,6 +29,8 @@ export const ERROR_STATUES = {
   CONTACT_ALREADY_EXISTS: { status: 422, message: "Contact already exists" },
   CONTACT_IS_MISSED: { status: 422, message: "Contact is missed" },
   CONTACT_NOT_FOUND: { status: 422, message: "Contact not found" },
+  CONTACT_ID_MISSED: { status: 422, message: "Contact id is missed" },
+  NAME_IS_MISSED: { status: 422, message: "Name is missed" },
   EMAIL_OR_PHONE_IS_MISSED: {
     status: 422,
     message: "Email or phone is missed",

@@ -154,8 +154,16 @@ Later, the subsequent logins can be done via `token`:
       first_name: "Name",
       last_name: "Surname",
       company: "UserCompany",
-      email: [ { type: work, value: "..." }, { type: home, value: "..." }, ...],
-      phone: [ { type: work, value: "..." }, { type: home, value: "..." }, ...],
+      email: [
+        { type: "work", value: "..." },
+        { type: "home", value: "..." },
+        ...
+        ],
+      phone: [
+        { type: "work", value: "..." },
+        { type: "home", value: "..." },
+        ...
+        ],
     },
     id: "4",
    },
@@ -170,13 +178,13 @@ Later, the subsequent logins can be done via `token`:
       company: "UserCompany",
       user_id: "uId1",
       email: [
-        { type: work, value: "...", matched_user_id: "uId5" },
-        { type: home, value: "..." },
+        { type: "work", value: "...", matched_user_id: "uId5" },
+        { type: "home", value: "..." },
         ...
         ],
       phone: [
-        { type: work, value: "..." },
-        { type: home, value: "...", matched_user_id: "uId7" },
+        { type: "work", value: "..." },
+        { type: "home", value: "...", matched_user_id: "uId7" },
         ...
         ],
       updated_at: "",
@@ -198,15 +206,15 @@ Later, the subsequent logins can be done via `token`:
         first_name: "Name",
         last_name: "Surname",
         company: "UserCompany",
-        email: [ { type: work, value: "..." } ],
-        phone: [ { type: home, value: "..." } ],
+        email: [ { type: "work", value: "..." } ],
+        phone: [ { type: "home", value: "..." } ],
       },
       {
         first_name: "Name2",
         last_name: "Surname2",
         company: "UserCompany2",
-        email: [ { type: work, value: "..." } ],
-        phone: [ { type: home, value: "..." } ],
+        email: [ { type: "work", value: "..." } ],
+        phone: [ { type: "home", value: "..." } ],
       },
       ...
     ],
@@ -223,8 +231,8 @@ Later, the subsequent logins can be done via `token`:
         last_name: "Surname",
         company: "UserCompany",
         user_id: "uId1",
-        email: [ { type: home, value: "..." } ],
-        phone: [ { type: home, value: "...",  matched_user_id: "uId7" } ],
+        email: [ { type: "home", value: "..." } ],
+        phone: [ { type: "home", value: "...",  matched_user_id: "uId7" } ],
         updated_at: "",
         created_at: "",
       },
@@ -233,8 +241,8 @@ Later, the subsequent logins can be done via `token`:
         last_name: "Surname2",
         company: "UserCompany2",
         user_id: "uId1",
-        email: [ { type: home, value: "..." } ],
-        phone: [ { type: home, value: "...",  matched_user_id: "uId6" } ],
+        email: [ { type: "home", value: "..." } ],
+        phone: [ { type: "home", value: "...",  matched_user_id: "uId6" } ],
         updated_at: "",
         created_at: "",
       }
@@ -249,12 +257,20 @@ Later, the subsequent logins can be done via `token`:
 {
   request: {
     contact_update: {
+      id: 324121654
       first_name: "Name",
       last_name: "Surname",
       company: "UserCompany",
-      user_id: "uId1",
-      email: [ { type: work, value: "..." }, { type: home, value: "..." }, ...],
-      phone: [ { type: work, value: "..." }, { type: home, value: "..." }, ...],
+      email: [
+        { type: "work", value: "..." },
+        { type: "home", value: "..." },
+        ...
+        ],
+      phone: [
+        { type: "work", value: "..." },
+        { type: "home", value: "..." },
+        ...
+        ],
     },
     id: "14",
    },
@@ -269,13 +285,13 @@ Later, the subsequent logins can be done via `token`:
       company: "UserCompany",
       user_id: "uId1",
       email: [
-        { type: work, value: "...", matched_user_id: "uId5" },
-        { type: home, value: "..." },
+        { type: "work", value: "...", matched_user_id: "uId5" },
+        { type: "home", value: "..." },
         ...
         ],
       phone: [
-        { type: work, value: "..." },
-        { type: home, value: "...", matched_user_id: "uId7" },
+        { type: "work", value: "..." },
+        { type: "home", value: "...", matched_user_id: "uId7" },
         ...
         ],
       updated_at: "",
@@ -284,8 +300,6 @@ Later, the subsequent logins can be done via `token`:
   }
 }
 ```
-
-A `user_id` param is required.
 
 ## Contact list
 
@@ -309,8 +323,8 @@ A `user_id` param is required.
         last_name: "Surname",
         company: "UserCompany",
         user_id: "uId1",
-        email: [ { type: home, value: "..." } ],
-        phone: [ { type: home, value: "...",  matched_user_id: "uId7" } ],
+        email: [ { type: "home", value: "..." } ],
+        phone: [ { type: "home", value: "...",  matched_user_id: "uId7" } ],
         updated_at: "",
         created_at: "",
       },
@@ -319,8 +333,8 @@ A `user_id` param is required.
         last_name: "Surname2",
         company: "UserCompany2",
         user_id: "uId1",
-        email: [ { type: home, value: "..." } ],
-        phone: [ { type: home, value: "...",  matched_user_id: "uId6" } ],
+        email: [ { type: "home", value: "..." } ],
+        phone: [ { type: "home", value: "...",  matched_user_id: "uId6" } ],
         updated_at: "",
         created_at: "",
       }

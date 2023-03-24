@@ -1,9 +1,10 @@
 import BaseController from "./base/base.js";
 import Contact from "./../models/contact.js";
-import User from "./../models/user.js";
 import SessionRepository from "./../repositories/session_repository.js";
+import User from "./../models/user.js";
 import { ACTIVE } from "./../store/session.js";
 import { ERROR_STATUES } from "./../validations/constants/errors.js";
+import { ObjectId } from "mongodb";
 
 class ContactsController extends BaseController {
   constructor() {
@@ -23,7 +24,7 @@ class ContactsController extends BaseController {
     if (email) {
       contactData.email = [];
       const findedUsersList = await User.findAll(
-        { email: { $in: email.map((el) => el.email) } },
+        { email: { $in: email.map((el) => el.value) } },
         ["_id", "email"]
       );
 
@@ -46,7 +47,7 @@ class ContactsController extends BaseController {
     if (phone) {
       contactData.phone = [];
       const findedUsersList = await User.findAll(
-        { phone: { $in: phone.map((el) => el.phone) } },
+        { phone: { $in: phone.map((el) => el.value) } },
         ["_id", "phone"]
       );
 
@@ -66,7 +67,7 @@ class ContactsController extends BaseController {
       }
     }
 
-    contactData.user_id = currentUser;
+    contactData.user_id = ObjectId(currentUser);
     const contact = new Contact(contactData);
     await contact.save();
 
@@ -87,7 +88,9 @@ class ContactsController extends BaseController {
         continue;
       }
 
-      const contact = (await this.contact_add(u)).contact;
+      const contact = (
+        await this.contact_add(ws, { contact_add: u, id: "contact_batch_add" })
+      ).response.contact;
       contactsList.push(contact);
     }
 
@@ -97,6 +100,8 @@ class ContactsController extends BaseController {
   async contact_update(ws, data) {
     const { id: requestId, contact_update: updatedData } = data;
     const recordId = updatedData.id;
+    const email = updatedData.email;
+    const phone = updatedData.phone;
 
     const contact = await Contact.findOne({ _id: recordId });
     if (!contact) {
@@ -105,6 +110,52 @@ class ContactsController extends BaseController {
       });
     }
     delete updatedData["id"];
+
+    if (email) {
+      updatedData.email = [];
+      const findedUsersList = await User.findAll(
+        { email: { $in: email.map((el) => el.value) } },
+        ["id", "email"]
+      );
+
+      const findedUsersObj = {};
+      for (let i = 0; i < findedUsersList.length; i++) {
+        const obj = findedUsersList[i];
+        findedUsersObj[obj.email] = obj._id;
+      }
+
+      for (let i = 0; i < email.length; i++) {
+        const obj = email[i];
+        if (findedUsersObj[obj.value]) {
+          obj["matched_user_id"] = findedUsersObj[obj.value];
+        }
+
+        updatedData.email.push(obj);
+      }
+    }
+
+    if (phone) {
+      updatedData.phone = [];
+      const findedUsersList = await User.findAll(
+        { phone: { $in: phone.map((el) => el.value) } },
+        ["_id", "phone"]
+      );
+
+      const findedUsersObj = {};
+      for (let i = 0; i < findedUsersList.length; i++) {
+        const obj = findedUsersList[i];
+        findedUsersObj[obj.phone] = obj._id;
+      }
+
+      for (let i = 0; i < phone.length; i++) {
+        const obj = phone[i];
+        if (findedUsersObj[obj.value]) {
+          obj["matched_user_id"] = findedUsersObj[obj.value];
+        }
+
+        updatedData.phone.push(obj);
+      }
+    }
 
     await Contact.updateOne({ _id: recordId }, { $set: updatedData });
     const updatedContact = await Contact.findOne({ _id: recordId });
@@ -116,9 +167,9 @@ class ContactsController extends BaseController {
 
   async contact_list(ws, data) {
     const { id: requestId, contact_list: query } = data;
-    const currentUser = this.sessionRepository.getSessionUserId(ws);
+    const currentUser = this.sessionRepository.getSessionUserId(ws).toString();
 
-    const queryParams = { user_id: currentUser };
+    const queryParams = { user_id: currentUser.toString() };
     if (query.updated_at) {
       queryParams.updated_at = { $gt: query.updated_at };
     }

@@ -50,6 +50,8 @@ async function createUserArray(count) {
         user_create: {
           login: `user_${i + 1}`,
           password: "1um",
+          email: `email_${i}`,
+          phone: `phone_${i}`,
           deviceId: "Computer",
         },
         id: "UserCreate",
