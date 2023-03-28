@@ -25,14 +25,13 @@ class UsersController extends BaseController {
     this.sessionRepository = new SessionRepository(ACTIVE);
   }
 
-  async #matched(data) {
+  async #matched(data, options) {
     const records = [];
+    const field = options.field;
 
     let [tmpRecords, timeParam] = [[], null];
     do {
-      const query = {
-        $or: [{ "phone.value": data.phone }, { "email.value": data.email }],
-      };
+      const query = { [`${field}.value`]: data[field] };
       if (timeParam) {
         query["created_at"] = { $gt: timeParam };
       }
@@ -58,14 +57,15 @@ class UsersController extends BaseController {
       function updateArray(field) {
         updateParam[field] = r[field].map((el) => {
           if (el.value === data[field]) {
-            el["matched_user_id"] = uId;
+            options.addRecord
+              ? (el["matched_user_id"] = uId)
+              : delete el["matched_user_id"];
           }
           return el;
         });
       }
 
-      r.email && updateArray("email");
-      r.phone && updateArray("phone");
+      r[field] && updateArray(field);
 
       await Contact.updateOne({ _id: r._id.toString() }, { $set: updateParam });
     }
@@ -80,8 +80,16 @@ class UsersController extends BaseController {
       const user = new User(reqData);
       await user.save();
 
-      (user.params.email || user.params.phone) &&
-        (await this.#matched(user.visibleParams()));
+      user.params.email &&
+        (await this.#matched(user.visibleParams(), {
+          addRecord: 1,
+          field: "email",
+        }));
+      user.params.phone &&
+        (await this.#matched(user.visibleParams(), {
+          addRecord: 1,
+          field: "phone",
+        }));
 
       return { response: { id: requestId, user: user.visibleParams() } };
     } else {
@@ -231,8 +239,27 @@ class UsersController extends BaseController {
       (await User.findOneAndUpdate({ login }, { $set: updateParam }))?.value
     );
 
-    (updatedUser.params.email || updatedUser.params.phone) &&
-      (await this.#matched(updatedUser.visibleParams()));
+    if (email) {
+      await this.#matched(currentUser.visibleParams(), {
+        removeRecord: 0,
+        field: "email",
+      });
+      await this.#matched(updatedUser.visibleParams(), {
+        addRecord: 1,
+        field: "email",
+      });
+    }
+
+    if (phone) {
+      await this.#matched(currentUser.visibleParams(), {
+        removeRecord: 0,
+        field: "phone",
+      });
+      await this.#matched(updatedUser.visibleParams(), {
+        addRecord: 1,
+        field: "phone",
+      });
+    }
 
     return {
       response: { id: requestId, user: updatedUser.visibleParams() },
@@ -305,7 +332,19 @@ class UsersController extends BaseController {
     const user = await User.findOne({ _id: userId });
     if (user) {
       this.blockListRepository.delete(user.params._id);
+
+      user.params.email &&
+        (await this.#matched(user.visibleParams(), {
+          removeRecord: 1,
+          field: "email",
+        }));
+      user.params.phone &&
+        (await this.#matched(user.visibleParams(), {
+          removeRecord: 1,
+          field: "phone",
+        }));
       await user.delete();
+
       return { response: { id: requestId, success: true } };
     } else {
       throw new Error(ERROR_STATUES.FORBIDDEN.message, {

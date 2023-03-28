@@ -2,7 +2,7 @@ import User from "./../app/models/user.js";
 import Contact from "./../app/models/contact.js";
 import assert from "assert";
 import { connectToDBPromise } from "./../app/lib/db.js";
-import { createUserArray, mockedWS, sendLogin } from "./utils.js";
+import { createUserArray, mockedWS, sendLogin, sendLogout } from "./utils.js";
 import { default as PacketProcessor } from "./../app/routes/packet_processor.js";
 
 let usersIds = [];
@@ -688,6 +688,161 @@ describe("Contacts functions", async () => {
       assert.strictEqual(
         responseData.response.contacts[2].phone[0].matched_user_id.toString(),
         usersIds[3].toString()
+      );
+    });
+  });
+
+  describe("Contact unmatched", async () => {
+    it("should work email", async () => {
+      let requestData = {
+        request: {
+          user_edit: {
+            login: "user_4",
+            email: "test_matched_7_email",
+          },
+          id: "1",
+        },
+      };
+
+      let responseData = await PacketProcessor.processJsonMessageOrError(
+        mockedWS,
+        requestData
+      );
+
+      requestData = {
+        request: {
+          contact_list: {},
+          id: "1",
+        },
+      };
+
+      responseData = await PacketProcessor.processJsonMessageOrError(
+        mockedWS,
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(
+        responseData.response.contacts[0].email[0].matched_user_id,
+        undefined
+      );
+      assert.strictEqual(
+        responseData.response.contacts[1].email[0].matched_user_id,
+        undefined
+      );
+      assert.strictEqual(
+        responseData.response.contacts[2].email[0].matched_user_id,
+        undefined
+      );
+      assert.strictEqual(
+        responseData.response.contacts[0].phone[0].matched_user_id.toString(),
+        usersIds[3].toString()
+      );
+      assert.strictEqual(
+        responseData.response.contacts[1].phone[0].matched_user_id.toString(),
+        usersIds[3].toString()
+      );
+      assert.strictEqual(
+        responseData.response.contacts[2].phone[0].matched_user_id.toString(),
+        usersIds[3].toString()
+      );
+    });
+
+    it("should work phone", async () => {
+      let requestData = {
+        request: {
+          user_edit: {
+            login: "user_4",
+            phone: "123ax",
+          },
+          id: "1",
+        },
+      };
+
+      let responseData = await PacketProcessor.processJsonMessageOrError(
+        mockedWS,
+        requestData
+      );
+
+      requestData = {
+        request: {
+          contact_list: {},
+          id: "1",
+        },
+      };
+
+      responseData = await PacketProcessor.processJsonMessageOrError(
+        mockedWS,
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(
+        responseData.response.contacts[0].phone[0].matched_user_id,
+        undefined
+      );
+      assert.strictEqual(
+        responseData.response.contacts[1].phone[0].matched_user_id,
+        undefined
+      );
+      assert.strictEqual(
+        responseData.response.contacts[2].phone[0].matched_user_id,
+        undefined
+      );
+    });
+
+    it("should work delete user", async () => {
+      await sendLogout(currentUserToken);
+      currentUserToken = await sendLogin(mockedWS, "user_6");
+      let requestData = {
+        request: {
+          user_delete: {},
+          id: "1",
+        },
+      };
+
+      let responseData = await PacketProcessor.processJsonMessageOrError(
+        mockedWS,
+        requestData
+      );
+
+      currentUserToken = await sendLogin(mockedWS, "user_1");
+      requestData = {
+        request: {
+          contact_list: {},
+          id: "1",
+        },
+      };
+
+      responseData = await PacketProcessor.processJsonMessageOrError(
+        mockedWS,
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(
+        responseData.response.contacts[3].phone[0].matched_user_id,
+        undefined
+      );
+      assert.strictEqual(
+        responseData.response.contacts[4].phone[0].matched_user_id,
+        undefined
+      );
+      assert.strictEqual(
+        responseData.response.contacts[5].phone[0].matched_user_id,
+        undefined
+      );
+      assert.strictEqual(
+        responseData.response.contacts[3].email[0].matched_user_id,
+        undefined
+      );
+      assert.strictEqual(
+        responseData.response.contacts[4].email[0].matched_user_id,
+        undefined
+      );
+      assert.strictEqual(
+        responseData.response.contacts[5].email[0].matched_user_id,
+        undefined
       );
     });
   });

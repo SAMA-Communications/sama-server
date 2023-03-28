@@ -29,8 +29,8 @@ export default class ConversationRepository extends BaseRepository {
       throw "Invalid key";
     }
 
-    await Conversation.updateOne({ _id }, { $set: value });
-    const conv = await Conversation.findOne({ _id });
+    const conv = (await Conversation.findOneAndUpdate({ _id }, { $set: value }))
+      ?.value;
 
     if (conv) {
       this.inMemoryStorage[_id] = conv.params;
