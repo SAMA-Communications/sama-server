@@ -32,15 +32,6 @@ export const usersSchemaValidation = {
     ),
   }),
   edit: Joi.object({
-    login: Joi.string()
-      .min(3)
-      .max(40)
-      .required()
-      .error(
-        new Error(ERROR_STATUES.INCORRECT_USER.message, {
-          cause: ERROR_STATUES.INCORRECT_USER,
-        })
-      ),
     current_password: Joi.string().error(
       new Error(ERROR_STATUES.INCORRECT_CURRENT_PASSWORD.message, {
         cause: ERROR_STATUES.INCORRECT_CURRENT_PASSWORD,

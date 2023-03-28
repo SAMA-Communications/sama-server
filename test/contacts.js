@@ -636,10 +636,11 @@ describe("Contacts functions", async () => {
         requestData
       );
 
+      await sendLogout(currentUserToken);
+      currentUserToken = await sendLogin(mockedWS, "user_4");
       requestData = {
         request: {
           user_edit: {
-            login: "user_4",
             email: "test_matched_6_email",
             phone: "test_6_phone",
           },
@@ -651,6 +652,8 @@ describe("Contacts functions", async () => {
         mockedWS,
         requestData
       );
+      await sendLogout(currentUserToken);
+      currentUserToken = await sendLogin(mockedWS, "user_1");
 
       requestData = {
         request: {
@@ -694,10 +697,11 @@ describe("Contacts functions", async () => {
 
   describe("Contact unmatched", async () => {
     it("should work email", async () => {
+      await sendLogout(currentUserToken);
+      currentUserToken = await sendLogin(mockedWS, "user_4");
       let requestData = {
         request: {
           user_edit: {
-            login: "user_4",
             email: "test_matched_7_email",
           },
           id: "1",
@@ -708,6 +712,8 @@ describe("Contacts functions", async () => {
         mockedWS,
         requestData
       );
+      await sendLogout(currentUserToken);
+      currentUserToken = await sendLogin(mockedWS, "user_1");
 
       requestData = {
         request: {
@@ -749,10 +755,11 @@ describe("Contacts functions", async () => {
     });
 
     it("should work phone", async () => {
+      await sendLogout(currentUserToken);
+      currentUserToken = await sendLogin(mockedWS, "user_4");
       let requestData = {
         request: {
           user_edit: {
-            login: "user_4",
             phone: "123ax",
           },
           id: "1",
@@ -763,6 +770,8 @@ describe("Contacts functions", async () => {
         mockedWS,
         requestData
       );
+      await sendLogout(currentUserToken);
+      currentUserToken = await sendLogin(mockedWS, "user_1");
 
       requestData = {
         request: {

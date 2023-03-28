@@ -202,10 +202,11 @@ class UsersController extends BaseController {
   async edit(ws, data) {
     const {
       id: requestId,
-      user_edit: { login, current_password, new_password, email, phone },
+      user_edit: { current_password, new_password, email, phone },
     } = data;
 
-    const currentUser = await User.findOne({ login });
+    const userId = this.sessionRepository.getSessionUserId(ws);
+    const currentUser = await User.findOne({ _id: userId });
     if (!currentUser) {
       throw new Error(ERROR_STATUES.USER_LOGIN_OR_PASS.message, {
         cause: ERROR_STATUES.USER_LOGIN_OR_PASS,
@@ -228,7 +229,7 @@ class UsersController extends BaseController {
     );
 
     if (new_password) {
-      const updateUser = new User({ login, password: new_password });
+      const updateUser = new User({ password: new_password });
       await updateUser.encryptAndSetPassword();
 
       updateParam["password_salt"] = updateUser.params.password_salt;
@@ -236,7 +237,9 @@ class UsersController extends BaseController {
     }
 
     const updatedUser = new User(
-      (await User.findOneAndUpdate({ login }, { $set: updateParam }))?.value
+      (
+        await User.findOneAndUpdate({ _id: userId }, { $set: updateParam })
+      )?.value
     );
 
     if (email) {

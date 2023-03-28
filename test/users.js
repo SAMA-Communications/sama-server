@@ -1,3 +1,4 @@
+import "./utils.js";
 import assert from "assert";
 import { connectToDBPromise, getClient } from "./../app/lib/db.js";
 import { default as PacketProcessor } from "./../app/routes/packet_processor.js";
@@ -159,7 +160,6 @@ describe("User cycle", async () => {
       const requestData = {
         request: {
           user_edit: {
-            login: userLogin,
             current_password: "user_paswword_1",
             new_password: "312sad",
           },
@@ -199,59 +199,10 @@ describe("User cycle", async () => {
       assert.equal(responseData.response.error, undefined);
     });
 
-    it("should fail incorrect login", async () => {
-      const requestData = {
-        request: {
-          user_edit: {
-            login: "dasdsad",
-            current_password: "user_paswword_1",
-            new_password: "312sad",
-          },
-          id: "5_1",
-        },
-      };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
-        "test",
-        requestData
-      );
-
-      assert.strictEqual(requestData.request.id, responseData.response.id);
-      assert.strictEqual(responseData.response.user, undefined);
-      assert.deepEqual(responseData.response.error, {
-        status: 422,
-        message: "User 'login' or 'password' field missed",
-      });
-    });
-
-    it("should fail incorrect login", async () => {
-      const requestData = {
-        request: {
-          user_edit: {
-            login: 123123,
-            current_password: "user_paswword_1",
-            new_password: "312sad",
-          },
-          id: "5_1",
-        },
-      };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
-        "test",
-        requestData
-      );
-
-      assert.strictEqual(requestData.request.id, responseData.response.id);
-      assert.strictEqual(responseData.response.user, undefined);
-      assert.deepEqual(responseData.response.error, {
-        status: 422,
-        message: "Incorrect user",
-      });
-    });
-
     it("should fail invalid current password", async () => {
       const requestData = {
         request: {
           user_edit: {
-            login: userLogin,
             current_password: "asdaseqw",
             new_password: "312sad",
           },
@@ -286,7 +237,7 @@ describe("User cycle", async () => {
       );
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
-      assert.notStrictEqual(responseData.response.success, undefined);
+      assert.notEqual(responseData.response.success, undefined);
       assert.equal(responseData.response.error, undefined);
 
       await PacketProcessor.processJsonMessageOrError("test", requestData);

@@ -91,9 +91,10 @@ Later, the subsequent logins can be done via `token`:
 {
   request: {
     user_edit: {
-      login: "user_1",
       current_password: "...",
-      new_password: "..."
+      new_password: "...",
+      email: "...",
+      phone: "...",
     },
     id: "421cda83-7f39-45a9-81e8-5f83cfa0733c",
   },
