@@ -1,7 +1,7 @@
 import BaseController from "./base/base.js";
 import Contact from "./../models/contact.js";
+import MatchedRepository from "../repositories/matched_repository.js";
 import SessionRepository from "./../repositories/session_repository.js";
-import User from "./../models/user.js";
 import { ACTIVE } from "./../store/session.js";
 import { ERROR_STATUES } from "./../validations/constants/errors.js";
 import { ObjectId } from "mongodb";
@@ -11,41 +11,17 @@ class ContactsController extends BaseController {
     super();
 
     this.sessionRepository = new SessionRepository(ACTIVE);
-  }
-
-  async #matched(data) {
-    async function matchedLogic(field, data) {
-      data[field] = [];
-      const findedUsersList = await User.findAll(
-        { [field]: { $in: data.map((el) => el.value) } },
-        ["_id", field]
-      );
-
-      const findedUsersObj = {};
-      for (let i = 0; i < findedUsersList.length; i++) {
-        const obj = findedUsersList[i];
-        findedUsersObj[obj[field]] = obj._id;
-      }
-
-      for (let i = 0; i < data.length; i++) {
-        const obj = data[i];
-        if (findedUsersObj[obj.value]) {
-          obj["matched_user_id"] = findedUsersObj[obj.value];
-        }
-
-        data[field].push(obj);
-      }
-    }
-
-    data.email && (await matchedLogic("email", data.email));
-    data.phone && (await matchedLogic("phone", data.phone));
+    this.matchedRepository = new MatchedRepository();
   }
 
   async contact_add(ws, data) {
     const { id: requestId, contact_add: contactData } = data;
     const currentUser = this.sessionRepository.getSessionUserId(ws);
 
-    await this.#matched(contactData);
+    contactData.email &&
+      (await this.matchedRepository.matchedUser(contactData, "email"));
+    contactData.phone &&
+      (await this.matchedRepository.matchedUser(contactData, "phone"));
     contactData.user_id = ObjectId(currentUser);
 
     const contact = new Contact(contactData);
@@ -82,7 +58,10 @@ class ContactsController extends BaseController {
     const recordId = updatedData.id;
 
     delete updatedData["id"];
-    await this.#matched(updatedData);
+    updatedData.email &&
+      (await this.matchedRepository.matchedUser(updatedData, "email"));
+    updatedData.phone &&
+      (await this.matchedRepository.matchedUser(updatedData, "phone"));
 
     const updatedResult = await Contact.findOneAndUpdate(
       { _id: recordId },

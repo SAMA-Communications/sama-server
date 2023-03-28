@@ -1,7 +1,7 @@
 import BaseController from "./base/base.js";
 import BlockListRepository from "../repositories/blocklist_repository.js";
 import BlockedUser from "../models/blocked_user.js";
-import Contact from "../models/contact.js";
+import MatchedRepository from "../repositories/matched_repository.js";
 import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
@@ -23,52 +23,7 @@ class UsersController extends BaseController {
       inMemoryBlockList
     );
     this.sessionRepository = new SessionRepository(ACTIVE);
-  }
-
-  async #matched(data, options) {
-    const records = [];
-    const field = options.field;
-
-    let [tmpRecords, timeParam] = [[], null];
-    do {
-      const query = { [`${field}.value`]: data[field] };
-      if (timeParam) {
-        query["created_at"] = { $gt: timeParam };
-      }
-      tmpRecords = await Contact.findAll(query);
-
-      if (!tmpRecords.length) {
-        return;
-      }
-
-      records.push.apply(records, tmpRecords);
-      timeParam = tmpRecords[tmpRecords.length - 1].created_at;
-    } while (tmpRecords.length === 100);
-
-    if (!records.length) {
-      return;
-    }
-
-    for (let i = 0; i < records.length; i++) {
-      const r = records[i];
-      const uId = data._id.toString();
-      const updateParam = {};
-
-      function updateArray(field) {
-        updateParam[field] = r[field].map((el) => {
-          if (el.value === data[field]) {
-            options.addRecord
-              ? (el["matched_user_id"] = uId)
-              : delete el["matched_user_id"];
-          }
-          return el;
-        });
-      }
-
-      r[field] && updateArray(field);
-
-      await Contact.updateOne({ _id: r._id.toString() }, { $set: updateParam });
-    }
+    this.matchedRepository = new MatchedRepository();
   }
 
   async create(ws, data) {
@@ -81,12 +36,12 @@ class UsersController extends BaseController {
       await user.save();
 
       user.params.email &&
-        (await this.#matched(user.visibleParams(), {
+        (await this.matchedRepository.matchedContact(user.visibleParams(), {
           addRecord: 1,
           field: "email",
         }));
       user.params.phone &&
-        (await this.#matched(user.visibleParams(), {
+        (await this.matchedRepository.matchedContact(user.visibleParams(), {
           addRecord: 1,
           field: "phone",
         }));
@@ -243,22 +198,22 @@ class UsersController extends BaseController {
     );
 
     if (email) {
-      await this.#matched(currentUser.visibleParams(), {
+      await this.matchedRepository.matchedContact(currentUser.visibleParams(), {
         removeRecord: 0,
         field: "email",
       });
-      await this.#matched(updatedUser.visibleParams(), {
+      await this.matchedRepository.matchedContact(updatedUser.visibleParams(), {
         addRecord: 1,
         field: "email",
       });
     }
 
     if (phone) {
-      await this.#matched(currentUser.visibleParams(), {
+      await this.matchedRepository.matchedContact(currentUser.visibleParams(), {
         removeRecord: 0,
         field: "phone",
       });
-      await this.#matched(updatedUser.visibleParams(), {
+      await this.matchedRepository.matchedContact(updatedUser.visibleParams(), {
         addRecord: 1,
         field: "phone",
       });
@@ -337,12 +292,12 @@ class UsersController extends BaseController {
       this.blockListRepository.delete(user.params._id);
 
       user.params.email &&
-        (await this.#matched(user.visibleParams(), {
+        (await this.matchedRepository.matchedContact(user.visibleParams(), {
           removeRecord: 1,
           field: "email",
         }));
       user.params.phone &&
-        (await this.#matched(user.visibleParams(), {
+        (await this.matchedRepository.matchedContact(user.visibleParams(), {
           removeRecord: 1,
           field: "phone",
         }));
