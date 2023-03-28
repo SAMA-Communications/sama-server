@@ -1,9 +1,11 @@
 import BaseController from "./base/base.js";
 import BlockListRepository from "../repositories/blocklist_repository.js";
 import BlockedUser from "../models/blocked_user.js";
+import Contact from "../models/contact.js";
 import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
+import clusterManager from "../cluster/cluster_manager.js";
 import ip from "ip";
 import jwt from "jsonwebtoken";
 import { ACTIVE } from "../store/session.js";
@@ -11,7 +13,6 @@ import { CONSTANTS } from "../validations/constants/constants.js";
 import { ERROR_STATUES } from "../validations/constants/errors.js";
 import { default as LastActivityiesController } from "./activities.js";
 import { default as PacketProcessor } from "../routes/packet_processor.js";
-import clusterManager from "../cluster/cluster_manager.js";
 import { inMemoryBlockList } from "../store/in_memory.js";
 
 class UsersController extends BaseController {
@@ -24,6 +25,52 @@ class UsersController extends BaseController {
     this.sessionRepository = new SessionRepository(ACTIVE);
   }
 
+  async #matched(data) {
+    const records = [];
+
+    let [tmpRecords, timeParam] = [[], null];
+    do {
+      const query = {
+        $or: [{ "phone.value": data.phone }, { "email.value": data.email }],
+      };
+      if (timeParam) {
+        query["created_at"] = { $gt: timeParam };
+      }
+      tmpRecords = await Contact.findAll(query);
+
+      if (!tmpRecords.length) {
+        return;
+      }
+
+      records.push.apply(records, tmpRecords);
+      timeParam = tmpRecords[tmpRecords.length - 1].created_at;
+    } while (tmpRecords.length === 100);
+
+    if (!records.length) {
+      return;
+    }
+
+    for (let i = 0; i < records.length; i++) {
+      const r = records[i];
+      const uId = data._id.toString();
+      const updateParam = {};
+
+      function updateArray(field) {
+        updateParam[field] = r[field].map((el) => {
+          if (el.value === data[field]) {
+            el["matched_user_id"] = uId;
+          }
+          return el;
+        });
+      }
+
+      r.email && updateArray("email");
+      r.phone && updateArray("phone");
+
+      await Contact.updateOne({ _id: r._id.toString() }, { $set: updateParam });
+    }
+  }
+
   async create(ws, data) {
     const { id: requestId, user_create: reqData } = data;
 
@@ -32,6 +79,9 @@ class UsersController extends BaseController {
       reqData["recent_activity"] = Date.now();
       const user = new User(reqData);
       await user.save();
+
+      (user.params.email || user.params.phone) &&
+        (await this.#matched(user.visibleParams()));
 
       return { response: { id: requestId, user: user.visibleParams() } };
     } else {
@@ -144,7 +194,7 @@ class UsersController extends BaseController {
   async edit(ws, data) {
     const {
       id: requestId,
-      user_edit: { login, current_password, new_password },
+      user_edit: { login, current_password, new_password, email, phone },
     } = data;
 
     const currentUser = await User.findOne({ login });
@@ -154,25 +204,35 @@ class UsersController extends BaseController {
       });
     }
 
-    if (!(await currentUser.isValidPassword(current_password))) {
+    if (
+      current_password &&
+      !(await currentUser.isValidPassword(current_password))
+    ) {
       throw new Error(ERROR_STATUES.INCORRECT_CURRENT_PASSWORD.message, {
         cause: ERROR_STATUES.INCORRECT_CURRENT_PASSWORD,
       });
     }
 
-    const updateUser = new User({ login, password: new_password });
-    await updateUser.encryptAndSetPassword();
-    await User.updateOne(
-      { login },
-      {
-        $set: {
-          password_salt: updateUser.params.password_salt,
-          encrypted_password: updateUser.params.encrypted_password,
-          updated_at: new Date(),
-        },
-      }
+    const updateParam = Object.assign(
+      { updated_at: new Date() },
+      email && { email },
+      phone && { phone }
     );
-    const updatedUser = await User.findOne({ login });
+
+    if (new_password) {
+      const updateUser = new User({ login, password: new_password });
+      await updateUser.encryptAndSetPassword();
+
+      updateParam["password_salt"] = updateUser.params.password_salt;
+      updateParam["encrypted_password"] = updateUser.params.encrypted_password;
+    }
+
+    const updatedUser = new User(
+      (await User.findOneAndUpdate({ login }, { $set: updateParam }))?.value
+    );
+
+    (updatedUser.params.email || updatedUser.params.phone) &&
+      (await this.#matched(updatedUser.visibleParams()));
 
     return {
       response: { id: requestId, user: updatedUser.visibleParams() },

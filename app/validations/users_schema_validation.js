@@ -24,7 +24,8 @@ export const usersSchemaValidation = {
       ),
     // .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,40}$/),
     email: Joi.string(),
-    phone: Joi.string(),
+    // .pattern(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/),
+    phone: Joi.string().min(3).max(15),
     deviceId: Joi.alternatives().try(
       Joi.number().max(255).required(),
       Joi.string().max(255).required()
@@ -40,16 +41,17 @@ export const usersSchemaValidation = {
           cause: ERROR_STATUES.INCORRECT_USER,
         })
       ),
-    current_password: Joi.string()
-      .required()
-      .error(
-        new Error(ERROR_STATUES.INCORRECT_CURRENT_PASSWORD.message, {
-          cause: ERROR_STATUES.INCORRECT_CURRENT_PASSWORD,
-        })
-      ),
-    new_password: Joi.string().min(3).max(40).required(),
+    current_password: Joi.string().error(
+      new Error(ERROR_STATUES.INCORRECT_CURRENT_PASSWORD.message, {
+        cause: ERROR_STATUES.INCORRECT_CURRENT_PASSWORD,
+      })
+    ),
+    new_password: Joi.string().min(3).max(40),
     // .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,40}$/),
-  }),
+    email: Joi.string(),
+    // .pattern(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/),
+    phone: Joi.string().min(3).max(15),
+  }).with("current_password", "current_password"),
   login: Joi.object()
     .keys({
       login: Joi.string().error(

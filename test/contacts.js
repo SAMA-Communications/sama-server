@@ -516,6 +516,182 @@ describe("Contacts functions", async () => {
     });
   });
 
+  describe("Contact mathced", async () => {
+    it("should work user_create", async () => {
+      let requestData = {
+        request: {
+          contact_batch_add: {
+            contacts: [
+              {
+                first_name: "Name11_5",
+                last_name: "Surname11_5",
+                company: "UserCompany",
+                email: [{ type: "work", value: "test_matched_5_email" }],
+                phone: [{ type: "home", value: "test_5_phone" }],
+              },
+              {
+                first_name: "Name22_5",
+                last_name: "Surname22_5",
+                company: "UserCompany",
+                email: [{ type: "work", value: "test_matched_5_email" }],
+                phone: [{ type: "home", value: "test_5_phone" }],
+              },
+              {
+                first_name: "Name33_5",
+                last_name: "Surname33_5",
+                company: "UserCompany",
+                email: [{ type: "work", value: "test_matched_5_email" }],
+                phone: [{ type: "home", value: "test_5_phone" }],
+              },
+            ],
+          },
+          id: "1",
+        },
+      };
+
+      let responseData = await PacketProcessor.processJsonMessageOrError(
+        mockedWS,
+        requestData
+      );
+
+      usersIds = [
+        ...usersIds,
+        (
+          await createUserArray(1, 5, "test_matched_5_email", "test_5_phone")
+        )[5],
+      ];
+      requestData = {
+        request: {
+          contact_list: {},
+          id: "1",
+        },
+      };
+
+      responseData = await PacketProcessor.processJsonMessageOrError(
+        mockedWS,
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(
+        responseData.response.contacts[0].email[0].matched_user_id.toString(),
+        usersIds[4].toString()
+      );
+      assert.strictEqual(
+        responseData.response.contacts[1].email[0].matched_user_id.toString(),
+        usersIds[4].toString()
+      );
+      assert.strictEqual(
+        responseData.response.contacts[2].email[0].matched_user_id.toString(),
+        usersIds[4].toString()
+      );
+      assert.strictEqual(
+        responseData.response.contacts[0].phone[0].matched_user_id.toString(),
+        usersIds[4].toString()
+      );
+      assert.strictEqual(
+        responseData.response.contacts[1].phone[0].matched_user_id.toString(),
+        usersIds[4].toString()
+      );
+      assert.strictEqual(
+        responseData.response.contacts[2].phone[0].matched_user_id.toString(),
+        usersIds[4].toString()
+      );
+    });
+
+    it("should work user_edit", async () => {
+      let requestData = {
+        request: {
+          contact_batch_add: {
+            contacts: [
+              {
+                first_name: "Name11_6",
+                last_name: "Surname11_6",
+                company: "UserCompany",
+                email: [{ type: "work", value: "test_matched_6_email" }],
+                phone: [{ type: "home", value: "test_6_phone" }],
+              },
+              {
+                first_name: "Name22_6",
+                last_name: "Surname22_6",
+                company: "UserCompany",
+                email: [{ type: "work", value: "test_matched_6_email" }],
+                phone: [{ type: "home", value: "test_6_phone" }],
+              },
+              {
+                first_name: "Name33_6",
+                last_name: "Surname33_6",
+                company: "UserCompany",
+                email: [{ type: "work", value: "test_matched_6_email" }],
+                phone: [{ type: "home", value: "test_6_phone" }],
+              },
+            ],
+          },
+          id: "1",
+        },
+      };
+
+      let responseData = await PacketProcessor.processJsonMessageOrError(
+        mockedWS,
+        requestData
+      );
+
+      requestData = {
+        request: {
+          user_edit: {
+            login: "user_4",
+            email: "test_matched_6_email",
+            phone: "test_6_phone",
+          },
+          id: "1",
+        },
+      };
+
+      responseData = await PacketProcessor.processJsonMessageOrError(
+        mockedWS,
+        requestData
+      );
+
+      requestData = {
+        request: {
+          contact_list: {},
+          id: "1",
+        },
+      };
+
+      responseData = await PacketProcessor.processJsonMessageOrError(
+        mockedWS,
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(
+        responseData.response.contacts[0].email[0].matched_user_id.toString(),
+        usersIds[3].toString()
+      );
+      assert.strictEqual(
+        responseData.response.contacts[1].email[0].matched_user_id.toString(),
+        usersIds[3].toString()
+      );
+      assert.strictEqual(
+        responseData.response.contacts[2].email[0].matched_user_id.toString(),
+        usersIds[3].toString()
+      );
+      assert.strictEqual(
+        responseData.response.contacts[0].phone[0].matched_user_id.toString(),
+        usersIds[3].toString()
+      );
+      assert.strictEqual(
+        responseData.response.contacts[1].phone[0].matched_user_id.toString(),
+        usersIds[3].toString()
+      );
+      assert.strictEqual(
+        responseData.response.contacts[2].phone[0].matched_user_id.toString(),
+        usersIds[3].toString()
+      );
+    });
+  });
+
   after(async () => {
     await User.clearCollection();
     await Contact.clearCollection();

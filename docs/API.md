@@ -176,7 +176,6 @@ Later, the subsequent logins can be done via `token`:
       first_name: "Name",
       last_name: "Surname",
       company: "UserCompany",
-      user_id: "uId1",
       email: [
         { type: "work", value: "...", matched_user_id: "uId5" },
         { type: "home", value: "..." },
@@ -230,7 +229,6 @@ Later, the subsequent logins can be done via `token`:
         first_name: "Name",
         last_name: "Surname",
         company: "UserCompany",
-        user_id: "uId1",
         email: [ { type: "home", value: "..." } ],
         phone: [ { type: "home", value: "...",  matched_user_id: "uId7" } ],
         updated_at: "",
@@ -240,7 +238,6 @@ Later, the subsequent logins can be done via `token`:
         first_name: "Name2",
         last_name: "Surname2",
         company: "UserCompany2",
-        user_id: "uId1",
         email: [ { type: "home", value: "..." } ],
         phone: [ { type: "home", value: "...",  matched_user_id: "uId6" } ],
         updated_at: "",
@@ -283,7 +280,6 @@ Later, the subsequent logins can be done via `token`:
       first_name: "Name",
       last_name: "Surname",
       company: "UserCompany",
-      user_id: "uId1",
       email: [
         { type: "work", value: "...", matched_user_id: "uId5" },
         { type: "home", value: "..." },
@@ -322,7 +318,6 @@ Later, the subsequent logins can be done via `token`:
         first_name: "Name",
         last_name: "Surname",
         company: "UserCompany",
-        user_id: "uId1",
         email: [ { type: "home", value: "..." } ],
         phone: [ { type: "home", value: "...",  matched_user_id: "uId7" } ],
         updated_at: "",
@@ -332,7 +327,6 @@ Later, the subsequent logins can be done via `token`:
         first_name: "Name2",
         last_name: "Surname2",
         company: "UserCompany2",
-        user_id: "uId1",
         email: [ { type: "home", value: "..." } ],
         phone: [ { type: "home", value: "...",  matched_user_id: "uId6" } ],
         updated_at: "",
@@ -348,7 +342,7 @@ Later, the subsequent logins can be done via `token`:
 ```
 {
   request: {
-    contact_update: {
+    contact_delete: {
       id: "uId2"
     },
     id: "14",
