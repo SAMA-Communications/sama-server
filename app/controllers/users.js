@@ -157,7 +157,7 @@ class UsersController extends BaseController {
   async edit(ws, data) {
     const {
       id: requestId,
-      user_edit: { current_password, new_password, email, phone },
+      user_edit: { current_password, new_password },
     } = data;
 
     const userId = this.sessionRepository.getSessionUserId(ws);
@@ -177,11 +177,7 @@ class UsersController extends BaseController {
       });
     }
 
-    const updateParam = Object.assign(
-      { updated_at: new Date() },
-      email && { email },
-      phone && { phone }
-    );
+    let updateParam = { updated_at: new Date() };
 
     if (new_password) {
       const updateUser = new User({ password: new_password });
@@ -191,12 +187,21 @@ class UsersController extends BaseController {
       updateParam["encrypted_password"] = updateUser.params.encrypted_password;
     }
 
+    delete data.user_edit["new_password"];
+    delete data.user_edit["current_password"];
+
+    for (const field in data.user_edit) {
+      updateParam[field] = data.user_edit[field];
+    }
+
     const updatedUser = new User(
       (
         await User.findOneAndUpdate({ _id: userId }, { $set: updateParam })
       )?.value
     );
 
+    const email = data.user_edit.email;
+    const phone = data.user_edit.phone;
     if (email) {
       await this.matchedRepository.matchedContact(currentUser.visibleParams(), {
         removeRecord: 0,
