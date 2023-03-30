@@ -42,6 +42,8 @@ export const usersSchemaValidation = {
     email: Joi.string(),
     // .pattern(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/),
     phone: Joi.string().min(3).max(15),
+    login: Joi.string().min(3).max(40),
+    full_name: Joi.string().min(1).max(120),
   }).with("current_password", "current_password"),
   login: Joi.object()
     .keys({

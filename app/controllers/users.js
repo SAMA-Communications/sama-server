@@ -1,7 +1,7 @@
 import BaseController from "./base/base.js";
 import BlockListRepository from "../repositories/blocklist_repository.js";
 import BlockedUser from "../models/blocked_user.js";
-import MatchedRepository from "../repositories/matched_repository.js";
+import ContactsMatchRepository from "../repositories/contact_match_repository.js";
 import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
@@ -23,35 +23,38 @@ class UsersController extends BaseController {
       inMemoryBlockList
     );
     this.sessionRepository = new SessionRepository(ACTIVE);
-    this.matchedRepository = new MatchedRepository();
+    this.contactMatchRepository = new ContactsMatchRepository();
   }
 
   async create(ws, data) {
     const { id: requestId, user_create: reqData } = data;
 
     const isUserCreate = await User.findOne({ login: reqData.login });
-    if (!isUserCreate) {
-      reqData["recent_activity"] = Date.now();
-      const user = new User(reqData);
-      await user.save();
-
-      user.params.email &&
-        (await this.matchedRepository.matchedContact(user.visibleParams(), {
-          addRecord: 1,
-          field: "email",
-        }));
-      user.params.phone &&
-        (await this.matchedRepository.matchedContact(user.visibleParams(), {
-          addRecord: 1,
-          field: "phone",
-        }));
-
-      return { response: { id: requestId, user: user.visibleParams() } };
-    } else {
+    if (isUserCreate) {
       throw new Error(ERROR_STATUES.USER_ALREADY_EXISTS.message, {
         cause: ERROR_STATUES.USER_ALREADY_EXISTS,
       });
     }
+
+    reqData["recent_activity"] = Date.now();
+    const user = new User(reqData);
+    await user.save();
+
+    const matchOption = {};
+    if (user.params.email) {
+      matchOption["email"] = { addRecord: 1 };
+    }
+    if (user.params.phone) {
+      matchOption["phone"] = { addRecord: 1 };
+    }
+
+    Object.keys(matchOption).length &&
+      (await this.contactMatchRepository.matchUserWithContact(
+        user.visibleParams(),
+        matchOption
+      ));
+
+    return { response: { id: requestId, user: user.visibleParams() } };
   }
 
   async login(ws, data) {
@@ -157,7 +160,14 @@ class UsersController extends BaseController {
   async edit(ws, data) {
     const {
       id: requestId,
-      user_edit: { current_password, new_password },
+      user_edit: {
+        login,
+        full_name,
+        email,
+        phone,
+        current_password,
+        new_password,
+      },
     } = data;
 
     const userId = this.sessionRepository.getSessionUserId(ws);
@@ -190,8 +200,41 @@ class UsersController extends BaseController {
     delete data.user_edit["new_password"];
     delete data.user_edit["current_password"];
 
-    for (const field in data.user_edit) {
-      updateParam[field] = data.user_edit[field];
+    if (login) {
+      const isDuplicateUser = await User.findOne({ login });
+      if (isDuplicateUser) {
+        throw new Error(ERROR_STATUES.LOGIN_ALREADY_IN_USE.message, {
+          cause: ERROR_STATUES.LOGIN_ALREADY_IN_USE,
+        });
+      } else {
+        updateParam["login"] = login;
+      }
+    }
+
+    if (full_name) {
+      updateParam["full_name"] = full_name;
+    }
+
+    if (email) {
+      const isDuplicateUser = await User.findOne({ email });
+      if (isDuplicateUser) {
+        throw new Error(ERROR_STATUES.EMAIL_ALREADY_IN_USE.message, {
+          cause: ERROR_STATUES.EMAIL_ALREADY_IN_USE,
+        });
+      } else {
+        updateParam["email"] = email;
+      }
+    }
+
+    if (phone) {
+      const isDuplicateUser = await User.findOne({ phone });
+      if (isDuplicateUser) {
+        throw new Error(ERROR_STATUES.PHONE_ALREADY_IN_USE.message, {
+          cause: ERROR_STATUES.PHONE_ALREADY_IN_USE,
+        });
+      } else {
+        updateParam["phone"] = phone;
+      }
     }
 
     const updatedUser = new User(
@@ -200,28 +243,28 @@ class UsersController extends BaseController {
       )?.value
     );
 
-    const email = data.user_edit.email;
-    const phone = data.user_edit.phone;
-    if (email) {
-      await this.matchedRepository.matchedContact(currentUser.visibleParams(), {
-        removeRecord: 0,
-        field: "email",
-      });
-      await this.matchedRepository.matchedContact(updatedUser.visibleParams(), {
-        addRecord: 1,
-        field: "email",
-      });
+    if (phone) {
+      await this.contactMatchRepository.matchUserWithContact(
+        updatedUser.visibleParams(),
+        {
+          phone: {
+            replaceRecord: 1,
+            oldValue: currentUser.visibleParams().phone,
+          },
+        }
+      );
     }
 
-    if (phone) {
-      await this.matchedRepository.matchedContact(currentUser.visibleParams(), {
-        removeRecord: 0,
-        field: "phone",
-      });
-      await this.matchedRepository.matchedContact(updatedUser.visibleParams(), {
-        addRecord: 1,
-        field: "phone",
-      });
+    if (email) {
+      await this.contactMatchRepository.matchUserWithContact(
+        updatedUser.visibleParams(),
+        {
+          email: {
+            replaceRecord: 1,
+            oldValue: currentUser.visibleParams().email,
+          },
+        }
+      );
     }
 
     return {
@@ -293,27 +336,30 @@ class UsersController extends BaseController {
     }
 
     const user = await User.findOne({ _id: userId });
-    if (user) {
-      this.blockListRepository.delete(user.params._id);
-
-      user.params.email &&
-        (await this.matchedRepository.matchedContact(user.visibleParams(), {
-          removeRecord: 1,
-          field: "email",
-        }));
-      user.params.phone &&
-        (await this.matchedRepository.matchedContact(user.visibleParams(), {
-          removeRecord: 1,
-          field: "phone",
-        }));
-      await user.delete();
-
-      return { response: { id: requestId, success: true } };
-    } else {
+    if (!user) {
       throw new Error(ERROR_STATUES.FORBIDDEN.message, {
         cause: ERROR_STATUES.FORBIDDEN,
       });
     }
+
+    this.blockListRepository.delete(user.params._id);
+    const matchOption = {};
+    if (user.params.email) {
+      matchOption["email"] = { removeRecord: 1 };
+    }
+    if (user.params.phone) {
+      matchOption["phone"] = { removeRecord: 1 };
+    }
+
+    Object.keys(matchOption).length &&
+      (await this.contactMatchRepository.matchUserWithContact(
+        user.visibleParams(),
+        matchOption
+      ));
+
+    await user.delete();
+
+    return { response: { id: requestId, success: true } };
   }
 
   async search(ws, data) {

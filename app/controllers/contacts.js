@@ -1,6 +1,6 @@
 import BaseController from "./base/base.js";
 import Contact from "./../models/contact.js";
-import MatchedRepository from "../repositories/matched_repository.js";
+import ContactsMatchRepository from "../repositories/contact_match_repository.js";
 import SessionRepository from "./../repositories/session_repository.js";
 import { ACTIVE } from "./../store/session.js";
 import { ERROR_STATUES } from "./../validations/constants/errors.js";
@@ -11,7 +11,7 @@ class ContactsController extends BaseController {
     super();
 
     this.sessionRepository = new SessionRepository(ACTIVE);
-    this.matchedRepository = new MatchedRepository();
+    this.contactMatchRepository = new ContactsMatchRepository();
   }
 
   async contact_add(ws, data) {
@@ -19,9 +19,13 @@ class ContactsController extends BaseController {
     const currentUser = this.sessionRepository.getSessionUserId(ws);
 
     contactData.email &&
-      (await this.matchedRepository.matchedUser(contactData, "email"));
+      (await this.contactMatchRepository.matchedUser(contactData, {
+        field: "email",
+      }));
     contactData.phone &&
-      (await this.matchedRepository.matchedUser(contactData, "phone"));
+      (await this.contactMatchRepository.matchedUser(contactData, {
+        field: "phone",
+      }));
     contactData.user_id = ObjectId(currentUser);
 
     const contact = new Contact(contactData);
@@ -37,9 +41,7 @@ class ContactsController extends BaseController {
     } = data;
 
     const contactsList = [];
-    for (let i = 0; i < contacts.length; i++) {
-      const u = contacts[i];
-
+    for (let u of contacts) {
       if (!u.email || !u.phone) {
         continue;
       }
@@ -59,9 +61,13 @@ class ContactsController extends BaseController {
 
     delete updatedData["id"];
     updatedData.email &&
-      (await this.matchedRepository.matchedUser(updatedData, "email"));
+      (await this.contactMatchRepository.matchedUser(updatedData, {
+        field: "email",
+      }));
     updatedData.phone &&
-      (await this.matchedRepository.matchedUser(updatedData, "phone"));
+      (await this.contactMatchRepository.matchedUser(updatedData, {
+        field: "phone",
+      }));
 
     const updatedResult = await Contact.findOneAndUpdate(
       { _id: recordId },
