@@ -33,7 +33,10 @@ export const ERROR_STATUES = {
   CONTACT_IS_MISSED: { status: 422, message: "Contact is missed" },
   CONTACT_NOT_FOUND: { status: 422, message: "Contact not found" },
   CONTACT_ID_MISSED: { status: 422, message: "Contact id is missed" },
-  NAME_IS_MISSED: { status: 422, message: "Name is missed" },
+  FULLNAME_IS_MISSED: {
+    status: 422,
+    message: "'first_name' or 'last_name' is missed",
+  },
   EMAIL_OR_PHONE_IS_MISSED: {
     status: 422,
     message: "Email or phone is missed",

@@ -26,8 +26,8 @@ export const contactsSchemaValidation = {
               cause: ERROR_STATUES.EMAIL_OR_PHONE_IS_MISSED,
             });
           case "first_name,last_name":
-            return new Error(ERROR_STATUES.NAME_IS_MISSED.message, {
-              cause: ERROR_STATUES.NAME_IS_MISSED,
+            return new Error(ERROR_STATUES.FULLNAME_IS_MISSED.message, {
+              cause: ERROR_STATUES.FULLNAME_IS_MISSED,
             });
         }
       });
@@ -62,8 +62,8 @@ export const contactsSchemaValidation = {
                   }
                 );
               case "first_name,last_name":
-                return new Error(ERROR_STATUES.NAME_IS_MISSED.message, {
-                  cause: ERROR_STATUES.NAME_IS_MISSED,
+                return new Error(ERROR_STATUES.FULLNAME_IS_MISSED.message, {
+                  cause: ERROR_STATUES.FULLNAME_IS_MISSED,
                 });
             }
           });

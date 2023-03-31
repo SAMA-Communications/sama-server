@@ -120,7 +120,7 @@ describe("Contacts functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Name is missed",
+        message: "'first_name' or 'last_name' is missed",
       });
     });
 
@@ -252,7 +252,7 @@ describe("Contacts functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Name is missed",
+        message: "'first_name' or 'last_name' is missed",
       });
     });
   });
@@ -636,7 +636,7 @@ describe("Contacts functions", async () => {
         requestData
       );
 
-      await sendLogout(currentUserToken);
+      await sendLogout(mockedWS, currentUserToken);
       currentUserToken = await sendLogin(mockedWS, "user_4");
       requestData = {
         request: {
@@ -652,7 +652,7 @@ describe("Contacts functions", async () => {
         mockedWS,
         requestData
       );
-      await sendLogout(currentUserToken);
+      await sendLogout(mockedWS, currentUserToken);
       currentUserToken = await sendLogin(mockedWS, "user_1");
 
       requestData = {
@@ -697,7 +697,7 @@ describe("Contacts functions", async () => {
 
   describe("Contact unmatched", async () => {
     it("should work email", async () => {
-      await sendLogout(currentUserToken);
+      await sendLogout(mockedWS, currentUserToken);
       currentUserToken = await sendLogin(mockedWS, "user_4");
       let requestData = {
         request: {
@@ -712,7 +712,7 @@ describe("Contacts functions", async () => {
         mockedWS,
         requestData
       );
-      await sendLogout(currentUserToken);
+      await sendLogout(mockedWS, currentUserToken);
       currentUserToken = await sendLogin(mockedWS, "user_1");
 
       requestData = {
@@ -729,16 +729,28 @@ describe("Contacts functions", async () => {
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(
+        responseData.response.contacts[0].email[0].value,
+        "test_matched_7_email"
+      );
+      assert.strictEqual(
+        responseData.response.contacts[1].email[0].value,
+        "test_matched_7_email"
+      );
+      assert.strictEqual(
+        responseData.response.contacts[2].email[0].value,
+        "test_matched_7_email"
+      );
+      assert.strictEqual(
         responseData.response.contacts[0].email[0].matched_user_id,
-        undefined
+        usersIds[3].toString()
       );
       assert.strictEqual(
         responseData.response.contacts[1].email[0].matched_user_id,
-        undefined
+        usersIds[3].toString()
       );
       assert.strictEqual(
         responseData.response.contacts[2].email[0].matched_user_id,
-        undefined
+        usersIds[3].toString()
       );
       assert.strictEqual(
         responseData.response.contacts[0].phone[0].matched_user_id.toString(),
@@ -755,7 +767,7 @@ describe("Contacts functions", async () => {
     });
 
     it("should work phone", async () => {
-      await sendLogout(currentUserToken);
+      await sendLogout(mockedWS, currentUserToken);
       currentUserToken = await sendLogin(mockedWS, "user_4");
       let requestData = {
         request: {
@@ -770,7 +782,7 @@ describe("Contacts functions", async () => {
         mockedWS,
         requestData
       );
-      await sendLogout(currentUserToken);
+      await sendLogout(mockedWS, currentUserToken);
       currentUserToken = await sendLogin(mockedWS, "user_1");
 
       requestData = {
@@ -787,21 +799,33 @@ describe("Contacts functions", async () => {
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(
+        responseData.response.contacts[0].phone[0].value,
+        "123ax"
+      );
+      assert.strictEqual(
+        responseData.response.contacts[1].phone[0].value,
+        "123ax"
+      );
+      assert.strictEqual(
+        responseData.response.contacts[2].phone[0].value,
+        "123ax"
+      );
+      assert.strictEqual(
         responseData.response.contacts[0].phone[0].matched_user_id,
-        undefined
+        usersIds[3].toString()
       );
       assert.strictEqual(
         responseData.response.contacts[1].phone[0].matched_user_id,
-        undefined
+        usersIds[3].toString()
       );
       assert.strictEqual(
         responseData.response.contacts[2].phone[0].matched_user_id,
-        undefined
+        usersIds[3].toString()
       );
     });
 
     it("should work delete user", async () => {
-      await sendLogout(currentUserToken);
+      await sendLogout(mockedWS, currentUserToken);
       currentUserToken = await sendLogin(mockedWS, "user_6");
       let requestData = {
         request: {

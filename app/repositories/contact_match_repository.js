@@ -7,18 +7,17 @@ export default class ContactsMatchRepository extends BaseRepository {
     super(null, null);
   }
 
-  async matchUserWithContact(userFields, option) {
+  async matchUserWithContactOnCreate(userId, phone, email) {
     const records = [];
-    const fields = Object.keys(option);
+    if (!(email && phone)) {
+      return;
+    }
 
     let [tmpRecords, timeParam] = [[], null];
     do {
       const filedsArray = [];
-      for (const field of fields) {
-        option[field].oldValue &&
-          filedsArray.push({ [`${field}.value`]: option[field].oldValue });
-        filedsArray.push({ [`${field}.value`]: userFields[field] });
-      }
+      phone && filedsArray.push({ [`phone.value`]: phone });
+      email && filedsArray.push({ [`email.value`]: email });
 
       const query = { $or: filedsArray };
       if (timeParam) {
@@ -40,36 +39,162 @@ export default class ContactsMatchRepository extends BaseRepository {
 
     for (let i = 0; i < records.length; i++) {
       const r = records[i];
-      const uId = userFields.user_id;
       const updateParam = {};
 
-      for (const field of fields) {
-        if (!r[field]) {
-          continue;
-        }
+      if (!(r.email && r.phone)) {
+        continue;
+      }
 
-        const o = option[field];
-        switch (true) {
-          case !!o.removeRecord:
-            updateParam[field] = r[field].map((el) => {
-              el.value === userFields[field] && delete el["matched_user_id"];
-              return el;
-            });
-            break;
-          case !!o.replaceRecord:
-            updateParam[field] = r[field].map((el) => {
-              el.value === o.oldValue && delete el["matched_user_id"];
-              return el;
-            });
-          case !!o.addRecord:
-            updateParam[field] = r[field].map((el) => {
-              if (el.value === userFields[field]) {
-                el["matched_user_id"] = uId;
-              }
-              return el;
-            });
-            break;
-        }
+      if (email) {
+        updateParam["email"] = r.email.map((el) => {
+          if (el.value === email) {
+            el["matched_user_id"] = userId;
+          }
+          return el;
+        });
+      }
+
+      if (phone) {
+        updateParam["phone"] = r.phone.map((el) => {
+          if (el.value === phone) {
+            el["matched_user_id"] = userId;
+          }
+          return el;
+        });
+      }
+
+      await Contact.updateOne({ _id: r._id.toString() }, { $set: updateParam });
+    }
+  }
+
+  async matchUserWithContactOnUpdate(userId, phone, email, oldPhone, oldEmail) {
+    const records = [];
+    if (!((email && oldEmail) || (phone && oldPhone))) {
+      return;
+    }
+
+    let [tmpRecords, timeParam] = [[], null];
+    do {
+      const filedsArray = [];
+      phone &&
+        filedsArray.push(
+          { [`phone.value`]: phone },
+          { [`phone.value`]: oldPhone }
+        );
+      email &&
+        filedsArray.push(
+          { [`email.value`]: email },
+          { [`email.value`]: oldEmail }
+        );
+
+      const query = { $or: filedsArray };
+      if (timeParam) {
+        query["created_at"] = { $gt: timeParam };
+      }
+      tmpRecords = await Contact.findAll(query);
+
+      if (!tmpRecords.length) {
+        return;
+      }
+
+      records.push.apply(records, tmpRecords);
+      timeParam = tmpRecords[tmpRecords.length - 1].created_at;
+    } while (tmpRecords.length === 100);
+
+    if (!records.length) {
+      return;
+    }
+
+    for (let i = 0; i < records.length; i++) {
+      const r = records[i];
+      const updateParam = {};
+
+      if (!(r.email && r.phone)) {
+        continue;
+      }
+
+      if (email) {
+        updateParam["email"] = r.email.map((el) => {
+          if (el.value === oldEmail) {
+            el.value = email;
+          }
+          if (el.value === email) {
+            el["matched_user_id"] = userId;
+          }
+          return el;
+        });
+      }
+
+      if (phone) {
+        updateParam["phone"] = r.phone.map((el) => {
+          if (el.value === oldPhone) {
+            el.value = phone;
+          }
+          if (el.value === phone) {
+            el["matched_user_id"] = userId;
+          }
+          return el;
+        });
+      }
+
+      await Contact.updateOne({ _id: r._id.toString() }, { $set: updateParam });
+    }
+  }
+
+  async matchUserWithContactOnDelete(userId, phone, email) {
+    const records = [];
+    if (!(email && phone)) {
+      return;
+    }
+
+    let [tmpRecords, timeParam] = [[], null];
+    do {
+      const filedsArray = [];
+      phone && filedsArray.push({ [`phone.value`]: phone });
+      email && filedsArray.push({ [`email.value`]: email });
+
+      const query = { $or: filedsArray };
+      if (timeParam) {
+        query["created_at"] = { $gt: timeParam };
+      }
+      tmpRecords = await Contact.findAll(query);
+
+      if (!tmpRecords.length) {
+        return;
+      }
+
+      records.push.apply(records, tmpRecords);
+      timeParam = tmpRecords[tmpRecords.length - 1].created_at;
+    } while (tmpRecords.length === 100);
+
+    if (!records.length) {
+      return;
+    }
+
+    for (let i = 0; i < records.length; i++) {
+      const r = records[i];
+      const updateParam = {};
+
+      if (!(r.email && r.phone)) {
+        continue;
+      }
+
+      if (email) {
+        updateParam["email"] = r.email.map((el) => {
+          if (el.value === email) {
+            delete el["matched_user_id"];
+          }
+          return el;
+        });
+      }
+
+      if (phone) {
+        updateParam["phone"] = r.phone.map((el) => {
+          if (el.value === phone) {
+            delete el["matched_user_id"];
+          }
+          return el;
+        });
       }
 
       await Contact.updateOne({ _id: r._id.toString() }, { $set: updateParam });

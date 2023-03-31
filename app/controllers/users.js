@@ -29,8 +29,8 @@ class UsersController extends BaseController {
   async create(ws, data) {
     const { id: requestId, user_create: reqData } = data;
 
-    const isUserCreate = await User.findOne({ login: reqData.login });
-    if (isUserCreate) {
+    const existingUser = await User.findOne({ login: reqData.login });
+    if (existingUser) {
       throw new Error(ERROR_STATUES.USER_ALREADY_EXISTS.message, {
         cause: ERROR_STATUES.USER_ALREADY_EXISTS,
       });
@@ -40,24 +40,11 @@ class UsersController extends BaseController {
     const user = new User(reqData);
     await user.save();
 
-    const matchOption = {};
-    const userFields = { user_id: user.visibleParams()._id.toString() };
-    [
-      { value: user.params.email, field: "email" },
-      { value: user.params.phone, field: "phone" },
-    ].forEach((el) => {
-      if (!el.value) {
-        return;
-      }
-      userFields[el.field] = user.visibleParams()[el.field];
-      matchOption[el.field] = { addRecord: 1 };
-    });
-
-    Object.keys(matchOption).length &&
-      (await this.contactMatchRepository.matchUserWithContact(
-        userFields,
-        matchOption
-      ));
+    await this.contactMatchRepository.matchUserWithContactOnCreate(
+      user.visibleParams()._id.toString(),
+      user.params.phone,
+      user.params.email
+    );
 
     return { response: { id: requestId, user: user.visibleParams() } };
   }
@@ -206,8 +193,8 @@ class UsersController extends BaseController {
     delete data.user_edit["current_password"];
 
     if (login) {
-      const isDuplicateUser = await User.findOne({ login });
-      if (isDuplicateUser) {
+      const existingUser = await User.findOne({ login });
+      if (existingUser) {
         throw new Error(ERROR_STATUES.LOGIN_ALREADY_IN_USE.message, {
           cause: ERROR_STATUES.LOGIN_ALREADY_IN_USE,
         });
@@ -220,8 +207,8 @@ class UsersController extends BaseController {
     }
 
     if (email) {
-      const isDuplicateUser = await User.findOne({ email });
-      if (isDuplicateUser) {
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
         throw new Error(ERROR_STATUES.EMAIL_ALREADY_IN_USE.message, {
           cause: ERROR_STATUES.EMAIL_ALREADY_IN_USE,
         });
@@ -230,8 +217,8 @@ class UsersController extends BaseController {
     }
 
     if (phone) {
-      const isDuplicateUser = await User.findOne({ phone });
-      if (isDuplicateUser) {
+      const existingUser = await User.findOne({ phone });
+      if (existingUser) {
         throw new Error(ERROR_STATUES.PHONE_ALREADY_IN_USE.message, {
           cause: ERROR_STATUES.PHONE_ALREADY_IN_USE,
         });
@@ -245,27 +232,13 @@ class UsersController extends BaseController {
       )?.value
     );
 
-    const matchOption = {};
-    const userFields = { user_id: updatedUser.visibleParams()._id.toString() };
-    [
-      { value: email, field: "email" },
-      { value: phone, field: "phone" },
-    ].forEach((el) => {
-      if (!el.value) {
-        return;
-      }
-      userFields[el.field] = updatedUser.visibleParams()[el.field];
-      matchOption[el.field] = {
-        replaceRecord: 1,
-        oldValue: currentUser.visibleParams()[el.field],
-      };
-    });
-
-    Object.keys(matchOption).length &&
-      (await this.contactMatchRepository.matchUserWithContact(
-        userFields,
-        matchOption
-      ));
+    await this.contactMatchRepository.matchUserWithContactOnUpdate(
+      updatedUser.visibleParams()._id.toString(),
+      phone,
+      email,
+      currentUser.visibleParams().phone,
+      currentUser.visibleParams().email
+    );
 
     return {
       response: { id: requestId, user: updatedUser.visibleParams() },
@@ -342,25 +315,12 @@ class UsersController extends BaseController {
       });
     }
 
-    this.blockListRepository.delete(user.params._id);
-    const matchOption = {};
-    const userFields = { user_id: user.visibleParams()._id.toString() };
-    [
-      { value: user.params.email, field: "email" },
-      { value: user.params.phone, field: "phone" },
-    ].forEach((el) => {
-      if (!el.value) {
-        return;
-      }
-      userFields[el.field] = user.visibleParams()[el.field];
-      matchOption[el.field] = { removeRecord: 1 };
-    });
-
-    Object.keys(matchOption).length &&
-      (await this.contactMatchRepository.matchUserWithContact(
-        userFields,
-        matchOption
-      ));
+    await this.blockListRepository.delete(user.params._id);
+    await this.contactMatchRepository.matchUserWithContactOnDelete(
+      user.visibleParams()._id.toString(),
+      user.params.phone,
+      user.params.email
+    );
 
     await user.delete();
 
