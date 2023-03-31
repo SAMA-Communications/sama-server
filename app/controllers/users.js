@@ -41,16 +41,21 @@ class UsersController extends BaseController {
     await user.save();
 
     const matchOption = {};
-    if (user.params.email) {
-      matchOption["email"] = { addRecord: 1 };
-    }
-    if (user.params.phone) {
-      matchOption["phone"] = { addRecord: 1 };
-    }
+    const userFields = { user_id: user.visibleParams()._id.toString() };
+    [
+      { value: user.params.email, field: "email" },
+      { value: user.params.phone, field: "phone" },
+    ].forEach((el) => {
+      if (!el.value) {
+        return;
+      }
+      userFields[el.field] = user.visibleParams()[el.field];
+      matchOption[el.field] = { addRecord: 1 };
+    });
 
     Object.keys(matchOption).length &&
       (await this.contactMatchRepository.matchUserWithContact(
-        user.visibleParams(),
+        userFields,
         matchOption
       ));
 
@@ -206,9 +211,8 @@ class UsersController extends BaseController {
         throw new Error(ERROR_STATUES.LOGIN_ALREADY_IN_USE.message, {
           cause: ERROR_STATUES.LOGIN_ALREADY_IN_USE,
         });
-      } else {
-        updateParam["login"] = login;
       }
+      updateParam["login"] = login;
     }
 
     if (full_name) {
@@ -221,9 +225,8 @@ class UsersController extends BaseController {
         throw new Error(ERROR_STATUES.EMAIL_ALREADY_IN_USE.message, {
           cause: ERROR_STATUES.EMAIL_ALREADY_IN_USE,
         });
-      } else {
-        updateParam["email"] = email;
       }
+      updateParam["email"] = email;
     }
 
     if (phone) {
@@ -232,9 +235,8 @@ class UsersController extends BaseController {
         throw new Error(ERROR_STATUES.PHONE_ALREADY_IN_USE.message, {
           cause: ERROR_STATUES.PHONE_ALREADY_IN_USE,
         });
-      } else {
-        updateParam["phone"] = phone;
       }
+      updateParam["phone"] = phone;
     }
 
     const updatedUser = new User(
@@ -243,29 +245,27 @@ class UsersController extends BaseController {
       )?.value
     );
 
-    if (phone) {
-      await this.contactMatchRepository.matchUserWithContact(
-        updatedUser.visibleParams(),
-        {
-          phone: {
-            replaceRecord: 1,
-            oldValue: currentUser.visibleParams().phone,
-          },
-        }
-      );
-    }
+    const matchOption = {};
+    const userFields = { user_id: updatedUser.visibleParams()._id.toString() };
+    [
+      { value: email, field: "email" },
+      { value: phone, field: "phone" },
+    ].forEach((el) => {
+      if (!el.value) {
+        return;
+      }
+      userFields[el.field] = updatedUser.visibleParams()[el.field];
+      matchOption[el.field] = {
+        replaceRecord: 1,
+        oldValue: currentUser.visibleParams()[el.field],
+      };
+    });
 
-    if (email) {
-      await this.contactMatchRepository.matchUserWithContact(
-        updatedUser.visibleParams(),
-        {
-          email: {
-            replaceRecord: 1,
-            oldValue: currentUser.visibleParams().email,
-          },
-        }
-      );
-    }
+    Object.keys(matchOption).length &&
+      (await this.contactMatchRepository.matchUserWithContact(
+        userFields,
+        matchOption
+      ));
 
     return {
       response: { id: requestId, user: updatedUser.visibleParams() },
@@ -344,16 +344,21 @@ class UsersController extends BaseController {
 
     this.blockListRepository.delete(user.params._id);
     const matchOption = {};
-    if (user.params.email) {
-      matchOption["email"] = { removeRecord: 1 };
-    }
-    if (user.params.phone) {
-      matchOption["phone"] = { removeRecord: 1 };
-    }
+    const userFields = { user_id: user.visibleParams()._id.toString() };
+    [
+      { value: user.params.email, field: "email" },
+      { value: user.params.phone, field: "phone" },
+    ].forEach((el) => {
+      if (!el.value) {
+        return;
+      }
+      userFields[el.field] = user.visibleParams()[el.field];
+      matchOption[el.field] = { removeRecord: 1 };
+    });
 
     Object.keys(matchOption).length &&
       (await this.contactMatchRepository.matchUserWithContact(
-        user.visibleParams(),
+        userFields,
         matchOption
       ));
 

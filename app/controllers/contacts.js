@@ -18,14 +18,12 @@ class ContactsController extends BaseController {
     const { id: requestId, contact_add: contactData } = data;
     const currentUser = this.sessionRepository.getSessionUserId(ws);
 
-    contactData.email &&
-      (await this.contactMatchRepository.matchedUser(contactData, {
-        field: "email",
-      }));
-    contactData.phone &&
-      (await this.contactMatchRepository.matchedUser(contactData, {
-        field: "phone",
-      }));
+    const matchOption = { fields: [] };
+    contactData.email && matchOption.fields.push("email");
+    contactData.phone && matchOption.fields.push("phone");
+
+    matchOption.fields.length &&
+      (await this.contactMatchRepository.matchedUser(contactData, matchOption));
     contactData.user_id = ObjectId(currentUser);
 
     const contact = new Contact(contactData);
@@ -58,16 +56,14 @@ class ContactsController extends BaseController {
   async contact_update(ws, data) {
     const { id: requestId, contact_update: updatedData } = data;
     const recordId = updatedData.id;
-
     delete updatedData["id"];
-    updatedData.email &&
-      (await this.contactMatchRepository.matchedUser(updatedData, {
-        field: "email",
-      }));
-    updatedData.phone &&
-      (await this.contactMatchRepository.matchedUser(updatedData, {
-        field: "phone",
-      }));
+
+    const matchOption = { fields: [] };
+    updatedData.email && matchOption.fields.push("email");
+    updatedData.phone && matchOption.fields.push("phone");
+
+    matchOption.fields.length &&
+      (await this.contactMatchRepository.matchedUser(updatedData, matchOption));
 
     const updatedResult = await Contact.findOneAndUpdate(
       { _id: recordId },
@@ -105,7 +101,8 @@ class ContactsController extends BaseController {
       contact_delete: { id },
     } = data;
 
-    const contact = await Contact.findOne({ _id: id });
+    const userId = this.sessionRepository.getSessionUserId(ws);
+    const contact = await Contact.findOne({ _id: id, user_id: userId });
     contact && (await contact.delete());
 
     return { response: { id: requestId, success: true } };

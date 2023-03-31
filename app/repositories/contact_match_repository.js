@@ -40,7 +40,7 @@ export default class ContactsMatchRepository extends BaseRepository {
 
     for (let i = 0; i < records.length; i++) {
       const r = records[i];
-      const uId = userFields._id.toString();
+      const uId = userFields.user_id;
       const updateParam = {};
 
       for (const field of fields) {
@@ -77,26 +77,27 @@ export default class ContactsMatchRepository extends BaseRepository {
   }
 
   async matchedUser(userFields, option) {
-    const field = option.field;
-    const userField = userFields[field];
-    userFields[field] = [];
+    for (const field of option.fields) {
+      const userField = userFields[field];
+      userFields[field] = [];
 
-    const findedUsersList = await User.findAll(
-      { [field]: { $in: userField.map((el) => el.value) } },
-      ["_id", field]
-    );
+      const findedUsersList = await User.findAll(
+        { [field]: { $in: userField.map((el) => el.value) } },
+        ["_id", field]
+      );
 
-    const findedUsersObj = {};
-    for (let obj of findedUsersList) {
-      findedUsersObj[obj[field]] = obj._id;
-    }
-
-    for (let obj of userField) {
-      if (findedUsersObj[obj.value]) {
-        obj["matched_user_id"] = findedUsersObj[obj.value];
+      const findedUsersObj = {};
+      for (let obj of findedUsersList) {
+        findedUsersObj[obj[field]] = obj._id;
       }
 
-      userFields[field].push(obj);
+      for (let obj of userField) {
+        if (findedUsersObj[obj.value]) {
+          obj["matched_user_id"] = findedUsersObj[obj.value];
+        }
+
+        userFields[field].push(obj);
+      }
     }
   }
 }
