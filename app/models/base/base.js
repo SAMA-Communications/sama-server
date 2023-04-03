@@ -164,7 +164,7 @@ export default class BaseModel {
         .collection(this.collection)
         .findOneAndUpdate(query, update, { returnDocument: "after" });
     } catch (e) {
-      return null;
+      return e;
     }
   }
 

@@ -17,6 +17,8 @@ export default class User extends BaseModel {
       "_id",
       "created_at",
       "updated_at",
+      "first_name",
+      "second_name",
       "login",
       "email",
       "phone",

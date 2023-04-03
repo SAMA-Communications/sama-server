@@ -60,9 +60,9 @@ class ContactsController extends BaseController {
       { $set: updatedData }
     );
 
-    if (!updatedResult) {
-      throw new Error(ERROR_STATUES.USER_NOT_FOUND.message, {
-        cause: ERROR_STATUES.USER_NOT_FOUND,
+    if (!updatedResult.ok) {
+      throw new Error(ERROR_STATUES.CONTACT_NOT_FOUND.message, {
+        cause: ERROR_STATUES.CONTACT_NOT_FOUND,
       });
     }
 

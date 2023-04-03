@@ -17,9 +17,6 @@ export const ERROR_STATUES = {
     status: 422,
     message: "Too many users in private conversation",
   },
-  EMAIL_ALREADY_IN_USE: { status: 422, message: "Email is already in use" },
-  LOGIN_ALREADY_IN_USE: { status: 422, message: "Login is already in use" },
-  PHONE_ALREADY_IN_USE: { status: 422, message: "Phone is already in use" },
   INCORRECT_USER: { status: 422, message: "Incorrect user" },
   INCORRECT_PASSWORD: { status: 422, message: "Incorrect password" },
   INCORRECT_LOGIN: { status: 422, message: "Incorrect login" },
@@ -29,8 +26,6 @@ export const ERROR_STATUES = {
   },
   DEVICE_ID_MISSED: { status: 422, message: "'deviceId' is required" },
   // Contacts -->
-  CONTACT_ALREADY_EXISTS: { status: 422, message: "Contact already exists" },
-  CONTACT_IS_MISSED: { status: 422, message: "Contact is missed" },
   CONTACT_NOT_FOUND: { status: 422, message: "Contact not found" },
   CONTACT_ID_MISSED: { status: 422, message: "Contact id is missed" },
   FULLNAME_IS_MISSED: {

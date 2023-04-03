@@ -306,7 +306,7 @@ describe("Contacts functions", async () => {
       const requestData = {
         request: {
           contact_update: {
-            id: "123",
+            id: "123zxc",
             first_name: "Updated_name",
             last_name: "Updated_surname",
             company: "newCompany",
@@ -325,7 +325,7 @@ describe("Contacts functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "User not found",
+        message: "Contact not found",
       });
     });
 

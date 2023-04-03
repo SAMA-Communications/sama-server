@@ -160,7 +160,8 @@ class UsersController extends BaseController {
       id: requestId,
       user_edit: {
         login,
-        full_name,
+        first_name,
+        second_name,
         email,
         phone,
         current_password,
@@ -198,45 +199,22 @@ class UsersController extends BaseController {
     delete data.user_edit["new_password"];
     delete data.user_edit["current_password"];
 
-    if (login) {
-      const existingUser = await User.findOne({ login });
-      if (existingUser) {
-        throw new Error(ERROR_STATUES.LOGIN_ALREADY_IN_USE.message, {
-          cause: ERROR_STATUES.LOGIN_ALREADY_IN_USE,
-        });
-      }
-      updateParam["login"] = login;
-    }
+    login && (updateParam["login"] = login);
+    email && (updateParam["email"] = email);
+    phone && (updateParam["phone"] = phone);
+    first_name && (updateParam["first_name"] = first_name);
+    second_name && (updateParam["second_name"] = second_name);
 
-    if (full_name) {
-      updateParam["full_name"] = full_name;
-    }
-
-    if (email) {
-      const existingUser = await User.findOne({ email });
-      if (existingUser) {
-        throw new Error(ERROR_STATUES.EMAIL_ALREADY_IN_USE.message, {
-          cause: ERROR_STATUES.EMAIL_ALREADY_IN_USE,
-        });
-      }
-      updateParam["email"] = email;
-    }
-
-    if (phone) {
-      const existingUser = await User.findOne({ phone });
-      if (existingUser) {
-        throw new Error(ERROR_STATUES.PHONE_ALREADY_IN_USE.message, {
-          cause: ERROR_STATUES.PHONE_ALREADY_IN_USE,
-        });
-      }
-      updateParam["phone"] = phone;
-    }
-
-    const updatedUser = new User(
-      (
-        await User.findOneAndUpdate({ _id: userId }, { $set: updateParam })
-      )?.value
+    const updateResponse = await User.findOneAndUpdate(
+      { _id: userId },
+      { $set: updateParam }
     );
+    if (!updateResponse.ok) {
+      throw new Error(ERROR_STATUES.USER_ALREADY_EXISTS.message, {
+        cause: ERROR_STATUES.USER_ALREADY_EXISTS,
+      });
+    }
+    const updatedUser = new User(updateResponse.value);
 
     await this.contactMatchRepository.matchUserWithContactOnUpdate(
       updatedUser.visibleParams()._id.toString(),

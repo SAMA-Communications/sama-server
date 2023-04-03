@@ -381,7 +381,7 @@ describe("User cycle", async () => {
       assert.strictEqual(responseData.response.user, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Login is already in use",
+        message: "User already exists",
       });
     });
 
@@ -403,11 +403,11 @@ describe("User cycle", async () => {
       assert.strictEqual(responseData.response.user, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Email is already in use",
+        message: "User already exists",
       });
     });
 
-    it("should phone is already in use", async () => {
+    it("should fail phone is already in use", async () => {
       const requestData = {
         request: {
           user_edit: {
@@ -425,7 +425,7 @@ describe("User cycle", async () => {
       assert.strictEqual(responseData.response.user, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Phone is already in use",
+        message: "User already exists",
       });
     });
   });
