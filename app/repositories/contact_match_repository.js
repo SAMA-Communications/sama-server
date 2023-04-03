@@ -201,15 +201,61 @@ export default class ContactsMatchRepository extends BaseRepository {
     }
   }
 
-  async matchedUser(userFields, option) {
-    for (const field of option.fields) {
-      const userField = userFields[field];
-      userFields[field] = [];
+  async matchContactWithUserOnCreate(userData) {
+    const { phone, email } = userData;
 
-      const findedUsersList = await User.findAll(
-        { [field]: { $in: userField.map((el) => el.value) } },
-        ["_id", field]
-      );
+    const query = { $or: [] };
+    const visibleFields = ["_id"];
+    if (email) {
+      userData["email"] = [];
+      query["$or"].push({ email: { $in: email.map((el) => el.value) } });
+      visibleFields.push("email");
+    }
+    if (phone) {
+      userData["phone"] = [];
+      query["$or"].push({ phone: { $in: phone.map((el) => el.value) } });
+      visibleFields.push("phone");
+    }
+    const findedUsersList = await User.findAll(query, visibleFields);
+
+    for (let i = 1; i < visibleFields.length; i++) {
+      const field = visibleFields[i];
+      const findedUsersObj = {};
+      for (let obj of findedUsersList) {
+        findedUsersObj[obj[field]] = obj._id;
+      }
+
+      for (let obj of userData[field]) {
+        if (findedUsersObj[obj.value]) {
+          obj["matched_user_id"] = findedUsersObj[obj.value];
+        }
+
+        userData[field].push(obj);
+      }
+    }
+  }
+
+  async matchedContactWithUser(userData) {
+    const fields = [];
+    userData.email && fields.push("email");
+    userData.phone && fields.push("phone");
+
+    if (!fields.length) {
+      return;
+    }
+
+    const findedUsersList = await User.findAll(
+      {
+        $or: fields.map((field) => {
+          return { [field]: { $in: userData[field].map((el) => el.value) } };
+        }),
+      },
+      ["_id", ...fields]
+    );
+
+    for (const field of fields) {
+      const userField = userData[field];
+      userData[field] = [];
 
       const findedUsersObj = {};
       for (let obj of findedUsersList) {
@@ -221,7 +267,7 @@ export default class ContactsMatchRepository extends BaseRepository {
           obj["matched_user_id"] = findedUsersObj[obj.value];
         }
 
-        userFields[field].push(obj);
+        userData[field].push(obj);
       }
     }
   }
