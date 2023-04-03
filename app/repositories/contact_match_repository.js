@@ -7,19 +7,13 @@ export default class ContactsMatchRepository extends BaseRepository {
     super(null, null);
   }
 
-  async matchUserWithContactOnCreate(userId, phone, email) {
-    const records = [];
-    if (!(email && phone)) {
+  async #getRecords(store, query) {
+    if (!query?.$or?.length) {
       return;
     }
 
     let [tmpRecords, timeParam] = [[], null];
     do {
-      const filedsArray = [];
-      phone && filedsArray.push({ [`phone.value`]: phone });
-      email && filedsArray.push({ [`email.value`]: email });
-
-      const query = { $or: filedsArray };
       if (timeParam) {
         query["created_at"] = { $gt: timeParam };
       }
@@ -29,10 +23,30 @@ export default class ContactsMatchRepository extends BaseRepository {
         return;
       }
 
-      records.push.apply(records, tmpRecords);
+      store.push.apply(store, tmpRecords);
       timeParam = tmpRecords[tmpRecords.length - 1].created_at;
     } while (tmpRecords.length === 100);
+  }
 
+  async #updateFieldOnCreate(data, userId, value) {
+    return data.map((el) => {
+      if (el.value === value) {
+        el["matched_user_id"] = userId;
+      }
+      return el;
+    });
+  }
+
+  async matchUserWithContactOnCreate(userId, phone, email) {
+    if (!(email && phone)) {
+      return;
+    }
+    const records = [];
+    const query = { $or: [] };
+    phone && query.$or.push({ [`phone.value`]: phone });
+    email && query.$or.push({ [`email.value`]: email });
+
+    await this.#getRecords(records, query);
     if (!records.length) {
       return;
     }
@@ -45,62 +59,47 @@ export default class ContactsMatchRepository extends BaseRepository {
         continue;
       }
 
-      if (email) {
-        updateParam["email"] = r.email.map((el) => {
-          if (el.value === email) {
-            el["matched_user_id"] = userId;
-          }
-          return el;
-        });
-      }
-
-      if (phone) {
-        updateParam["phone"] = r.phone.map((el) => {
-          if (el.value === phone) {
-            el["matched_user_id"] = userId;
-          }
-          return el;
-        });
-      }
+      email &&
+        (updateParam["email"] = await this.#updateFieldOnCreate(
+          r.email,
+          userId,
+          email
+        ));
+      phone &&
+        (updateParam["phone"] = await this.#updateFieldOnCreate(
+          r.phone,
+          userId,
+          phone
+        ));
 
       await Contact.updateOne({ _id: r._id.toString() }, { $set: updateParam });
     }
+  }
+
+  async #updateFieldOnUpdate(data, userId, value, oldValue) {
+    return data.map((el) => {
+      if (el.value === oldValue) {
+        el.value = value;
+      }
+      if (el.value === value) {
+        el["matched_user_id"] = userId;
+      }
+      return el;
+    });
   }
 
   async matchUserWithContactOnUpdate(userId, phone, email, oldPhone, oldEmail) {
-    const records = [];
     if (!((email && oldEmail) || (phone && oldPhone))) {
       return;
     }
+    const records = [];
+    const query = { $or: [] };
+    phone &&
+      query.$or.push({ [`phone.value`]: phone }, { [`phone.value`]: oldPhone });
+    email &&
+      query.$or.push({ [`email.value`]: email }, { [`email.value`]: oldEmail });
 
-    let [tmpRecords, timeParam] = [[], null];
-    do {
-      const filedsArray = [];
-      phone &&
-        filedsArray.push(
-          { [`phone.value`]: phone },
-          { [`phone.value`]: oldPhone }
-        );
-      email &&
-        filedsArray.push(
-          { [`email.value`]: email },
-          { [`email.value`]: oldEmail }
-        );
-
-      const query = { $or: filedsArray };
-      if (timeParam) {
-        query["created_at"] = { $gt: timeParam };
-      }
-      tmpRecords = await Contact.findAll(query);
-
-      if (!tmpRecords.length) {
-        return;
-      }
-
-      records.push.apply(records, tmpRecords);
-      timeParam = tmpRecords[tmpRecords.length - 1].created_at;
-    } while (tmpRecords.length === 100);
-
+    await this.#getRecords(records, query);
     if (!records.length) {
       return;
     }
@@ -113,60 +112,44 @@ export default class ContactsMatchRepository extends BaseRepository {
         continue;
       }
 
-      if (email) {
-        updateParam["email"] = r.email.map((el) => {
-          if (el.value === oldEmail) {
-            el.value = email;
-          }
-          if (el.value === email) {
-            el["matched_user_id"] = userId;
-          }
-          return el;
-        });
-      }
-
-      if (phone) {
-        updateParam["phone"] = r.phone.map((el) => {
-          if (el.value === oldPhone) {
-            el.value = phone;
-          }
-          if (el.value === phone) {
-            el["matched_user_id"] = userId;
-          }
-          return el;
-        });
-      }
+      email &&
+        (updateParam["email"] = await this.#updateFieldOnUpdate(
+          r.email,
+          userId,
+          email,
+          oldEmail
+        ));
+      phone &&
+        (updateParam["phone"] = await this.#updateFieldOnUpdate(
+          r.phone,
+          userId,
+          phone,
+          oldPhone
+        ));
 
       await Contact.updateOne({ _id: r._id.toString() }, { $set: updateParam });
     }
+  }
+
+  async #updateFieldOnDelete(data, value) {
+    return data.map((el) => {
+      if (el.value === value) {
+        delete el["matched_user_id"];
+      }
+      return el;
+    });
   }
 
   async matchUserWithContactOnDelete(userId, phone, email) {
-    const records = [];
     if (!(email && phone)) {
       return;
     }
+    const records = [];
+    const query = { $or: [] };
+    phone && query.$or.push({ [`phone.value`]: phone });
+    email && query.$or.push({ [`email.value`]: email });
 
-    let [tmpRecords, timeParam] = [[], null];
-    do {
-      const filedsArray = [];
-      phone && filedsArray.push({ [`phone.value`]: phone });
-      email && filedsArray.push({ [`email.value`]: email });
-
-      const query = { $or: filedsArray };
-      if (timeParam) {
-        query["created_at"] = { $gt: timeParam };
-      }
-      tmpRecords = await Contact.findAll(query);
-
-      if (!tmpRecords.length) {
-        return;
-      }
-
-      records.push.apply(records, tmpRecords);
-      timeParam = tmpRecords[tmpRecords.length - 1].created_at;
-    } while (tmpRecords.length === 100);
-
+    await this.#getRecords(records, query);
     if (!records.length) {
       return;
     }
@@ -179,59 +162,18 @@ export default class ContactsMatchRepository extends BaseRepository {
         continue;
       }
 
-      if (email) {
-        updateParam["email"] = r.email.map((el) => {
-          if (el.value === email) {
-            delete el["matched_user_id"];
-          }
-          return el;
-        });
-      }
-
-      if (phone) {
-        updateParam["phone"] = r.phone.map((el) => {
-          if (el.value === phone) {
-            delete el["matched_user_id"];
-          }
-          return el;
-        });
-      }
+      email &&
+        (updateParam["email"] = await this.#updateFieldOnDelete(
+          r.email,
+          email
+        ));
+      phone &&
+        (updateParam["phone"] = await this.#updateFieldOnDelete(
+          r.phone,
+          phone
+        ));
 
       await Contact.updateOne({ _id: r._id.toString() }, { $set: updateParam });
-    }
-  }
-
-  async matchContactWithUserOnCreate(userData) {
-    const { phone, email } = userData;
-
-    const query = { $or: [] };
-    const visibleFields = ["_id"];
-    if (email) {
-      userData["email"] = [];
-      query["$or"].push({ email: { $in: email.map((el) => el.value) } });
-      visibleFields.push("email");
-    }
-    if (phone) {
-      userData["phone"] = [];
-      query["$or"].push({ phone: { $in: phone.map((el) => el.value) } });
-      visibleFields.push("phone");
-    }
-    const findedUsersList = await User.findAll(query, visibleFields);
-
-    for (let i = 1; i < visibleFields.length; i++) {
-      const field = visibleFields[i];
-      const findedUsersObj = {};
-      for (let obj of findedUsersList) {
-        findedUsersObj[obj[field]] = obj._id;
-      }
-
-      for (let obj of userData[field]) {
-        if (findedUsersObj[obj.value]) {
-          obj["matched_user_id"] = findedUsersObj[obj.value];
-        }
-
-        userData[field].push(obj);
-      }
     }
   }
 
@@ -254,21 +196,17 @@ export default class ContactsMatchRepository extends BaseRepository {
     );
 
     for (const field of fields) {
-      const userField = userData[field];
-      userData[field] = [];
-
       const findedUsersObj = {};
       for (let obj of findedUsersList) {
         findedUsersObj[obj[field]] = obj._id;
       }
 
-      for (let obj of userField) {
+      userData[field] = userData[field].map((obj) => {
         if (findedUsersObj[obj.value]) {
           obj["matched_user_id"] = findedUsersObj[obj.value];
         }
-
-        userData[field].push(obj);
-      }
+        return obj;
+      });
     }
   }
 }
