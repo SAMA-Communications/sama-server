@@ -40,6 +40,56 @@ describe("User cycle", async () => {
       assert.equal(responseData.response.error, undefined);
     });
 
+    it("should fail when email already taken", async () => {
+      const requestData = {
+        request: {
+          user_create: {
+            login: "test_login",
+            email: "email_1",
+            password: "user_paswword_1",
+            deviceId: "deveice1",
+          },
+          id: "1_2",
+        },
+      };
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(responseData.response.user, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "User already exists",
+      });
+    });
+
+    it("should fail when phone already taken", async () => {
+      const requestData = {
+        request: {
+          user_create: {
+            login: "test_login",
+            phone: "phone_1",
+            password: "user_paswword_1",
+            deviceId: "deveice1",
+          },
+          id: "1_2",
+        },
+      };
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(responseData.response.user, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "User already exists",
+      });
+    });
+
     it("should fail when login already taken", async () => {
       const requestData = {
         request: {

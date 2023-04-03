@@ -29,7 +29,13 @@ class UsersController extends BaseController {
   async create(ws, data) {
     const { id: requestId, user_create: reqData } = data;
 
-    const existingUser = await User.findOne({ login: reqData.login });
+    const existingUser = await User.findOne({
+      $or: [
+        { login: reqData.login },
+        { email: reqData.email },
+        { phone: reqData.phone },
+      ],
+    });
     if (existingUser) {
       throw new Error(ERROR_STATUES.USER_ALREADY_EXISTS.message, {
         cause: ERROR_STATUES.USER_ALREADY_EXISTS,
