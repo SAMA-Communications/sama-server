@@ -18,7 +18,7 @@ class ContactsController extends BaseController {
     const { id: requestId, contact_add: contactData } = data;
     const currentUser = this.sessionRepository.getSessionUserId(ws);
 
-    await this.contactMatchRepository.matchedContactWithUser(contactData);
+    await this.contactMatchRepository.matchContactWithUser(contactData);
     contactData.user_id = ObjectId(currentUser);
 
     const contact = new Contact(contactData);
@@ -53,7 +53,7 @@ class ContactsController extends BaseController {
     const recordId = updatedData.id;
     delete updatedData["id"];
 
-    await this.contactMatchRepository.matchedContactWithUser(updatedData);
+    await this.contactMatchRepository.matchContactWithUser(updatedData);
 
     const updatedResult = await Contact.findOneAndUpdate(
       { _id: recordId },

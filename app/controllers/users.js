@@ -29,13 +29,10 @@ class UsersController extends BaseController {
   async create(ws, data) {
     const { id: requestId, user_create: reqData } = data;
 
-    const existingUser = await User.findOne({
-      $or: [
-        { login: reqData.login },
-        { email: reqData.email },
-        { phone: reqData.phone },
-      ],
-    });
+    const existingParam = [{ login: reqData.login }];
+    reqData.email && existingParam.push({ email: reqData.email });
+    reqData.phone && existingParam.push({ phone: reqData.phone });
+    const existingUser = await User.findOne({ $or: existingParam });
     if (existingUser) {
       throw new Error(ERROR_STATUES.USER_ALREADY_EXISTS.message, {
         cause: ERROR_STATUES.USER_ALREADY_EXISTS,
@@ -161,7 +158,7 @@ class UsersController extends BaseController {
       user_edit: {
         login,
         first_name,
-        second_name,
+        last_name,
         email,
         phone,
         current_password,
@@ -203,7 +200,7 @@ class UsersController extends BaseController {
     email && (updateParam["email"] = email);
     phone && (updateParam["phone"] = phone);
     first_name && (updateParam["first_name"] = first_name);
-    second_name && (updateParam["second_name"] = second_name);
+    last_name && (updateParam["last_name"] = last_name);
 
     const updateResponse = await User.findOneAndUpdate(
       { _id: userId },

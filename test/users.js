@@ -24,6 +24,8 @@ describe("User cycle", async () => {
         request: {
           user_create: {
             login: userLogin,
+            email: "email_1",
+            phone: "phone_1",
             password: "user_paswword_1",
             deviceId: "deveice1",
           },

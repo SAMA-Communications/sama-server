@@ -10,6 +10,7 @@ let usersIds = [];
 describe("UserBlocked functions", async () => {
   before(async () => {
     await connectToDBPromise();
+    await User.clearCollection();
     usersIds = await createUserArray(5);
     await sendLogin(mockedWS, "user_1");
   });

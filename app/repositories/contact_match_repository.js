@@ -7,11 +7,12 @@ export default class ContactsMatchRepository extends BaseRepository {
     super(null, null);
   }
 
-  async #getRecords(store, query) {
+  async #getRecords(query) {
     if (!query?.$or?.length) {
-      return;
+      return [];
     }
 
+    const records = [];
     let [tmpRecords, timeParam] = [[], null];
     do {
       if (timeParam) {
@@ -20,12 +21,14 @@ export default class ContactsMatchRepository extends BaseRepository {
       tmpRecords = await Contact.findAll(query);
 
       if (!tmpRecords.length) {
-        return;
+        break;
       }
 
-      store.push.apply(store, tmpRecords);
+      records.push.apply(records, tmpRecords);
       timeParam = tmpRecords[tmpRecords.length - 1].created_at;
     } while (tmpRecords.length === 100);
+
+    return records;
   }
 
   async #updateFieldOnCreate(data, userId, value) {
@@ -41,18 +44,16 @@ export default class ContactsMatchRepository extends BaseRepository {
     if (!(email && phone)) {
       return;
     }
-    const records = [];
     const query = { $or: [] };
     phone && query.$or.push({ [`phone.value`]: phone });
     email && query.$or.push({ [`email.value`]: email });
 
-    await this.#getRecords(records, query);
+    const records = await this.#getRecords(query);
     if (!records.length) {
       return;
     }
 
-    for (let i = 0; i < records.length; i++) {
-      const r = records[i];
+    for (const r of records) {
       const updateParam = {};
 
       if (!(r.email && r.phone)) {
@@ -92,20 +93,18 @@ export default class ContactsMatchRepository extends BaseRepository {
     if (!((email && oldEmail) || (phone && oldPhone))) {
       return;
     }
-    const records = [];
     const query = { $or: [] };
     phone &&
       query.$or.push({ [`phone.value`]: phone }, { [`phone.value`]: oldPhone });
     email &&
       query.$or.push({ [`email.value`]: email }, { [`email.value`]: oldEmail });
 
-    await this.#getRecords(records, query);
+    const records = await this.#getRecords(query);
     if (!records.length) {
       return;
     }
 
-    for (let i = 0; i < records.length; i++) {
-      const r = records[i];
+    for (const r of records) {
       const updateParam = {};
 
       if (!(r.email && r.phone)) {
@@ -144,18 +143,16 @@ export default class ContactsMatchRepository extends BaseRepository {
     if (!(email && phone)) {
       return;
     }
-    const records = [];
     const query = { $or: [] };
     phone && query.$or.push({ [`phone.value`]: phone });
     email && query.$or.push({ [`email.value`]: email });
 
-    await this.#getRecords(records, query);
+    const records = await this.#getRecords(query);
     if (!records.length) {
       return;
     }
 
-    for (let i = 0; i < records.length; i++) {
-      const r = records[i];
+    for (const r of records) {
       const updateParam = {};
 
       if (!(r.email && r.phone)) {
@@ -177,10 +174,10 @@ export default class ContactsMatchRepository extends BaseRepository {
     }
   }
 
-  async matchedContactWithUser(userData) {
+  async matchContactWithUser(contactData) {
     const fields = [];
-    userData.email && fields.push("email");
-    userData.phone && fields.push("phone");
+    contactData.email && fields.push("email");
+    contactData.phone && fields.push("phone");
 
     if (!fields.length) {
       return;
@@ -189,7 +186,7 @@ export default class ContactsMatchRepository extends BaseRepository {
     const findedUsersList = await User.findAll(
       {
         $or: fields.map((field) => {
-          return { [field]: { $in: userData[field].map((el) => el.value) } };
+          return { [field]: { $in: contactData[field].map((el) => el.value) } };
         }),
       },
       ["_id", ...fields]
@@ -201,11 +198,10 @@ export default class ContactsMatchRepository extends BaseRepository {
         findedUsersObj[obj[field]] = obj._id;
       }
 
-      userData[field] = userData[field].map((obj) => {
+      contactData[field].forEach((obj) => {
         if (findedUsersObj[obj.value]) {
           obj["matched_user_id"] = findedUsersObj[obj.value];
         }
-        return obj;
       });
     }
   }
