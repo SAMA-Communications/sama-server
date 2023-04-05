@@ -24,7 +24,7 @@ export default class ContactsMatchRepository extends BaseRepository {
         break;
       }
 
-      records.push.apply(records, tmpRecords);
+      records.push(tmpRecords);
       timeParam = tmpRecords[tmpRecords.length - 1].created_at;
     } while (tmpRecords.length === 100);
 
