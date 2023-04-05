@@ -146,7 +146,9 @@ Later, the subsequent logins can be done via `token`:
 { response: { id: "3", users: [...]} }
 ```
 
-## Contact add
+## Address book (contacts list)
+
+### Contact add
 
 ```
 {
@@ -197,7 +199,7 @@ Later, the subsequent logins can be done via `token`:
 
 `email` or `phone` param is required, as well as `first_name` or `last_name`.
 
-## Contact batch add
+### Contact batch add
 
 ```
 {
@@ -252,7 +254,7 @@ Later, the subsequent logins can be done via `token`:
 }
 ```
 
-## Contact update
+### Contact update
 
 ```
 {
@@ -302,7 +304,7 @@ Later, the subsequent logins can be done via `token`:
 }
 ```
 
-## Contact list
+### Contact list
 
 ```
 {
@@ -344,7 +346,7 @@ Later, the subsequent logins can be done via `token`:
 }
 ```
 
-## Contact delete
+### Contact delete
 
 ```
 {
@@ -914,10 +916,6 @@ Get blocked users list:
   }
 }
 ```
-
-## Address book (contacts list)
-
-TBA
 
 ## Push notifications
 
