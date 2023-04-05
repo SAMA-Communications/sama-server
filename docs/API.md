@@ -766,18 +766,21 @@ TBA
 ## Operations log
 
 ```
-request: {
+{
+ request: {
   op_log_list: {
     created_at: {
        gt: timestamp_in_ms,
     },
   },
   id: "453",
-},
+ }
+}
 ```
 
 ```
-response: {
+{
+ response: {
   logs: [
     {
       _id: 325,
@@ -791,7 +794,8 @@ response: {
     }
   ],
   id: "453",
-},
+ }
+}
 ```
 
 `gt` or `lt`param is required
