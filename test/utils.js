@@ -41,15 +41,21 @@ const mockedWS = {
   },
 };
 
-async function createUserArray(count) {
+async function createUserArray(count, currentCountOfUsers, email, phone) {
   let usersIds = [];
 
-  for (let i = 0; i < count; i++) {
+  for (
+    let i = currentCountOfUsers || 0;
+    i < count + (currentCountOfUsers || 0);
+    i++
+  ) {
     const requestData = {
       request: {
         user_create: {
           login: `user_${i + 1}`,
           password: "1um",
+          email: email || `email_${i}`,
+          phone: phone || `phone_${i}`,
           deviceId: "Computer",
         },
         id: "UserCreate",

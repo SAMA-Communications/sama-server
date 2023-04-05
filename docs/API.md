@@ -69,7 +69,7 @@ Later, the subsequent logins can be done via `token`:
   },
 };
 
-{ response: { id: "3", user: {...}, token: "..." }
+{ response: { id: "3", user: {...}, token: "..." } }
 ```
 
 ## Logout user
@@ -91,9 +91,10 @@ Later, the subsequent logins can be done via `token`:
 {
   request: {
     user_edit: {
-      login: "user_1",
       current_password: "...",
-      new_password: "..."
+      new_password: "...",
+      email: "...",
+      phone: "...",
     },
     id: "421cda83-7f39-45a9-81e8-5f83cfa0733c",
   },
@@ -142,8 +143,223 @@ Later, the subsequent logins can be done via `token`:
   },
 };
 
-{ response: { id: "3", users: [...]}
+{ response: { id: "3", users: [...]} }
 ```
+
+## Contact add
+
+```
+{
+  request: {
+    contact_add: {
+      first_name: "Name",
+      last_name: "Surname",
+      company: "UserCompany",
+      email: [
+        { type: "work", value: "..." },
+        { type: "home", value: "..." },
+        ...
+        ],
+      phone: [
+        { type: "work", value: "..." },
+        { type: "home", value: "..." },
+        ...
+        ],
+    },
+    id: "4",
+   },
+};
+
+{
+  response: {
+    id: "4",
+    contact: {
+      _id: "63480e68f4794709f802a2fa",
+      first_name: "Name",
+      last_name: "Surname",
+      company: "UserCompany",
+      email: [
+        { type: "work", value: "...", matched_user_id: "uId5" },
+        { type: "home", value: "..." },
+        ...
+        ],
+      phone: [
+        { type: "work", value: "..." },
+        { type: "home", value: "...", matched_user_id: "uId7" },
+        ...
+        ],
+      updated_at: "",
+      created_at: "",
+    }
+  }
+}
+```
+
+`email` or `phone` param is required, as well as `first_name` or `last_name`.
+
+## Contact batch add
+
+```
+{
+  request: {
+    contacts: [
+      {
+        first_name: "Name",
+        last_name: "Surname",
+        company: "UserCompany",
+        email: [ { type: "work", value: "..." } ],
+        phone: [ { type: "home", value: "..." } ],
+      },
+      {
+        first_name: "Name2",
+        last_name: "Surname2",
+        company: "UserCompany2",
+        email: [ { type: "work", value: "..." } ],
+        phone: [ { type: "home", value: "..." } ],
+      },
+      ...
+    ],
+    id: "5",
+   },
+};
+
+{
+  response: {
+    id: "5",
+    contacts: [
+      {
+        _id: "63480e68f4794709f802a2fa",
+        first_name: "Name",
+        last_name: "Surname",
+        company: "UserCompany",
+        email: [ { type: "home", value: "..." } ],
+        phone: [ { type: "home", value: "...",  matched_user_id: "uId7" } ],
+        updated_at: "",
+        created_at: "",
+      },
+      {
+        _id: "63480e68f4794709f802a2fy",
+        first_name: "Name2",
+        last_name: "Surname2",
+        company: "UserCompany2",
+        email: [ { type: "home", value: "..." } ],
+        phone: [ { type: "home", value: "...",  matched_user_id: "uId6" } ],
+        updated_at: "",
+        created_at: "",
+      }
+    ]
+  }
+}
+```
+
+## Contact update
+
+```
+{
+  request: {
+    contact_update: {
+      id: "63480e68f4794709f802a2fa",
+      first_name: "Name",
+      last_name: "Surname",
+      company: "UserCompany",
+      email: [
+        { type: "work", value: "..." },
+        { type: "home", value: "..." },
+        ...
+        ],
+      phone: [
+        { type: "work", value: "..." },
+        { type: "home", value: "..." },
+        ...
+        ],
+    },
+    id: "14",
+   },
+};
+
+{
+  response: {
+    id: "14",
+    contact: {
+      _id: "63480e68f4794709f802a2fa",
+      first_name: "Name",
+      last_name: "Surname",
+      company: "UserCompany",
+      email: [
+        { type: "work", value: "...", matched_user_id: "uId5" },
+        { type: "home", value: "..." },
+        ...
+        ],
+      phone: [
+        { type: "work", value: "..." },
+        { type: "home", value: "...", matched_user_id: "uId7" },
+        ...
+        ],
+      updated_at: "",
+      created_at: "",
+    }
+  }
+}
+```
+
+## Contact list
+
+```
+{
+  request: {
+    contact_list: {
+      updated_at: "",
+      limit: 56,
+    },
+    id: "54",
+   },
+};
+
+{
+  response: {
+    id: "54",
+    contacts: [
+      {
+        _id: "63480e68f4794709f802a2fa",
+        first_name: "Name",
+        last_name: "Surname",
+        company: "UserCompany",
+        email: [ { type: "home", value: "..." } ],
+        phone: [ { type: "home", value: "...",  matched_user_id: "uId7" } ],
+        updated_at: "",
+        created_at: "",
+      },
+      {
+        _id: "63480e68f4794709f802a2fy",
+        first_name: "Name2",
+        last_name: "Surname2",
+        company: "UserCompany2",
+        email: [ { type: "home", value: "..." } ],
+        phone: [ { type: "home", value: "...",  matched_user_id: "uId6" } ],
+        updated_at: "",
+        created_at: "",
+      }
+    ]
+  }
+}
+```
+
+## Contact delete
+
+```
+{
+  request: {
+    contact_delete: {
+      id: "63480e68f4794709f802a2fa",
+    },
+    id: "14",
+   },
+};
+
+{ response: { id: "14", success: true } }
+```
+
+A `id` param is required.
 
 ## Conversation create
 
@@ -168,7 +384,7 @@ A `type` param must have only one of two values:
 - `u` - (user) - a private conversations for two people only
 - `g` - (group) - conversations for a group of users, two or more.
 
-If the value of the `type` field is equal to `y`, then the `opponent_id` field is required
+If the value of the `type` param is equal to `y`, then the `opponent_id` param is required
 
 ## Conversation update
 
@@ -251,32 +467,32 @@ If the value of the `type` field is equal to `y`, then the `opponent_id` field i
 
 ```
 {
-    request: {
-        getParticipantsByCids: {
-            cids: [
-                "635a3b4cb15254ebe43e76ff",
-                "63563a2ad745dc1c6ad01b5f",
-                "63563a0cd745dc1c6ad01b5c"
-            ]
-        },
-        id: "e3a1fcbf-bb1a-4c6d-b13a-8952db609585"
-    }
+  request: {
+    getParticipantsByCids: {
+      cids: [
+        "635a3b4cb15254ebe43e76ff",
+        "63563a2ad745dc1c6ad01b5f",
+        "63563a0cd745dc1c6ad01b5c"
+      ]
+    },
+    id: "e3a1fcbf-bb1a-4c6d-b13a-8952db609585"
+  }
 }
 
 {
-    response: {
-        id: "e3a1fcbf-bb1a-4c6d-b13a-8952db609585",
-        users: [
-            {
-                _id: "634ec51c0b65918393dca5bf",
-                login: "carol18"
-            },
-            {
-                _id: "63480e68f4794709f802a2fa",
-                login: "breadpit"
-            }
-        ]
-    }
+  response: {
+    id: "e3a1fcbf-bb1a-4c6d-b13a-8952db609585",
+    users: [
+      {
+        _id: "634ec51c0b65918393dca5bf",
+        login: "carol18"
+      },
+      {
+        _id: "63480e68f4794709f802a2fa",
+        login: "breadpit"
+      }
+    ]
+  }
 }
 ```
 
@@ -499,12 +715,13 @@ A user can request last activity of other users:
 
 {
   response: {
-   id: "4",
-   last_activity: {
-     uid1: num_of_seconds,
-     uid2: "online",
-     uid3: num_of_seconds,
-   }
+    id: "4",
+    last_activity: {
+      uid1: num_of_seconds,
+      uid2: "online",
+      uid3: num_of_seconds,
+    }
+  }
 }
 ```
 
@@ -524,10 +741,11 @@ There is a way to subscribe to some user activity status upodate in real-time:
 
 {
   response: {
-   id: "4",
-   last_activity: {
-     uid1: "online" | <last_activity-time>,
-   }
+    id: "4",
+    last_activity: {
+      uid1: "online" | <last_activity-time>,
+    }
+  }
 }
 ```
 
@@ -593,23 +811,24 @@ Create file upload url:
 
 {
   response: {
-   id: "4",
-   files: [
-     {
-       _id: "63077ad836b78c3d82af0812",
-       name: "1.png",
-       size: 240,
-       content_type: "image/png",
-       upload_url: "https://...."
-     },
-     {
-       _id: "63077ad836b78c3d82af0813",
-       name: "2.jpeg",
-       size: 760,
-       content_type: "image/jpeg",
-       upload_url: "https://...."
-     },
-   ]
+    id: "4",
+    files: [
+      {
+        _id: "63077ad836b78c3d82af0812",
+        name: "1.png",
+        size: 240,
+        content_type: "image/png",
+        upload_url: "https://...."
+      },
+      {
+        _id: "63077ad836b78c3d82af0813",
+        name: "2.jpeg",
+        size: 760,
+        content_type: "image/jpeg",
+        upload_url: "https://...."
+      },
+    ]
+  }
 }
 ```
 
@@ -627,11 +846,12 @@ Get file download url:
 
 {
   response: {
-   id: "5",
-   file_urls: [
-     "https://....",
-     "https://...."
-   ]
+    id: "5",
+    file_urls: [
+      "https://....",
+      "https://...."
+    ]
+  }
 }
 ```
 
@@ -651,8 +871,9 @@ Block user:
 
 {
   response: {
-   id: "4",
-   success: true
+    id: "4",
+    success: true
+  }
 }
 ```
 
@@ -670,8 +891,9 @@ Unblock user:
 
 {
   response: {
-   id: "6",
-   success: true
+    id: "6",
+    success: true
+  }
 }
 ```
 
@@ -687,8 +909,9 @@ Get blocked users list:
 
 {
   response: {
-   id: "5",
-   users: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"]
+    id: "5",
+    users: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"]
+  }
 }
 ```
 

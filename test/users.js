@@ -1,8 +1,10 @@
+import "./utils.js";
+import User from "../app/models/user.js";
 import assert from "assert";
 import { connectToDBPromise, getClient } from "./../app/lib/db.js";
 import { default as PacketProcessor } from "./../app/routes/packet_processor.js";
 
-const userLogin = [...Array(30)]
+let userLogin = [...Array(30)]
   .map(() => Math.random().toString(36)[2])
   .join("");
 
@@ -13,6 +15,7 @@ describe("User cycle", async () => {
 
   after(async () => {
     await getClient().close();
+    await User.clearCollection();
   });
 
   describe("Create User", async () => {
@@ -21,6 +24,8 @@ describe("User cycle", async () => {
         request: {
           user_create: {
             login: userLogin,
+            email: "email_1",
+            phone: "phone_1",
             password: "user_paswword_1",
             deviceId: "deveice1",
           },
@@ -35,6 +40,56 @@ describe("User cycle", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.user, undefined);
       assert.equal(responseData.response.error, undefined);
+    });
+
+    it("should fail when email already taken", async () => {
+      const requestData = {
+        request: {
+          user_create: {
+            login: "test_login",
+            email: "email_1",
+            password: "user_paswword_1",
+            deviceId: "deveice1",
+          },
+          id: "1_2",
+        },
+      };
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(responseData.response.user, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "User already exists",
+      });
+    });
+
+    it("should fail when phone already taken", async () => {
+      const requestData = {
+        request: {
+          user_create: {
+            login: "test_login",
+            phone: "phone_1",
+            password: "user_paswword_1",
+            deviceId: "deveice1",
+          },
+          id: "1_2",
+        },
+      };
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(responseData.response.user, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "User already exists",
+      });
     });
 
     it("should fail when login already taken", async () => {
@@ -159,7 +214,6 @@ describe("User cycle", async () => {
       const requestData = {
         request: {
           user_edit: {
-            login: userLogin,
             current_password: "user_paswword_1",
             new_password: "312sad",
           },
@@ -199,59 +253,10 @@ describe("User cycle", async () => {
       assert.equal(responseData.response.error, undefined);
     });
 
-    it("should fail incorrect login", async () => {
-      const requestData = {
-        request: {
-          user_edit: {
-            login: "dasdsad",
-            current_password: "user_paswword_1",
-            new_password: "312sad",
-          },
-          id: "5_1",
-        },
-      };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
-        "test",
-        requestData
-      );
-
-      assert.strictEqual(requestData.request.id, responseData.response.id);
-      assert.strictEqual(responseData.response.user, undefined);
-      assert.deepEqual(responseData.response.error, {
-        status: 422,
-        message: "User 'login' or 'password' field missed",
-      });
-    });
-
-    it("should fail incorrect login", async () => {
-      const requestData = {
-        request: {
-          user_edit: {
-            login: 123123,
-            current_password: "user_paswword_1",
-            new_password: "312sad",
-          },
-          id: "5_1",
-        },
-      };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
-        "test",
-        requestData
-      );
-
-      assert.strictEqual(requestData.request.id, responseData.response.id);
-      assert.strictEqual(responseData.response.user, undefined);
-      assert.deepEqual(responseData.response.error, {
-        status: 422,
-        message: "Incorrect user",
-      });
-    });
-
     it("should fail invalid current password", async () => {
       const requestData = {
         request: {
           user_edit: {
-            login: userLogin,
             current_password: "asdaseqw",
             new_password: "312sad",
           },
@@ -270,6 +275,161 @@ describe("User cycle", async () => {
         message: "Incorrect current password",
       });
     });
+
+    it("should work update email", async () => {
+      const requestData = {
+        request: {
+          user_edit: {
+            email: "email@.email.com",
+          },
+          id: "5_1",
+        },
+      };
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.notEqual(responseData.response.user, undefined);
+      assert.equal(
+        responseData.response.user.email,
+        requestData.request.user_edit.email
+      );
+      assert.equal(responseData.response.error, undefined);
+    });
+
+    it("should work update phone", async () => {
+      const requestData = {
+        request: {
+          user_edit: {
+            phone: "phone_312",
+          },
+          id: "5_1",
+        },
+      };
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.notEqual(responseData.response.user, undefined);
+      assert.equal(
+        responseData.response.user.phone,
+        requestData.request.user_edit.phone
+      );
+      assert.equal(responseData.response.error, undefined);
+    });
+
+    it("should work update login", async () => {
+      const requestData = {
+        request: {
+          user_edit: {
+            login: "login_123",
+          },
+          id: "5_1",
+        },
+      };
+      userLogin = "login_123";
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.notEqual(responseData.response.user, undefined);
+      assert.equal(
+        responseData.response.user.login,
+        requestData.request.user_edit.login
+      );
+      assert.equal(responseData.response.error, undefined);
+    });
+
+    it("should fail login is already in use", async () => {
+      let requestData = {
+        request: {
+          user_create: {
+            login: "login_12345",
+            password: "new_pasw31",
+            email: "copy_email",
+            phone: "copy_phone",
+            deviceId: "pc",
+          },
+          id: "5_2",
+        },
+      };
+
+      let responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      requestData = {
+        request: {
+          user_edit: {
+            login: "login_12345",
+          },
+          id: "5_1",
+        },
+      };
+
+      responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(responseData.response.user, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "User already exists",
+      });
+    });
+
+    it("should fail email is already in use", async () => {
+      const requestData = {
+        request: {
+          user_edit: {
+            email: "copy_email",
+          },
+          id: "5_1",
+        },
+      };
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(responseData.response.user, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "User already exists",
+      });
+    });
+
+    it("should fail phone is already in use", async () => {
+      const requestData = {
+        request: {
+          user_edit: {
+            phone: "copy_phone",
+          },
+          id: "5_1",
+        },
+      };
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(responseData.response.user, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "User already exists",
+      });
+    });
   });
 
   describe("Logout User", async () => {
@@ -286,7 +446,7 @@ describe("User cycle", async () => {
       );
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
-      assert.notStrictEqual(responseData.response.success, undefined);
+      assert.notEqual(responseData.response.success, undefined);
       assert.equal(responseData.response.error, undefined);
 
       await PacketProcessor.processJsonMessageOrError("test", requestData);

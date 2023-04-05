@@ -614,6 +614,8 @@ describe("Message function", async () => {
           request: {
             user_create: {
               login: `user_${i + 1}`,
+              email: `email_${i + 1}`,
+              phone: `phone_${i + 1}`,
               password: "1um",
               deviceId: "device1",
             },

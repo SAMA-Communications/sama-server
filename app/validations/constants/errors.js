@@ -6,6 +6,7 @@ export const ERROR_STATUES = {
   INCORRECT_TYPE: { status: 422, message: "Incorrect type" },
   // Users -->
   USER_ID_MISSED: { status: 422, message: "User ID missed" },
+  USER_NOT_FOUND: { status: 422, message: "User not found" },
   USER_LOGIN_OR_PASS: {
     status: 422,
     message: "User 'login' or 'password' field missed",
@@ -24,6 +25,17 @@ export const ERROR_STATUES = {
     message: "Incorrect current password",
   },
   DEVICE_ID_MISSED: { status: 422, message: "'deviceId' is required" },
+  // Contacts -->
+  CONTACT_NOT_FOUND: { status: 422, message: "Contact not found" },
+  CONTACT_ID_MISSED: { status: 422, message: "Contact id is missed" },
+  FULLNAME_IS_MISSED: {
+    status: 422,
+    message: "'first_name' or 'last_name' is missed",
+  },
+  EMAIL_OR_PHONE_IS_MISSED: {
+    status: 422,
+    message: "Email or phone is missed",
+  },
   // Conversation -->
   CONVERSATION_NOT_FOUND: { status: 404, message: "Conversation not found" },
   CONVERSATION_NAME_MISSED: {

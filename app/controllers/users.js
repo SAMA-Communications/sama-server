@@ -1,9 +1,11 @@
 import BaseController from "./base/base.js";
 import BlockListRepository from "../repositories/blocklist_repository.js";
 import BlockedUser from "../models/blocked_user.js";
+import ContactsMatchRepository from "../repositories/contact_match_repository.js";
 import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
 import UserToken from "../models/user_token.js";
+import clusterManager from "../cluster/cluster_manager.js";
 import ip from "ip";
 import jwt from "jsonwebtoken";
 import { ACTIVE } from "../store/session.js";
@@ -11,7 +13,6 @@ import { CONSTANTS } from "../validations/constants/constants.js";
 import { ERROR_STATUES } from "../validations/constants/errors.js";
 import { default as LastActivityiesController } from "./activities.js";
 import { default as PacketProcessor } from "../routes/packet_processor.js";
-import clusterManager from "../cluster/cluster_manager.js";
 import { inMemoryBlockList } from "../store/in_memory.js";
 
 class UsersController extends BaseController {
@@ -22,23 +23,33 @@ class UsersController extends BaseController {
       inMemoryBlockList
     );
     this.sessionRepository = new SessionRepository(ACTIVE);
+    this.contactMatchRepository = new ContactsMatchRepository();
   }
 
   async create(ws, data) {
     const { id: requestId, user_create: reqData } = data;
 
-    const isUserCreate = await User.findOne({ login: reqData.login });
-    if (!isUserCreate) {
-      reqData["recent_activity"] = Date.now();
-      const user = new User(reqData);
-      await user.save();
-
-      return { response: { id: requestId, user: user.visibleParams() } };
-    } else {
+    const existingParam = [{ login: reqData.login }];
+    reqData.email && existingParam.push({ email: reqData.email });
+    reqData.phone && existingParam.push({ phone: reqData.phone });
+    const existingUser = await User.findOne({ $or: existingParam });
+    if (existingUser) {
       throw new Error(ERROR_STATUES.USER_ALREADY_EXISTS.message, {
         cause: ERROR_STATUES.USER_ALREADY_EXISTS,
       });
     }
+
+    reqData["recent_activity"] = Date.now();
+    const user = new User(reqData);
+    await user.save();
+
+    await this.contactMatchRepository.matchUserWithContactOnCreate(
+      user.visibleParams()._id.toString(),
+      user.params.phone,
+      user.params.email
+    );
+
+    return { response: { id: requestId, user: user.visibleParams() } };
   }
 
   async login(ws, data) {
@@ -144,35 +155,71 @@ class UsersController extends BaseController {
   async edit(ws, data) {
     const {
       id: requestId,
-      user_edit: { login, current_password, new_password },
+      user_edit: {
+        login,
+        first_name,
+        last_name,
+        email,
+        phone,
+        current_password,
+        new_password,
+      },
     } = data;
 
-    const currentUser = await User.findOne({ login });
+    const userId = this.sessionRepository.getSessionUserId(ws);
+    const currentUser = await User.findOne({ _id: userId });
     if (!currentUser) {
       throw new Error(ERROR_STATUES.USER_LOGIN_OR_PASS.message, {
         cause: ERROR_STATUES.USER_LOGIN_OR_PASS,
       });
     }
 
-    if (!(await currentUser.isValidPassword(current_password))) {
+    if (
+      current_password &&
+      !(await currentUser.isValidPassword(current_password))
+    ) {
       throw new Error(ERROR_STATUES.INCORRECT_CURRENT_PASSWORD.message, {
         cause: ERROR_STATUES.INCORRECT_CURRENT_PASSWORD,
       });
     }
 
-    const updateUser = new User({ login, password: new_password });
-    await updateUser.encryptAndSetPassword();
-    await User.updateOne(
-      { login },
-      {
-        $set: {
-          password_salt: updateUser.params.password_salt,
-          encrypted_password: updateUser.params.encrypted_password,
-          updated_at: new Date(),
-        },
-      }
+    let updateParam = { updated_at: new Date() };
+
+    if (new_password) {
+      const updateUser = new User({ password: new_password });
+      await updateUser.encryptAndSetPassword();
+
+      updateParam["password_salt"] = updateUser.params.password_salt;
+      updateParam["encrypted_password"] = updateUser.params.encrypted_password;
+    }
+
+    delete data.user_edit["new_password"];
+    delete data.user_edit["current_password"];
+
+    login && (updateParam["login"] = login);
+    email && (updateParam["email"] = email);
+    phone && (updateParam["phone"] = phone);
+    first_name && (updateParam["first_name"] = first_name);
+    last_name && (updateParam["last_name"] = last_name);
+
+    const updateResponse = await User.findOneAndUpdate(
+      { _id: userId },
+      { $set: updateParam }
     );
-    const updatedUser = await User.findOne({ login });
+    if (!updateResponse.ok) {
+      throw new Error(ERROR_STATUES.USER_ALREADY_EXISTS.message, {
+        cause: ERROR_STATUES.USER_ALREADY_EXISTS,
+      });
+    }
+    const updatedUser = new User(updateResponse.value);
+
+    await this.contactMatchRepository.matchUserWithContactOnUpdate(
+      updatedUser.visibleParams()._id.toString(),
+      phone,
+      email,
+      currentUser.visibleParams().phone,
+      currentUser.visibleParams().email
+    );
 
     return {
       response: { id: requestId, user: updatedUser.visibleParams() },
@@ -243,15 +290,22 @@ class UsersController extends BaseController {
     }
 
     const user = await User.findOne({ _id: userId });
-    if (user) {
-      this.blockListRepository.delete(user.params._id);
-      await user.delete();
-      return { response: { id: requestId, success: true } };
-    } else {
+    if (!user) {
       throw new Error(ERROR_STATUES.FORBIDDEN.message, {
         cause: ERROR_STATUES.FORBIDDEN,
       });
     }
+
+    await this.blockListRepository.delete(user.params._id);
+    await this.contactMatchRepository.matchUserWithContactOnDelete(
+      user.visibleParams()._id.toString(),
+      user.params.phone,
+      user.params.email
+    );
+
+    await user.delete();
+
+    return { response: { id: requestId, success: true } };
   }
 
   async search(ws, data) {
