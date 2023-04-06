@@ -4,6 +4,7 @@ export const ERROR_STATUES = {
   FORBIDDEN: { status: 403, message: "Forbidden" },
   BAD_REQUEST: { status: 400, message: "Bad Request" },
   INCORRECT_TYPE: { status: 422, message: "Incorrect type" },
+  INCORRECT_TOKEN: { status: 422, message: "Incorrect roken" },
   // Users -->
   USER_ID_MISSED: { status: 422, message: "User ID missed" },
   USER_NOT_FOUND: { status: 422, message: "User not found" },
@@ -94,6 +95,19 @@ export const ERROR_STATUES = {
   STATUS_ID_MISSED: { status: 422, message: "Status ID missed" },
   STATUS_TYPE_MISSED: { status: 422, message: "Status Type missed" },
   STATUS_T_MISSED: { status: 422, message: "Status 't' missed" },
+  // Push Notification -->
+  INCORRECT_PLATFROM_TYPE: { status: 422, message: "Incorrect platform type" },
+  INCORRECT_DEVICE_ID: { status: 422, message: "Incorrect deviceId" },
+  INCORRECT_RECIPIENTS_IDS: {
+    status: 422,
+    message: "Incorrect recipients ids",
+  },
+  RECIPIENTS_NOT_FOUND: { status: 422, message: "Recipients not found" }, //todo: init err in logic pushEventCreate
+  NOTIFICATION_ID_MISSED: { status: 422, message: "Notification id missed" },
+  NOTIFICATION_MESSAGE_MISSED: {
+    status: 422,
+    message: "Notification message missed",
+  },
   // Other -->
   LOG_TIMETAMP_MISSED: { status: 422, message: "Gt or lt query missed" },
   CID_REQUIRED: {

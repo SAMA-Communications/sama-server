@@ -5,10 +5,27 @@ class PushNotificationsController extends BaseController {
     super();
   }
 
-  async push_subscription_create(ws, data) {}
-  async push_subscription_list(ws, data) {}
-  async push_subscription_delete(ws, data) {}
-  async push_event_create(ws, data) {}
+  async pushSubscriptionCreate(ws, data) {
+    const {
+      id: requestId,
+      push_subscription_create: { platform, push_token, device_udid },
+    } = data;
+  }
+  async pushSubscriptionList(ws, data) {
+    const { id: requestId } = data;
+  }
+  async pushSubscriptionDelete(ws, data) {
+    const {
+      id: requestId,
+      push_subscription_delete: { id },
+    } = data;
+  }
+  async pushEventCreate(ws, data) {
+    const {
+      id: requestId,
+      push_event_create: { recipients_ids, message },
+    } = data;
+  }
 }
 
 export default new PushNotificationsController();
