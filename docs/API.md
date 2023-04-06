@@ -697,6 +697,59 @@ Then other users in this conversation who is online will receive the following m
 
 If users are offline, they will receive a message once became online.
 
+## Create Push Subscription
+
+```
+{
+  request: {
+    push_subscription_create: {
+      platform: "web",
+      push_token: "....",
+      device_udid: "..."
+    },
+    id: "1",
+  },
+};
+```
+
+## List Push Subscriptions
+
+```
+{
+  request: {
+    push_subscription_list: {},
+    id: "1",
+  },
+};
+```
+
+## Delete Push Subscription
+
+```
+{
+  request: {
+    push_subscription_delete: {
+      id: ".....",
+    },
+    id: "1",
+  },
+};
+```
+
+## Create Push Event
+
+```
+{
+  request: {
+    push_event_create: {
+      recipients_ids: [1,2,3,4],
+      message: "..."
+    },
+    id: "1",
+  },
+};
+```
+
 ## Carbons
 
 Carbons is enabled by default. On send - a message will be delivered back to all active sender's devices except the current one.
