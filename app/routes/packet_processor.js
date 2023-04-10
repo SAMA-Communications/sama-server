@@ -186,7 +186,7 @@ class PacketProcessor {
         "[cluster_manager][deliverClusterMessageToUser] error",
         err
       );
-      this.isAllowedForOfflineStorage(request) &&
+      this.isAllowedForOfflineStorage(message) &&
         this.perationsLogRepository.savePacket(userId, message);
     }
   }
