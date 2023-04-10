@@ -1,11 +1,15 @@
 import BaseController from "./base/base.js";
 import PushSubscription from "./../models/push_subscription.js";
+import SessionRepository from "../repositories/session_repository.js";
 import webPush from "web-push";
+import { ACTIVE } from "../store/session.js";
 import { ERROR_STATUES } from "../validations/constants/errors.js";
 
 class PushNotificationsController extends BaseController {
   constructor() {
     super();
+
+    this.sessionRepository = new SessionRepository(ACTIVE);
   }
 
   // async sendNotification(push_token) {
@@ -53,13 +57,22 @@ class PushNotificationsController extends BaseController {
     return {
       response: {
         id: requestId,
-        pushSubscription: pushSubscription.visibleParams(),
+        subscription: pushSubscription.visibleParams(),
       },
     };
   }
 
   async pushSubscriptionList(ws, data) {
     const { id: requestId } = data;
+
+    const userId = this.sessionRepository.getSessionUserId(ws);
+    const deviceId = this.sessionRepository.getDeviceId(ws, userId);
+
+    const subscriptions = await PushSubscription.findAll({
+      device_udid: deviceId,
+    });
+
+    return { response: { id: requestId, subscriptions: subscriptions } };
   }
 
   async pushSubscriptionDelete(ws, data) {
