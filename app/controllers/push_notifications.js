@@ -1,6 +1,7 @@
 import BaseController from "./base/base.js";
 import PushSubscription from "./../models/push_subscription.js";
 import webPush from "web-push";
+import { ERROR_STATUES } from "../validations/constants/errors.js";
 
 class PushNotificationsController extends BaseController {
   constructor() {
@@ -66,6 +67,17 @@ class PushNotificationsController extends BaseController {
       id: requestId,
       push_subscription_delete: { id },
     } = data;
+
+    const pushSubscriptionRecord = await PushSubscription.findOne({ _id: id });
+    if (!pushSubscriptionRecord) {
+      throw new Error(ERROR_STATUES.NOTIFICATION_NOT_FOUND.message, {
+        cause: ERROR_STATUES.NOTIFICATION_NOT_FOUND,
+      });
+    }
+
+    await pushSubscriptionRecord.delete();
+
+    return { response: { id: requestId, success: true } };
   }
 
   async pushEventCreate(ws, data) {

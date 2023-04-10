@@ -108,6 +108,10 @@ export const ERROR_STATUES = {
     status: 422,
     message: "Notification message missed",
   },
+  NOTIFICATION_NOT_FOUND: {
+    status: 422,
+    message: "Push notification record not found",
+  },
   // Other -->
   LOG_TIMETAMP_MISSED: { status: 422, message: "Gt or lt query missed" },
   CID_REQUIRED: {
