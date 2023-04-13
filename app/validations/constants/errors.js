@@ -112,6 +112,7 @@ export const ERROR_STATUES = {
     status: 422,
     message: "Push notification record not found",
   },
+  INCORRECT_KEYS: { status: 422, message: "Incorrect keys" },
   // Other -->
   LOG_TIMETAMP_MISSED: { status: 422, message: "Gt or lt query missed" },
   CID_REQUIRED: {

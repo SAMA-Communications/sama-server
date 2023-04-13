@@ -15,12 +15,18 @@ class PushNotificationsController extends BaseController {
   async pushSubscriptionCreate(ws, data) {
     const {
       id: requestId,
-      push_subscription_create: { platform, push_token, device_udid },
+      push_subscription_create: {
+        platform,
+        web_endpoint,
+        web_key_auth,
+        web_key_p256dh,
+        device_udid,
+      },
     } = data;
 
     const userId = this.sessionRepository.getSessionUserId(ws);
     let pushSubscription = await PushSubscription.findOne({ device_udid });
-    const existingPushToken = PushSubscription.findAll({ push_token });
+    const existingPushToken = PushSubscription.findAll({ web_endpoint });
 
     if (existingPushToken.length > 1) {
       //update it and re-assign to current user
@@ -30,7 +36,7 @@ class PushNotificationsController extends BaseController {
       pushSubscription = new PushSubscription(
         PushSubscription.findOneAndUpdate(
           { device_udid, user_id: userId },
-          { $set: { push_token } }
+          { $set: { web_endpoint } }
         )
       );
     } else {

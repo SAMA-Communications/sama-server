@@ -15,7 +15,9 @@ export default class PushSubscription extends BaseModel {
       "updated_at",
       "user_id",
       "platform",
-      "push_token",
+      "web_endpoint",
+      "web_key_auth",
+      "web_key_p256dh",
       "device_udid",
     ];
   }
