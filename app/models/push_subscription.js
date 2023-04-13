@@ -13,6 +13,7 @@ export default class PushSubscription extends BaseModel {
       "_id",
       "created_at",
       "updated_at",
+      "user_id",
       "platform",
       "push_token",
       "device_udid",

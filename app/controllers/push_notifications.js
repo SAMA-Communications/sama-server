@@ -1,7 +1,7 @@
 import BaseController from "./base/base.js";
+import PushEvent from "./../models/push_event.js";
 import PushSubscription from "./../models/push_subscription.js";
 import SessionRepository from "../repositories/session_repository.js";
-import webPush from "web-push";
 import { ACTIVE } from "../store/session.js";
 import { ERROR_STATUES } from "../validations/constants/errors.js";
 
@@ -12,29 +12,13 @@ class PushNotificationsController extends BaseController {
     this.sessionRepository = new SessionRepository(ACTIVE);
   }
 
-  // async sendNotification(push_token) {
-  //   webPush.setVapidDetails(
-  //     "mailto:test@test.com",
-  //     process.env.PUBLIC_VAPID_KEY,
-  //     process.env.PRIVATE_VAPID_KEY
-  //   );
-  //   const pushSubscription = {
-  //     endpoint: push_token,
-  //     keys: {
-  //       p256dh: "< User Public Encryption Key >",
-  //       auth: "< User Auth Secret >",
-  //     },
-  //   };
-  //   const payload = JSON.stringify({ title: "Login is succes!" });
-  //   webPush.sendNotification(push_token, payload);
-  // }
-
   async pushSubscriptionCreate(ws, data) {
     const {
       id: requestId,
       push_subscription_create: { platform, push_token, device_udid },
     } = data;
 
+    const userId = this.sessionRepository.getSessionUserId(ws);
     let pushSubscription = await PushSubscription.findOne({ device_udid });
     const existingPushToken = PushSubscription.findAll({ push_token });
 
@@ -45,11 +29,12 @@ class PushNotificationsController extends BaseController {
     if (pushSubscription) {
       pushSubscription = new PushSubscription(
         PushSubscription.findOneAndUpdate(
-          { device_udid },
+          { device_udid, user_id: userId },
           { $set: { push_token } }
         )
       );
     } else {
+      data.push_subscription_create["user_id"] = userId;
       pushSubscription = new PushSubscription(data.push_subscription_create);
       await pushSubscription.save();
     }
@@ -98,6 +83,23 @@ class PushNotificationsController extends BaseController {
       id: requestId,
       push_event_create: { recipients_ids, message },
     } = data;
+
+    const userId = this.sessionRepository.getSessionUserId(ws);
+    const pushEventParams = {
+      user_id: userId,
+      recipients_ids,
+      message: JSON.stringify(message),
+    };
+    const pushEvent = new PushEvent(pushEventParams);
+
+    await pushEvent.save();
+
+    return {
+      response: {
+        id: requestId,
+        event: pushEvent.visibleParams(),
+      },
+    };
   }
 }
 

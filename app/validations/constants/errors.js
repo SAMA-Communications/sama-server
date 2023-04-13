@@ -4,7 +4,7 @@ export const ERROR_STATUES = {
   FORBIDDEN: { status: 403, message: "Forbidden" },
   BAD_REQUEST: { status: 400, message: "Bad Request" },
   INCORRECT_TYPE: { status: 422, message: "Incorrect type" },
-  INCORRECT_TOKEN: { status: 422, message: "Incorrect roken" },
+  INCORRECT_TOKEN: { status: 422, message: "Incorrect token" },
   // Users -->
   USER_ID_MISSED: { status: 422, message: "User ID missed" },
   USER_NOT_FOUND: { status: 422, message: "User not found" },
