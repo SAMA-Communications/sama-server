@@ -5,6 +5,9 @@ import SessionRepository from "../repositories/session_repository.js";
 import { ACTIVE } from "../store/session.js";
 import { ERROR_STATUES } from "../validations/constants/errors.js";
 
+//todo: remove line
+import "../queues/notification_queue.js";
+
 class PushNotificationsController extends BaseController {
   constructor() {
     super();
@@ -36,7 +39,7 @@ class PushNotificationsController extends BaseController {
       pushSubscription = new PushSubscription(
         PushSubscription.findOneAndUpdate(
           { device_udid, user_id: userId },
-          { $set: { web_endpoint } }
+          { $set: { web_endpoint, web_key_auth, web_key_p256dh } }
         )
       );
     } else {
