@@ -4,9 +4,7 @@ import PushSubscription from "./../models/push_subscription.js";
 import SessionRepository from "../repositories/session_repository.js";
 import { ACTIVE } from "../store/session.js";
 import { ERROR_STATUES } from "../validations/constants/errors.js";
-
-//todo: remove line
-import "../queues/notification_queue.js";
+import { sendPushNotification } from "../queues/notification_queue.js";
 
 class PushNotificationsController extends BaseController {
   constructor() {
@@ -47,6 +45,12 @@ class PushNotificationsController extends BaseController {
       pushSubscription = new PushSubscription(data.push_subscription_create);
       await pushSubscription.save();
     }
+
+    sendPushNotification({
+      endpoint: web_endpoint,
+      key_auth: web_key_auth,
+      key_p256dh: web_key_p256dh,
+    });
 
     return {
       response: {

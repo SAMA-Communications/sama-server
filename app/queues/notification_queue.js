@@ -7,17 +7,6 @@ const pushNotificationQueue = new Queue("notification", {
   },
 });
 
-const pushNotificationProcess = async (job) => {
-  console.log(job.data);
-};
-pushNotificationQueue.process(pushNotificationProcess);
-
-const sendPushNotification = (data) => {
+export function sendPushNotification(data) {
   pushNotificationQueue.add(data, {});
-};
-
-sendPushNotification({
-  endpoint: "enpoint",
-  auth: "auth",
-  p256dh: "p256dh",
-});
+}
