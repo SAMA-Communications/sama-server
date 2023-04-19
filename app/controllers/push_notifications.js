@@ -4,7 +4,7 @@ import PushSubscription from "./../models/push_subscription.js";
 import SessionRepository from "../repositories/session_repository.js";
 import { ACTIVE } from "../store/session.js";
 import { ERROR_STATUES } from "../validations/constants/errors.js";
-import { sendPushNotification } from "../queues/notification_queue.js";
+import { ObjectId } from "mongodb";
 
 class PushNotificationsController extends BaseController {
   constructor() {
@@ -26,8 +26,9 @@ class PushNotificationsController extends BaseController {
     } = data;
 
     const userId = this.sessionRepository.getSessionUserId(ws);
+    //only device_id??
     let pushSubscription = await PushSubscription.findOne({ device_udid });
-    const existingPushToken = PushSubscription.findAll({ web_endpoint });
+    const existingPushToken = await PushSubscription.findAll({ web_endpoint });
 
     if (existingPushToken.length > 1) {
       //update it and re-assign to current user
@@ -41,16 +42,10 @@ class PushNotificationsController extends BaseController {
         )
       );
     } else {
-      data.push_subscription_create["user_id"] = userId;
+      data.push_subscription_create["user_id"] = new ObjectId(userId);
       pushSubscription = new PushSubscription(data.push_subscription_create);
       await pushSubscription.save();
     }
-
-    sendPushNotification({
-      endpoint: web_endpoint,
-      key_auth: web_key_auth,
-      key_p256dh: web_key_p256dh,
-    });
 
     return {
       response: {
@@ -61,25 +56,25 @@ class PushNotificationsController extends BaseController {
   }
 
   async pushSubscriptionList(ws, data) {
-    const { id: requestId } = data;
+    const { id: requestId, user_id } = data;
 
-    const userId = this.sessionRepository.getSessionUserId(ws);
-    const deviceId = this.sessionRepository.getDeviceId(ws, userId);
+    const subscriptions = await PushSubscription.findAll({ user_id });
 
-    const subscriptions = await PushSubscription.findAll({
-      device_udid: deviceId,
-    });
-
-    return { response: { id: requestId, subscriptions: subscriptions } };
+    return { response: { id: requestId, subscriptions } };
   }
 
   async pushSubscriptionDelete(ws, data) {
     const {
       id: requestId,
-      push_subscription_delete: { id },
+      push_subscription_delete: { device_udid },
     } = data;
 
-    const pushSubscriptionRecord = await PushSubscription.findOne({ _id: id });
+    const userId = this.sessionRepository.getSessionUserId(ws);
+    const pushSubscriptionRecord = await PushSubscription.findOne({
+      device_udid,
+      user_id: userId,
+    });
+    console.log("pushSubscriptionRecord: ", pushSubscriptionRecord);
     if (!pushSubscriptionRecord) {
       throw new Error(ERROR_STATUES.NOTIFICATION_NOT_FOUND.message, {
         cause: ERROR_STATUES.NOTIFICATION_NOT_FOUND,

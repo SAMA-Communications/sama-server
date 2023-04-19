@@ -3,13 +3,13 @@ import OpLog from "../models/operations_log.js";
 import OperationsLogRepository from "../repositories/operations_log_repository.js";
 import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
+import clusterManager from "../cluster/cluster_manager.js";
 import ip from "ip";
 import { ACTIVE } from "../store/session.js";
 import { ACTIVITY } from "../store/activity.js";
 import { ERROR_STATUES } from "../validations/constants/errors.js";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
 import { default as LastActivityiesController } from "../controllers/activities.js";
-import clusterManager from "../cluster/cluster_manager.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
 import { routes } from "./routes.js";
 
@@ -116,6 +116,13 @@ class PacketProcessor {
             uId,
             packetsMapOrPacket[uId] || packetsMapOrPacket
           );
+
+        this.operationsLogRepository.sendPushNotification({
+          id: "sendNotification",
+          uId,
+          message: packetsMapOrPacket[uId] || packetsMapOrPacket,
+        });
+
         return;
       }
 

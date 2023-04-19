@@ -42,11 +42,11 @@ export const pushNotificationsSchemaValidation = {
   }).required(),
   pushSubscriptionList: Joi.object({}).required(),
   pushSubscriptionDelete: Joi.object({
-    id: Joi.string()
+    device_udid: Joi.string()
       .required()
       .error(
-        new Error(ERROR_STATUES.NOTIFICATION_ID_MISSED.message, {
-          cause: ERROR_STATUES.NOTIFICATION_ID_MISSED,
+        new Error(ERROR_STATUES.DEVICE_ID_MISSED.message, {
+          cause: ERROR_STATUES.DEVICE_ID_MISSED,
         })
       ),
   }).required(),
