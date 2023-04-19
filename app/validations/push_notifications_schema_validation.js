@@ -59,7 +59,11 @@ export const pushNotificationsSchemaValidation = {
           cause: ERROR_STATUES.INCORRECT_RECIPIENTS_IDS,
         })
       ),
-    message: Joi.any()
+    //TODO: add more fields for message
+    message: Joi.object({
+      title: Joi.string(),
+      body: Joi.string(),
+    })
       .required()
       .error(
         new Error(ERROR_STATUES.NOTIFICATION_MESSAGE_MISSED.message, {

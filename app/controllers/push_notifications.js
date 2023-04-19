@@ -26,8 +26,10 @@ class PushNotificationsController extends BaseController {
     } = data;
 
     const userId = this.sessionRepository.getSessionUserId(ws);
-    //only device_id??
-    let pushSubscription = await PushSubscription.findOne({ device_udid });
+    let pushSubscription = await PushSubscription.findOne({
+      device_udid,
+      user_id: userId, //TODO check it in test: ObjectID?
+    });
     const existingPushToken = await PushSubscription.findAll({ web_endpoint });
 
     if (existingPushToken.length > 1) {
@@ -98,8 +100,8 @@ class PushNotificationsController extends BaseController {
       recipients_ids,
       message: JSON.stringify(message),
     };
-    const pushEvent = new PushEvent(pushEventParams);
 
+    const pushEvent = new PushEvent(pushEventParams);
     await pushEvent.save();
 
     return {
