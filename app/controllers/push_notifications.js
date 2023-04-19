@@ -1,5 +1,4 @@
 import BaseController from "./base/base.js";
-import PushEvent from "./../models/push_event.js";
 import PushSubscription from "./../models/push_subscription.js";
 import SessionRepository from "../repositories/session_repository.js";
 import { ACTIVE } from "../store/session.js";
@@ -30,15 +29,10 @@ class PushNotificationsController extends BaseController {
       device_udid,
       user_id: userId, //TODO check it in test: ObjectID?
     });
-    const existingPushToken = await PushSubscription.findAll({ web_endpoint });
-
-    if (existingPushToken.length > 1) {
-      //update it and re-assign to current user
-    }
 
     if (pushSubscription) {
       pushSubscription = new PushSubscription(
-        PushSubscription.findOneAndUpdate(
+        PushSubscription.update(
           { device_udid, user_id: userId },
           { $set: { web_endpoint, web_key_auth, web_key_p256dh } }
         )
@@ -76,7 +70,6 @@ class PushNotificationsController extends BaseController {
       device_udid,
       user_id: userId,
     });
-    console.log("pushSubscriptionRecord: ", pushSubscriptionRecord);
     if (!pushSubscriptionRecord) {
       throw new Error(ERROR_STATUES.NOTIFICATION_NOT_FOUND.message, {
         cause: ERROR_STATUES.NOTIFICATION_NOT_FOUND,
@@ -86,30 +79,6 @@ class PushNotificationsController extends BaseController {
     await pushSubscriptionRecord.delete();
 
     return { response: { id: requestId, success: true } };
-  }
-
-  async pushEventCreate(ws, data) {
-    const {
-      id: requestId,
-      push_event_create: { recipients_ids, message },
-    } = data;
-
-    const userId = this.sessionRepository.getSessionUserId(ws);
-    const pushEventParams = {
-      user_id: userId,
-      recipients_ids,
-      message: JSON.stringify(message),
-    };
-
-    const pushEvent = new PushEvent(pushEventParams);
-    await pushEvent.save();
-
-    return {
-      response: {
-        id: requestId,
-        event: pushEvent.visibleParams(),
-      },
-    };
   }
 }
 

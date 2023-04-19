@@ -50,25 +50,4 @@ export const pushNotificationsSchemaValidation = {
         })
       ),
   }).required(),
-  pushEventCreate: Joi.object({
-    recipients_ids: Joi.array()
-      .min(1)
-      .required()
-      .error(
-        new Error(ERROR_STATUES.INCORRECT_RECIPIENTS_IDS.message, {
-          cause: ERROR_STATUES.INCORRECT_RECIPIENTS_IDS,
-        })
-      ),
-    //TODO: add more fields for message
-    message: Joi.object({
-      title: Joi.string(),
-      body: Joi.string(),
-    })
-      .required()
-      .error(
-        new Error(ERROR_STATUES.NOTIFICATION_MESSAGE_MISSED.message, {
-          cause: ERROR_STATUES.NOTIFICATION_MESSAGE_MISSED,
-        })
-      ),
-  }).required(),
 };

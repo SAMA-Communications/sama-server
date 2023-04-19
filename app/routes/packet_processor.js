@@ -1,6 +1,8 @@
 import ConversationParticipant from "../models/conversation_participant.js";
 import OpLog from "../models/operations_log.js";
 import OperationsLogRepository from "../repositories/operations_log_repository.js";
+import PushNotificationsRepository from "../repositories/push_notifications_repository.js";
+import PushSubscription from "../models/push_subscription.js";
 import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
 import clusterManager from "../cluster/cluster_manager.js";
@@ -15,6 +17,9 @@ import { routes } from "./routes.js";
 
 class PacketProcessor {
   constructor() {
+    this.pushNotificationsRepository = new PushNotificationsRepository(
+      PushSubscription
+    );
     this.operationsLogRepository = new OperationsLogRepository(OpLog);
     this.sessionRepository = new SessionRepository(ACTIVE);
     this.jsonRequest = routes;
@@ -109,19 +114,11 @@ class PacketProcessor {
     participants.forEach(async (uId) => {
       const userNodeData = await this.sessionRepository.getUserNodeData(uId);
       if (!userNodeData?.length) {
-        this.isAllowedForOfflineStorage(
-          packetsMapOrPacket[uId] || packetsMapOrPacket
-        ) &&
-          this.perationsLogRepository.savePacket(
-            uId,
-            packetsMapOrPacket[uId] || packetsMapOrPacket
-          );
+        const uPacket = packetsMapOrPacket[uId] || packetsMapOrPacket;
+        this.isAllowedForOfflineStorage() &&
+          this.operationsLogRepository.savePacket(uId, uPacket);
 
-        this.operationsLogRepository.sendPushNotification({
-          id: "sendNotification",
-          uId,
-          message: packetsMapOrPacket[uId] || packetsMapOrPacket,
-        });
+        this.pushNotificationsRepository.sendPushNotification(uId, uPacket);
 
         return;
       }
