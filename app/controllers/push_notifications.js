@@ -2,10 +2,10 @@ import BaseController from "./base/base.js";
 import PushNotificationsRepository from "../repositories/push_notifications_repository.js";
 import PushSubscription from "./../models/push_subscription.js";
 import SessionRepository from "../repositories/session_repository.js";
+import User from "../models/user.js";
 import { ACTIVE } from "../store/session.js";
 import { ERROR_STATUES } from "../validations/constants/errors.js";
 import { ObjectId } from "mongodb";
-import User from "../models/user.js";
 
 class PushNotificationsController extends BaseController {
   constructor() {
