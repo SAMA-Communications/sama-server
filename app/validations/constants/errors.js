@@ -102,7 +102,7 @@ export const ERROR_STATUES = {
     status: 422,
     message: "Incorrect recipients ids",
   },
-  RECIPIENTS_NOT_FOUND: { status: 422, message: "Recipients not found" }, //todo: init err in logic pushEventCreate
+  RECIPIENTS_NOT_FOUND: { status: 422, message: "Recipients not found" },
   NOTIFICATION_MESSAGE_MISSED: {
     status: 422,
     message: "Notification message missed",

@@ -160,6 +160,9 @@ export default class BaseModel {
       if (query._id) {
         query._id = new ObjectId(query._id);
       }
+      if (query.user_id) {
+        query.user_id = new ObjectId(query.user_id);
+      }
       return await getDb()
         .collection(this.collection)
         .findOneAndUpdate(query, update, { returnDocument: "after" });

@@ -4,7 +4,7 @@ import { ERROR_STATUES } from "./constants/errors.js";
 export const pushNotificationsSchemaValidation = {
   pushSubscriptionCreate: Joi.object({
     platform: Joi.string()
-      .allow("web", "ios", "android")
+      .valid("web", "ios", "android")
       .required()
       .error(
         new Error(ERROR_STATUES.INCORRECT_PLATFROM_TYPE.message, {
@@ -40,13 +40,45 @@ export const pushNotificationsSchemaValidation = {
         })
       ),
   }).required(),
-  pushSubscriptionList: Joi.object({}).required(),
+  pushSubscriptionList: Joi.object({
+    user_id: Joi.string()
+      .required()
+      .error(
+        new Error(ERROR_STATUES.USER_ID_MISSED.message, {
+          cause: ERROR_STATUES.USER_ID_MISSED,
+        })
+      ),
+  }).required(),
   pushSubscriptionDelete: Joi.object({
     device_udid: Joi.string()
       .required()
       .error(
         new Error(ERROR_STATUES.DEVICE_ID_MISSED.message, {
           cause: ERROR_STATUES.DEVICE_ID_MISSED,
+        })
+      ),
+  }).required(),
+  pushEventCreate: Joi.object({
+    recipients_ids: Joi.array()
+      .items(Joi.string().required())
+      .min(1)
+      .required()
+      .error(
+        new Error(ERROR_STATUES.INCORRECT_RECIPIENTS_IDS.message, {
+          cause: ERROR_STATUES.INCORRECT_RECIPIENTS_IDS,
+        })
+      ),
+    //TODO: add more fields for message
+    message: Joi.object({
+      title: Joi.string(),
+      topic: Joi.string(),
+      body: Joi.string(),
+      message: Joi.string(),
+    })
+      .required()
+      .error(
+        new Error(ERROR_STATUES.NOTIFICATION_MESSAGE_MISSED.message, {
+          cause: ERROR_STATUES.NOTIFICATION_MESSAGE_MISSED,
         })
       ),
   }).required(),
