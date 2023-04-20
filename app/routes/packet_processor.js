@@ -115,7 +115,7 @@ class PacketProcessor {
       const userNodeData = await this.sessionRepository.getUserNodeData(uId);
       if (!userNodeData?.length) {
         const uPacket = packetsMapOrPacket[uId] || packetsMapOrPacket;
-        this.isAllowedForOfflineStorage() &&
+        this.isAllowedForOfflineStorage(uPacket) &&
           this.operationsLogRepository.savePacket(uId, uPacket);
 
         this.pushNotificationsRepository.sendPushNotification(uId, uPacket);
