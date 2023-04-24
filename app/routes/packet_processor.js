@@ -111,25 +111,30 @@ class PacketProcessor {
         )
       ).map((obj) => obj.user_id);
 
+    const offlineUsersByPackets = [];
     participants.forEach(async (uId) => {
       const userNodeData = await this.sessionRepository.getUserNodeData(uId);
+      const uPacket = packetsMapOrPacket[uId] || packetsMapOrPacket;
       if (!userNodeData?.length) {
-        const uPacket = packetsMapOrPacket[uId] || packetsMapOrPacket;
         this.isAllowedForOfflineStorage(uPacket) &&
           this.operationsLogRepository.savePacket(uId, uPacket);
 
-        this.pushNotificationsRepository.sendPushNotification(uId, uPacket);
-
+        if (uPacket.message_reed) {
+          this.pushNotificationsRepository.sendPushNotification([uId], uPacket);
+          return;
+        }
+        offlineUsersByPackets.push(uId);
         return;
       }
-
-      this.#deliverToUserDevices(
-        ws,
-        userNodeData,
-        uId,
-        packetsMapOrPacket[uId] || packetsMapOrPacket
-      );
+      this.#deliverToUserDevices(ws, userNodeData, uId, uPacket);
     });
+
+    if (offlineUsersByPackets.length) {
+      this.pushNotificationsRepository.sendPushNotification(
+        offlineUsersByPackets,
+        packetsMapOrPacket
+      );
+    }
   }
 
   async #processJsonMessage(ws, json) {

@@ -12,9 +12,17 @@ export default class PushNotificationsRepository extends BaseRepository {
     this.sessionRepository = new SessionRepository(ACTIVE);
   }
 
-  async sendPushNotification(user_id, message) {
-    const devices = await PushSubscription.findAll({ user_id });
-    if (!devices.length) {
+  async sendPushNotification(users_ids, message) {
+    let devices = {};
+    for (const id of users_ids) {
+      const userDevices = await PushSubscription.findAll({ user_id: id });
+      if (!userDevices.length) {
+        continue;
+      }
+      devices[id] = userDevices;
+    }
+
+    if (!Object.keys(devices).length) {
       return;
     }
     pushNotificationQueue.add({ devices, message });
@@ -30,7 +38,7 @@ export default class PushNotificationsRepository extends BaseRepository {
     const pushEvent = new PushEvents(pushEventParams);
     await pushEvent.save();
 
-    recipients_ids.forEach((id) => this.sendPushNotification(id, message));
+    await this.sendPushNotification(recipients_ids, message);
 
     return pushEvent.visibleParams();
   }
