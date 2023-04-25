@@ -119,11 +119,7 @@ class PacketProcessor {
         this.isAllowedForOfflineStorage(uPacket) &&
           this.operationsLogRepository.savePacket(uId, uPacket);
 
-        if (uPacket.message_reed) {
-          this.pushNotificationsRepository.sendPushNotification([uId], uPacket);
-          return;
-        }
-        offlineUsersByPackets.push(uId);
+        !uPacket.message_reed && offlineUsersByPackets.push(uId);
         return;
       }
       this.#deliverToUserDevices(ws, userNodeData, uId, uPacket);
