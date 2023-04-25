@@ -11,11 +11,11 @@
   request: {
     user_create: {
       login: "user_1",
-      password: "user_paswword_1",
+      password: "user_paswword_1"
     },
-    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c",
-  },
-};
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
+  }
+}
 
 {
   response: {
@@ -24,7 +24,7 @@
       created_at: "2022-10-13T13:11:04.447Z",
       updated_at: "2022-10-13T13:11:04.447Z",
       login :"user_1",
-      id: "63480e68f4794709f802a2fa",
+      id: "63480e68f4794709f802a2fa"
     }
   }
 }
@@ -37,11 +37,11 @@
   request: {
     user_login: {
       login: "user_1",
-      password: "user_paswword_1",
+      password: "user_paswword_1"
     },
-    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c",
-  },
-};
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
+  }
+}
 
 {
   response: {
@@ -50,7 +50,7 @@
       created_at: "2022-10-13T13:11:04.447Z",
       updated_at: "2022-10-13T13:11:04.447Z",
       login :"user_1",
-      id: "63480e68f4794709f802a2fa",
+      id: "63480e68f4794709f802a2fa"
     },
     token: "..."
   }
@@ -63,11 +63,11 @@ Later, the subsequent logins can be done via `token`:
 {
   request: {
     user_login: {
-      token: "...",
+      token: "..."
     },
-    id: "3",
-  },
-};
+    id: "3"
+  }
+}
 
 { response: { id: "3", user: {...}, token: "..." } }
 ```
@@ -78,9 +78,9 @@ Later, the subsequent logins can be done via `token`:
 {
   request: {
     user_logout: {},
-    id: "3",
-  },
-};
+    id: "3"
+  }
+}
 
 { response: { id: "3", success: true } }
 ```
@@ -94,11 +94,11 @@ Later, the subsequent logins can be done via `token`:
       current_password: "...",
       new_password: "...",
       email: "...",
-      phone: "...",
+      phone: "..."
     },
-    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c",
-  },
-};
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
+  }
+}
 
 {
   response: {
@@ -119,9 +119,9 @@ Later, the subsequent logins can be done via `token`:
 {
   request: {
     user_delete: {},
-    id: "3",
-  },
-};
+    id: "3"
+  }
+}
 
 { response: { id: "3", success: true } }
 ```
@@ -139,9 +139,9 @@ Later, the subsequent logins can be done via `token`:
       },
       ignore_ids: [ "63077ad836b78c3d82af0866", "63077ad836b78c3d82af0868" ]
     },
-    id: "3",
-  },
-};
+    id: "3"
+  }
+}
 
 { response: { id: "3", users: [...]} }
 ```
@@ -166,11 +166,11 @@ Later, the subsequent logins can be done via `token`:
         { type: "work", value: "..." },
         { type: "home", value: "..." },
         ...
-        ],
+        ]
     },
-    id: "4",
-   },
-};
+    id: "4"
+   }
+}
 
 {
   response: {
@@ -191,7 +191,7 @@ Later, the subsequent logins can be done via `token`:
         ...
         ],
       updated_at: "",
-      created_at: "",
+      created_at: ""
     }
   }
 }
@@ -210,20 +210,20 @@ Later, the subsequent logins can be done via `token`:
         last_name: "Surname",
         company: "UserCompany",
         email: [ { type: "work", value: "..." } ],
-        phone: [ { type: "home", value: "..." } ],
+        phone: [ { type: "home", value: "..." } ]
       },
       {
         first_name: "Name2",
         last_name: "Surname2",
         company: "UserCompany2",
         email: [ { type: "work", value: "..." } ],
-        phone: [ { type: "home", value: "..." } ],
+        phone: [ { type: "home", value: "..." } ]
       },
       ...
-    ],
-    id: "5",
-   },
-};
+    ]
+    id: "5"
+   }
+}
 
 {
   response: {
@@ -237,7 +237,7 @@ Later, the subsequent logins can be done via `token`:
         email: [ { type: "home", value: "..." } ],
         phone: [ { type: "home", value: "...",  matched_user_id: "uId7" } ],
         updated_at: "",
-        created_at: "",
+        created_at: ""
       },
       {
         _id: "63480e68f4794709f802a2fy",
@@ -247,7 +247,7 @@ Later, the subsequent logins can be done via `token`:
         email: [ { type: "home", value: "..." } ],
         phone: [ { type: "home", value: "...",  matched_user_id: "uId6" } ],
         updated_at: "",
-        created_at: "",
+        created_at: ""
       }
     ]
   }
@@ -273,11 +273,11 @@ Later, the subsequent logins can be done via `token`:
         { type: "work", value: "..." },
         { type: "home", value: "..." },
         ...
-        ],
+        ]
     },
-    id: "14",
-   },
-};
+    id: "14"
+   }
+}
 
 {
   response: {
@@ -298,7 +298,7 @@ Later, the subsequent logins can be done via `token`:
         ...
         ],
       updated_at: "",
-      created_at: "",
+      created_at: ""
     }
   }
 }
@@ -329,7 +329,7 @@ Later, the subsequent logins can be done via `token`:
         email: [ { type: "home", value: "..." } ],
         phone: [ { type: "home", value: "...",  matched_user_id: "uId7" } ],
         updated_at: "",
-        created_at: "",
+        created_at: ""
       },
       {
         _id: "63480e68f4794709f802a2fy",
@@ -339,7 +339,7 @@ Later, the subsequent logins can be done via `token`:
         email: [ { type: "home", value: "..." } ],
         phone: [ { type: "home", value: "...",  matched_user_id: "uId6" } ],
         updated_at: "",
-        created_at: "",
+        created_at: ""
       }
     ]
   }
@@ -352,11 +352,11 @@ Later, the subsequent logins can be done via `token`:
 {
   request: {
     contact_delete: {
-      id: "63480e68f4794709f802a2fa",
+      id: "63480e68f4794709f802a2fa"
     },
-    id: "14",
-   },
-};
+    id: "14"
+   }
+}
 
 { response: { id: "14", success: true } }
 ```
@@ -372,11 +372,11 @@ A `id` param is required.
       name: "ChantName",
       description: "Description",
       type: "g"
-      participants: [ "63077ad836b78c3d82af0812", "63077ad836b78c3d82af0866" ],
+      participants: [ "63077ad836b78c3d82af0812", "63077ad836b78c3d82af0866" ]
     },
-    id: "4",
-   },
-};
+    id: "4"
+   }
+}
 
 { response: { id: "4", conversation: {...} } }
 ```
@@ -400,11 +400,11 @@ If the value of the `type` param is equal to `y`, then the `opponent_id` param i
       participants: {
         add: [ "63077ad836b78c3d82af0812", "63077ad836b78c3d82af0832" ],
         remove: [ "63077ad836b78c3d82af0816" ],
-      },
+      }
     },
-    id: "5",
-  },
-};
+    id: "5"
+  }
+}
 
 { response: { id: "5", conversation: {...} } }
 ```
@@ -415,11 +415,11 @@ If the value of the `type` param is equal to `y`, then the `opponent_id` param i
 {
   request: {
     conversation_delete: {
-      id: "63077ad836b78c3d82af0812",
+      id: "63077ad836b78c3d82af0812"
     },
-    id: "4",
-  },
-};
+    id: "4"
+  }
+}
 
 { response: { id: "4", success: true } }
 ```
@@ -432,12 +432,12 @@ If the value of the `type` param is equal to `y`, then the `opponent_id` param i
     conversation_list: {
       limit: 67,
       updated_at: {
-        gt: timestamp_in_ms,
-      },
+        gt: timestamp_in_ms
+      }
     },
-    id: "7",
-  },
-};
+    id: "7"
+  }
+}
 
 {
   response: {
@@ -456,7 +456,7 @@ If the value of the `type` param is equal to `y`, then the `opponent_id` param i
           _id :"507f191e810c19729de860ea",
           body: "Any news on the recent decision?",
           from: "507f191e810c19729de880ee",
-          t: 15673838833,
+          t: 15673838833
         },
         unread_messages_count: 2
       }
@@ -557,11 +557,11 @@ On each message sent to server - a server will deliver back to client a simple p
       cid: "63077ad836b78c3d82af0812",
       limit: 27,
       updated_at: {
-        gt: timestamp_in_ms,
-      },
+        gt: timestamp_in_ms
+      }
     },
-    id: "ef5326a5-b16b-4f75-9e88-cc42e5fea016",
-  };
+    id: "ef5326a5-b16b-4f75-9e88-cc42e5fea016"
+  }
 }
 
 {
@@ -574,7 +574,7 @@ On each message sent to server - a server will deliver back to client a simple p
         cid: "63563a2ad745dc1c6ad01b5f",
         from: "63480e68f4794709f802a2fa",
         status: "sent",
-        t: 1668680757,
+        t: 1668680757
       }
     ]
   }
@@ -589,11 +589,11 @@ On each message sent to server - a server will deliver back to client a simple p
   request: {
     message_read: {
       cid: "63077ad836b78c3d82af0812",
-      ids: [63480e68f4794709f802a2fa, 63077ad836b78c3d82af0866],
+      ids: [63480e68f4794709f802a2fa, 63077ad836b78c3d82af0866]
     },
-    id: "3",
-  },
-};
+    id: "3"
+  }
+}
 
 { response: { id: "3", success: true } }
 ```
@@ -605,11 +605,11 @@ Then, all the users whose messages we read will receive the following message:
 ```
 {
   message_read: {
-    cid: "63077ad836b78c3d82af0812"
+    cid: "63077ad836b78c3d82af0812",
     ids: ["63480e68f4794709f802a2fa", "63077ad836b78c3d82af0866"],
     from: "634ec51c0b65918393dca5bf"
-  },
-};
+  }
+}
 ```
 
 ## Message typing
@@ -639,13 +639,13 @@ Can delete for current user or for all users in a conversation.
 {
   request: {
     message_delete: {
-      cid: "63077ad836b78c3d82af0812"
+      cid: "63077ad836b78c3d82af0812",
       ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
       type: "myself" | "all"
     },
-    id: "4",
-  },
-};
+    id: "4"
+  }
+}
 
 { response: { id: "4", success: true } }
 ```
@@ -655,12 +655,12 @@ If use "all", then other users in this conversation who is online will receive t
 ```
 {
   message_delete: {
-    cid: "63077ad836b78c3d82af0812"
+    cid: "63077ad836b78c3d82af0812",
     ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
     type: "all",
     from: "634ec51c0b65918393dca5bf"
-  },
-};
+  }
+}
 ```
 
 If users are offline, they will receive a message once became online.
@@ -676,9 +676,9 @@ A message sender can edit own message.
       id: "63077ad836b78c3d82af0812",
       body: "updated message body"
     },
-    id: "4",
-  },
-};
+    id: "4"
+  }
+}
 
 { response: { id: "4", success: true } }
 ```
@@ -689,13 +689,137 @@ Then other users in this conversation who is online will receive the following m
 {
   message_edit: {
     id: "63077ad836b78c3d82af0812",
-    body: "updated message body"
+    body: "updated message body",
     from: "634ec51c0b65918393dca5bf"
-  },
-};
+  }
+}
 ```
 
 If users are offline, they will receive a message once became online.
+
+## Create Push Subscription
+
+```
+{
+  request: {
+    push_subscription_create: {
+      platform: "web",
+      web_endpoint: 'enpoint',
+      web_key_auth: 'auth',
+      web_key_p256dh: 'p256dh',
+      device_udid: "deviceId"
+    },
+    id: "1",
+  },
+};
+
+{
+  response: {
+    id: "1",
+    subscription: {
+      _id: "644156fea451b5950d13d0e8",
+      platform: 'web',
+      web_endpoint: 'enpoint',
+      web_key_auth: 'auth',
+      web_key_p256dh: 'p256dh',
+      device_udid: 'deviceId',
+      user_id: "644156fea451b5950d13d0e5",
+      created_at: "",
+      updated_at: ""
+    }
+  }
+}
+```
+
+## Push Subscriptions list
+
+```
+{
+  request: {
+    push_subscription_list: {
+      user_id: "644157e316eec28e3dfb8b31"
+    },
+    id: "1"
+  }
+}
+
+{
+  response: {
+    id: 1,
+    subscriptions: [
+      {
+        _id: "644157e316eec28e3dfb8b34",
+        platform: 'web',
+        web_endpoint: 'enpoint1',
+        web_key_auth: 'auth1',
+        web_key_p256dh: 'p256dh1',
+        device_udid: 'deviceId1',
+        user_id: "644157e316eec28e3dfb8b31",
+        created_at: "",
+        updated_at: ""
+      },
+      {
+        _id: "644157e316eec28e3dfb8b35",
+        platform: 'ios',
+        web_endpoint: 'enpoint2',
+        web_key_auth: 'auth2',
+        web_key_p256dh: 'p256dh2',
+        device_udid: 'deviceId2',
+        user_id: "644157e316eec28e3dfb8b31",
+        created_at: "",
+        updated_at: ""
+      }
+    ]
+  }
+}
+
+```
+
+## Push Subscription delete
+
+```
+{
+  request: {
+    push_subscription_delete: {
+      device_udid: "deviceId"
+    },
+    id: "1"
+  }
+}
+
+{ response: { id: 1, success: true } }
+```
+
+## Create Push Event
+
+```
+{
+  request: {
+    push_event_create: {
+      recipients_ids: ["644157e316eec28e3dfb8b31", "644157e316eec28e3dfb8b32"],
+      message: {
+        title: "Title",
+        body: "Message body"
+      }
+    },
+    id: 1
+  }
+}
+
+{
+  response: {
+    id: 1,
+    event: {
+      _id: "64415891066758fe6754f477",
+      user_id: '64415890066758fe6754f472',
+      recipients_ids: ["644157e316eec28e3dfb8b31", "644157e316eec28e3dfb8b32"],
+      message: '{"title":"Title","body":"Message body"}',
+      created_at: "",
+      updated_at: ""
+    }
+  }
+}
+```
 
 ## Carbons
 
@@ -709,11 +833,11 @@ A user can request last activity of other users:
 {
   request: {
     user_last_activity: {
-      ids: [uid1, uid2, uid3],  // max 10 uids per request
+      ids: [uid1, uid2, uid3]  // max 10 uids per request
     },
-    id: "4",
-  },
-};
+    id: "4"
+  }
+}
 
 {
   response: {
@@ -721,7 +845,7 @@ A user can request last activity of other users:
     last_activity: {
       uid1: num_of_seconds,
       uid2: "online",
-      uid3: num_of_seconds,
+      uid3: num_of_seconds
     }
   }
 }
@@ -745,7 +869,7 @@ There is a way to subscribe to some user activity status upodate in real-time:
   response: {
     id: "4",
     last_activity: {
-      uid1: "online" | <last_activity-time>,
+      uid1: "online" | <last_activity-time>
     }
   }
 }
@@ -770,10 +894,10 @@ TBA
  request: {
   op_log_list: {
     created_at: {
-       gt: timestamp_in_ms,
+       gt: timestamp_in_ms
     },
   },
-  id: "453",
+  id: "453"
  }
 }
 ```
@@ -793,27 +917,25 @@ TBA
       packet: { ... }
     }
   ],
-  id: "453",
+  id: "453"
  }
 }
 ```
 
 `gt` or `lt`param is required
 
-## Attachments
-
-Create file upload url:
+## Attachments create file upload url
 
 ```
 {
   request: {
     create_files: [
       { name: "1.png", size: 240, content_type: "image/png" },
-      { name: "2.jpeg", size: 760, content_type: "image/jpeg" },
+      { name: "2.jpeg", size: 760, content_type: "image/jpeg" }
     ],
-    id: "4",
-  },
-};
+    id: "4"
+  }
+}
 
 {
   response: {
@@ -832,23 +954,23 @@ Create file upload url:
         size: 760,
         content_type: "image/jpeg",
         upload_url: "https://...."
-      },
+      }
     ]
   }
 }
 ```
 
-Get file download url:
+## Get file download url
 
 ```
 {
   request: {
     get_file_urls: {
-      file_ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
-    }
-    id: "5",
-  },
-};
+      file_ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"]
+    },
+    id: "5"
+  }
+}
 
 {
   response: {
@@ -861,9 +983,7 @@ Get file download url:
 }
 ```
 
-## Block list
-
-Block user:
+## Block user
 
 ```
 {
@@ -871,9 +991,9 @@ Block user:
     block_user: {
       id: "63077ad836b78c3d82af0812"
     },
-    id: "4",
-  },
-};
+    id: "4"
+  }
+}
 
 {
   response: {
@@ -883,7 +1003,7 @@ Block user:
 }
 ```
 
-Unblock user:
+## Unblock user
 
 ```
 {
@@ -891,9 +1011,9 @@ Unblock user:
     unblock_user: {
       id: "63077ad836b78c3d82af0812"
     },
-    id: "5",
-  },
-};
+    id: "5"
+  }
+}
 
 {
   response: {
@@ -903,15 +1023,15 @@ Unblock user:
 }
 ```
 
-Get blocked users list:
+## Get blocked users list
 
 ```
 {
   request: {
     list_blocked_users: {},
-    id: "5",
-  },
-};
+    id: "5"
+  }
+}
 
 {
   response: {
@@ -920,10 +1040,6 @@ Get blocked users list:
   }
 }
 ```
-
-## Push notifications
-
-TBA
 
 ## PubSub
 

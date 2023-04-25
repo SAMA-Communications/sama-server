@@ -1,20 +1,25 @@
 import ConversationParticipant from "../models/conversation_participant.js";
 import OpLog from "../models/operations_log.js";
 import OperationsLogRepository from "../repositories/operations_log_repository.js";
+import PushNotificationsRepository from "../repositories/push_notifications_repository.js";
+import PushSubscription from "../models/push_subscription.js";
 import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
+import clusterManager from "../cluster/cluster_manager.js";
 import ip from "ip";
 import { ACTIVE } from "../store/session.js";
 import { ACTIVITY } from "../store/activity.js";
 import { ERROR_STATUES } from "../validations/constants/errors.js";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
 import { default as LastActivityiesController } from "../controllers/activities.js";
-import clusterManager from "../cluster/cluster_manager.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
 import { routes } from "./routes.js";
 
 class PacketProcessor {
   constructor() {
+    this.pushNotificationsRepository = new PushNotificationsRepository(
+      PushSubscription
+    );
     this.operationsLogRepository = new OperationsLogRepository(OpLog);
     this.sessionRepository = new SessionRepository(ACTIVE);
     this.jsonRequest = routes;
@@ -106,26 +111,26 @@ class PacketProcessor {
         )
       ).map((obj) => obj.user_id);
 
+    const offlineUsersByPackets = [];
     participants.forEach(async (uId) => {
       const userNodeData = await this.sessionRepository.getUserNodeData(uId);
+      const uPacket = packetsMapOrPacket[uId] || packetsMapOrPacket;
       if (!userNodeData?.length) {
-        this.isAllowedForOfflineStorage(
-          packetsMapOrPacket[uId] || packetsMapOrPacket
-        ) &&
-          this.perationsLogRepository.savePacket(
-            uId,
-            packetsMapOrPacket[uId] || packetsMapOrPacket
-          );
+        this.isAllowedForOfflineStorage(uPacket) &&
+          this.operationsLogRepository.savePacket(uId, uPacket);
+
+        !uPacket.message_reed && offlineUsersByPackets.push(uId);
         return;
       }
-
-      this.#deliverToUserDevices(
-        ws,
-        userNodeData,
-        uId,
-        packetsMapOrPacket[uId] || packetsMapOrPacket
-      );
+      this.#deliverToUserDevices(ws, userNodeData, uId, uPacket);
     });
+
+    if (offlineUsersByPackets.length) {
+      this.pushNotificationsRepository.sendPushNotification(
+        offlineUsersByPackets,
+        packetsMapOrPacket
+      );
+    }
   }
 
   async #processJsonMessage(ws, json) {
@@ -186,7 +191,7 @@ class PacketProcessor {
         "[cluster_manager][deliverClusterMessageToUser] error",
         err
       );
-      this.isAllowedForOfflineStorage(request) &&
+      this.isAllowedForOfflineStorage(message) &&
         this.perationsLogRepository.savePacket(userId, message);
     }
   }

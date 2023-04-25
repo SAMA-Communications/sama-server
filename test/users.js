@@ -11,10 +11,6 @@ let userLogin = [...Array(30)]
 describe("User cycle", async () => {
   before(async () => {
     await connectToDBPromise();
-  });
-
-  after(async () => {
-    await getClient().close();
     await User.clearCollection();
   });
 
@@ -522,5 +518,10 @@ describe("User cycle", async () => {
       assert.notEqual(responseData.response.success, undefined);
       assert.equal(responseData.response.error, undefined);
     });
+  });
+
+  after(async () => {
+    await getClient().close();
+    await User.clearCollection();
   });
 });
