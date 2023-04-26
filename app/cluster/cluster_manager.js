@@ -123,24 +123,6 @@ class ClusterManager {
           delete this.clusterNodesWS[nodeIp];
           return;
         }
-
-        if (navigator.onLine && document.visibilityState === "visible") {
-          this.createLocalSocket(appOptions, wsOptions, listenOptions, isSSL);
-        } else {
-          window.addEventListener("online", function () {
-            this.createLocalSocket(appOptions, wsOptions, listenOptions, isSSL);
-          });
-          document.addEventListener("visibilitychange", function () {
-            if (document.visibilityState === "visible") {
-              this.createLocalSocket(
-                appOptions,
-                wsOptions,
-                listenOptions,
-                isSSL
-              );
-            }
-          });
-        }
       },
 
       message: async (ws, message, isBinary) => {
