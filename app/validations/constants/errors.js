@@ -5,6 +5,7 @@ export const ERROR_STATUES = {
   BAD_REQUEST: { status: 400, message: "Bad Request" },
   INCORRECT_TYPE: { status: 422, message: "Incorrect type" },
   INCORRECT_TOKEN: { status: 422, message: "Incorrect token" },
+  TOKEN_EXPIRED: { status: 422, message: "Token expired" },
   // Users -->
   USER_ID_MISSED: { status: 422, message: "User ID missed" },
   USER_NOT_FOUND: { status: 422, message: "User not found" },

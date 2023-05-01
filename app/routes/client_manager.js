@@ -1,10 +1,10 @@
-import uWS from "uWebSockets.js";
 import SessionRepository from "../repositories/session_repository.js";
+import clusterManager from "../cluster/cluster_manager.js";
 import ip from "ip";
+import uWS from "uWebSockets.js";
 import { ACTIVE } from "../store/session.js";
 import { StringDecoder } from "string_decoder";
 import { default as PacketProcessor } from "./packet_processor.js";
-import clusterManager from "../cluster/cluster_manager.js";
 const decoder = new StringDecoder("utf8");
 const sessionRepository = new SessionRepository(ACTIVE);
 
@@ -18,7 +18,7 @@ class ClientManager {
       this.#localSocket = uWS.App(appOptions);
     }
 
-    this.#localSocket .ws("/*", {
+    this.#localSocket.ws("/*", {
       ...wsOptions,
 
       open: (ws) => {
@@ -63,7 +63,11 @@ class ClientManager {
         );
 
         if (responseData) {
-          ws.send(JSON.stringify(responseData));
+          try {
+            ws.send(JSON.stringify(responseData));
+          } catch (e) {
+            console.error("[ClientManager] connection with client ws is lost");
+          }
         }
       },
     });
