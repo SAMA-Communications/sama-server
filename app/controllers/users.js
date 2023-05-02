@@ -106,8 +106,12 @@ class UsersController extends BaseController {
         }
       });
       wsToClose.forEach((ws) => {
-        ws.send(JSON.stringify({ error: "Device replacement" }));
-        ws.close();
+        try {
+          ws.send(JSON.stringify({ error: "Device replacement" }));
+          ws.close();
+        } catch (e) {
+          console.log("[ClientManager] missing connection with ws client");
+        }
       });
       ACTIVE.DEVICES[userId] = [...devices, { ws, deviceId }];
     } else {
