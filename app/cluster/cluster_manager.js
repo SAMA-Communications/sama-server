@@ -45,19 +45,27 @@ class ClusterManager {
 
       const url = buildWsEndpoint(ip, port);
       if (!url) {
-        reject("[ClusterManager][createSocketWithNode] can't create To Node Socket w/o url");
+        reject(
+          "[ClusterManager][createSocketWithNode] can't create To Node Socket w/o url"
+        );
         return;
       }
 
       const ws = new WebSocket(url);
 
       ws.on("error", async (event) => {
-        console.error("[ClusterManager][createSocketWithNode] ws on Error", event);
+        console.error(
+          "[ClusterManager][createSocketWithNode] ws on Error",
+          event
+        );
         reject("[ClusterManager][createSocketWithNode] ws on error");
       });
 
       ws.on("open", async () => {
-        console.log("[ClusterManager][createSocketWithNode] ws on Open", `url ${ws.url}`);
+        console.log(
+          "[ClusterManager][createSocketWithNode] ws on Open",
+          `url ${ws.url}`
+        );
         this.#shareCurrentNodeInfo(ws);
       });
 
@@ -79,7 +87,10 @@ class ClusterManager {
       });
 
       ws.on("close", async () => {
-        console.log("[ClusterManager][createSocketWithNode] ws on Close", ws.url);
+        console.log(
+          "[ClusterManager][createSocketWithNode] ws on Close",
+          ws.url
+        );
         delete this.clusterNodesWS[getIpFromWsUrl(ws.url)];
       });
     });
@@ -134,7 +145,9 @@ class ClusterManager {
     this.#localSocket.listen(0, listenOptions, (listenSocket) => {
       if (listenSocket) {
         const clusterPort = uWS.us_socket_local_port(listenSocket);
-        console.log(`[ClusterManager][createLocalSocket] listening on port ${clusterPort}`);
+        console.log(
+          `[ClusterManager][createLocalSocket] listening on port ${clusterPort}`
+        );
         this.clusterPort = clusterPort;
       } else {
         throw "[ClusterManager][createLocalSocket] socket.listen error: can't allocate port";

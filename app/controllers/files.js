@@ -40,7 +40,7 @@ class FilesController extends BaseController {
       );
       urls[objectIds[i]] = fileUrl;
     }
-    console.log("urls: ", urls);
+
     return { response: { id: requestId, file_urls: urls } };
   }
 }
