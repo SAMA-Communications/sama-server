@@ -27,7 +27,7 @@ export default class Spaces extends BaseStorage {
       return await getSignedUrl(
         this.spacesClient,
         new PutObjectCommand(bucketParams),
-        { expiresIn: process.env.SPACES_EXPIRES_IN }
+        { expiresIn: process.env.FILE_UPLOAD_URL_EXPIRES_IN }
       );
     } catch (e) {
       console.log(e);
@@ -44,7 +44,7 @@ export default class Spaces extends BaseStorage {
       return await getSignedUrl(
         this.spacesClient,
         new GetObjectCommand(bucketParams),
-        { expiresIn: process.env.SPACES_EXPIRES_IN }
+        { expiresIn: process.env.FILE_UPLOAD_URL_EXPIRES_IN }
       );
     } catch (e) {
       console.log(e);

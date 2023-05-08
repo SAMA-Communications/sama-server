@@ -20,7 +20,7 @@ export default class Minio extends BaseStorage {
       const presignedUrl = await this.minioClient.presignedPutObject(
         process.env.MINIO_BUCKET_NAME,
         objectId,
-        process.env.MINIO_SESSION_TOKEN_EXPIRES_IN
+        process.env.FILE_UPLOAD_URL_EXPIRES_IN
       );
       return { objectId: objectId, url: presignedUrl };
     } catch (err) {
