@@ -5,18 +5,28 @@ import clientManager from "./app/routes/client_manager.js";
 import clusterManager from "./app/cluster/cluster_manager.js";
 
 // get MongoDB driver connection
-import { connectToDB } from "./app/lib/db.js";
 import Minio from "./app/lib/storage/minio.js";
 import S3 from "./app/lib/storage/s3.js";
+import Spaces from "./app/lib/storage/spaces.js";
+import { connectToDB } from "./app/lib/db.js";
 
 //cache storage
 import BlockListRepository from "./app/repositories/blocklist_repository.js";
+import ClusterSyncer from "./app/cluster/cluster_syncer.js";
 import ConversationRepository from "./app/repositories/conversation_repository.js";
 import RedisClient from "./app/lib/redis.js";
-import ClusterSyncer from "./app/cluster/cluster_syncer.js";
 
-globalThis.storageClient =
-  process.env.STORAGE_DRIVER === "minio" ? new Minio() : new S3();
+switch (process.env.STORAGE_DRIVER) {
+  case "minio":
+    globalThis.storageClient = new Minio();
+    break;
+  case "spaces":
+    globalThis.storageClient = new Spaces();
+    break;
+  default:
+    globalThis.storageClient = new S3();
+    break;
+}
 
 const APP_OPTIONS = {};
 const SSL_APP_OPTIONS = {
