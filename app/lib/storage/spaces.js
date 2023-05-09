@@ -16,13 +16,12 @@ export default class Spaces extends BaseStorage {
     });
   }
 
-  async getUploadUrl(key, contentType) {
+  async getUploadUrl(fileName, contentType) {
+    const objectId = getUniqueId(fileName);
     try {
-      const objectId = getUniqueId(key);
       const bucketParams = {
         Bucket: process.env.SPACES_BUCKET_NAME,
         Key: objectId,
-        ContentType: contentType || "image/png",
       };
 
       const presignedUrl = await getSignedUrl(
@@ -30,18 +29,17 @@ export default class Spaces extends BaseStorage {
         new PutObjectCommand(bucketParams),
         { expiresIn: process.env.FILE_UPLOAD_URL_EXPIRES_IN }
       );
-      console.log("getUploadUrl response: ", { objectId, url: presignedUrl });
       return { objectId, url: presignedUrl };
-    } catch (e) {
-      console.log(e);
+    } catch (err) {
+      return err;
     }
   }
 
-  async getDownloadUrl(key) {
+  async getDownloadUrl(fileId) {
     try {
       const bucketParams = {
         Bucket: process.env.SPACES_BUCKET_NAME,
-        Key: key,
+        Key: fileId,
       };
 
       return await getSignedUrl(
@@ -49,8 +47,8 @@ export default class Spaces extends BaseStorage {
         new GetObjectCommand(bucketParams),
         { expiresIn: process.env.FILE_UPLOAD_URL_EXPIRES_IN }
       );
-    } catch (e) {
-      console.log(e);
+    } catch (err) {
+      return err;
     }
   }
 }
