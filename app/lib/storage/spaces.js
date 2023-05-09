@@ -1,4 +1,5 @@
 import BaseStorage from "./base.js";
+import getUniqueId from "../../utils/uuid.js";
 import { PutObjectCommand, S3, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
