@@ -16,8 +16,9 @@ export default class Minio extends BaseStorage {
 
   async getUploadUrl(fileName) {
     const objectId = getUniqueId(fileName);
+    console.log("Minio getUploadUrl in");
     try {
-      const presignedUrl = await this.minioClient.presignedPutObject(
+      const presignedUrl = this.minioClient.presignedPutObject(
         process.env.MINIO_BUCKET_NAME,
         objectId,
         process.env.FILE_UPLOAD_URL_EXPIRES_IN
@@ -25,13 +26,14 @@ export default class Minio extends BaseStorage {
       console.log("getUploadUrl response: ", { objectId, url: presignedUrl });
       return { objectId, url: presignedUrl };
     } catch (err) {
+      console.log("Error: ", err);
       return err;
     }
   }
 
   async getDownloadUrl(fileId) {
     try {
-      return await this.minioClient.presignedGetObject(
+      return this.minioClient.presignedGetObject(
         process.env.MINIO_BUCKET_NAME,
         fileId
       );
