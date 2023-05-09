@@ -22,6 +22,7 @@ class FilesController extends BaseController {
 
       resFiles.push({ ...file.visibleParams(), upload_url: url });
     }
+    console.log("ResponseFile: ", resFiles);
 
     return { response: { id: requestId, files: resFiles } };
   }

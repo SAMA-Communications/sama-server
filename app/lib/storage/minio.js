@@ -22,6 +22,7 @@ export default class Minio extends BaseStorage {
         objectId,
         process.env.FILE_UPLOAD_URL_EXPIRES_IN
       );
+      console.log("getUploadUrl response: ", { objectId, url: presignedUrl });
       return { objectId, url: presignedUrl };
     } catch (err) {
       return err;
