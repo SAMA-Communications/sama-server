@@ -12,6 +12,7 @@ class FilesController extends BaseController {
     const resFiles = [];
     for (let i = 0; i < reqFiles.length; i++) {
       //TODO: update from many to one request if it posible
+      console.log("GlobalThis: ", globalThis.storageClient);
       const { objectId, url } = await globalThis.storageClient.getUploadUrl(
         reqFiles[i].name
       );
@@ -22,6 +23,7 @@ class FilesController extends BaseController {
 
       resFiles.push({ ...file.visibleParams(), upload_url: url });
     }
+    console.log("Files response: ", resFiles);
 
     return { response: { id: requestId, files: resFiles } };
   }
