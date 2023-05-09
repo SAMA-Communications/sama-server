@@ -17,20 +17,20 @@ export default class Spaces extends BaseStorage {
 
   async getUploadUrl(key, contentType) {
     try {
+      const objectId = getUniqueId(key);
       const bucketParams = {
         Bucket: process.env.SPACES_BUCKET_NAME,
-        Key: key,
+        Key: objectId,
         ContentType: contentType || "image/png",
       };
 
-      //CreatePresignedPost
-      const url = await getSignedUrl(
+      const presignedUrl = await getSignedUrl(
         this.spacesClient,
         new PutObjectCommand(bucketParams),
         { expiresIn: process.env.FILE_UPLOAD_URL_EXPIRES_IN }
       );
-      console.log("URL: ", url);
-      return url;
+      console.log("getUploadUrl response: ", { objectId, url: presignedUrl });
+      return { objectId, url: presignedUrl };
     } catch (e) {
       console.log(e);
     }
