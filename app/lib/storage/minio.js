@@ -6,7 +6,7 @@ export default class Minio extends BaseStorage {
   constructor(params) {
     super(params);
     this.minioClient = new Client({
-      endPoint: process.env.MINIO_END_POINT,
+      endPoint: process.env.MINIO_ENDPOINT,
       port: +process.env.MINIO_PORT,
       useSSL: process.env.MINIO_USE_SSL == "true",
       accessKey: process.env.MINIO_ACCESS_KEY,
