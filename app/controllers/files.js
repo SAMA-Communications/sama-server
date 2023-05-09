@@ -10,13 +10,12 @@ class FilesController extends BaseController {
     const { id: requestId, create_files: reqFiles } = data;
 
     const resFiles = [];
-    console.log("Input files: ", reqFiles);
     for (let i = 0; i < reqFiles.length; i++) {
       //TODO: update from many to one request if it posible
-      console.log("GlobalThis: ", globalThis.storageClient);
       const { objectId, url } = await globalThis.storageClient.getUploadUrl(
         reqFiles[i].name
       );
+      console.log("Response of create url: ", { objectId, url });
       reqFiles[i]["object_id"] = objectId;
 
       const file = new File(reqFiles[i]);
