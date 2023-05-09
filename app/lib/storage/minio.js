@@ -21,7 +21,7 @@ export default class Minio extends BaseStorage {
       const presignedUrl = this.minioClient.presignedPutObject(
         process.env.MINIO_BUCKET_NAME,
         objectId,
-        process.env.FILE_UPLOAD_URL_EXPIRES_IN
+        +process.env.FILE_UPLOAD_URL_EXPIRES_IN
       );
       console.log("getUploadUrl response: ", { objectId, url: presignedUrl });
       return { objectId, url: presignedUrl };
