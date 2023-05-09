@@ -1,6 +1,6 @@
-import { Client } from "minio";
-import getUniqueId from "../../utils/uuid.js";
 import BaseStorage from "./base.js";
+import getUniqueId from "../../utils/uuid.js";
+import { Client } from "minio";
 
 export default class Minio extends BaseStorage {
   constructor(params) {

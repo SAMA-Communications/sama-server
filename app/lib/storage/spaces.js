@@ -10,20 +10,19 @@ export default class Spaces extends BaseStorage {
       endpoint: process.env.SPACES_ENPOINT,
       region: process.env.SPACES_REGION,
       credentials: {
-        accessKeyId: process.env.SPACES_KEY,
-        secretAccessKey: process.env.SPACES_SECRET,
+        accessKeyId: process.env.SPACES_ACCESS_KEY,
+        secretAccessKey: process.env.SPACES_SECRET_KEY,
       },
     });
   }
 
-  async getUploadUrl(fileName, contentType) {
+  async getUploadUrl(fileName) {
     const objectId = getUniqueId(fileName);
     try {
       const bucketParams = {
         Bucket: process.env.SPACES_BUCKET_NAME,
         Key: objectId,
       };
-
       const presignedUrl = await getSignedUrl(
         this.spacesClient,
         new PutObjectCommand(bucketParams),
@@ -41,7 +40,6 @@ export default class Spaces extends BaseStorage {
         Bucket: process.env.SPACES_BUCKET_NAME,
         Key: fileId,
       };
-
       return await getSignedUrl(
         this.spacesClient,
         new GetObjectCommand(bucketParams),
