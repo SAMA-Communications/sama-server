@@ -55,16 +55,13 @@ class ClientManager {
       message: async (ws, message, isBinary) => {
         const json = JSON.parse(decoder.write(Buffer.from(message)));
 
-        let requestData = JSON.parse(decoder.write(Buffer.from(message)));
-        requestData?.request?.user_login &&
-          requestData.request.user_login.password &&
-          (requestData.request.user_login.password = "********");
-
+        let consoleMessage = JSON.parse(decoder.write(Buffer.from(message)));
+        consoleMessage?.request?.user_login.password &&
+          (consoleMessage.request.user_login.password = "********");
         console.log(
           `[ClientManager] ws on message (pid=${process.pid})`,
-          requestData
+          consoleMessage
         );
-        console.log("Info: ", requestData, json);
 
         const responseData = await PacketProcessor.processJsonMessageOrError(
           ws,
