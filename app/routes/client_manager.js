@@ -57,12 +57,14 @@ class ClientManager {
 
         let requestData = json;
         requestData?.request?.user_login &&
-          (requestData.request.user_login["password"] = "********");
+          requestData.request.user_login.password &&
+          (requestData.request.user_login.password = "********");
 
         console.log(
           `[ClientManager] ws on message (pid=${process.pid})`,
           requestData
         );
+        console.log("Info: ", requestData, json);
 
         const responseData = await PacketProcessor.processJsonMessageOrError(
           ws,
