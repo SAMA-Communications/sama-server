@@ -55,7 +55,7 @@ class ClientManager {
       message: async (ws, message, isBinary) => {
         const json = JSON.parse(decoder.write(Buffer.from(message)));
 
-        let requestData = Object.assign({}, json);
+        let requestData = { ...json };
         requestData?.request?.user_login &&
           requestData.request.user_login.password &&
           (requestData.request.user_login.password = "********");
