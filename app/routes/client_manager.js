@@ -56,7 +56,7 @@ class ClientManager {
         const json = JSON.parse(decoder.write(Buffer.from(message)));
 
         let consoleMessage = JSON.parse(decoder.write(Buffer.from(message)));
-        consoleMessage?.request?.user_login.password &&
+        consoleMessage?.request?.user_login?.password &&
           (consoleMessage.request.user_login.password = "********");
         console.log(
           `[ClientManager] ws on message (pid=${process.pid})`,
