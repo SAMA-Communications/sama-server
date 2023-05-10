@@ -1,4 +1,5 @@
 import BaseStorage from "./base.js";
+import getUniqueId from "../../utils/uuid.js";
 import { PutObjectCommand, S3, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
@@ -9,45 +10,43 @@ export default class Spaces extends BaseStorage {
       endpoint: process.env.SPACES_ENPOINT,
       region: process.env.SPACES_REGION,
       credentials: {
-        accessKeyId: process.env.SPACES_KEY,
-        secretAccessKey: process.env.SPACES_SECRET,
+        accessKeyId: process.env.SPACES_ACCESS_KEY,
+        secretAccessKey: process.env.SPACES_SECRET_KEY,
       },
     });
   }
 
-  async getUploadUrl(key, contentType) {
+  async getUploadUrl(fileName) {
+    const objectId = getUniqueId(fileName);
     try {
       const bucketParams = {
         Bucket: process.env.SPACES_BUCKET_NAME,
-        Key: key,
-        ContentType: contentType,
+        Key: objectId,
       };
-
-      //CreatePresignedPost
-      return await getSignedUrl(
+      const presignedUrl = await getSignedUrl(
         this.spacesClient,
         new PutObjectCommand(bucketParams),
         { expiresIn: process.env.FILE_UPLOAD_URL_EXPIRES_IN }
       );
-    } catch (e) {
-      console.log(e);
+      return { objectId, url: presignedUrl };
+    } catch (err) {
+      return err;
     }
   }
 
-  async getDownloadUrl(key) {
+  async getDownloadUrl(fileId) {
     try {
       const bucketParams = {
         Bucket: process.env.SPACES_BUCKET_NAME,
-        Key: key,
+        Key: fileId,
       };
-
       return await getSignedUrl(
         this.spacesClient,
         new GetObjectCommand(bucketParams),
         { expiresIn: process.env.FILE_UPLOAD_URL_EXPIRES_IN }
       );
-    } catch (e) {
-      console.log(e);
+    } catch (err) {
+      return err;
     }
   }
 }
