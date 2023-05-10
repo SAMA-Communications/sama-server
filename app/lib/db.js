@@ -10,7 +10,7 @@ export function connectToDB(callback) {
     }
 
     const mongoURISplit = process.env.MONGODB_URL.split("/");
-    const dbName = mongoURISplit[mongoURISplit.length - 1];
+    const dbName = mongoURISplit[mongoURISplit.length - 1].split("?")[0];
 
     dbConnection = db.db(dbName);
 
@@ -22,7 +22,7 @@ export async function connectToDBPromise() {
   const db = await client.connect();
 
   const mongoURISplit = process.env.MONGODB_URL.split("/");
-  const dbName = mongoURISplit[mongoURISplit.length - 1];
+  const dbName = mongoURISplit[mongoURISplit.length - 1].split("?")[0];
 
   dbConnection = db.db(dbName);
 }
