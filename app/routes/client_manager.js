@@ -54,12 +54,15 @@ class ClientManager {
 
       message: async (ws, message, isBinary) => {
         const json = JSON.parse(decoder.write(Buffer.from(message)));
+        const consoleMessage = { ...json };
 
-        let consoleMessage = JSON.parse(decoder.write(Buffer.from(message)));
-        consoleMessage?.request?.user_login?.password &&
-          (consoleMessage.request.user_login.password = "********");
-        consoleMessage?.request?.user_create?.password &&
-          (consoleMessage.request.user_create.password = "********");
+        if (
+          consoleMessage?.request?.user_login?.password ||
+          consoleMessage?.request?.user_create?.password
+        ) {
+          consoleMessage.request[Object.keys(json.request)[0]].password =
+            "********";
+        }
         console.log(
           `[ClientManager] ws on message (pid=${process.pid})`,
           consoleMessage
