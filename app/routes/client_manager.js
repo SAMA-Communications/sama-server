@@ -54,7 +54,7 @@ class ClientManager {
 
       message: async (ws, message, isBinary) => {
         const json = JSON.parse(decoder.write(Buffer.from(message)));
-        const consoleMessage = { ...json };
+        const consoleMessage = JSON.parse(JSON.stringify(json));
 
         if (
           consoleMessage?.request?.user_login?.password ||
