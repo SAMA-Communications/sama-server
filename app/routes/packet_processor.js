@@ -112,7 +112,7 @@ class PacketProcessor {
       ).map((obj) => obj.user_id);
 
     const offlineUsersByPackets = [];
-    participants.forEach(async (uId) => {
+    for (const uId of participants) {
       const userNodeData = await this.sessionRepository.getUserNodeData(uId);
       const uPacket = packetsMapOrPacket[uId] || packetsMapOrPacket;
       if (!userNodeData?.length) {
@@ -120,10 +120,10 @@ class PacketProcessor {
           this.operationsLogRepository.savePacket(uId, uPacket);
 
         !uPacket.message_reed && offlineUsersByPackets.push(uId);
-        return;
+        continue;
       }
       this.#deliverToUserDevices(ws, userNodeData, uId, uPacket);
-    });
+    }
 
     if (offlineUsersByPackets.length) {
       this.pushNotificationsRepository.sendPushNotification(
