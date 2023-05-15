@@ -103,11 +103,14 @@ class ConversationsController extends BaseController {
         conversation_create: {
           ...conversationObj.visibleParams(),
           participants,
+          unread_messages_count: 0,
+          messagesIds: [],
         },
         message: {
           title: "User",
           body: "New chat",
         },
+        id: requestId,
       },
       conversationObj.params._id,
       participants

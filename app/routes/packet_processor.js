@@ -126,9 +126,12 @@ class PacketProcessor {
     }
 
     if (offlineUsersByPackets.length) {
+      const pushMessage = packetsMapOrPacket.message;
+      pushMessage && delete packetsMapOrPacket.message;
       this.pushNotificationsRepository.sendPushNotification(
         offlineUsersByPackets,
-        packetsMapOrPacket
+        packetsMapOrPacket,
+        pushMessage
       );
     }
   }
