@@ -25,7 +25,10 @@ export default class PushNotificationsRepository extends BaseRepository {
     if (!Object.keys(devices).length) {
       return;
     }
-    pushNotificationQueue.add({ devices, message });
+    pushNotificationQueue.add({
+      devices,
+      message: message.message ? message.message : message,
+    });
   }
 
   async createPushEvent(recipients_ids, user_id, message) {

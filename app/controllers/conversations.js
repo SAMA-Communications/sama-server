@@ -12,11 +12,12 @@ import validate, {
   validateParticipantsInUType,
   validateParticipantsLimit,
 } from "../lib/validation.js";
+import { ACTIVE } from "../store/session.js";
 import { CONSTANTS } from "../validations/constants/constants.js";
 import { ERROR_STATUES } from "../validations/constants/errors.js";
 import { ObjectId } from "mongodb";
+import { default as PacketProcessor } from "../routes/packet_processor.js";
 import { inMemoryConversations } from "../store/in_memory.js";
-import { ACTIVE } from "../store/session.js";
 
 class ConversationsController extends BaseController {
   constructor() {
@@ -95,6 +96,22 @@ class ConversationsController extends BaseController {
       });
       await participant.save();
     }
+
+    await PacketProcessor.deliverToUserOrUsers(
+      ws,
+      {
+        conversation_create: {
+          ...conversationObj.visibleParams(),
+          participants,
+        },
+        message: {
+          title: "User",
+          body: "New chat",
+        },
+      },
+      conversationObj.params._id,
+      participants
+    );
 
     return {
       response: {
