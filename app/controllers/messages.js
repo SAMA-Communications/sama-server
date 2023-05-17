@@ -20,7 +20,7 @@ import {
 import { ACTIVE } from "../store/session.js";
 import { CONSTANTS } from "../validations/constants/constants.js";
 import { ERROR_STATUES } from "../validations/constants/errors.js";
-import { ObjectId } from "mongodb";
+import { ObjectID, ObjectId } from "mongodb";
 import { default as PacketProcessor } from "../routes/packet_processor.js";
 
 class MessagesController extends BaseController {
@@ -93,6 +93,24 @@ class MessagesController extends BaseController {
     message.params.t = parseInt(currentTs);
 
     await message.save();
+    const recipentsThatChatNotVisible = conversation.participants.filter(
+      (u) => !participants.includes(u)
+    );
+    if (recipentsThatChatNotVisible.length) {
+      for (let userId of recipentsThatChatNotVisible) {
+        const participant = new ConversationParticipant({
+          user_id: ObjectId(userId),
+          conversation_id: conversation._id,
+        });
+        await participant.save();
+      }
+      await this.conversationRepository.showConversation(
+        ws,
+        messageId,
+        conversation,
+        recipentsThatChatNotVisible
+      );
+    }
     await PacketProcessor.deliverToUserOrUsers(
       ws,
       message.visibleParams(),

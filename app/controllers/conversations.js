@@ -29,24 +29,6 @@ class ConversationsController extends BaseController {
     this.sessionRepository = new SessionRepository(ACTIVE);
   }
 
-  async #sendPushNotificationOnChatStatusUpdate(conv, participants, message) {
-    await PacketProcessor.deliverToUserOrUsers(
-      ws,
-      {
-        conversation_create: {
-          ...conv,
-          participants,
-          unread_messages_count: 1,
-          messagesIds: [],
-        },
-        message,
-        id: requestId,
-      },
-      conv._id,
-      participants
-    );
-  }
-
   async create(ws, data) {
     const { id: requestId, conversation_create: conversationParams } = data;
     const currentUserId = this.sessionRepository.getSessionUserId(ws);
@@ -122,7 +104,9 @@ class ConversationsController extends BaseController {
       await participant.save();
     }
 
-    await this.#sendPushNotificationOnChatStatusUpdate(
+    await this.conversationRepository.showConversation(
+      ws,
+      requestId,
       conversationObj.visibleParams(),
       participants,
       {
@@ -186,7 +170,9 @@ class ConversationsController extends BaseController {
         }
 
         if (participantsListForPushNotificaion.length) {
-          await this.#sendPushNotificationOnChatStatusUpdate(
+          await this.conversationRepository.showConversation(
+            ws,
+            requestId,
             conversation,
             participantsListForPushNotificaion,
             {
@@ -320,18 +306,18 @@ class ConversationsController extends BaseController {
       };
     }
     await conversationParticipant.delete();
-    const isUserInConvesation = await ConversationParticipant.findOne({
+    const existingUserInConvesation = await ConversationParticipant.findOne({
       conversation_id: conversationId,
     });
-
-    if (!isUserInConvesation) {
-      await this.conversationRepository.delete(conversation);
+    if (!existingUserInConvesation) {
+      await this.conversationRepository.delete(new Conversation(conversation));
     } else if (
       conversation.owner_id.toString() ===
-      this.sessionRepository.getSessionUserId(ws)
+        this.sessionRepository.getSessionUserId(ws) &&
+      conversation.type !== "u"
     ) {
       await this.conversationRepository.updateOne(conversationId, {
-        owner_id: isUserInConvesation.user_id,
+        owner_id: existingUserInConvesation.params.user_id,
       });
     }
 
