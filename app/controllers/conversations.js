@@ -29,15 +29,32 @@ class ConversationsController extends BaseController {
     this.sessionRepository = new SessionRepository(ACTIVE);
   }
 
+  async #sendPushNotificationOnChatStatusUpdate(conv, participants, message) {
+    await PacketProcessor.deliverToUserOrUsers(
+      ws,
+      {
+        conversation_create: {
+          ...conv,
+          participants,
+          unread_messages_count: 1,
+          messagesIds: [],
+        },
+        message,
+        id: requestId,
+      },
+      conv._id,
+      participants
+    );
+  }
+
   async create(ws, data) {
     const { id: requestId, conversation_create: conversationParams } = data;
+    const currentUserId = this.sessionRepository.getSessionUserId(ws);
     const participants = await User.getAllIdsBy({
       _id: { $in: conversationParams.participants },
     });
 
-    conversationParams.owner_id = ObjectId(
-      this.sessionRepository.getSessionUserId(ws)
-    );
+    conversationParams.owner_id = ObjectId(currentUserId);
     if (conversationParams.type == "u") {
       await validate(
         ws,
@@ -49,23 +66,31 @@ class ConversationsController extends BaseController {
         $or: [
           {
             type: "u",
-            owner_id: ObjectId(this.sessionRepository.getSessionUserId(ws)),
+            owner_id: ObjectId(currentUserId),
             opponent_id: conversationParams.opponent_id,
           },
           {
             type: "u",
             owner_id: ObjectId(conversationParams.opponent_id),
-            opponent_id: this.sessionRepository.getSessionUserId(ws),
+            opponent_id: currentUserId,
           },
         ],
       });
-      if (existingConversation)
+
+      if (existingConversation) {
+        const participant = new ConversationParticipant({
+          user_id: ObjectId(currentUserId),
+          conversation_id: existingConversation._id,
+        });
+        await participant.save();
+
         return {
           response: {
             id: requestId,
             conversation: existingConversation,
           },
         };
+      }
     }
 
     let isOwnerInArray = false;
@@ -97,23 +122,13 @@ class ConversationsController extends BaseController {
       await participant.save();
     }
 
-    await PacketProcessor.deliverToUserOrUsers(
-      ws,
+    await this.#sendPushNotificationOnChatStatusUpdate(
+      conversationObj.visibleParams(),
+      participants,
       {
-        conversation_create: {
-          ...conversationObj.visibleParams(),
-          participants,
-          unread_messages_count: 0,
-          messagesIds: [],
-        },
-        message: {
-          title: "User",
-          body: "New chat",
-        },
-        id: requestId,
-      },
-      conversationObj.params._id,
-      participants
+        title: "ChatListener",
+        body: "New chat",
+      }
     );
 
     return {
@@ -153,8 +168,9 @@ class ConversationsController extends BaseController {
           validateParticipantsLimit,
         ]);
 
+        const participantsListForPushNotificaion = [];
         for (let i = 0; i < addUsers.length; i++) {
-          const obj = new ConversationParticipant({
+          const participant = new ConversationParticipant({
             user_id: ObjectId(addUsers[i]),
             conversation_id: ObjectId(conversationId),
           });
@@ -164,8 +180,20 @@ class ConversationsController extends BaseController {
               conversation_id: conversationId,
             }))
           ) {
-            await obj.save();
+            await participant.save();
+            participantsListForPushNotificaion.push(participant.params._id);
           }
+        }
+
+        if (participantsListForPushNotificaion.length) {
+          await this.#sendPushNotificationOnChatStatusUpdate(
+            conversation,
+            participantsListForPushNotificaion,
+            {
+              title: "ChatListener",
+              body: "New chat",
+            }
+          );
         }
       }
 
