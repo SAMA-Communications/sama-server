@@ -60,28 +60,32 @@ class ConversationsController extends BaseController {
       });
 
       if (existingConversation) {
-        const participant = new ConversationParticipant({
-          user_id: ObjectId(currentUserId),
+        const existingParticipants = await ConversationParticipant.findAll({
           conversation_id: existingConversation._id,
         });
-        await participant.save();
+        if (existingParticipants.length !== 2) {
+          const participant = new ConversationParticipant({
+            user_id: ObjectId(currentUserId),
+            conversation_id: existingConversation._id,
+          });
+          await participant.save();
 
-        return {
-          response: {
-            id: requestId,
-            conversation: existingConversation,
-          },
-        };
+          return {
+            response: {
+              id: requestId,
+              conversation: existingConversation,
+            },
+          };
+        }
+        throw new Error(ERROR_STATUES.CONVERSATION_EXISTS.message, {
+          cause: ERROR_STATUES.CONVERSATION_EXISTS,
+        });
       }
     }
 
-    let isOwnerInArray = false;
-    participants.forEach((el) => {
-      if (JSON.stringify(el) === JSON.stringify(conversationParams.owner_id)) {
-        isOwnerInArray = true;
-        return;
-      }
-    });
+    const isOwnerInArray = participants.some(
+      (el) => JSON.stringify(el) === JSON.stringify(conversationParams.owner_id)
+    );
     if (!isOwnerInArray) {
       participants.push(ObjectId(conversationParams.owner_id));
     } else if (participants.length === 1) {
@@ -96,23 +100,20 @@ class ConversationsController extends BaseController {
     const conversationObj = new Conversation(conversationParams);
     await conversationObj.save();
 
-    for (let userId of participants) {
+    const participantPromises = participants.map((userId) => {
       const participant = new ConversationParticipant({
         user_id: userId,
         conversation_id: conversationObj.params._id,
       });
-      await participant.save();
-    }
+      return participant.save();
+    });
+    await Promise.all(participantPromises);
 
-    await this.conversationRepository.showConversation(
+    await this.conversationRepository.notifyAboutConversationCreateOrUpdate(
       ws,
       requestId,
       conversationObj.visibleParams(),
-      participants,
-      {
-        title: "ChatListener",
-        body: "New chat",
-      }
+      participants
     );
 
     return {
@@ -152,7 +153,7 @@ class ConversationsController extends BaseController {
           validateParticipantsLimit,
         ]);
 
-        const participantsListForPushNotificaion = [];
+        const participants = [];
         for (let i = 0; i < addUsers.length; i++) {
           const participant = new ConversationParticipant({
             user_id: ObjectId(addUsers[i]),
@@ -165,20 +166,16 @@ class ConversationsController extends BaseController {
             }))
           ) {
             await participant.save();
-            participantsListForPushNotificaion.push(participant.params._id);
+            participants.push(participant.params._id);
           }
         }
 
-        if (participantsListForPushNotificaion.length) {
-          await this.conversationRepository.showConversation(
+        if (participants.length) {
+          await this.conversationRepository.notifyAboutConversationCreateOrUpdate(
             ws,
             requestId,
             conversation,
-            participantsListForPushNotificaion,
-            {
-              title: "ChatListener",
-              body: "New chat",
-            }
+            participants
           );
         }
       }
@@ -306,10 +303,10 @@ class ConversationsController extends BaseController {
       };
     }
     await conversationParticipant.delete();
-    const existingUserInConvesation = await ConversationParticipant.findOne({
+    const existingUserInConversation = await ConversationParticipant.findOne({
       conversation_id: conversationId,
     });
-    if (!existingUserInConvesation) {
+    if (!existingUserInConversation) {
       await this.conversationRepository.delete(new Conversation(conversation));
     } else if (
       conversation.owner_id.toString() ===
@@ -317,7 +314,7 @@ class ConversationsController extends BaseController {
       conversation.type !== "u"
     ) {
       await this.conversationRepository.updateOne(conversationId, {
-        owner_id: existingUserInConvesation.params.user_id,
+        owner_id: existingUserInConversation.params.user_id,
       });
     }
 

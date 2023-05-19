@@ -27,12 +27,12 @@ export default class PushNotificationsRepository extends BaseRepository {
     }
     pushNotificationQueue.add({
       devices,
-      message: message ? message : request,
+      message: message || request,
     });
   }
 
   async createPushEvent(recipients_ids, user_id, request, message) {
-    const pushMessage = message ? message : request;
+    const pushMessage = message || request;
     const pushEventParams = {
       user_id,
       recipients_ids,

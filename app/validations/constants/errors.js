@@ -40,6 +40,7 @@ export const ERROR_STATUES = {
   },
   // Conversation -->
   CONVERSATION_NOT_FOUND: { status: 404, message: "Conversation not found" },
+  CONVERSATION_EXISTS: { status: 404, message: "Conversation exists" },
   CONVERSATION_NAME_MISSED: {
     status: 422,
     message: "No conversation name specified",

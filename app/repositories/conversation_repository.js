@@ -78,7 +78,13 @@ export default class ConversationRepository extends BaseRepository {
     return list;
   }
 
-  async showConversation(ws, requestId, conversation, participants, message) {
+  async notifyAboutConversationCreateOrUpdate(
+    ws,
+    requestId,
+    conversation,
+    participants,
+    message
+  ) {
     await PacketProcessor.deliverToUserOrUsers(
       ws,
       {
@@ -88,7 +94,10 @@ export default class ConversationRepository extends BaseRepository {
           unread_messages_count: 0,
           messagesIds: [],
         },
-        message,
+        message: message || {
+          title: "ChatListener",
+          body: "New chat",
+        },
         id: requestId,
       },
       conversation._id,

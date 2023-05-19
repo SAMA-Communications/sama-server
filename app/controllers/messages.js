@@ -93,23 +93,25 @@ class MessagesController extends BaseController {
     message.params.t = parseInt(currentTs);
 
     await message.save();
-    const recipentsThatChatNotVisible = conversation.participants.filter(
-      (u) => !participants.includes(u)
-    );
-    if (recipentsThatChatNotVisible.length) {
-      for (let userId of recipentsThatChatNotVisible) {
-        const participant = new ConversationParticipant({
-          user_id: ObjectId(userId),
-          conversation_id: conversation._id,
-        });
-        await participant.save();
-      }
-      await this.conversationRepository.showConversation(
-        ws,
-        messageId,
-        conversation,
-        recipentsThatChatNotVisible
+    if (conversation.type === "u") {
+      const recipentsThatChatNotVisible = conversation.participants.filter(
+        (u) => !participants.includes(u)
       );
+      if (recipentsThatChatNotVisible.length) {
+        for (let userId of recipentsThatChatNotVisible) {
+          const participant = new ConversationParticipant({
+            user_id: ObjectId(userId),
+            conversation_id: conversation._id,
+          });
+          await participant.save();
+        }
+        await this.conversationRepository.notifyAboutConversationCreateOrUpdate(
+          ws,
+          messageId,
+          conversation,
+          recipentsThatChatNotVisible
+        );
+      }
     }
     await PacketProcessor.deliverToUserOrUsers(
       ws,
