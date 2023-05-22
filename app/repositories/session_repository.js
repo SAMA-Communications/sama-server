@@ -31,7 +31,10 @@ export default class SessionRepository extends BaseRepository {
     if (!users.length) {
       return;
     }
-
+    const [nodeIp, nodePort] = [
+      nodeUrl.split(":")[0].split("//")[1],
+      nodeUrl.split(":")[1],
+    ];
     users.forEach((u) => {
       const [userId, deviceId] = u.split(":");
       this.removeUserNodeData(userId, deviceId, nodeIp, nodePort);
