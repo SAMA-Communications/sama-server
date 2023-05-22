@@ -100,19 +100,37 @@ class ConversationsController extends BaseController {
     const conversationObj = new Conversation(conversationParams);
     await conversationObj.save();
 
-    const participantPromises = participants.map((userId) => {
+    for (const userId of participants) {
       const participant = new ConversationParticipant({
         user_id: userId,
         conversation_id: conversationObj.params._id,
       });
-      return participant.save();
-    });
-    await Promise.all(participantPromises);
+      await participant.save();
+    }
 
-    await this.conversationRepository.notifyAboutConversationCreateOrUpdate(
+    const currentUserLogin = (await User.findOne({ _id: currentUserId }))
+      ?.params?.login;
+    const convParams = conversationObj.visibleParams();
+    await PacketProcessor.deliverToUserOrUsers(
       ws,
-      requestId,
-      conversationObj.visibleParams(),
+      {
+        conversation_create: {
+          ...convParams,
+          participants,
+          unread_messages_count: 0,
+          messagesIds: [],
+        },
+        message: {
+          title: "New conversation created",
+          body: `${
+            currentUserLogin || currentUserId
+          } created a new conversation ${
+            convParams.type !== "g" ? " " : convParams.name
+          }`,
+        },
+        id: requestId,
+      },
+      convParams._id,
       participants
     );
 
@@ -128,6 +146,7 @@ class ConversationsController extends BaseController {
     const { id: requestId, conversation_update: requestData } = data;
     await validate(ws, requestData, [validateIsConversation]);
 
+    const currentUserId = this.sessionRepository.getSessionUserId(ws);
     const conversationId = requestData.id;
     const conversation = await this.conversationRepository.findById(
       conversationId
@@ -171,10 +190,26 @@ class ConversationsController extends BaseController {
         }
 
         if (participants.length) {
-          await this.conversationRepository.notifyAboutConversationCreateOrUpdate(
+          const currentUserLogin = (await User.findOne({ _id: currentUserId }))
+            ?.params?.login;
+          await PacketProcessor.deliverToUserOrUsers(
             ws,
-            requestId,
-            conversation,
+            {
+              conversation_create: {
+                ...conversation,
+                participants,
+                unread_messages_count: 0,
+                messagesIds: [],
+              },
+              message: {
+                title: "You were added to conversation",
+                body: `${
+                  currentUserLogin || currentUserId
+                } added you to conversation ${conversation.name || ""}`,
+              },
+              id: requestId,
+            },
+            conversation._id,
             participants
           );
         }
@@ -327,16 +362,23 @@ class ConversationsController extends BaseController {
       getParticipantsByCids: { cids },
     } = data;
 
-    const participantIds = await ConversationParticipant.findAll(
-      { conversation_id: { $in: cids } },
-      ["user_id"],
+    const conversations = await Conversation.findAll(
+      { _id: { $in: cids } },
+      ["participants", "owner_id"],
       null
     );
 
-    const ids = participantIds.map((p) => p.user_id);
+    const usersIds = new Set();
+    conversations.forEach((chat) => {
+      for (const uId of chat.participants) {
+        usersIds.add(uId);
+      }
+      usersIds.add(chat.owner_id.toString());
+    });
+
     const usersLogin = await User.findAll(
       {
-        _id: { $in: ids },
+        _id: { $in: Array.from(usersIds) },
       },
       ["_id", "login"],
       null

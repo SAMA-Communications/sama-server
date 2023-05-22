@@ -1,6 +1,5 @@
 import BaseRepository from "./base.js";
 import Conversation from "../models/conversation.js";
-import { default as PacketProcessor } from "../routes/packet_processor.js";
 import { inMemoryConversations } from "../store/in_memory.js";
 
 export default class ConversationRepository extends BaseRepository {
@@ -76,32 +75,5 @@ export default class ConversationRepository extends BaseRepository {
     );
 
     return list;
-  }
-
-  async notifyAboutConversationCreateOrUpdate(
-    ws,
-    requestId,
-    conversation,
-    participants,
-    message
-  ) {
-    await PacketProcessor.deliverToUserOrUsers(
-      ws,
-      {
-        conversation_create: {
-          ...conversation,
-          participants,
-          unread_messages_count: 0,
-          messagesIds: [],
-        },
-        message: message || {
-          title: "ChatListener",
-          body: "New chat",
-        },
-        id: requestId,
-      },
-      conversation._id,
-      participants
-    );
   }
 }

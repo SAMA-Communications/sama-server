@@ -20,7 +20,7 @@ import {
 import { ACTIVE } from "../store/session.js";
 import { CONSTANTS } from "../validations/constants/constants.js";
 import { ERROR_STATUES } from "../validations/constants/errors.js";
-import { ObjectID, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { default as PacketProcessor } from "../routes/packet_processor.js";
 
 class MessagesController extends BaseController {
@@ -51,7 +51,7 @@ class MessagesController extends BaseController {
       participants = await ConversationParticipant.findAll({
         conversation_id: conversation._id,
       });
-      participants = participants?.map((el) => el.user_id.toString());
+      participants = participants?.map((u) => u.user_id.toString());
       if (!participants.includes(currentUserId)) {
         throw new Error(ERROR_STATUES.FORBIDDEN.message, {
           cause: ERROR_STATUES.FORBIDDEN,
@@ -105,10 +105,18 @@ class MessagesController extends BaseController {
           });
           await participant.save();
         }
-        await this.conversationRepository.notifyAboutConversationCreateOrUpdate(
+
+        await PacketProcessor.deliverToUserOrUsers(
           ws,
-          messageId,
-          conversation,
+          {
+            conversation_create: {
+              ...conversation,
+              unread_messages_count: 0,
+              messagesIds: [],
+            },
+            id: messageId,
+          },
+          conversation._id,
           recipentsThatChatNotVisible
         );
       }
