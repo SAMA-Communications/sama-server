@@ -165,7 +165,7 @@ class PacketProcessor {
     try {
       responseData = await this.#processJsonMessage(ws, json);
     } catch (e) {
-      console.error(e.cause?.message, e);
+      console.error(e);
       if (json.request) {
         responseData = {
           response: {
