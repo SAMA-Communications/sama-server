@@ -66,7 +66,15 @@ class ConversationsController extends BaseController {
           conversation_id: existingConversation._id,
         });
         if (existingParticipants.length !== 2) {
-          const userId = participants.filter((uId) => uId !== currentUserId)[0];
+          const existingParticipantsArray = existingParticipants.map((u) =>
+            u.user_id.toString()
+          );
+          const userId = [...participants, conversationParams.owner_id]
+            .filter(
+              (uId) => !existingParticipantsArray.includes(uId.toString())
+            )
+            .map((u) => u.toString())[0];
+
           const participant = new ConversationParticipant({
             user_id: ObjectId(userId),
             conversation_id: existingConversation._id,
