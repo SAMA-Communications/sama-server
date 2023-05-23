@@ -94,9 +94,11 @@ class MessagesController extends BaseController {
 
     await message.save();
     if (conversation.type === "u") {
-      const recipentsThatChatNotVisible = conversation.participants.filter(
-        (u) => !participants.includes(u)
-      );
+      const recipentsThatChatNotVisible = [
+        conversation.opponent_id,
+        conversation.owner_id.toString(),
+      ].filter((u) => !participants.includes(u));
+
       if (recipentsThatChatNotVisible.length) {
         for (let userId of recipentsThatChatNotVisible) {
           const participant = new ConversationParticipant({
@@ -121,6 +123,7 @@ class MessagesController extends BaseController {
         );
       }
     }
+
     await PacketProcessor.deliverToUserOrUsers(
       ws,
       message.visibleParams(),

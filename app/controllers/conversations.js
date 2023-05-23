@@ -32,6 +32,8 @@ class ConversationsController extends BaseController {
   async create(ws, data) {
     const { id: requestId, conversation_create: conversationParams } = data;
     const currentUserId = this.sessionRepository.getSessionUserId(ws);
+    const currentUserLogin = (await User.findOne({ _id: currentUserId }))
+      ?.params?.login;
     const participants = await User.getAllIdsBy({
       _id: { $in: conversationParams.participants },
     });
@@ -64,11 +66,33 @@ class ConversationsController extends BaseController {
           conversation_id: existingConversation._id,
         });
         if (existingParticipants.length !== 2) {
+          const userId = participants.filter((uId) => uId !== currentUserId)[0];
           const participant = new ConversationParticipant({
-            user_id: ObjectId(currentUserId),
+            user_id: ObjectId(userId),
             conversation_id: existingConversation._id,
           });
           await participant.save();
+
+          await PacketProcessor.deliverToUserOrUsers(
+            ws,
+            {
+              conversation_create: {
+                ...existingConversation,
+                participants,
+                unread_messages_count: 0,
+                messagesIds: [],
+              },
+              message: {
+                title: "New conversation created",
+                body: `${
+                  currentUserLogin || currentUserId
+                } created a new conversation`,
+              },
+              id: requestId,
+            },
+            existingConversation._id,
+            [userId]
+          );
 
           return {
             response: {
@@ -108,8 +132,6 @@ class ConversationsController extends BaseController {
       await participant.save();
     }
 
-    const currentUserLogin = (await User.findOne({ _id: currentUserId }))
-      ?.params?.login;
     const convParams = conversationObj.visibleParams();
     await PacketProcessor.deliverToUserOrUsers(
       ws,
