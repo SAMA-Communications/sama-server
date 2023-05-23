@@ -93,17 +93,13 @@ class ConversationsController extends BaseController {
             existingConversation._id,
             [userId]
           );
-
-          return {
-            response: {
-              id: requestId,
-              conversation: existingConversation,
-            },
-          };
         }
-        throw new Error(ERROR_STATUES.CONVERSATION_EXISTS.message, {
-          cause: ERROR_STATUES.CONVERSATION_EXISTS,
-        });
+        return {
+          response: {
+            id: requestId,
+            conversation: existingConversation,
+          },
+        };
       }
     }
 

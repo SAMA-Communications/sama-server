@@ -1,5 +1,6 @@
 import Conversation from "./../app/models/conversation.js";
 import ConversationParticipant from "./../app/models/conversation_participant.js";
+import File from "../app/models/file.js";
 import Message from "./../app/models/message.js";
 import OpLog from "./../app/models/operations_log.js";
 import User from "./../app/models/user.js";
@@ -22,6 +23,7 @@ let files;
 describe("Attachments", async () => {
   before(async () => {
     await connectToDBPromise();
+    await File.clearCollection();
     usersIds = await createUserArray(3);
 
     currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user
@@ -57,16 +59,22 @@ describe("Attachments", async () => {
     assert.equal(files[0].name, "1.png");
     assert.equal(files[0].size, 123);
     assert.equal(files[0].content_type, "image");
+    assert.equal(files[0].content_type, "image");
+    assert.notEqual(files[0].object_id, undefined);
+    assert.notEqual(files[0].upload_url, undefined);
 
     assert.equal(files[1].name, "2.png");
     assert.equal(files[1].size, 321);
     assert.equal(files[1].content_type, "image");
+    assert.notEqual(files[1].object_id, undefined);
+    assert.notEqual(files[1].upload_url, undefined);
 
     assert.equal(responseData.response.files.length, 2);
   });
 
   it("should work get download url for prev 2 files", async () => {
     const file_ids = files.map((obj) => obj.object_id);
+    console.log("Files --> ", files, file_ids);
     const requestData = {
       request: {
         get_file_urls: {
@@ -249,11 +257,12 @@ describe("Attachments", async () => {
   });
 
   after(async () => {
-    await User.clearCollection();
-    await OpLog.clearCollection();
-    await Message.clearCollection();
     await Conversation.clearCollection();
     await ConversationParticipant.clearCollection();
+    await File.clearCollection();
+    await Message.clearCollection();
+    await OpLog.clearCollection();
+    await User.clearCollection();
     usersIds = [];
   });
 });

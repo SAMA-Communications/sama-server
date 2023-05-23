@@ -1,5 +1,6 @@
 import BlockedUser from "./../app/models/blocked_user.js";
 import User from "./../app/models/user.js";
+import UserToken from "../app/models/user_token.js";
 import assert from "assert";
 import { connectToDBPromise } from "./../app/lib/db.js";
 import { createUserArray, mockedWS, sendLogin } from "./utils.js";
@@ -11,6 +12,7 @@ describe("UserBlocked functions", async () => {
   before(async () => {
     await connectToDBPromise();
     await User.clearCollection();
+    await UserToken.clearCollection();
     usersIds = await createUserArray(5);
     await sendLogin(mockedWS, "user_1");
   });
