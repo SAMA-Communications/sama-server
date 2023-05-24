@@ -756,8 +756,8 @@ describe("Conversation functions", async () => {
         request: {
           conversation_create: {
             type: "u",
-            opponent_id: usersIds[1],
-            participants: [usersIds[1]],
+            opponent_id: usersIds[3],
+            participants: [usersIds[3]],
           },
           id: "1",
         },
@@ -790,8 +790,8 @@ describe("Conversation functions", async () => {
         request: {
           conversation_create: {
             type: "u",
-            opponent_id: usersIds[1],
-            participants: [usersIds[1]],
+            opponent_id: usersIds[3],
+            participants: [usersIds[3]],
           },
           id: "1",
         },
@@ -800,7 +800,6 @@ describe("Conversation functions", async () => {
         "conv_re_store",
         requestData
       );
-      console.log(responseData.response);
 
       participantsCount = await ConversationParticipant.findAll({
         conversation_id: currentConversationId,
@@ -819,6 +818,11 @@ describe("Conversation functions", async () => {
     it("should work create conversation, I deleted, opponent restored", async () => {
       currentUserToken = (await sendLogin("conv_re_store", "user_1")).response
         .user._id;
+      let participantsCount = await ConversationParticipant.count({
+        conversation_id: currentConversationId,
+      });
+      assert.equal(participantsCount, 2);
+
       let requestData = {
         request: {
           conversation_delete: {
@@ -831,14 +835,13 @@ describe("Conversation functions", async () => {
         "conv_re_store",
         requestData
       );
-      console.log(usersIds[0], usersIds[1]);
-      currentUserToken = (await sendLogin("conv_re_store", "user_2")).response
-        .user._id;
-      let participantsCount = await ConversationParticipant.findAll({
+
+      participantsCount = await ConversationParticipant.findAll({
         conversation_id: currentConversationId,
       });
-      console.log(participantsCount);
       assert.equal(participantsCount.length, 1);
+      currentUserToken = (await sendLogin("conv_re_store", "user_4")).response
+        .user._id;
 
       requestData = {
         request: {
@@ -854,16 +857,10 @@ describe("Conversation functions", async () => {
         "conv_re_store",
         requestData
       );
-      console.log(
-        currentUserToken,
-        currentConversationId,
-        responseData.response
-      );
 
       participantsCount = await ConversationParticipant.findAll({
         conversation_id: currentConversationId,
       });
-      console.log(participantsCount);
       assert.equal(participantsCount.length, 2);
 
       assert.strictEqual(requestData.request.id, responseData.response.id);

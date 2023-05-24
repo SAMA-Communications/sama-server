@@ -111,11 +111,7 @@ class MessagesController extends BaseController {
         await PacketProcessor.deliverToUserOrUsers(
           ws,
           {
-            conversation_create: {
-              ...conversation,
-              unread_messages_count: 0,
-              messagesIds: [],
-            },
+            event_conversation_create: conversation,
             id: messageId,
           },
           conversation._id,

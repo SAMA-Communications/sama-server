@@ -29,6 +29,25 @@ class ConversationsController extends BaseController {
     this.sessionRepository = new SessionRepository(ACTIVE);
   }
 
+  async #notifyAboutConversationCreate(
+    ws,
+    requestId,
+    conversation,
+    message,
+    recipients
+  ) {
+    await PacketProcessor.deliverToUserOrUsers(
+      ws,
+      {
+        event_conversation_create: conversation,
+        message,
+        id: requestId,
+      },
+      conversation._id,
+      recipients
+    );
+  }
+
   async create(ws, data) {
     const { id: requestId, conversation_create: conversationParams } = data;
     const currentUserId = this.sessionRepository.getSessionUserId(ws);
@@ -55,8 +74,8 @@ class ConversationsController extends BaseController {
           },
           {
             type: "u",
-            owner_id: ObjectId(conversationParams.opponent_id),
-            opponent_id: currentUserId,
+            owner_id: conversationParams.opponent_id,
+            opponent_id: ObjectId(currentUserId),
           },
         ],
       });
@@ -66,40 +85,33 @@ class ConversationsController extends BaseController {
           conversation_id: existingConversation._id,
         });
         if (existingParticipants.length !== 2) {
-          const existingParticipantsArray = existingParticipants.map((u) =>
+          const requiredParticipantsIds = [
+            currentUserId,
+            conversationParams.opponent_id,
+          ];
+          const existingParticipantsIds = existingParticipants.map((u) =>
             u.user_id.toString()
           );
-          const userId = [...participants, conversationParams.owner_id]
-            .filter(
-              (uId) => !existingParticipantsArray.includes(uId.toString())
-            )
-            .map((u) => u.toString())[0];
+
+          const missedParticipantId = requiredParticipantsIds.filter(
+            (uId) => !existingParticipantsIds.includes(uId)
+          )[0];
 
           const participant = new ConversationParticipant({
-            user_id: ObjectId(userId),
+            user_id: ObjectId(missedParticipantId),
             conversation_id: existingConversation._id,
           });
           await participant.save();
 
-          await PacketProcessor.deliverToUserOrUsers(
+          await this.#notifyAboutConversationCreate(
             ws,
+            requestId,
+            existingConversation,
             {
-              conversation_create: {
-                ...existingConversation,
-                participants,
-                unread_messages_count: 0,
-                messagesIds: [],
-              },
-              message: {
-                title: "New conversation created",
-                body: `${
-                  currentUserLogin || currentUserId
-                } created a new conversation`,
-              },
-              id: requestId,
+              title: "New conversation created",
+              body: `${currentUserLogin} created a new conversation`,
             },
-            existingConversation._id,
-            [userId]
+            [missedParticipantId]
           );
         }
         return {
@@ -137,26 +149,16 @@ class ConversationsController extends BaseController {
     }
 
     const convParams = conversationObj.visibleParams();
-    await PacketProcessor.deliverToUserOrUsers(
+    await this.#notifyAboutConversationCreate(
       ws,
+      requestId,
+      convParams,
       {
-        conversation_create: {
-          ...convParams,
-          participants,
-          unread_messages_count: 0,
-          messagesIds: [],
-        },
-        message: {
-          title: "New conversation created",
-          body: `${
-            currentUserLogin || currentUserId
-          } created a new conversation ${
-            convParams.type !== "g" ? " " : convParams.name
-          }`,
-        },
-        id: requestId,
+        title: "New conversation created",
+        body: `${currentUserLogin} created a new conversation ${
+          convParams.name || ""
+        }`,
       },
-      convParams._id,
       participants
     );
 
@@ -218,24 +220,16 @@ class ConversationsController extends BaseController {
         if (participants.length) {
           const currentUserLogin = (await User.findOne({ _id: currentUserId }))
             ?.params?.login;
-          await PacketProcessor.deliverToUserOrUsers(
+          await this.#notifyAboutConversationCreate(
             ws,
+            requestId,
+            conversation,
             {
-              conversation_create: {
-                ...conversation,
-                participants,
-                unread_messages_count: 0,
-                messagesIds: [],
-              },
-              message: {
-                title: "You were added to conversation",
-                body: `${
-                  currentUserLogin || currentUserId
-                } added you to conversation ${conversation.name || ""}`,
-              },
-              id: requestId,
+              title: "You were added to conversation",
+              body: `${currentUserLogin} added you to conversation ${
+                conversation.name || ""
+              }`,
             },
-            conversation._id,
             participants
           );
         }
