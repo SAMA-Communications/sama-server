@@ -23,7 +23,7 @@ class UsersBlockController extends BaseController {
     } = data;
 
     const currentUserId = this.sessionRepository.getSessionUserId(ws);
-    this.blockListRepository.block(uId, currentUserId);
+    await this.blockListRepository.block(uId, currentUserId);
 
     return { response: { id: requestId, success: true } };
   }
@@ -35,7 +35,7 @@ class UsersBlockController extends BaseController {
     } = data;
 
     const currentUserId = this.sessionRepository.getSessionUserId(ws);
-    this.blockListRepository.unblock(uId, currentUserId);
+    await this.blockListRepository.unblock(uId, currentUserId);
 
     return { response: { id: requestId, success: true } };
   }
