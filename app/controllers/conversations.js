@@ -58,6 +58,10 @@ class ConversationsController extends BaseController {
     });
 
     conversationParams.owner_id = ObjectId(currentUserId);
+    if (conversationParams.opponent_id) {
+      conversationParams.opponent_id = String(conversationParams.opponent_id);
+    }
+
     if (conversationParams.type == "u") {
       await validate(
         ws,
@@ -74,8 +78,8 @@ class ConversationsController extends BaseController {
           },
           {
             type: "u",
-            owner_id: conversationParams.opponent_id,
-            opponent_id: ObjectId(currentUserId),
+            owner_id: ObjectId(conversationParams.opponent_id),
+            opponent_id: currentUserId,
           },
         ],
       });
