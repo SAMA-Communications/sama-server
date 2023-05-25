@@ -388,6 +388,22 @@ A `type` param must have only one of two values:
 
 If the value of the `type` param is equal to `y`, then the `opponent_id` param is required
 
+After conversation created, all the online participants will receive the following event about newly created conversation:
+
+```
+{
+  event_conversation_create: {
+    _id: "646e2092d80fe5c4e688dfa0",
+    type: "u",
+    opponent_id: "646c823bf989c57fe910d289",
+    participants: [ "646c823bf989c57fe910d289" ],
+    owner_id: "646c82947b3aceab988c0073",
+    created_at: "2023-05-24T14:34:58.066Z",
+    updated_at: "2023-05-24T14:52:24.953Z"
+  }
+}
+```
+
 ## Conversation update
 
 ```
@@ -407,6 +423,22 @@ If the value of the `type` param is equal to `y`, then the `opponent_id` param i
 }
 
 { response: { id: "5", conversation: {...} } }
+```
+
+After adding users to a conversation, if they are online, they will receive the following event about the newly created conversation:
+
+```
+{
+  event_conversation_create: {
+    _id: "646e2092d80fe5c4e688dfa0",
+    type: "u",
+    opponent_id: "646c823bf989c57fe910d289",
+    participants: [ "646c823bf989c57fe910d289" ],
+    owner_id: "646c82947b3aceab988c0073",
+    created_at: "2023-05-24T14:34:58.066Z",
+    updated_at: "2023-05-24T14:52:24.953Z"
+  }
+}
 ```
 
 ## Conversation delete

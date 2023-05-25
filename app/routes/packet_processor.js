@@ -115,6 +115,9 @@ class PacketProcessor {
     for (const uId of participants) {
       const userNodeData = await this.sessionRepository.getUserNodeData(uId);
       const uPacket = packetsMapOrPacket[uId] || packetsMapOrPacket;
+      const pushMessage = packetsMapOrPacket.message;
+      pushMessage && delete packetsMapOrPacket.message;
+
       if (!userNodeData?.length) {
         this.isAllowedForOfflineStorage(uPacket) &&
           this.operationsLogRepository.savePacket(uId, uPacket);
@@ -126,8 +129,6 @@ class PacketProcessor {
     }
 
     if (offlineUsersByPackets.length) {
-      const pushMessage = packetsMapOrPacket.message;
-      pushMessage && delete packetsMapOrPacket.message;
       this.pushNotificationsRepository.sendPushNotification(
         offlineUsersByPackets,
         packetsMapOrPacket,
