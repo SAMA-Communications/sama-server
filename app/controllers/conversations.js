@@ -89,6 +89,7 @@ class ConversationsController extends BaseController {
     const participants = await User.getAllIdsBy({
       _id: { $in: conversationParams.participants },
     });
+    delete conversationParams.participants;
 
     conversationParams.owner_id = ObjectId(currentUserId);
     if (conversationParams.opponent_id) {
@@ -408,21 +409,34 @@ class ConversationsController extends BaseController {
 
     const conversations = await Conversation.findAll(
       { _id: { $in: cids } },
-      ["participants", "owner_id"],
+      ["type", "opponent_id", "owner_id"],
       null
     );
 
-    const usersIds = new Set();
+    const usersIds = [];
+    const convTypeGIds = [];
+
     conversations.forEach((conv) => {
-      for (const uId of conv.participants) {
-        usersIds.add(uId);
+      if (conv.type === "g") {
+        convTypeGIds.push(conv._id);
+        return;
       }
-      usersIds.add(conv.owner_id.toString());
+      usersIds.push(conv.opponent_id, conv.owner_id.toString());
     });
+
+    if (convTypeGIds.length) {
+      const participants = await ConversationParticipant.findAll(
+        {
+          conversation_id: { $in: convTypeGIds },
+        },
+        ["user_id"]
+      );
+      participants.forEach((u) => usersIds.push(u.user_id.toString()));
+    }
 
     const usersLogin = await User.findAll(
       {
-        _id: { $in: Array.from(usersIds) },
+        _id: { $in: usersIds.filter((el, i) => usersIds.indexOf(el) === i) },
       },
       ["_id", "login"],
       null

@@ -237,6 +237,7 @@ describe("Conversation functions", async () => {
         null,
         100
       );
+      requestData.request.conversation_create.participants = [usersIds[2]];
       responseData = await PacketProcessor.processJsonMessageOrError(
         "test",
         requestData
