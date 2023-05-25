@@ -75,6 +75,11 @@ export const conversationsSchemaValidation = {
   getParticipantsByCids: Joi.object({
     cids: Joi.array()
       .items(Joi.alternatives().try(Joi.object(), Joi.string()))
-      .required(),
+      .required()
+      .error(
+        new Error(ERROR_STATUES.CIDS_REQUIRED.message, {
+          cause: ERROR_STATUES.CIDS_REQUIRED,
+        })
+      ),
   }).required(),
 };

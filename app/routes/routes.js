@@ -150,11 +150,11 @@ export const routes = {
       json.user_last_activity,
       activitiesSchemaValidation.getUserStatus
     ).getUserStatus(ws, json),
-  getParticipantsByCids: (ws, json) =>
+  get_participants_by_cids: (ws, json) =>
     ConversationsController.validate(
-      json.getParticipantsByCids,
+      json.get_participants_by_cids,
       conversationsSchemaValidation.getParticipantsByCids
-    ).getParticipantsByCids(ws, json),
+    ).get_participants_by_cids(ws, json),
   conversation_create: (ws, json) =>
     ConversationsController.validate(
       json.conversation_create,

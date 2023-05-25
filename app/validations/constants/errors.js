@@ -120,4 +120,8 @@ export const ERROR_STATUES = {
     status: 422,
     message: "'cid' field is required",
   },
+  CIDS_REQUIRED: {
+    status: 422,
+    message: "'cids' field is required",
+  },
 };

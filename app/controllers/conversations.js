@@ -33,9 +33,42 @@ class ConversationsController extends BaseController {
     ws,
     requestId,
     conversation,
-    message,
+    currentUserLogin,
     recipients
   ) {
+    const message = {
+      title: "New conversation created",
+      body: `${currentUserLogin} created a new conversation ${
+        conversation.name || ""
+      }`,
+    };
+
+    await PacketProcessor.deliverToUserOrUsers(
+      ws,
+      {
+        event_conversation_create: conversation,
+        message,
+        id: requestId,
+      },
+      conversation._id,
+      recipients
+    );
+  }
+
+  async #notifyAboutConversationUpdate(
+    ws,
+    requestId,
+    conversation,
+    currentUserLogin,
+    recipients
+  ) {
+    const message = {
+      title: "You were added to conversation",
+      body: `${currentUserLogin} added you to conversation ${
+        conversation.name || ""
+      }`,
+    };
+
     await PacketProcessor.deliverToUserOrUsers(
       ws,
       {
@@ -111,10 +144,7 @@ class ConversationsController extends BaseController {
             ws,
             requestId,
             existingConversation,
-            {
-              title: "New conversation created",
-              body: `${currentUserLogin} created a new conversation`,
-            },
+            currentUserLogin,
             [missedParticipantId]
           );
         }
@@ -157,12 +187,7 @@ class ConversationsController extends BaseController {
       ws,
       requestId,
       convParams,
-      {
-        title: "New conversation created",
-        body: `${currentUserLogin} created a new conversation ${
-          convParams.name || ""
-        }`,
-      },
+      currentUserLogin,
       participants
     );
 
@@ -224,16 +249,11 @@ class ConversationsController extends BaseController {
         if (participants.length) {
           const currentUserLogin = (await User.findOne({ _id: currentUserId }))
             ?.params?.login;
-          await this.#notifyAboutConversationCreate(
+          await this.#notifyAboutConversationUpdate(
             ws,
             requestId,
             conversation,
-            {
-              title: "You were added to conversation",
-              body: `${currentUserLogin} added you to conversation ${
-                conversation.name || ""
-              }`,
-            },
+            currentUserLogin,
             participants
           );
         }
@@ -366,7 +386,7 @@ class ConversationsController extends BaseController {
       conversation_id: conversationId,
     });
     if (!existingUserInConversation) {
-      await this.conversationRepository.delete(new Conversation(conversation));
+      await this.conversationRepository.delete(conversation._id);
     } else if (
       conversation.owner_id.toString() ===
         this.sessionRepository.getSessionUserId(ws) &&
@@ -380,10 +400,10 @@ class ConversationsController extends BaseController {
     return { response: { id: requestId, success: true } };
   }
 
-  async getParticipantsByCids(ws, data) {
+  async get_participants_by_cids(ws, data) {
     const {
       id: requestId,
-      getParticipantsByCids: { cids },
+      get_participants_by_cids: { cids },
     } = data;
 
     const conversations = await Conversation.findAll(
@@ -393,11 +413,11 @@ class ConversationsController extends BaseController {
     );
 
     const usersIds = new Set();
-    conversations.forEach((chat) => {
-      for (const uId of chat.participants) {
+    conversations.forEach((conv) => {
+      for (const uId of conv.participants) {
         usersIds.add(uId);
       }
-      usersIds.add(chat.owner_id.toString());
+      usersIds.add(conv.owner_id.toString());
     });
 
     const usersLogin = await User.findAll(

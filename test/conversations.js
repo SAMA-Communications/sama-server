@@ -700,6 +700,60 @@ describe("Conversation functions", async () => {
     });
   });
 
+  describe("GetParticipantsByCids Conversation", async () => {
+    before(async () => {
+      await sendLogout("test", currentUserToken);
+      currentUserToken = (await sendLogin("test", "user_1")).response.user
+        .token;
+    });
+
+    it("should fail because cids missed", async () => {
+      const requestData = {
+        request: {
+          get_participants_by_cids: {},
+          id: "4_2",
+        },
+      };
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      assert.strictEqual(responseData.response.success, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "'cids' field is required",
+      });
+    });
+
+    it("should work", async () => {
+      const requestData = {
+        request: {
+          get_participants_by_cids: {
+            cids: [currentConversationId],
+          },
+          id: "4_2",
+        },
+      };
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.equal(responseData.response.users.length, 2);
+      assert.equal(
+        responseData.response.users[1]._id.toString(),
+        usersIds[0].toString()
+      );
+      assert.equal(
+        responseData.response.users[0]._id.toString(),
+        usersIds[1].toString()
+      );
+      assert.equal(responseData.response.error, undefined);
+    });
+  });
+
   describe("Delete Conversation", async () => {
     before(async () => {
       await sendLogout("test", currentUserToken);
