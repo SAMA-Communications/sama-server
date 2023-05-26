@@ -122,7 +122,7 @@ class MessagesController extends BaseController {
 
     await PacketProcessor.deliverToUserOrUsers(
       ws,
-      message.visibleParams(),
+      { message: message.visibleParams() },
       messageParams.cid
     );
 

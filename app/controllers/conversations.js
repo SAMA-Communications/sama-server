@@ -36,7 +36,7 @@ class ConversationsController extends BaseController {
     currentUserLogin,
     recipients
   ) {
-    const message = {
+    const push_message = {
       title: "New conversation created",
       body: `${currentUserLogin} created a new conversation ${
         conversation.name || ""
@@ -47,7 +47,7 @@ class ConversationsController extends BaseController {
       ws,
       {
         event_conversation_create: conversation,
-        message,
+        push_message,
         id: requestId,
       },
       conversation._id,
@@ -62,7 +62,7 @@ class ConversationsController extends BaseController {
     currentUserLogin,
     recipients
   ) {
-    const message = {
+    const push_message = {
       title: "You were added to conversation",
       body: `${currentUserLogin} added you to conversation ${
         conversation.name || ""
@@ -73,7 +73,7 @@ class ConversationsController extends BaseController {
       ws,
       {
         event_conversation_create: conversation,
-        message,
+        push_message,
         id: requestId,
       },
       conversation._id,

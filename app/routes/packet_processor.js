@@ -25,21 +25,21 @@ class PacketProcessor {
     this.jsonRequest = routes;
   }
 
-  isAllowedForOfflineStorage(message) {
-    return !!(message.message_edit || message.message_delete);
+  isAllowedForOfflineStorage(packet) {
+    return !!(packet.message_edit || packet.message_delete);
   }
 
-  async deliverToUserOnThisNode(ws, userId, message) {
+  async deliverToUserOnThisNode(ws, userId, packet) {
     const wsRecipient = ACTIVE.DEVICES[userId];
 
     if (!wsRecipient) {
-      this.isAllowedForOfflineStorage(message) &&
-        this.operationsLogRepository.savePacket(userId, message);
+      this.isAllowedForOfflineStorage(packet) &&
+        this.operationsLogRepository.savePacket(userId, packet);
       return;
     }
 
     wsRecipient.forEach((data) => {
-      data.ws !== ws && data.ws.send(JSON.stringify({ message }));
+      data.ws !== ws && data.ws.send(JSON.stringify(packet));
     });
   }
 
@@ -112,11 +112,12 @@ class PacketProcessor {
       ).map((obj) => obj.user_id);
 
     const offlineUsersByPackets = [];
+    let pushMessage = null;
     for (const uId of participants) {
       const userNodeData = await this.sessionRepository.getUserNodeData(uId);
       const uPacket = packetsMapOrPacket[uId] || packetsMapOrPacket;
-      const pushMessage = packetsMapOrPacket.message;
-      pushMessage && delete packetsMapOrPacket.message;
+      pushMessage = packetsMapOrPacket.push_message;
+      pushMessage && delete packetsMapOrPacket.push_message;
 
       if (!userNodeData?.length) {
         this.isAllowedForOfflineStorage(uPacket) &&
@@ -188,16 +189,16 @@ class PacketProcessor {
     return responseData;
   }
 
-  async deliverClusterMessageToUser(userId, message) {
+  async deliverClusterMessageToUser(userId, packet) {
     try {
-      await this.deliverToUserOnThisNode(null, userId, message);
+      await this.deliverToUserOnThisNode(null, userId, packet);
     } catch (err) {
       console.error(
         "[cluster_manager][deliverClusterMessageToUser] error",
         err
       );
-      this.isAllowedForOfflineStorage(message) &&
-        this.perationsLogRepository.savePacket(userId, message);
+      this.isAllowedForOfflineStorage(packet) &&
+        this.perationsLogRepository.savePacket(userId, packet);
     }
   }
 
