@@ -1,6 +1,7 @@
 import Conversation from "./../app/models/conversation.js";
 import ConversationParticipant from "./../app/models/conversation_participant.js";
 import User from "./../app/models/user.js";
+import UserToken from "../app/models/user_token.js";
 import assert from "assert";
 import { connectToDBPromise } from "./../app/lib/db.js";
 import { createUserArray, sendLogin, sendLogout } from "./utils.js";
@@ -236,6 +237,7 @@ describe("Conversation functions", async () => {
         null,
         100
       );
+      requestData.request.conversation_create.participants = [usersIds[2]];
       responseData = await PacketProcessor.processJsonMessageOrError(
         "test",
         requestData
@@ -699,6 +701,60 @@ describe("Conversation functions", async () => {
     });
   });
 
+  describe("GetParticipantsByCids Conversation", async () => {
+    before(async () => {
+      await sendLogout("test", currentUserToken);
+      currentUserToken = (await sendLogin("test", "user_1")).response.user
+        .token;
+    });
+
+    it("should fail because cids missed", async () => {
+      const requestData = {
+        request: {
+          get_participants_by_cids: {},
+          id: "4_2",
+        },
+      };
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      assert.strictEqual(responseData.response.success, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "'cids' field is required",
+      });
+    });
+
+    it("should work", async () => {
+      const requestData = {
+        request: {
+          get_participants_by_cids: {
+            cids: [currentConversationId],
+          },
+          id: "4_2",
+        },
+      };
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.equal(responseData.response.users.length, 2);
+      assert.equal(
+        responseData.response.users[1]._id.toString(),
+        usersIds[0].toString()
+      );
+      assert.equal(
+        responseData.response.users[0]._id.toString(),
+        usersIds[1].toString()
+      );
+      assert.equal(responseData.response.error, undefined);
+    });
+  });
+
   describe("Delete Conversation", async () => {
     before(async () => {
       await sendLogout("test", currentUserToken);
@@ -747,8 +803,134 @@ describe("Conversation functions", async () => {
     });
   });
 
+  describe("Re-store conversation 1-1", async () => {
+    it("should work create conversation, I deleted, I restored", async () => {
+      currentUserToken = (await sendLogin("conv_re_store", "user_1")).response
+        .user._id;
+      let requestData = {
+        request: {
+          conversation_create: {
+            type: "u",
+            opponent_id: usersIds[3],
+            participants: [usersIds[3]],
+          },
+          id: "1",
+        },
+      };
+      let responseData = await PacketProcessor.processJsonMessageOrError(
+        "conv_re_store",
+        requestData
+      );
+      currentConversationId = responseData.response.conversation._id.toString();
+
+      requestData = {
+        request: {
+          conversation_delete: {
+            id: currentConversationId,
+          },
+          id: "1",
+        },
+      };
+      responseData = await PacketProcessor.processJsonMessageOrError(
+        "conv_re_store",
+        requestData
+      );
+
+      let participantsCount = await ConversationParticipant.count({
+        conversation_id: currentConversationId,
+      });
+      assert.equal(participantsCount, 1);
+
+      requestData = {
+        request: {
+          conversation_create: {
+            type: "u",
+            opponent_id: usersIds[3],
+            participants: [usersIds[3]],
+          },
+          id: "1",
+        },
+      };
+      responseData = await PacketProcessor.processJsonMessageOrError(
+        "conv_re_store",
+        requestData
+      );
+
+      participantsCount = await ConversationParticipant.findAll({
+        conversation_id: currentConversationId,
+      });
+      assert.equal(participantsCount.length, 2);
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.equal(
+        responseData.response.conversation._id.toString(),
+        currentConversationId
+      );
+      assert.notEqual(responseData.response.conversation, undefined);
+      assert.equal(responseData.response.error, undefined);
+    });
+
+    it("should work create conversation, I deleted, opponent restored", async () => {
+      currentUserToken = (await sendLogin("conv_re_store", "user_1")).response
+        .user._id;
+      let participantsCount = await ConversationParticipant.count({
+        conversation_id: currentConversationId,
+      });
+      assert.equal(participantsCount, 2);
+
+      let requestData = {
+        request: {
+          conversation_delete: {
+            id: currentConversationId,
+          },
+          id: "1",
+        },
+      };
+      let responseData = await PacketProcessor.processJsonMessageOrError(
+        "conv_re_store",
+        requestData
+      );
+
+      participantsCount = await ConversationParticipant.findAll({
+        conversation_id: currentConversationId,
+      });
+      assert.equal(participantsCount.length, 1);
+      currentUserToken = (await sendLogin("conv_re_store", "user_4")).response
+        .user._id;
+
+      requestData = {
+        request: {
+          conversation_create: {
+            type: "u",
+            opponent_id: usersIds[0],
+            participants: [usersIds[0]],
+          },
+          id: "1",
+        },
+      };
+      responseData = await PacketProcessor.processJsonMessageOrError(
+        "conv_re_store",
+        requestData
+      );
+
+      participantsCount = await ConversationParticipant.findAll({
+        conversation_id: currentConversationId,
+      });
+      assert.equal(participantsCount.length, 2);
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.equal(
+        responseData.response.conversation._id.toString(),
+        currentConversationId
+      );
+      assert.notEqual(responseData.response.conversation, undefined);
+      assert.equal(responseData.response.error, undefined);
+    });
+  });
+
   after(async () => {
     await User.clearCollection();
+    await UserToken.clearCollection();
     await Conversation.clearCollection();
     await ConversationParticipant.clearCollection();
     usersIds = [];

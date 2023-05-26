@@ -51,7 +51,7 @@ class MessagesController extends BaseController {
       participants = await ConversationParticipant.findAll({
         conversation_id: conversation._id,
       });
-      participants = participants?.map((el) => el.user_id.toString());
+      participants = participants?.map((u) => u.user_id.toString());
       if (!participants.includes(currentUserId)) {
         throw new Error(ERROR_STATUES.FORBIDDEN.message, {
           cause: ERROR_STATUES.FORBIDDEN,
@@ -93,9 +93,36 @@ class MessagesController extends BaseController {
     message.params.t = parseInt(currentTs);
 
     await message.save();
+    if (conversation.type === "u") {
+      const recipentsThatChatNotVisible = [
+        conversation.opponent_id,
+        conversation.owner_id.toString(),
+      ].filter((u) => !participants.includes(u));
+
+      if (recipentsThatChatNotVisible.length) {
+        for (let userId of recipentsThatChatNotVisible) {
+          const participant = new ConversationParticipant({
+            user_id: ObjectId(userId),
+            conversation_id: conversation._id,
+          });
+          await participant.save();
+        }
+
+        await PacketProcessor.deliverToUserOrUsers(
+          ws,
+          {
+            event_conversation_create: conversation,
+            id: messageId,
+          },
+          conversation._id,
+          recipentsThatChatNotVisible
+        );
+      }
+    }
+
     await PacketProcessor.deliverToUserOrUsers(
       ws,
-      message.visibleParams(),
+      { message: message.visibleParams() },
       messageParams.cid
     );
 

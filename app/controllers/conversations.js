@@ -12,11 +12,12 @@ import validate, {
   validateParticipantsInUType,
   validateParticipantsLimit,
 } from "../lib/validation.js";
+import { ACTIVE } from "../store/session.js";
 import { CONSTANTS } from "../validations/constants/constants.js";
 import { ERROR_STATUES } from "../validations/constants/errors.js";
 import { ObjectId } from "mongodb";
+import { default as PacketProcessor } from "../routes/packet_processor.js";
 import { inMemoryConversations } from "../store/in_memory.js";
-import { ACTIVE } from "../store/session.js";
 
 class ConversationsController extends BaseController {
   constructor() {
@@ -28,15 +29,69 @@ class ConversationsController extends BaseController {
     this.sessionRepository = new SessionRepository(ACTIVE);
   }
 
+  async #notifyAboutConversationCreate(
+    ws,
+    conversation,
+    currentUserLogin,
+    recipients
+  ) {
+    const push_message = {
+      title: "New conversation created",
+      body: `${currentUserLogin} created a new conversation ${
+        conversation.name || ""
+      }`,
+    };
+
+    await PacketProcessor.deliverToUserOrUsers(
+      ws,
+      {
+        event: { conversation_created: conversation },
+        push_message,
+      },
+      conversation._id,
+      recipients
+    );
+  }
+
+  async #notifyAboutConversationUpdate(
+    ws,
+    conversation,
+    currentUserLogin,
+    recipients
+  ) {
+    const push_message = {
+      title: "You were added to conversation",
+      body: `${currentUserLogin} added you to conversation ${
+        conversation.name || ""
+      }`,
+    };
+
+    await PacketProcessor.deliverToUserOrUsers(
+      ws,
+      {
+        event: { conversation_created: conversation },
+        push_message,
+      },
+      conversation._id,
+      recipients
+    );
+  }
+
   async create(ws, data) {
     const { id: requestId, conversation_create: conversationParams } = data;
+    const currentUserId = this.sessionRepository.getSessionUserId(ws);
+    const currentUserLogin = (await User.findOne({ _id: currentUserId }))
+      ?.params?.login;
     const participants = await User.getAllIdsBy({
       _id: { $in: conversationParams.participants },
     });
+    delete conversationParams.participants;
 
-    conversationParams.owner_id = ObjectId(
-      this.sessionRepository.getSessionUserId(ws)
-    );
+    conversationParams.owner_id = ObjectId(currentUserId);
+    if (conversationParams.opponent_id) {
+      conversationParams.opponent_id = String(conversationParams.opponent_id);
+    }
+
     if (conversationParams.type == "u") {
       await validate(
         ws,
@@ -48,32 +103,59 @@ class ConversationsController extends BaseController {
         $or: [
           {
             type: "u",
-            owner_id: ObjectId(this.sessionRepository.getSessionUserId(ws)),
+            owner_id: ObjectId(currentUserId),
             opponent_id: conversationParams.opponent_id,
           },
           {
             type: "u",
             owner_id: ObjectId(conversationParams.opponent_id),
-            opponent_id: this.sessionRepository.getSessionUserId(ws),
+            opponent_id: currentUserId,
           },
         ],
       });
-      if (existingConversation)
+
+      if (existingConversation) {
+        const existingParticipants = await ConversationParticipant.findAll({
+          conversation_id: existingConversation._id,
+        });
+        if (existingParticipants.length !== 2) {
+          const requiredParticipantsIds = [
+            currentUserId,
+            conversationParams.opponent_id,
+          ];
+          const existingParticipantsIds = existingParticipants.map((u) =>
+            u.user_id.toString()
+          );
+
+          const missedParticipantId = requiredParticipantsIds.filter(
+            (uId) => !existingParticipantsIds.includes(uId)
+          )[0];
+
+          const participant = new ConversationParticipant({
+            user_id: ObjectId(missedParticipantId),
+            conversation_id: existingConversation._id,
+          });
+          await participant.save();
+
+          await this.#notifyAboutConversationCreate(
+            ws,
+            existingConversation,
+            currentUserLogin,
+            [missedParticipantId]
+          );
+        }
         return {
           response: {
             id: requestId,
             conversation: existingConversation,
           },
         };
+      }
     }
 
-    let isOwnerInArray = false;
-    participants.forEach((el) => {
-      if (JSON.stringify(el) === JSON.stringify(conversationParams.owner_id)) {
-        isOwnerInArray = true;
-        return;
-      }
-    });
+    const isOwnerInArray = participants.some(
+      (el) => JSON.stringify(el) === JSON.stringify(conversationParams.owner_id)
+    );
     if (!isOwnerInArray) {
       participants.push(ObjectId(conversationParams.owner_id));
     } else if (participants.length === 1) {
@@ -88,13 +170,21 @@ class ConversationsController extends BaseController {
     const conversationObj = new Conversation(conversationParams);
     await conversationObj.save();
 
-    for (let userId of participants) {
+    for (const userId of participants) {
       const participant = new ConversationParticipant({
         user_id: userId,
         conversation_id: conversationObj.params._id,
       });
       await participant.save();
     }
+
+    const convParams = conversationObj.visibleParams();
+    await this.#notifyAboutConversationCreate(
+      ws,
+      convParams,
+      currentUserLogin,
+      participants
+    );
 
     return {
       response: {
@@ -108,6 +198,7 @@ class ConversationsController extends BaseController {
     const { id: requestId, conversation_update: requestData } = data;
     await validate(ws, requestData, [validateIsConversation]);
 
+    const currentUserId = this.sessionRepository.getSessionUserId(ws);
     const conversationId = requestData.id;
     const conversation = await this.conversationRepository.findById(
       conversationId
@@ -133,8 +224,9 @@ class ConversationsController extends BaseController {
           validateParticipantsLimit,
         ]);
 
+        const participants = [];
         for (let i = 0; i < addUsers.length; i++) {
-          const obj = new ConversationParticipant({
+          const participant = new ConversationParticipant({
             user_id: ObjectId(addUsers[i]),
             conversation_id: ObjectId(conversationId),
           });
@@ -144,8 +236,20 @@ class ConversationsController extends BaseController {
               conversation_id: conversationId,
             }))
           ) {
-            await obj.save();
+            await participant.save();
+            participants.push(participant.params._id);
           }
+        }
+
+        if (participants.length) {
+          const currentUserLogin = (await User.findOne({ _id: currentUserId }))
+            ?.params?.login;
+          await this.#notifyAboutConversationUpdate(
+            ws,
+            conversation,
+            currentUserLogin,
+            participants
+          );
         }
       }
 
@@ -272,40 +376,60 @@ class ConversationsController extends BaseController {
       };
     }
     await conversationParticipant.delete();
-    const isUserInConvesation = await ConversationParticipant.findOne({
+    const existingUserInConversation = await ConversationParticipant.findOne({
       conversation_id: conversationId,
     });
-
-    if (!isUserInConvesation) {
-      await this.conversationRepository.delete(conversation);
+    if (!existingUserInConversation) {
+      await this.conversationRepository.delete(conversation._id);
     } else if (
       conversation.owner_id.toString() ===
-      this.sessionRepository.getSessionUserId(ws)
+        this.sessionRepository.getSessionUserId(ws) &&
+      conversation.type !== "u"
     ) {
       await this.conversationRepository.updateOne(conversationId, {
-        owner_id: isUserInConvesation.user_id,
+        owner_id: existingUserInConversation.params.user_id,
       });
     }
 
     return { response: { id: requestId, success: true } };
   }
 
-  async getParticipantsByCids(ws, data) {
+  async get_participants_by_cids(ws, data) {
     const {
       id: requestId,
-      getParticipantsByCids: { cids },
+      get_participants_by_cids: { cids },
     } = data;
 
-    const participantIds = await ConversationParticipant.findAll(
-      { conversation_id: { $in: cids } },
-      ["user_id"],
+    const conversations = await Conversation.findAll(
+      { _id: { $in: cids } },
+      ["type", "opponent_id", "owner_id"],
       null
     );
 
-    const ids = participantIds.map((p) => p.user_id);
+    const usersIds = [];
+    const convTypeGIds = [];
+
+    conversations.forEach((conv) => {
+      if (conv.type === "g") {
+        convTypeGIds.push(conv._id);
+        return;
+      }
+      usersIds.push(conv.opponent_id, conv.owner_id.toString());
+    });
+
+    if (convTypeGIds.length) {
+      const participants = await ConversationParticipant.findAll(
+        {
+          conversation_id: { $in: convTypeGIds },
+        },
+        ["user_id"]
+      );
+      participants.forEach((u) => usersIds.push(u.user_id.toString()));
+    }
+
     const usersLogin = await User.findAll(
       {
-        _id: { $in: ids },
+        _id: { $in: usersIds.filter((el, i) => usersIds.indexOf(el) === i) },
       },
       ["_id", "login"],
       null

@@ -39,13 +39,14 @@ export default class ConversationRepository extends BaseRepository {
     }
   }
 
-  async delete(conv) {
-    if (!conv) {
+  async delete(convId) {
+    if (!convId) {
       throw "Invalid param";
     }
 
-    delete this.inMemoryStorage[conv.params._id];
-    await conv.delete();
+    const conv = this.inMemoryStorage[convId];
+    delete this.inMemoryStorage[convId];
+    await new Conversation(conv).delete();
   }
 
   async findById(_id) {

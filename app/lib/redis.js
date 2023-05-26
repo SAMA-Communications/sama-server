@@ -3,8 +3,7 @@ import { createClient } from "redis";
 class RedisManager {
   constructor() {
     this.client = createClient({
-      host: process.env.REDIS_HOSTNAME,
-      port: process.env.REDIS_PORT,
+      url: process.env.REDIS_URL,
     });
   }
 
