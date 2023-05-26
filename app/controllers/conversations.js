@@ -31,7 +31,6 @@ class ConversationsController extends BaseController {
 
   async #notifyAboutConversationCreate(
     ws,
-    requestId,
     conversation,
     currentUserLogin,
     recipients
@@ -46,9 +45,8 @@ class ConversationsController extends BaseController {
     await PacketProcessor.deliverToUserOrUsers(
       ws,
       {
-        event_conversation_create: conversation,
+        event: { conversation_created: conversation },
         push_message,
-        id: requestId,
       },
       conversation._id,
       recipients
@@ -57,7 +55,6 @@ class ConversationsController extends BaseController {
 
   async #notifyAboutConversationUpdate(
     ws,
-    requestId,
     conversation,
     currentUserLogin,
     recipients
@@ -72,9 +69,8 @@ class ConversationsController extends BaseController {
     await PacketProcessor.deliverToUserOrUsers(
       ws,
       {
-        event_conversation_create: conversation,
+        event: { conversation_created: conversation },
         push_message,
-        id: requestId,
       },
       conversation._id,
       recipients
@@ -143,7 +139,6 @@ class ConversationsController extends BaseController {
 
           await this.#notifyAboutConversationCreate(
             ws,
-            requestId,
             existingConversation,
             currentUserLogin,
             [missedParticipantId]
@@ -186,7 +181,6 @@ class ConversationsController extends BaseController {
     const convParams = conversationObj.visibleParams();
     await this.#notifyAboutConversationCreate(
       ws,
-      requestId,
       convParams,
       currentUserLogin,
       participants
@@ -252,7 +246,6 @@ class ConversationsController extends BaseController {
             ?.params?.login;
           await this.#notifyAboutConversationUpdate(
             ws,
-            requestId,
             conversation,
             currentUserLogin,
             participants

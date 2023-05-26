@@ -392,14 +392,16 @@ After conversation created, all the online participants will receive the followi
 
 ```
 {
-  event_conversation_create: {
-    _id: "646e2092d80fe5c4e688dfa0",
-    type: "u",
-    opponent_id: "646c823bf989c57fe910d289",
-    participants: [ "646c823bf989c57fe910d289" ],
-    owner_id: "646c82947b3aceab988c0073",
-    created_at: "2023-05-24T14:34:58.066Z",
-    updated_at: "2023-05-24T14:52:24.953Z"
+  event: {
+    conversation_created: {
+      _id: "646e2092d80fe5c4e688dfa0",
+      type: "u",
+      opponent_id: "646c823bf989c57fe910d289",
+      participants: [ "646c823bf989c57fe910d289" ],
+      owner_id: "646c82947b3aceab988c0073",
+      created_at: "2023-05-24T14:34:58.066Z",
+      updated_at: "2023-05-24T14:52:24.953Z"
+    }
   }
 }
 ```
@@ -429,14 +431,16 @@ After adding users to a conversation, if they are online, they will receive the 
 
 ```
 {
-  event_conversation_create: {
-    _id: "646e2092d80fe5c4e688dfa0",
-    type: "u",
-    opponent_id: "646c823bf989c57fe910d289",
-    participants: [ "646c823bf989c57fe910d289" ],
-    owner_id: "646c82947b3aceab988c0073",
-    created_at: "2023-05-24T14:34:58.066Z",
-    updated_at: "2023-05-24T14:52:24.953Z"
+  event: {
+    conversation_created: {
+      _id: "646e2092d80fe5c4e688dfa0",
+      type: "u",
+      opponent_id: "646c823bf989c57fe910d289",
+      participants: [ "646c823bf989c57fe910d289" ],
+      owner_id: "646c82947b3aceab988c0073",
+      created_at: "2023-05-24T14:34:58.066Z",
+      updated_at: "2023-05-24T14:52:24.953Z"
+    }
   }
 }
 ```
