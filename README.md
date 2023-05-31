@@ -14,7 +14,7 @@ https://medium.com/sama-communications/introducing-sama-simple-but-advanced-mess
 - Make sure you have `Node 18` installed.
 - Copy `.env.example` to `.env`.
 - Run `docker-compose up` to run dependant services (MongoDB, Minio, Redis)
-- Open `http://localhost:9011/access-keys`, create Access Keys and set `MINIO_ACCESS_KEY` and `MINIO_SECRET_KEY` in `.env`.
+- Open `http://localhost:9011/access-keys`, create Access Keys and set `MINIO_ACCESS_KEY` and `MINIO_SECRET_KEY` in `.env`. To access the minio dashboard, you need to enter `MINIO_ROOT_USER` from `docker-compose.yml` as for the `username` field and `MINIO_ROOT_PASSWORD` as for the `password` field. 
 - `npm install` to install dependencies 
 - `npm run migrate-mongo-up` to run DB migrations 
 - `npm run start` to run server
