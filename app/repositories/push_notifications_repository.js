@@ -25,6 +25,10 @@ export default class PushNotificationsRepository extends BaseRepository {
     if (!Object.keys(devices).length) {
       return;
     }
+    console.log("[PushNotifyRepo] add message in queue: ", {
+      devices,
+      message: message || request,
+    });
     pushNotificationQueue.add({
       devices,
       message: message || request,
