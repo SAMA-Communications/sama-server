@@ -36,8 +36,8 @@ export default class PushNotificationsRepository extends BaseRepository {
     pushNotificationQueue.add({
       devices,
       message: message || {
-        body: request.message.body,
-        title: request.message.title,
+        body: request.message?.body,
+        title: request.message?.title,
       },
     });
   }
