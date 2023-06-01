@@ -1,8 +1,18 @@
 # SAMA - Simple but Advanced Messaging Alternative - Server
 
+#### Powered by [`uWebSockets.js`](https://github.com/uNetworking/uWebSockets.js/)
+
+<div align="left">
+  
+[![GitHub issues](https://img.shields.io/github/issues/SAMA-Communications/sama-server)](https://github.com/kartikk221/hyper-express/issues)
+[![GitHub stars](https://img.shields.io/github/stars/SAMA-Communications/sama-server)](https://github.com/kartikk221/hyper-express/stargazers)
+[![GitHub license](https://img.shields.io/github/license/SAMA-Communications/sama-server)](https://github.com/kartikk221/hyper-express/blob/master/LICENSE)
+
+</div>
+
 <img width="597" alt="Screenshot 2022-12-31 at 14 15 04" src="https://user-images.githubusercontent.com/70977170/210136404-b1811eaa-b058-4fd4-a7db-14b8d059a118.png">
 
-## Overview
+## Motivation
 
 The intention of our messaging protocol and chat server, which are different from others, is to provide an alternative solution to the wide spread XMPP messaging protocol (and to be honest — the only wide spread ‘standard’ these days).
 
