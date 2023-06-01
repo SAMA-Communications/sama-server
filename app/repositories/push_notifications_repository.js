@@ -33,13 +33,13 @@ export default class PushNotificationsRepository extends BaseRepository {
       },
     });
     console.log("[PushNotifyRepo] devices: ", devices, JSON.stringify(devices));
-    pushNotificationQueue.add({
-      devices,
-      message: message || {
-        body: request.message.body,
-        title: request.message.title,
-      },
-    });
+    // pushNotificationQueue.add({
+    //   devices,
+    //   message: message || {
+    //     body: request.message.body,
+    //     title: request.message.title,
+    //   },
+    // });
   }
 
   async createPushEvent(recipients_ids, user_id, request, message) {
