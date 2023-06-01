@@ -39,14 +39,9 @@ class PushNotificationsController extends BaseController {
       )?.value
     );
 
-    console.log(
-      "[PushSubscritption] Exist record about pubsub:",
-      pushSubscription
-    );
     if (!pushSubscription.params) {
       data.push_subscription_create["user_id"] = new ObjectId(userId);
       pushSubscription = new PushSubscription(data.push_subscription_create);
-      console.log("[PushSubscritption] Object to save:", pushSubscription);
       await pushSubscription.save();
     }
 
