@@ -5,9 +5,9 @@
 <div align="left">
   
 ![Last commit](https://img.shields.io/github/last-commit/SAMA-Communications/sama-server)
-[![GitHub issues](https://img.shields.io/github/issues/SAMA-Communications/sama-server)](https://github.com/kartikk221/hyper-express/issues)
-[![GitHub stars](https://img.shields.io/github/stars/SAMA-Communications/sama-server)](https://github.com/kartikk221/hyper-express/stargazers)
-[![GitHub license](https://img.shields.io/github/license/SAMA-Communications/sama-server)](https://github.com/kartikk221/hyper-express/blob/master/LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/SAMA-Communications/sama-server)](https://github.com/SAMA-Communications/sama-server/issues)
+[![GitHub stars](https://img.shields.io/github/stars/SAMA-Communications/sama-server)](https://github.com/SAMA-Communications/sama-server/stargazers)
+[![GitHub license](https://img.shields.io/github/license/SAMA-Communications/sama-server)](https://github.com/SAMA-Communications/sama-server/blob/master/LICENSE)
 ![GitHub language count](https://img.shields.io/github/languages/count/SAMA-Communications/sama-server) 
 ![GitHub top language](https://img.shields.io/github/languages/top/SAMA-Communications/sama-server)
 
