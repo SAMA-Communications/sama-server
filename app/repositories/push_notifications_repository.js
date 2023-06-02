@@ -25,6 +25,7 @@ export default class PushNotificationsRepository extends BaseRepository {
     }
 
     if (!Object.keys(devices).length) {
+      console.log("sendPushNotification skip, no devices");
       return;
     }
 
@@ -35,8 +36,8 @@ export default class PushNotificationsRepository extends BaseRepository {
         title: request.message?.title,
       },
     };
-    
-    console.log("sendPushNotification pushNotificationQueue.add", JSON.stringify(data));
+
+    console.log("sendPushNotification add to queue", JSON.stringify(data));
 
     pushNotificationQueue.add(data);
   }
