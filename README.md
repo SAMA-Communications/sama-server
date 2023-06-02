@@ -4,13 +4,17 @@
 
 <div align="left">
   
-![Last commit](https://img.shields.io/github/last-commit/SAMA-Communications/sama-server)
+[![Last commit](https://img.shields.io/github/last-commit/SAMA-Communications/sama-server)](https://github.com/SAMA-Communications/sama-server/commits/main)
 [![GitHub issues](https://img.shields.io/github/issues/SAMA-Communications/sama-server)](https://github.com/SAMA-Communications/sama-server/issues)
 [![GitHub stars](https://img.shields.io/github/stars/SAMA-Communications/sama-server)](https://github.com/SAMA-Communications/sama-server/stargazers)
 [![GitHub license](https://img.shields.io/github/license/SAMA-Communications/sama-server)](https://github.com/SAMA-Communications/sama-server/blob/master/LICENSE)
 ![GitHub language count](https://img.shields.io/github/languages/count/SAMA-Communications/sama-server) 
 ![GitHub top language](https://img.shields.io/github/languages/top/SAMA-Communications/sama-server)
 
+![NodeJS](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white) 
+![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?&style=for-the-badge&logo=redis&logoColor=white) 
+![AWS](https://img.shields.io/badge/Amazon_AWS-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white)
 </div>
 
 <img width="597" alt="Screenshot 2022-12-31 at 14 15 04" src="https://user-images.githubusercontent.com/70977170/210136404-b1811eaa-b058-4fd4-a7db-14b8d059a118.png">
