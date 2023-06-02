@@ -13,6 +13,8 @@ export default class PushNotificationsRepository extends BaseRepository {
   }
 
   async sendPushNotification(users_ids, request, message) {
+    console.log("sendPushNotification");
+
     let devices = {};
     for (const id of users_ids) {
       const userDevices = await PushSubscription.findAll({ user_id: id });
@@ -25,13 +27,18 @@ export default class PushNotificationsRepository extends BaseRepository {
     if (!Object.keys(devices).length) {
       return;
     }
-    pushNotificationQueue.add({
+
+    const data = {
       devices,
       message: message || {
         body: request.message?.body,
         title: request.message?.title,
       },
-    });
+    };
+    
+    console.log("sendPushNotification pushNotificationQueue.add", JSON.stringify(data));
+
+    pushNotificationQueue.add(data);
   }
 
   async createPushEvent(recipients_ids, user_id, request, message) {
