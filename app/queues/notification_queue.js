@@ -4,6 +4,9 @@ export const pushNotificationQueue = new Queue(
   "notification",
   process.env.REDIS_URL,
   {
-    redis: { tls: true, enableTLSForSentinelMode: false },
+    redis: {
+      host: "redis",
+      port: "6379",
+    },
   }
 );
