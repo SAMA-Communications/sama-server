@@ -126,10 +126,10 @@ class MessagesController extends BaseController {
     const packetMessage = Object.assign(
       message.visibleParams(),
       conversation.type === "u"
-        ? { title: userLogin, url: "/" + userLogin }
+        ? { title: userLogin, url: `/#${userLogin}` }
         : {
-            title: userLogin + "@" + conversation.name,
-            url: "/" + conversation._id,
+            title: `${userLogin} | ${conversation.name}`,
+            url: `/#${conversation._id}`,
           }
     );
 
@@ -256,24 +256,21 @@ class MessagesController extends BaseController {
       await MessageStatus.insertMany(insertMessages.reverse());
       const unreadMessagesGrouppedByFrom = groupBy(unreadMessages, "from");
 
-      const messagesToDeliver = {};
       for (const uId in unreadMessagesGrouppedByFrom) {
         const mids = unreadMessagesGrouppedByFrom[uId].map((el) => el._id);
-        messagesToDeliver[uId] = {
-          message_read: {
-            cid: ObjectId(cid),
-            ids: mids,
-            from: ObjectId(uId),
+        await PacketProcessor.deliverToUserOrUsers(
+          ws,
+          {
+            message_read: {
+              cid: ObjectId(cid),
+              ids: mids,
+              from: ObjectId(uId),
+            },
           },
-        };
+          cid,
+          Object.keys(unreadMessagesGrouppedByFrom)
+        );
       }
-
-      await PacketProcessor.deliverToUserOrUsers(
-        ws,
-        messagesToDeliver,
-        cid,
-        Object.keys(unreadMessagesGrouppedByFrom)
-      );
     }
 
     return {

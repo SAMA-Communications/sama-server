@@ -29,8 +29,9 @@ export default class PushNotificationsRepository extends BaseRepository {
     const data = {
       devices,
       message: message || {
-        body: request.message?.body,
         title: request.message?.title,
+        body: request.message?.body,
+        url: request.message?.url,
       },
     };
 

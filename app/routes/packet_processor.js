@@ -112,24 +112,23 @@ class PacketProcessor {
       ).map((obj) => obj.user_id);
 
     const offlineUsersByPackets = [];
-    let pushMessage = null;
+    const pushMessage = packetsMapOrPacket.push_message;
+    pushMessage && delete packetsMapOrPacket.push_message;
+
     for (const uId of participants) {
       const userNodeData = await this.sessionRepository.getUserNodeData(uId);
-      const uPacket = packetsMapOrPacket[uId] || packetsMapOrPacket;
-      pushMessage = packetsMapOrPacket.push_message;
 
       if (!userNodeData?.length) {
-        this.isAllowedForOfflineStorage(uPacket) &&
-          this.operationsLogRepository.savePacket(uId, uPacket);
+        this.isAllowedForOfflineStorage(packetsMapOrPacket) &&
+          this.operationsLogRepository.savePacket(uId, packetsMapOrPacket);
 
-        !uPacket.message_reed && offlineUsersByPackets.push(uId);
+        !packetsMapOrPacket.message_reed && offlineUsersByPackets.push(uId);
         continue;
       }
-      this.#deliverToUserDevices(ws, userNodeData, uId, uPacket);
+      this.#deliverToUserDevices(ws, userNodeData, uId, packetsMapOrPacket);
     }
 
     if (offlineUsersByPackets.length) {
-      pushMessage && delete packetsMapOrPacket.push_message;
       this.pushNotificationsRepository.sendPushNotification(
         offlineUsersByPackets,
         packetsMapOrPacket,
