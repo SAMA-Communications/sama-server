@@ -36,10 +36,8 @@ class ConversationsController extends BaseController {
     recipients
   ) {
     const push_message = {
-      title: "New conversation created",
-      body: `${currentUserLogin} created a new conversation ${
-        conversation.name || ""
-      }`,
+      title: conversation.name,
+      body: `${currentUserLogin} created a new conversation`,
     };
 
     await PacketProcessor.deliverToUserOrUsers(
@@ -60,10 +58,8 @@ class ConversationsController extends BaseController {
     recipients
   ) {
     const push_message = {
-      title: "You were added to conversation",
-      body: `${currentUserLogin} added you to conversation ${
-        conversation.name || ""
-      }`,
+      title: conversation.name,
+      body: `${currentUserLogin} added you to conversation`,
     };
 
     await PacketProcessor.deliverToUserOrUsers(
@@ -137,12 +133,13 @@ class ConversationsController extends BaseController {
           });
           await participant.save();
 
-          await this.#notifyAboutConversationCreate(
-            ws,
-            existingConversation,
-            currentUserLogin,
-            [missedParticipantId]
-          );
+          conversationParams.type !== "u" &&
+            (await this.#notifyAboutConversationCreate(
+              ws,
+              existingConversation,
+              currentUserLogin,
+              [missedParticipantId]
+            ));
         }
         return {
           response: {
@@ -179,12 +176,13 @@ class ConversationsController extends BaseController {
     }
 
     const convParams = conversationObj.visibleParams();
-    await this.#notifyAboutConversationCreate(
-      ws,
-      convParams,
-      currentUserLogin,
-      participants
-    );
+    convParams.type !== "u" &&
+      (await this.#notifyAboutConversationCreate(
+        ws,
+        convParams,
+        currentUserLogin,
+        participants
+      ));
 
     return {
       response: {
@@ -241,7 +239,7 @@ class ConversationsController extends BaseController {
           }
         }
 
-        if (participants.length) {
+        if (participants.length && convParams.type !== "u") {
           const currentUserLogin = (await User.findOne({ _id: currentUserId }))
             ?.params?.login;
           await this.#notifyAboutConversationUpdate(

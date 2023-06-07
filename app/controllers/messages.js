@@ -22,6 +22,7 @@ import { CONSTANTS } from "../validations/constants/constants.js";
 import { ERROR_STATUES } from "../validations/constants/errors.js";
 import { ObjectId } from "mongodb";
 import { default as PacketProcessor } from "../routes/packet_processor.js";
+import User from "../models/user.js";
 
 class MessagesController extends BaseController {
   constructor() {
@@ -47,19 +48,18 @@ class MessagesController extends BaseController {
     );
 
     let participants;
-    if (conversation) {
-      participants = await ConversationParticipant.findAll({
-        conversation_id: conversation._id,
-      });
-      participants = participants?.map((u) => u.user_id.toString());
-      if (!participants.includes(currentUserId)) {
-        throw new Error(ERROR_STATUES.FORBIDDEN.message, {
-          cause: ERROR_STATUES.FORBIDDEN,
-        });
-      }
-    } else {
+    if (!conversation) {
       throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {
         cause: ERROR_STATUES.CONVERSATION_NOT_FOUND,
+      });
+    }
+    participants = await ConversationParticipant.findAll({
+      conversation_id: conversation._id,
+    });
+    participants = participants?.map((u) => u.user_id.toString());
+    if (!participants.includes(currentUserId)) {
+      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+        cause: ERROR_STATUES.FORBIDDEN,
       });
     }
 
@@ -93,6 +93,7 @@ class MessagesController extends BaseController {
     message.params.t = parseInt(currentTs);
 
     await message.save();
+
     if (conversation.type === "u") {
       const recipentsThatChatNotVisible = [
         conversation.opponent_id,
@@ -120,9 +121,21 @@ class MessagesController extends BaseController {
       }
     }
 
+    const userLogin = (await User.findOne({ _id: currentUserId }))?.params
+      ?.login;
+    const packetMessage = Object.assign(
+      message.visibleParams(),
+      conversation.type === "u"
+        ? { title: userLogin, url: "/" + userLogin }
+        : {
+            title: userLogin + "@" + conversation.name,
+            url: "/" + conversation._id,
+          }
+    );
+
     await PacketProcessor.deliverToUserOrUsers(
       ws,
-      { message: message.visibleParams() },
+      { message: packetMessage },
       messageParams.cid
     );
 
