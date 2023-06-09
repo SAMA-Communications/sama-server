@@ -7,6 +7,7 @@ import ConversationRepository from "../repositories/conversation_repository.js";
 import Message from "../models/message.js";
 import MessageStatus from "../models/message_status.js";
 import SessionRepository from "../repositories/session_repository.js";
+import User from "../models/user.js";
 import groupBy from "../utils/groupBy.js";
 import validate, {
   validateIsConversation,
@@ -22,7 +23,6 @@ import { CONSTANTS } from "../validations/constants/constants.js";
 import { ERROR_STATUES } from "../validations/constants/errors.js";
 import { ObjectId } from "mongodb";
 import { default as PacketProcessor } from "../routes/packet_processor.js";
-import User from "../models/user.js";
 
 class MessagesController extends BaseController {
   constructor() {
@@ -126,10 +126,11 @@ class MessagesController extends BaseController {
     const packetMessage = Object.assign(
       message.visibleParams(),
       conversation.type === "u"
-        ? { title: userLogin, url: `/#${userLogin}` }
+        ? { title: userLogin, user_login: userLogin, conversation_type: "u" }
         : {
             title: `${userLogin} | ${conversation.name}`,
-            url: `/#${conversation._id}`,
+            conversation_id: conversation._id,
+            conversation_type: "g",
           }
     );
 

@@ -26,14 +26,20 @@ export default class PushNotificationsRepository extends BaseRepository {
       return;
     }
 
-    const data = {
-      devices,
-      message: message || {
-        title: request.message?.title,
-        body: request.message?.body,
-        url: request.message?.url,
-      },
-    };
+    const data = { devices };
+    if (request.message && !message) {
+      const m = request.message;
+      data["message"] = {
+        title: m.title,
+        body: m.body,
+        data: {
+          conversationType: m.conversation_type,
+          conversationId: m.conversation_id,
+          userLogin: m.user_login,
+        },
+      };
+    }
+    message && (data["message"] = message);
 
     pushNotificationQueue.add(data);
   }
