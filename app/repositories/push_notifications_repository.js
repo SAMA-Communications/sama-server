@@ -13,7 +13,6 @@ export default class PushNotificationsRepository extends BaseRepository {
   }
 
   async sendPushNotification(users_ids, request, message) {
-    console.log("[push_notification]:", request);
     let devices = {};
     for (const id of users_ids) {
       const userDevices = await PushSubscription.findAll({ user_id: id });

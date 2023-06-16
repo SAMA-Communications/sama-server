@@ -122,7 +122,7 @@ class PacketProcessor {
         this.isAllowedForOfflineStorage(packetsMapOrPacket) &&
           this.operationsLogRepository.savePacket(uId, packetsMapOrPacket);
 
-        !packetsMapOrPacket.message_reed && offlineUsersByPackets.push(uId);
+        !packetsMapOrPacket.message_read && offlineUsersByPackets.push(uId);
         continue;
       }
       this.#deliverToUserDevices(ws, userNodeData, uId, packetsMapOrPacket);
