@@ -13,8 +13,6 @@ export default class PushNotificationsRepository extends BaseRepository {
   }
 
   async sendPushNotification(users_ids, request, message) {
-    console.log("sendPushNotification");
-
     let devices = {};
     for (const id of users_ids) {
       const userDevices = await PushSubscription.findAll({ user_id: id });
@@ -25,19 +23,23 @@ export default class PushNotificationsRepository extends BaseRepository {
     }
 
     if (!Object.keys(devices).length) {
-      console.log("sendPushNotification skip, no devices");
       return;
     }
 
-    const data = {
-      devices,
-      message: message || {
-        body: request.message?.body,
-        title: request.message?.title,
-      },
-    };
-
-    console.log("sendPushNotification add to queue", JSON.stringify(data));
+    const data = { devices };
+    if (request.message && !message) {
+      const m = request.message;
+      data["message"] = {
+        title: m.title,
+        body: m.body,
+        data: {
+          conversationType: m.conversation_type,
+          conversationId: m.conversation_id,
+          userLogin: m.user_login,
+        },
+      };
+    }
+    message && (data["message"] = message);
 
     pushNotificationQueue.add(data);
   }

@@ -7,6 +7,7 @@ import ConversationRepository from "../repositories/conversation_repository.js";
 import Message from "../models/message.js";
 import MessageStatus from "../models/message_status.js";
 import SessionRepository from "../repositories/session_repository.js";
+import User from "../models/user.js";
 import groupBy from "../utils/groupBy.js";
 import validate, {
   validateIsConversation,
@@ -47,19 +48,18 @@ class MessagesController extends BaseController {
     );
 
     let participants;
-    if (conversation) {
-      participants = await ConversationParticipant.findAll({
-        conversation_id: conversation._id,
-      });
-      participants = participants?.map((u) => u.user_id.toString());
-      if (!participants.includes(currentUserId)) {
-        throw new Error(ERROR_STATUES.FORBIDDEN.message, {
-          cause: ERROR_STATUES.FORBIDDEN,
-        });
-      }
-    } else {
+    if (!conversation) {
       throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {
         cause: ERROR_STATUES.CONVERSATION_NOT_FOUND,
+      });
+    }
+    participants = await ConversationParticipant.findAll({
+      conversation_id: conversation._id,
+    });
+    participants = participants?.map((u) => u.user_id.toString());
+    if (!participants.includes(currentUserId)) {
+      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+        cause: ERROR_STATUES.FORBIDDEN,
       });
     }
 
@@ -93,6 +93,7 @@ class MessagesController extends BaseController {
     message.params.t = parseInt(currentTs);
 
     await message.save();
+
     if (conversation.type === "u") {
       const recipentsThatChatNotVisible = [
         conversation.opponent_id,
@@ -120,9 +121,22 @@ class MessagesController extends BaseController {
       }
     }
 
+    const userLogin = (await User.findOne({ _id: currentUserId }))?.params
+      ?.login;
+    const packetMessage = Object.assign(
+      message.visibleParams(),
+      conversation.type === "u"
+        ? { title: userLogin, user_login: userLogin, conversation_type: "u" }
+        : {
+            title: `${userLogin} | ${conversation.name}`,
+            conversation_id: conversation._id,
+            conversation_type: "g",
+          }
+    );
+
     await PacketProcessor.deliverToUserOrUsers(
       ws,
-      { message: message.visibleParams() },
+      { message: packetMessage },
       messageParams.cid
     );
 
@@ -243,24 +257,21 @@ class MessagesController extends BaseController {
       await MessageStatus.insertMany(insertMessages.reverse());
       const unreadMessagesGrouppedByFrom = groupBy(unreadMessages, "from");
 
-      const messagesToDeliver = {};
       for (const uId in unreadMessagesGrouppedByFrom) {
         const mids = unreadMessagesGrouppedByFrom[uId].map((el) => el._id);
-        messagesToDeliver[uId] = {
-          message_read: {
-            cid: ObjectId(cid),
-            ids: mids,
-            from: ObjectId(uId),
+        await PacketProcessor.deliverToUserOrUsers(
+          ws,
+          {
+            message_read: {
+              cid: ObjectId(cid),
+              ids: mids,
+              from: ObjectId(uId),
+            },
           },
-        };
+          cid,
+          Object.keys(unreadMessagesGrouppedByFrom)
+        );
       }
-
-      await PacketProcessor.deliverToUserOrUsers(
-        ws,
-        messagesToDeliver,
-        cid,
-        Object.keys(unreadMessagesGrouppedByFrom)
-      );
     }
 
     return {
