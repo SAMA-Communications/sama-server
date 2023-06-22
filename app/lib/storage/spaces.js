@@ -43,7 +43,7 @@ export default class Spaces extends BaseStorage {
       return await getSignedUrl(
         this.spacesClient,
         new GetObjectCommand(bucketParams),
-        { expiresIn: process.env.FILE_UPLOAD_URL_EXPIRES_IN }
+        { expiresIn: process.env.FILE_DOWNLOAD_URL_EXPIRES_IN }
       );
     } catch (err) {
       return err;
