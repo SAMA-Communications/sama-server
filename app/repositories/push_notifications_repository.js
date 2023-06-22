@@ -30,14 +30,10 @@ export default class PushNotificationsRepository extends BaseRepository {
     if (request.message && !message) {
       const m = request.message;
       let imgUrl = null;
-      if (m.attachments?.length === 1) {
+      if (m.attachments?.length) {
         imgUrl = await globalThis.storageClient.getDownloadUrl(
           m.attachments[0].file_id
         );
-      } else if (m.attachments) {
-        for (let i = 0; i < m.attachments.length; i++) {
-          m.body += `\nImage`;
-        }
       }
 
       data["message"] = {
