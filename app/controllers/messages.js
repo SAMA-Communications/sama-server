@@ -21,7 +21,7 @@ import {
 import { ACTIVE } from "../store/session.js";
 import { CONSTANTS } from "../validations/constants/constants.js";
 import { ERROR_STATUES } from "../validations/constants/errors.js";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "../lib/db.js";
 import { default as PacketProcessor } from "../routes/packet_processor.js";
 
 class MessagesController extends BaseController {

@@ -5,7 +5,7 @@ import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
 import { ACTIVE } from "../store/session.js";
 import { ERROR_STATUES } from "../validations/constants/errors.js";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "../lib/db.js";
 
 class PushNotificationsController extends BaseController {
   constructor() {
