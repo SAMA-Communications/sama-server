@@ -32,7 +32,8 @@ export default class Minio extends BaseStorage {
     try {
       return await this.minioClient.presignedGetObject(
         process.env.MINIO_BUCKET_NAME,
-        fileId
+        fileId,
+        +process.env.FILE_DOWNLOAD_URL_EXPIRES_IN
       );
     } catch (err) {
       return err;

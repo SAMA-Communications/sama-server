@@ -4,7 +4,7 @@ import MessageStatus from "./../app/models/message_status.js";
 import Message from "./../app/models/message.js";
 import User from "./../app/models/user.js";
 import assert from "assert";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "../lib/db.js";
 import { connectToDBPromise } from "../app/lib/db.js";
 import {
   createConversation,
