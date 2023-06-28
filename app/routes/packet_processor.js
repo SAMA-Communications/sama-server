@@ -38,9 +38,13 @@ class PacketProcessor {
       return;
     }
 
-    wsRecipient.forEach((data) => {
-      data.ws !== ws && data.ws.send(JSON.stringify(packet));
-    });
+    try {
+      wsRecipient.forEach((data) => {
+        data.ws !== ws && data.ws.send(JSON.stringify(packet));
+      });
+    } catch (err) {
+      console.error(`[PacketProcessor] send on socket error`, err);
+    }
   }
 
   #deliverToUserDevices(ws, nodeConnections, userId, packet) {
@@ -71,7 +75,7 @@ class PacketProcessor {
           } catch (err) {
             console.error(
               "[PacketProcessor][deliverToUserDevices] createSocketWithNode error",
-              err
+              err.slice(39)
             );
 
             await this.sessionRepository.clearNodeUsersSession(nodeUrl);

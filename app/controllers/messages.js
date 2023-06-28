@@ -123,13 +123,25 @@ class MessagesController extends BaseController {
 
     const userLogin = (await User.findOne({ _id: currentUserId }))?.params
       ?.login;
+    const titleImgUrl = !messageParams.attachments?.length
+      ? null
+      : await globalThis.storageClient.getDownloadUrl(
+          messageParams.attachments[0].file_id
+        );
     const packetMessage = Object.assign(
       message.visibleParams(),
+      {
+        titleImgUrl,
+        conversation_id: conversation._id,
+      },
       conversation.type === "u"
-        ? { title: userLogin, user_login: userLogin, conversation_type: "u" }
+        ? {
+            title: userLogin,
+            user_login: userLogin,
+            conversation_type: "u",
+          }
         : {
             title: `${userLogin} | ${conversation.name}`,
-            conversation_id: conversation._id,
             conversation_type: "g",
           }
     );
