@@ -27,7 +27,11 @@ export default class PushNotificationsRepository extends BaseRepository {
     }
 
     const data = { devices };
-    message && (data["message"] = message);
+    if (request.message && !message) {
+      data["message"] = request.message;
+    } else if (message) {
+      data["message"] = message;
+    }
 
     pushNotificationQueue.add(data);
   }

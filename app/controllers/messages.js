@@ -123,17 +123,14 @@ class MessagesController extends BaseController {
 
     const userLogin = (await User.findOne({ _id: currentUserId }))?.params
       ?.login;
-    const titleImgUrl = !messageParams.attachments?.length
+    const firstAttachmentUrl = !messageParams.attachments?.length
       ? null
       : await globalThis.storageClient.getDownloadUrl(
           messageParams.attachments[0].file_id
         );
     const packetMessage = Object.assign(
       message.visibleParams(),
-      {
-        titleImgUrl,
-        conversation_id: conversation._id,
-      },
+      { firstAttachmentUrl },
       conversation.type === "u"
         ? {
             title: userLogin,
@@ -207,8 +204,11 @@ class MessagesController extends BaseController {
       deleted_for: { $nin: [this.sessionRepository.getSessionUserId(ws)] },
     };
     const timeFromUpdate = updated_at;
-    if (timeFromUpdate && timeFromUpdate.gt) {
-      query.updated_at = { $gt: new Date(timeFromUpdate.gt) };
+    if (timeFromUpdate) {
+      timeFromUpdate.gt &&
+        (query.updated_at = { $gt: new Date(timeFromUpdate.gt) });
+      timeFromUpdate.lt &&
+        (query.updated_at = { $lt: new Date(timeFromUpdate.lt) });
     }
 
     const messages = await Message.findAll(

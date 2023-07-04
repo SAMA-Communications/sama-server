@@ -562,16 +562,20 @@ All conversation's participants who is online will receive the following message
     id: "63480e68f4794709f802a2fa",
     t: 15673838833,
     from: "634ec51c0b65918393dca5bf",
+    title: "UserName",
     body: "hey how is going?",
     cid: "xcv",
+    conversation_type: "g",
     x: {
       param1: "value",
       param2: "value"
     }
+    firstAttachmentUrl: "url",
     attachments: [
       { file_id: "123123_file_1", file_name: "fil_1" },
       { file_name: "653534_file_2", file_name: "fil_1" }
-    ]
+    ],
+    created_at: "2023-07-04T07:23:53.308Z",
   }
 }
 ```
@@ -610,7 +614,11 @@ On each message sent to server - a server will deliver back to client a simple p
         cid: "63563a2ad745dc1c6ad01b5f",
         from: "63480e68f4794709f802a2fa",
         status: "sent",
-        t: 1668680757
+        attachments: [
+          { file_id: "file_name_1", file_name: "file_1" }
+        ]
+        t: 1668680757,
+        created_at: "2023-05-24T14:34:58.066Z"
       }
     ]
   }

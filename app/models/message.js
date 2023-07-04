@@ -12,7 +12,16 @@ export default class Message extends BaseModel {
   }
 
   static get visibleFields() {
-    return ["_id", "t", "from", "body", "cid", "x", "attachments"];
+    return [
+      "_id",
+      "t",
+      "from",
+      "body",
+      "cid",
+      "x",
+      "attachments",
+      "created_at",
+    ];
   }
 
   static async getLastMessageForConversation(cids, uId) {
