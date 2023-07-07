@@ -562,21 +562,30 @@ All conversation's participants who is online will receive the following message
     id: "63480e68f4794709f802a2fa",
     t: 15673838833,
     from: "634ec51c0b65918393dca5bf",
-    title: "UserName",
     body: "hey how is going?",
-    cid: "xcv",
+    cid: "63480e68f4794709f802a2fa",
     conversation_type: "g",
     x: {
       param1: "value",
       param2: "value"
     }
-    firstAttachmentUrl: "url",
     attachments: [
       { file_id: "123123_file_1", file_name: "fil_1" },
       { file_name: "653534_file_2", file_name: "fil_1" }
     ],
     created_at: "2023-07-04T07:23:53.308Z",
   }
+}
+```
+
+And also an object with information about push notifications
+
+```
+{
+  title: "UserName"
+  body: "MessageText",
+  firstAttachmentUrl: "url",
+  cid: "63480e68f4794709f802a2fa",
 }
 ```
 

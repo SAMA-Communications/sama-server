@@ -117,7 +117,6 @@ class PacketProcessor {
 
     const offlineUsersByPackets = [];
     const pushMessage = packet.push_message;
-    console.log(packet);
     pushMessage && delete packet.push_message;
 
     for (const uId of participants) {

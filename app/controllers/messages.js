@@ -41,7 +41,6 @@ class MessagesController extends BaseController {
   async create(ws, data) {
     const { message: messageParams } = data;
     const messageId = messageParams.id;
-
     const currentUserId = this.sessionRepository.getSessionUserId(ws);
     const conversation = await this.conversationRepository.findById(
       messageParams.cid
