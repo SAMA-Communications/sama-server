@@ -98,7 +98,7 @@ class PacketProcessor {
     });
   }
 
-  async deliverToUserOrUsers(ws, packetsMapOrPacket, cid, usersId) {
+  async deliverToUserOrUsers(ws, packet, cid, usersId) {
     if (!cid && !usersId) {
       return;
     }
@@ -116,26 +116,26 @@ class PacketProcessor {
       ).map((obj) => obj.user_id);
 
     const offlineUsersByPackets = [];
-    const pushMessage = packetsMapOrPacket.push_message;
-    pushMessage && delete packetsMapOrPacket.push_message;
+    const pushMessage = packet.push_message;
+    console.log(packet);
+    pushMessage && delete packet.push_message;
 
     for (const uId of participants) {
       const userNodeData = await this.sessionRepository.getUserNodeData(uId);
 
       if (!userNodeData?.length) {
-        this.isAllowedForOfflineStorage(packetsMapOrPacket) &&
-          this.operationsLogRepository.savePacket(uId, packetsMapOrPacket);
+        this.isAllowedForOfflineStorage(packet) &&
+          this.operationsLogRepository.savePacket(uId, packet);
 
-        !packetsMapOrPacket.message_read && offlineUsersByPackets.push(uId);
+        !packet.message_read && offlineUsersByPackets.push(uId);
         continue;
       }
-      this.#deliverToUserDevices(ws, userNodeData, uId, packetsMapOrPacket);
+      this.#deliverToUserDevices(ws, userNodeData, uId, packet);
     }
 
     if (offlineUsersByPackets.length) {
       this.pushNotificationsRepository.sendPushNotification(
         offlineUsersByPackets,
-        packetsMapOrPacket,
         pushMessage
       );
     }

@@ -128,24 +128,20 @@ class MessagesController extends BaseController {
       : await globalThis.storageClient.getDownloadUrl(
           messageParams.attachments[0].file_id
         );
-    const packetMessage = Object.assign(
-      message.visibleParams(),
-      { firstAttachmentUrl },
-      conversation.type === "u"
-        ? {
-            title: userLogin,
-            user_login: userLogin,
-            conversation_type: "u",
-          }
-        : {
-            title: `${userLogin} | ${conversation.name}`,
-            conversation_type: "g",
-          }
-    );
+
+    const packetMessage = Object.assign({
+      title:
+        conversation.type === "u"
+          ? userLogin
+          : `${userLogin} | ${conversation.name}`,
+      body: messageParams.body,
+      firstAttachmentUrl,
+      cid: messageParams.cid,
+    });
 
     await PacketProcessor.deliverToUserOrUsers(
       ws,
-      { message: packetMessage },
+      { message: message.visibleParams(), push_message: packetMessage },
       messageParams.cid
     );
 
