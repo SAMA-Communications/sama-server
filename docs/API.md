@@ -564,7 +564,6 @@ All conversation's participants who is online will receive the following message
     from: "634ec51c0b65918393dca5bf",
     body: "hey how is going?",
     cid: "63480e68f4794709f802a2fa",
-    conversation_type: "g",
     x: {
       param1: "value",
       param2: "value"
@@ -578,7 +577,7 @@ All conversation's participants who is online will receive the following message
 }
 ```
 
-And also an object with information about push notifications
+Additionally, all conversation's participants who is offline will receive the following push notification:
 
 ```
 {

@@ -128,7 +128,7 @@ class MessagesController extends BaseController {
           messageParams.attachments[0].file_id
         );
 
-    const packetMessage = Object.assign({
+    const pushPayload = Object.assign({
       title:
         conversation.type === "u"
           ? userLogin
@@ -140,7 +140,7 @@ class MessagesController extends BaseController {
 
     await PacketProcessor.deliverToUserOrUsers(
       ws,
-      { message: message.visibleParams(), push_message: packetMessage },
+      { message: message.visibleParams(), push_message: pushPayload },
       messageParams.cid
     );
 
