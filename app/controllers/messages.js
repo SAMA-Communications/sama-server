@@ -41,7 +41,6 @@ class MessagesController extends BaseController {
   async create(ws, data) {
     const { message: messageParams } = data;
     const messageId = messageParams.id;
-
     const currentUserId = this.sessionRepository.getSessionUserId(ws);
     const conversation = await this.conversationRepository.findById(
       messageParams.cid
@@ -123,20 +122,25 @@ class MessagesController extends BaseController {
 
     const userLogin = (await User.findOne({ _id: currentUserId }))?.params
       ?.login;
-    const packetMessage = Object.assign(
-      message.visibleParams(),
-      conversation.type === "u"
-        ? { title: userLogin, user_login: userLogin, conversation_type: "u" }
-        : {
-            title: `${userLogin} | ${conversation.name}`,
-            conversation_id: conversation._id,
-            conversation_type: "g",
-          }
-    );
+    const firstAttachmentUrl = !messageParams.attachments?.length
+      ? null
+      : await globalThis.storageClient.getDownloadUrl(
+          messageParams.attachments[0].file_id
+        );
+
+    const pushPayload = Object.assign({
+      title:
+        conversation.type === "u"
+          ? userLogin
+          : `${userLogin} | ${conversation.name}`,
+      body: messageParams.body,
+      firstAttachmentUrl,
+      cid: messageParams.cid,
+    });
 
     await PacketProcessor.deliverToUserOrUsers(
       ws,
-      { message: packetMessage },
+      { message: message.visibleParams(), push_message: pushPayload },
       messageParams.cid
     );
 
@@ -195,8 +199,11 @@ class MessagesController extends BaseController {
       deleted_for: { $nin: [this.sessionRepository.getSessionUserId(ws)] },
     };
     const timeFromUpdate = updated_at;
-    if (timeFromUpdate && timeFromUpdate.gt) {
-      query.updated_at = { $gt: new Date(timeFromUpdate.gt) };
+    if (timeFromUpdate) {
+      timeFromUpdate.gt &&
+        (query.updated_at = { $gt: new Date(timeFromUpdate.gt) });
+      timeFromUpdate.lt &&
+        (query.updated_at = { $lt: new Date(timeFromUpdate.lt) });
     }
 
     const messages = await Message.findAll(

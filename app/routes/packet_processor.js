@@ -38,9 +38,13 @@ class PacketProcessor {
       return;
     }
 
-    wsRecipient.forEach((data) => {
-      data.ws !== ws && data.ws.send(JSON.stringify(packet));
-    });
+    try {
+      wsRecipient.forEach((data) => {
+        data.ws !== ws && data.ws.send(JSON.stringify(packet));
+      });
+    } catch (err) {
+      console.error(`[PacketProcessor] send on socket error`, err);
+    }
   }
 
   #deliverToUserDevices(ws, nodeConnections, userId, packet) {
@@ -71,7 +75,7 @@ class PacketProcessor {
           } catch (err) {
             console.error(
               "[PacketProcessor][deliverToUserDevices] createSocketWithNode error",
-              err
+              err.slice(39)
             );
 
             await this.sessionRepository.clearNodeUsersSession(nodeUrl);
@@ -94,7 +98,7 @@ class PacketProcessor {
     });
   }
 
-  async deliverToUserOrUsers(ws, packetsMapOrPacket, cid, usersId) {
+  async deliverToUserOrUsers(ws, packet, cid, usersId) {
     if (!cid && !usersId) {
       return;
     }
@@ -112,26 +116,25 @@ class PacketProcessor {
       ).map((obj) => obj.user_id);
 
     const offlineUsersByPackets = [];
-    const pushMessage = packetsMapOrPacket.push_message;
-    pushMessage && delete packetsMapOrPacket.push_message;
+    const pushMessage = packet.push_message;
+    pushMessage && delete packet.push_message;
 
     for (const uId of participants) {
       const userNodeData = await this.sessionRepository.getUserNodeData(uId);
 
       if (!userNodeData?.length) {
-        this.isAllowedForOfflineStorage(packetsMapOrPacket) &&
-          this.operationsLogRepository.savePacket(uId, packetsMapOrPacket);
+        this.isAllowedForOfflineStorage(packet) &&
+          this.operationsLogRepository.savePacket(uId, packet);
 
-        !packetsMapOrPacket.message_read && offlineUsersByPackets.push(uId);
+        !packet.message_read && offlineUsersByPackets.push(uId);
         continue;
       }
-      this.#deliverToUserDevices(ws, userNodeData, uId, packetsMapOrPacket);
+      this.#deliverToUserDevices(ws, userNodeData, uId, packet);
     }
 
     if (offlineUsersByPackets.length) {
       this.pushNotificationsRepository.sendPushNotification(
         offlineUsersByPackets,
-        packetsMapOrPacket,
         pushMessage
       );
     }

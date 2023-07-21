@@ -89,7 +89,7 @@ class PushNotificationsController extends BaseController {
   async pushEventCreate(ws, data) {
     const {
       id: requestId,
-      push_event_create: { recipients_ids, request, message },
+      push_event_create: { recipients_ids, message },
     } = data;
 
     const recipients = [];
@@ -107,7 +107,6 @@ class PushNotificationsController extends BaseController {
     const pushEvent = await this.pushNotificationsRepository.createPushEvent(
       recipients,
       userId,
-      request,
       message
     );
 

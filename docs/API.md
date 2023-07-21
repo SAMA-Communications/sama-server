@@ -563,7 +563,7 @@ All conversation's participants who is online will receive the following message
     t: 15673838833,
     from: "634ec51c0b65918393dca5bf",
     body: "hey how is going?",
-    cid: "xcv",
+    cid: "63480e68f4794709f802a2fa",
     x: {
       param1: "value",
       param2: "value"
@@ -571,8 +571,20 @@ All conversation's participants who is online will receive the following message
     attachments: [
       { file_id: "123123_file_1", file_name: "fil_1" },
       { file_name: "653534_file_2", file_name: "fil_1" }
-    ]
+    ],
+    created_at: "2023-07-04T07:23:53.308Z",
   }
+}
+```
+
+Additionally, all conversation's participants who is offline will receive the following push notification:
+
+```
+{
+  title: "UserName"
+  body: "MessageText",
+  firstAttachmentUrl: "url",
+  cid: "63480e68f4794709f802a2fa",
 }
 ```
 
@@ -610,7 +622,11 @@ On each message sent to server - a server will deliver back to client a simple p
         cid: "63563a2ad745dc1c6ad01b5f",
         from: "63480e68f4794709f802a2fa",
         status: "sent",
-        t: 1668680757
+        attachments: [
+          { file_id: "file_name_1", file_name: "file_1" }
+        ]
+        t: 1668680757,
+        created_at: "2023-05-24T14:34:58.066Z"
       }
     ]
   }
