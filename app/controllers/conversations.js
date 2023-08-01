@@ -176,13 +176,12 @@ class ConversationsController extends BaseController {
     }
 
     const convParams = conversationObj.visibleParams();
-    convParams.type !== "u" &&
-      (await this.#notifyAboutConversationCreate(
-        ws,
-        convParams,
-        currentUserLogin,
-        participants
-      ));
+    await this.#notifyAboutConversationCreate(
+      ws,
+      convParams,
+      currentUserLogin,
+      participants
+    );
 
     return {
       response: {
