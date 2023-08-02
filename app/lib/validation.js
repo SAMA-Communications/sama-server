@@ -29,8 +29,8 @@ async function validateIsUserHavePermission(vParams) {
     user_id: vParams.uId,
   });
   if (!participant) {
-    throw new Error(ERROR_STATUES.BAD_REQUEST.message, {
-      cause: ERROR_STATUES.BAD_REQUEST,
+    throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+      cause: ERROR_STATUES.FORBIDDEN,
     });
   }
 }

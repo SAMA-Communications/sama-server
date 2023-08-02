@@ -239,7 +239,7 @@ class ConversationsController extends BaseController {
           }
         }
 
-        if (participants.length && convParams.type !== "u") {
+        if (participants.length && conversation.type !== "u") {
           const currentUserLogin = (await User.findOne({ _id: currentUserId }))
             ?.params?.login;
           await this.#notifyAboutConversationUpdate(
