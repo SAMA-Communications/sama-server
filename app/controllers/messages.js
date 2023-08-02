@@ -13,7 +13,7 @@ import validate, {
   validateIsConversation,
   validateIsConversationByCID,
   validateIsUserAccess,
-  validateIsUserHavePermission,
+  validateIsUserHasPermission,
 } from "../lib/validation.js";
 import {
   inMemoryBlockList,
@@ -192,7 +192,7 @@ class MessagesController extends BaseController {
 
     await validate(ws, { id: cid, cid, uId: currentUserId }, [
       validateIsConversation,
-      validateIsUserHavePermission,
+      validateIsUserHasPermission,
     ]);
 
     const limitParam =

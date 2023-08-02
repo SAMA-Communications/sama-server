@@ -23,7 +23,7 @@ function validateConversationisUserOwner(vParams, ws) {
   }
 }
 
-async function validateIsUserHavePermission(vParams) {
+async function validateIsUserHasPermission(vParams) {
   const participant = await ConversationParticipant.findOne({
     conversation_id: vParams.cid,
     user_id: vParams.uId,
@@ -104,7 +104,7 @@ export {
   validateIsConversation,
   validateIsConversationByCID,
   validateIsUserAccess,
-  validateIsUserHavePermission,
+  validateIsUserHasPermission,
   validateIsUserSendHimSelf,
   validateParticipantsInUType,
   validateParticipantsLimit,
