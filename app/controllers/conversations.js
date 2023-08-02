@@ -398,8 +398,17 @@ class ConversationsController extends BaseController {
       get_participants_by_cids: { cids },
     } = data;
 
+    const availableConversation = await ConversationParticipant.findAll({
+      conversation_id: { $in: cids },
+      user_id: this.sessionRepository.getSessionUserId(ws),
+    });
+
+    if (!availableConversation.length) {
+      return { response: { id: requestId, users: [] } };
+    }
+
     const conversations = await Conversation.findAll(
-      { _id: { $in: cids } },
+      { _id: { $in: availableConversation.map((obj) => obj.conversation_id) } },
       ["type", "opponent_id", "owner_id"],
       null
     );

@@ -13,6 +13,7 @@ import validate, {
   validateIsConversation,
   validateIsConversationByCID,
   validateIsUserAccess,
+  validateIsUserHavePermission,
 } from "../lib/validation.js";
 import {
   inMemoryBlockList,
@@ -187,7 +188,12 @@ class MessagesController extends BaseController {
       id: requestId,
       message_list: { cid, limit, updated_at },
     } = data;
-    await validate(ws, { id: cid }, [validateIsConversation]);
+    const currentUserId = this.sessionRepository.getSessionUserId(ws);
+
+    await validate(ws, { id: cid, cid, uId: currentUserId }, [
+      validateIsConversation,
+      validateIsUserHavePermission,
+    ]);
 
     const limitParam =
       limit > CONSTANTS.LIMIT_MAX
@@ -196,7 +202,7 @@ class MessagesController extends BaseController {
 
     const query = {
       cid,
-      deleted_for: { $nin: [this.sessionRepository.getSessionUserId(ws)] },
+      deleted_for: { $nin: [currentUserId] },
     };
     const timeFromUpdate = updated_at;
     if (timeFromUpdate) {
@@ -219,9 +225,7 @@ class MessagesController extends BaseController {
       response: {
         id: requestId,
         messages: messages.map((msg) => {
-          if (
-            msg.from.toString() === this.sessionRepository.getSessionUserId(ws)
-          ) {
+          if (msg.from.toString() === currentUserId) {
             msg["status"] = messagesStatus[msg._id]?.length ? "read" : "sent";
           }
           return msg;
