@@ -753,6 +753,32 @@ describe("Conversation functions", async () => {
       );
       assert.equal(responseData.response.error, undefined);
     });
+
+    it("should fail, participant is not in the chat", async () => {
+      await sendLogout("test", currentUserToken);
+      currentUserToken = (await sendLogin("test", "user_3")).response.user
+        .token;
+
+      const requestData = {
+        request: {
+          get_participants_by_cids: {
+            cids: [currentConversationId],
+          },
+          id: "4_2",
+        },
+      };
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.equal(responseData.response.users.length, 0);
+
+      await sendLogout("test", currentUserToken);
+      currentUserToken = (await sendLogin("test", "user_1")).response.user
+        .token;
+    });
   });
 
   describe("Delete Conversation", async () => {
