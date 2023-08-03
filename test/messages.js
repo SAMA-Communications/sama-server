@@ -4,7 +4,7 @@ import MessageStatus from "./../app/models/message_status.js";
 import Message from "./../app/models/message.js";
 import User from "./../app/models/user.js";
 import assert from "assert";
-import { ObjectId } from "../lib/db.js";
+import { ObjectId } from "../app/lib/db.js";
 import { connectToDBPromise } from "../app/lib/db.js";
 import {
   createConversation,
@@ -262,6 +262,33 @@ describe("Message function", async () => {
         };
         await PacketProcessor.processJsonMessageOrError(mockedWS, requestData);
       }
+    });
+
+    it("should fail user haven`t permission", async () => {
+      await sendLogout(mockedWS, currentUserToken);
+      currentUserToken = (await sendLogin(mockedWS, "user_3")).response.user;
+
+      const requestData = {
+        request: {
+          message_list: {
+            cid: currentConversationId,
+          },
+          id: "2",
+        },
+      };
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        mockedWS,
+        requestData
+      );
+
+      assert.equal(responseData.response.success, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 403,
+        message: "Forbidden",
+      });
+
+      await sendLogout(mockedWS, currentUserToken);
+      currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user;
     });
 
     after(async () => {

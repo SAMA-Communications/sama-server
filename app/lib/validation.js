@@ -23,6 +23,18 @@ function validateConversationisUserOwner(vParams, ws) {
   }
 }
 
+async function validateIsUserHasPermission(vParams) {
+  const participant = await ConversationParticipant.findOne({
+    conversation_id: vParams.cid,
+    user_id: vParams.uId,
+  });
+  if (!participant) {
+    throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+      cause: ERROR_STATUES.FORBIDDEN,
+    });
+  }
+}
+
 async function validateIsConversation(vParams) {
   const conversation = await Conversation.findOne({ _id: vParams.id });
   if (!vParams.id || !conversation) {
@@ -92,6 +104,7 @@ export {
   validateIsConversation,
   validateIsConversationByCID,
   validateIsUserAccess,
+  validateIsUserHasPermission,
   validateIsUserSendHimSelf,
   validateParticipantsInUType,
   validateParticipantsLimit,
