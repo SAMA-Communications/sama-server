@@ -29,7 +29,7 @@ class PacketProcessor {
     return !!(packet.message_edit || packet.message_delete);
   }
 
-  async deliverToUserOnThisNode(ws, userId, packet) {
+  async deliverToUserOnThisNode(ws, userId, packet, deviceId) {
     const wsRecipient = ACTIVE.DEVICES[userId];
 
     if (!wsRecipient) {
@@ -37,9 +37,10 @@ class PacketProcessor {
         this.operationsLogRepository.savePacket(userId, packet);
       return;
     }
+    const socket = wsRecipient.find((el) => el.deviceId === deviceId);
 
     try {
-      wsRecipient.forEach((data) => {
+      [socket].forEach((data) => {
         data.ws !== ws && data.ws.send(JSON.stringify(packet));
       });
     } catch (err) {
@@ -60,7 +61,12 @@ class PacketProcessor {
       );
       if (nodeUrl === this.curentNodeUrl) {
         nodeDeviceId !== currentDeviceId &&
-          (await this.deliverToUserOnThisNode(ws, userId, packet));
+          (await this.deliverToUserOnThisNode(
+            ws,
+            userId,
+            packet,
+            nodeDeviceId
+          ));
       } else {
         const recipientClusterNodeWS =
           clusterManager.clusterNodesWS[getIpFromWsUrl(nodeUrl)];
