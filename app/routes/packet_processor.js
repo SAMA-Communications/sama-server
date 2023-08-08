@@ -30,19 +30,22 @@ class PacketProcessor {
   }
 
   async deliverToUserOnThisNode(ws, userId, packet, deviceId) {
-    const wsRecipient = ACTIVE.DEVICES[userId];
+    const activeDevices = ACTIVE.DEVICES[userId];
 
-    if (!wsRecipient) {
+    if (!activeDevices) {
       this.isAllowedForOfflineStorage(packet) &&
         this.operationsLogRepository.savePacket(userId, packet);
       return;
     }
-    const socket = wsRecipient.find((el) => el.deviceId === deviceId);
+
+    const wsRecipient = deviceId
+      ? [activeDevices.find((obj) => obj.deviceId === deviceId)]
+      : activeDevices;
 
     try {
-      [socket].forEach((data) => {
-        data.ws !== ws && data.ws.send(JSON.stringify(packet));
-      });
+      wsRecipient.forEach(
+        (r) => r.ws !== ws && r.ws.send(JSON.stringify(packet))
+      );
     } catch (err) {
       console.error(`[PacketProcessor] send on socket error`, err);
     }
