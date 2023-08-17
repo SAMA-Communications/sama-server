@@ -323,7 +323,7 @@ class UsersController extends BaseController {
         : requestParam.limit || CONSTANTS.LIMIT_MAX;
 
     const query = {
-      login: { $regex: `^${requestParam.login}.*` },
+      login: { $regex: `^${requestParam.login.toLowerCase()}.*` },
       _id: {
         $nin: [
           this.sessionRepository.getSessionUserId(ws),
