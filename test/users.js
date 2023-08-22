@@ -414,6 +414,7 @@ describe("User cycle", async () => {
         requestData
       );
 
+      console.log(responseData);
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(responseData.response.user, undefined);
       assert.deepEqual(responseData.response.error, {
