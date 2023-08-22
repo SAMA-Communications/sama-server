@@ -29,6 +29,8 @@ class UsersController extends BaseController {
   async create(ws, data) {
     const { id: requestId, user_create: reqData } = data;
 
+    reqData.login = reqData.login.toLowerCase();
+
     const existingParam = [{ login: reqData.login }];
     reqData.email && existingParam.push({ email: reqData.email });
     reqData.phone && existingParam.push({ phone: reqData.phone });
@@ -321,7 +323,7 @@ class UsersController extends BaseController {
         : requestParam.limit || CONSTANTS.LIMIT_MAX;
 
     const query = {
-      login: { $regex: `^${requestParam.login}.*` },
+      login: { $regex: `^${requestParam.login.toLowerCase()}.*` },
       _id: {
         $nin: [
           this.sessionRepository.getSessionUserId(ws),
