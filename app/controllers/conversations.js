@@ -83,29 +83,27 @@ class ConversationsController extends BaseController {
       _id: { $in: conversationParams.participants },
     });
     delete conversationParams.participants;
-
     conversationParams.owner_id = ObjectId(currentUserId);
-    if (conversationParams.opponent_id) {
-      conversationParams.opponent_id = String(conversationParams.opponent_id);
-    }
 
     if (conversationParams.type == "u") {
-      await validate(
-        ws,
-        { participants, opponent_id: conversationParams.opponent_id },
-        [validateParticipantsInUType, validateIsUserSendHimSelf]
-      );
+      const opponentId = (conversationParams.opponent_id = String(
+        participants[0]
+      ));
+      await validate(ws, { participants, opponent_id: opponentId }, [
+        validateParticipantsInUType,
+        validateIsUserSendHimSelf,
+      ]);
 
       const existingConversation = await this.conversationRepository.findOne({
         $or: [
           {
             type: "u",
             owner_id: ObjectId(currentUserId),
-            opponent_id: conversationParams.opponent_id,
+            opponent_id: opponentId,
           },
           {
             type: "u",
-            owner_id: ObjectId(conversationParams.opponent_id),
+            owner_id: ObjectId(opponentId),
             opponent_id: currentUserId,
           },
         ],
@@ -116,10 +114,7 @@ class ConversationsController extends BaseController {
           conversation_id: existingConversation._id,
         });
         if (existingParticipants.length !== 2) {
-          const requiredParticipantsIds = [
-            currentUserId,
-            conversationParams.opponent_id,
-          ];
+          const requiredParticipantsIds = [currentUserId, opponentId];
           const existingParticipantsIds = existingParticipants.map((u) =>
             u.user_id.toString()
           );

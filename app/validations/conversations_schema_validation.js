@@ -35,7 +35,7 @@ export const conversationsSchemaValidation = {
     description: Joi.string().max(255),
     opponent_id: Joi.alternatives().conditional("type", {
       is: "u",
-      then: Joi.alternatives().try(Joi.object(), Joi.string()).required(),
+      then: Joi.alternatives().try(Joi.object(), Joi.string()),
     }),
     //not needed field in validation
     owner_id: Joi.alternatives().try(Joi.object(), Joi.string()),
