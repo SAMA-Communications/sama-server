@@ -68,8 +68,8 @@ describe("Custom validate functions", async () => {
         },
         {
           name: "Error",
-          message: "Forbidden",
-          cause: { status: 403, message: "Forbidden" },
+          message: "Forbidden.",
+          cause: { status: 403, message: "Forbidden." },
         }
       );
       await sendLogout("validate", currentUserToken);
@@ -100,8 +100,8 @@ describe("Custom validate functions", async () => {
         },
         {
           name: "Error",
-          message: "Forbidden",
-          cause: { status: 403, message: "Forbidden" },
+          message: "Forbidden.",
+          cause: { status: 403, message: "Forbidden." },
         }
       );
       await sendLogout("validate", currentUserToken);
@@ -182,10 +182,10 @@ describe("Custom validate functions", async () => {
         },
         {
           name: "Error",
-          message: "Max participants limit reached",
+          message: "You've reached the maximum participant limit.",
           cause: {
             status: 422,
-            message: "Max participants limit reached",
+            message: "You've reached the maximum participant limit.",
           },
         }
       );
@@ -215,10 +215,10 @@ describe("Custom validate functions", async () => {
         },
         {
           name: "Error",
-          message: "Too many users in private conversation",
+          message: "There are too many users in the private conversation.",
           cause: {
             status: 422,
-            message: "Too many users in private conversation",
+            message: "There are too many users in the private conversation.",
           },
         }
       );
@@ -234,8 +234,8 @@ describe("Custom validate functions", async () => {
         },
         {
           name: "Error",
-          message: "Opponent Id not found",
-          cause: { status: 422, message: "Opponent Id not found" },
+          message: "Opponent ID not found.",
+          cause: { status: 422, message: "Opponent ID not found." },
         }
       );
     });
@@ -277,8 +277,8 @@ describe("Custom validate functions", async () => {
         },
         {
           name: "Error",
-          message: "Forbidden",
-          cause: { status: 403, message: "Forbidden" },
+          message: "Forbidden.",
+          cause: { status: 403, message: "Forbidden." },
         }
       );
       await sendLogout("validate", currentUserToken);
@@ -294,8 +294,8 @@ describe("Custom validate functions", async () => {
         },
         {
           name: "Error",
-          message: "Conversation not found",
-          cause: { status: 404, message: "Conversation not found" },
+          message: "Conversation not found.",
+          cause: { status: 404, message: "Conversation not found." },
         }
       );
     });
@@ -310,8 +310,8 @@ describe("Custom validate functions", async () => {
         },
         {
           name: "Error",
-          message: "Conversation not found",
-          cause: { status: 404, message: "Conversation not found" },
+          message: "Conversation not found.",
+          cause: { status: 404, message: "Conversation not found." },
         }
       );
       await sendLogout("validate", currentUserToken);
@@ -345,8 +345,8 @@ describe("Custom validate functions", async () => {
         },
         {
           name: "Error",
-          message: "Incorrect user",
-          cause: { status: 422, message: "Incorrect user" },
+          message: "The specified user is incorrect.",
+          cause: { status: 422, message: "The specified user is incorrect." },
         }
       );
       await sendLogout("validate", currentUserToken);

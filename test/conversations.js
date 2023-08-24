@@ -69,7 +69,7 @@ describe("Conversation functions", async () => {
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 404,
-        message: "Unauthorized",
+        message: "Unauthorized.",
       });
     });
 
@@ -90,7 +90,7 @@ describe("Conversation functions", async () => {
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 404,
-        message: "Unauthorized",
+        message: "Unauthorized.",
       });
     });
 
@@ -111,7 +111,7 @@ describe("Conversation functions", async () => {
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 404,
-        message: "Unauthorized",
+        message: "Unauthorized.",
       });
     });
 
@@ -138,7 +138,7 @@ describe("Conversation functions", async () => {
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 403,
-        message: "Forbidden",
+        message: "Forbidden.",
       });
     });
 
@@ -276,7 +276,7 @@ describe("Conversation functions", async () => {
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Participants not provided",
+        message: "Participants not provided.",
       });
     });
 
@@ -300,7 +300,7 @@ describe("Conversation functions", async () => {
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Select at least one user",
+        message: "Please select at least one user.",
       });
     });
 
@@ -323,7 +323,7 @@ describe("Conversation functions", async () => {
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Select at least one user",
+        message: "Please select at least one user.",
       });
     });
 
@@ -346,7 +346,7 @@ describe("Conversation functions", async () => {
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "No conversation name specified",
+        message: "You haven't specified a conversation name.",
       });
     });
 
@@ -369,7 +369,7 @@ describe("Conversation functions", async () => {
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Conversation Type missed",
+        message: "Conversation type missed.",
       });
     });
 
@@ -393,7 +393,7 @@ describe("Conversation functions", async () => {
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Incorrect type",
+        message: "The type you entered is incorrect.",
       });
     });
 
@@ -417,13 +417,13 @@ describe("Conversation functions", async () => {
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Too many users in private conversation",
+        message: "There are too many users in the private conversation.",
       });
     });
   });
 
   describe("Update Conversation", async () => {
-    it("should fail because conversation not found", async () => {
+    it("should fail because Conversation not found.", async () => {
       await sendLogin("test", "user_2");
       const requestData = {
         request: {
@@ -443,7 +443,7 @@ describe("Conversation functions", async () => {
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 400,
-        message: "Bad Request",
+        message: "Bad Request.",
       });
     });
 
@@ -723,7 +723,7 @@ describe("Conversation functions", async () => {
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "'cids' field is required",
+        message: "'cids' field is required.",
       });
     });
 
@@ -788,7 +788,7 @@ describe("Conversation functions", async () => {
         .token;
     });
 
-    it("should fail because conversation not found", async () => {
+    it("should fail because Conversation not found.", async () => {
       const requestData = {
         request: {
           conversation_delete: {
@@ -805,7 +805,7 @@ describe("Conversation functions", async () => {
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 400,
-        message: "Bad Request",
+        message: "Bad Request.",
       });
     });
 

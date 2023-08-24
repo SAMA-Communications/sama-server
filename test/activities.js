@@ -39,7 +39,7 @@ describe("User activities", async () => {
     assert.notEqual(responseData.response.last_activity, undefined);
   });
 
-  it("should fail user ID missed", async () => {
+  it("should fail User ID missed.", async () => {
     const requestData = {
       request: {
         user_last_activity_subscribe: {},
@@ -54,7 +54,7 @@ describe("User activities", async () => {
     assert.strictEqual(responseData.response.id, requestData.request.id);
     assert.deepEqual(responseData.response.error, {
       status: 422,
-      message: "User ID missed",
+      message: "User ID missed.",
     });
   });
 
