@@ -68,6 +68,14 @@ async function validateParticipantsInUType(vParams) {
   }
 }
 
+async function validateParticipantsMaxSize(vParams) {
+  if (vParams.participants.length > process.env.CONVERSATION_MAX_PARTICIPANTS) {
+    throw new Error(ERROR_STATUES.TOO_MANY_USERS_IN_GROUP.message, {
+      cause: ERROR_STATUES.TOO_MANY_USERS_IN_GROUP,
+    });
+  }
+}
+
 async function validateIsConversationByCID(vParams, ws) {
   const conversation = await Conversation.findOne({
     _id: vParams.cid,
@@ -108,6 +116,7 @@ export {
   validateIsUserSendHimSelf,
   validateParticipantsInUType,
   validateParticipantsLimit,
+  validateParticipantsMaxSize,
 };
 
 export default async function validate(ws, vParams, functionsValidate) {

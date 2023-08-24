@@ -19,6 +19,10 @@ export const ERROR_STATUES = {
     status: 422,
     message: "Too many users in private conversation",
   },
+  TOO_MANY_USERS_IN_GROUP: {
+    status: 422,
+    message: "Too many users in group conversation",
+  },
   INCORRECT_USER: { status: 422, message: "Incorrect user" },
   INCORRECT_PASSWORD: { status: 422, message: "Incorrect password" },
   INCORRECT_LOGIN: { status: 422, message: "Incorrect login" },
