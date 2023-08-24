@@ -308,7 +308,7 @@ describe("Conversation functions", async () => {
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Too many users in group conversation",
+        message: "There are too many users in the group conversation",
       });
     });
 
