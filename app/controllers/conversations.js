@@ -11,7 +11,6 @@ import validate, {
   validateIsUserSendHimSelf,
   validateParticipantsInUType,
   validateParticipantsLimit,
-  validateParticipantsMaxSize,
 } from "../lib/validation.js";
 import { ACTIVE } from "../store/session.js";
 import { CONSTANTS } from "../validations/constants/constants.js";
@@ -79,10 +78,6 @@ class ConversationsController extends BaseController {
     const currentUserId = this.sessionRepository.getSessionUserId(ws);
     const currentUserLogin = (await User.findOne({ _id: currentUserId }))
       ?.params?.login;
-
-    await validate(ws, { participants: conversationParams.participants }, [
-      validateParticipantsMaxSize,
-    ]);
 
     const participants = await User.getAllIdsBy({
       _id: { $in: conversationParams.participants },

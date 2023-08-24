@@ -280,6 +280,38 @@ describe("Conversation functions", async () => {
       });
     });
 
+    it("should fail because the participant limit has been exceeded", async () => {
+      const requestData = {
+        request: {
+          conversation_create: {
+            name: "testing",
+            description: "test1",
+            type: "g",
+            participants: [
+              usersIds[1],
+              usersIds[2],
+              ...["1", "1", "1", "1", "1", "1", "1", "1", "1", "1"],
+              ...["1", "1", "1", "1", "1", "1", "1", "1", "1", "1"],
+              ...["1", "1", "1", "1", "1", "1", "1", "1", "1", "1"],
+              ...["1", "1", "1", "1", "1", "1", "1", "1", "1", "1"],
+              ...["1", "1", "1", "1", "1", "1", "1", "1", "1", "1"],
+            ],
+          },
+          id: "1_2",
+        },
+      };
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      assert.strictEqual(responseData.response.conversation, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "Too many users in group conversation",
+      });
+    });
+
     it("should fail because paticipants is empty", async () => {
       const requestData = {
         request: {

@@ -44,11 +44,20 @@ export const conversationsSchemaValidation = {
       .min(1)
       .max(parseInt(process.env.CONVERSATION_MAX_PARTICIPANTS))
       .required()
-      .error(
-        new Error(ERROR_STATUES.USER_SELECTED.message, {
-          cause: ERROR_STATUES.USER_SELECTED,
-        })
-      ),
+      .error((errors) => {
+        return errors.map((error) => {
+          switch (error.code) {
+            case "array.max":
+              return new Error(ERROR_STATUES.TOO_MANY_USERS_IN_GROUP.message, {
+                cause: ERROR_STATUES.TOO_MANY_USERS_IN_GROUP,
+              });
+            default:
+              return new Error(ERROR_STATUES.USER_SELECTED.message, {
+                cause: ERROR_STATUES.USER_SELECTED,
+              });
+          }
+        });
+      }),
   }).required(),
   update: Joi.object({
     id: Joi.string().required(),
