@@ -144,8 +144,8 @@ describe("Custom validate functions", async () => {
         },
         {
           name: "Error",
-          message: "Bad Request",
-          cause: { status: 400, message: "Bad Request" },
+          message: "Bad Request.",
+          cause: { status: 400, message: "Bad Request." },
         }
       );
     });
@@ -160,8 +160,8 @@ describe("Custom validate functions", async () => {
         },
         {
           name: "Error",
-          message: "Bad Request",
-          cause: { status: 400, message: "Bad Request" },
+          message: "Bad Request.",
+          cause: { status: 400, message: "Bad Request." },
         }
       );
       await sendLogout("validate", currentUserToken);
