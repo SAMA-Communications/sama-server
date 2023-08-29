@@ -567,7 +567,7 @@ All conversation's participants who is online will receive the following message
     x: {
       param1: "value",
       param2: "value"
-    }
+    },
     attachments: [
       { file_id: "123123_file_1", file_name: "file_1" },
       { file_id: "653534_file_2", file_name: "file_2" }
@@ -624,7 +624,7 @@ On each message sent to server - a server will deliver back to client a simple p
         status: "sent",
         attachments: [
           { file_id: "file_name_1", file_name: "file_1" }
-        ]
+        ],
         t: 1668680757,
         created_at: "2023-05-24T14:34:58.066Z"
       }
