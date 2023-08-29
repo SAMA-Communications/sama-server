@@ -107,7 +107,7 @@ describe("PushNotification functions", async () => {
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Incorrect platform type",
+        message: "Incorrect platform type.",
       });
     });
 
@@ -131,7 +131,7 @@ describe("PushNotification functions", async () => {
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Incorrect platform type",
+        message: "Incorrect platform type.",
       });
     });
 
@@ -155,7 +155,7 @@ describe("PushNotification functions", async () => {
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Incorrect token",
+        message: "Incorrect token.",
       });
     });
 
@@ -179,7 +179,7 @@ describe("PushNotification functions", async () => {
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Incorrect keys",
+        message: "Incorrect keys.",
       });
     });
 
@@ -203,7 +203,7 @@ describe("PushNotification functions", async () => {
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Incorrect keys",
+        message: "Incorrect keys.",
       });
     });
 
@@ -227,7 +227,7 @@ describe("PushNotification functions", async () => {
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Incorrect deviceId",
+        message: "Incorrect deviceId.",
       });
     });
   });
@@ -349,7 +349,7 @@ describe("PushNotification functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "User ID missed",
+        message: "User ID missed.",
       });
     });
   });
@@ -405,7 +405,7 @@ describe("PushNotification functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Push notification record not found",
+        message: "Push notification record not found.",
       });
     });
 
@@ -424,7 +424,7 @@ describe("PushNotification functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "'deviceId' is required",
+        message: "'deviceId' is required.",
       });
     });
   });
@@ -486,7 +486,7 @@ describe("PushNotification functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Notification message missed",
+        message: "Notification message missed.",
       });
     });
 
@@ -512,7 +512,7 @@ describe("PushNotification functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Incorrect recipients ids",
+        message: "Incorrect recipients IDs.",
       });
     });
 
@@ -566,7 +566,7 @@ describe("PushNotification functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Recipients not found",
+        message: "Recipients not found.",
       });
     });
   });

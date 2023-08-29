@@ -52,7 +52,7 @@ describe("Operations Log functions", async () => {
       assert.equal(responseData.response.logs, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Gt or lt query missed",
+        message: "Gt or lt query missed.",
       });
     });
 

@@ -537,13 +537,13 @@ After adding users to a conversation, if they are online, they will receive the 
 ```
 {
   message: {
-    id: '5а34p21m0xj23'
+    id: "5а34p21m0xj23",
     body: "hey how is going?",
-    cid: "63480e68f4794709f802a2fa'",
+    cid: "63480e68f4794709f802a2fa",
     x: {
       param1: "value",
       param2: "value"
-    }
+    },
     attachments: [
       { name: "file_1", size: 240, content_type: "type" },
       { name: "file_2", size: 126, content_type: "type" }
@@ -557,7 +557,7 @@ All conversation's participants who is online will receive the following message
 ```
 {
   message: {
-    id: "63480e68f4794709f802a2fa",
+    _id: "63480e68f4794709f802a2fa",
     t: 15673838833,
     from: "634ec51c0b65918393dca5bf",
     body: "hey how is going?",
@@ -565,10 +565,10 @@ All conversation's participants who is online will receive the following message
     x: {
       param1: "value",
       param2: "value"
-    }
+    },
     attachments: [
-      { file_id: "123123_file_1", file_name: "fil_1" },
-      { file_name: "653534_file_2", file_name: "fil_1" }
+      { file_id: "123123_file_1", file_name: "file_1" },
+      { file_id: "653534_file_2", file_name: "file_2" }
     ],
     created_at: "2023-07-04T07:23:53.308Z",
   }
@@ -582,7 +582,7 @@ Additionally, all conversation's participants who is offline will receive the fo
   title: "UserName"
   body: "MessageText",
   firstAttachmentUrl: "url",
-  cid: "63480e68f4794709f802a2fa",
+  cid: "63480e68f4794709f802a2fa"
 }
 ```
 
@@ -592,7 +592,7 @@ All offline participants can retrieve the messages via below `List messages` API
 
 On each message sent to server - a server will deliver back to client a simple packet with message id and timestamp at which the message was stored in DB so both sender & recipient will have same date sent time stored:
 
-`{ ack: { mid: "63480e68f4794709f802a2fa", t: 15673838833}}`
+`{ ack: { mid: "63480e68f4794709f802a2fa", server_mid: "63480e68f4794709f802a2fa", t: 15673838833}}`
 
 ## List messages
 
@@ -622,7 +622,7 @@ On each message sent to server - a server will deliver back to client a simple p
         status: "sent",
         attachments: [
           { file_id: "file_name_1", file_name: "file_1" }
-        ]
+        ],
         t: 1668680757,
         created_at: "2023-05-24T14:34:58.066Z"
       }

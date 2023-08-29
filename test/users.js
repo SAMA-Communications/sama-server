@@ -73,7 +73,7 @@ describe("User cycle", async () => {
       assert.strictEqual(responseData.response.user, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "User already exists",
+        message: "That email is already taken.",
       });
     });
 
@@ -98,7 +98,7 @@ describe("User cycle", async () => {
       assert.strictEqual(responseData.response.user, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "User already exists",
+        message: "That email is already taken.",
       });
     });
 
@@ -123,7 +123,7 @@ describe("User cycle", async () => {
       assert.strictEqual(responseData.response.user, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "User already exists",
+        message: "That email is already taken.",
       });
     });
 
@@ -147,7 +147,7 @@ describe("User cycle", async () => {
       assert.strictEqual(responseData.response.user, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "User already exists",
+        message: "That email is already taken.",
       });
     });
   });
@@ -172,7 +172,7 @@ describe("User cycle", async () => {
       assert.strictEqual(responseData.response.user, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 404,
-        message: "Unauthorized",
+        message: "Unauthorized.",
       });
     });
 
@@ -196,11 +196,11 @@ describe("User cycle", async () => {
       assert.strictEqual(responseData.response.user, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 404,
-        message: "Unauthorized",
+        message: "Unauthorized.",
       });
     });
 
-    it("should fail 'deviceId' is required", async () => {
+    it("should fail 'deviceId' is required.", async () => {
       const requestData = {
         request: {
           user_login: {
@@ -218,7 +218,7 @@ describe("User cycle", async () => {
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "'deviceId' is required",
+        message: "'deviceId' is required.",
       });
     });
 
@@ -307,7 +307,29 @@ describe("User cycle", async () => {
       assert.strictEqual(responseData.response.user, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Incorrect current password",
+        message: "The current password you entered is incorrect.",
+      });
+    });
+
+    it("should fail current password messing", async () => {
+      const requestData = {
+        request: {
+          user_edit: {
+            new_password: "312sad",
+          },
+          id: "5_1",
+        },
+      };
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(responseData.response.user, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "The current password you entered is incorrect.",
       });
     });
 
@@ -419,7 +441,7 @@ describe("User cycle", async () => {
       assert.strictEqual(responseData.response.user, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "User already exists",
+        message: "That email is already taken.",
       });
     });
 
@@ -441,7 +463,7 @@ describe("User cycle", async () => {
       assert.strictEqual(responseData.response.user, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "User already exists",
+        message: "That email is already taken.",
       });
     });
 
@@ -463,7 +485,7 @@ describe("User cycle", async () => {
       assert.strictEqual(responseData.response.user, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "User already exists",
+        message: "That email is already taken.",
       });
     });
   });
@@ -504,7 +526,7 @@ describe("User cycle", async () => {
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 404,
-        message: "Unauthorized",
+        message: "Unauthorized.",
       });
     });
   });
@@ -526,7 +548,7 @@ describe("User cycle", async () => {
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 404,
-        message: "Unauthorized",
+        message: "Unauthorized.",
       });
 
       requestData = {

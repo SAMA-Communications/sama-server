@@ -54,8 +54,8 @@ function validateParticipantsLimit(vParams) {
 
 async function validateParticipantsInUType(vParams) {
   if (vParams.participants.length >= 3) {
-    throw new Error(ERROR_STATUES.TOO_MANY_USERS.message, {
-      cause: ERROR_STATUES.TOO_MANY_USERS,
+    throw new Error(ERROR_STATUES.TOO_MANY_USERS_IN_PRIVATE.message, {
+      cause: ERROR_STATUES.TOO_MANY_USERS_IN_PRIVATE,
     });
   }
   if (

@@ -90,11 +90,11 @@ describe("Message function", async () => {
       assert.equal(responseData.ask, undefined);
       assert.deepEqual(responseData.message.error, {
         status: 422,
-        message: "Message ID missed",
+        message: "Message ID missed.",
       });
     });
 
-    it("should fail 'cid' field is required", async () => {
+    it("should fail 'cid' field is required.", async () => {
       const requestData = {
         message: {
           id: "xyz",
@@ -113,7 +113,7 @@ describe("Message function", async () => {
       assert.equal(responseData.ask, undefined);
       assert.deepEqual(responseData.message.error, {
         status: 422,
-        message: "'cid' field is required",
+        message: "'cid' field is required.",
       });
     });
 
@@ -142,7 +142,7 @@ describe("Message function", async () => {
       assert.equal(responseData.ask, undefined);
       assert.deepEqual(responseData.message.error, {
         status: 403,
-        message: "Forbidden",
+        message: "Forbidden.",
       });
     });
   });
@@ -284,7 +284,7 @@ describe("Message function", async () => {
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 403,
-        message: "Forbidden",
+        message: "Forbidden.",
       });
 
       await sendLogout(mockedWS, currentUserToken);
@@ -396,7 +396,7 @@ describe("Message function", async () => {
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Incorrect type",
+        message: "The type you entered is incorrect.",
       });
     });
 
@@ -418,7 +418,7 @@ describe("Message function", async () => {
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Message Type missed",
+        message: "Message type missed.",
       });
     });
 
@@ -441,7 +441,7 @@ describe("Message function", async () => {
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Incorrect type",
+        message: "The type you entered is incorrect.",
       });
     });
 
@@ -464,7 +464,7 @@ describe("Message function", async () => {
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 404,
-        message: "Conversation not found",
+        message: "Conversation not found.",
       });
     });
 
@@ -487,11 +487,11 @@ describe("Message function", async () => {
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 404,
-        message: "Conversation not found",
+        message: "Conversation not found.",
       });
     });
 
-    it("should fail message id missed", async () => {
+    it("should fail Message ID missed.", async () => {
       const requestData = {
         request: {
           message_delete: {
@@ -510,7 +510,7 @@ describe("Message function", async () => {
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Message ID missed",
+        message: "Message ID missed.",
       });
     });
   });
@@ -554,7 +554,7 @@ describe("Message function", async () => {
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Message ID not found",
+        message: "Message ID not found.",
       });
     });
 
@@ -575,7 +575,7 @@ describe("Message function", async () => {
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Message ID missed",
+        message: "Message ID missed.",
       });
     });
 
@@ -598,7 +598,7 @@ describe("Message function", async () => {
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Either message body or attachments required",
+        message: "Either message body or attachments required.",
       });
     });
 
@@ -621,7 +621,7 @@ describe("Message function", async () => {
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 403,
-        message: "Forbidden",
+        message: "Forbidden.",
       });
     });
 
