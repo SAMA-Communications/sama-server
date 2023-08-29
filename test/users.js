@@ -311,6 +311,28 @@ describe("User cycle", async () => {
       });
     });
 
+    it("should fail current password messing", async () => {
+      const requestData = {
+        request: {
+          user_edit: {
+            new_password: "312sad",
+          },
+          id: "5_1",
+        },
+      };
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(responseData.response.user, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "The current password you entered is incorrect.",
+      });
+    });
+
     it("should work update email", async () => {
       const requestData = {
         request: {
