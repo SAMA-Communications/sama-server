@@ -569,8 +569,8 @@ All conversation's participants who is online will receive the following message
       param2: "value"
     }
     attachments: [
-      { file_id: "123123_file_1", file_name: "fil_1" },
-      { file_name: "653534_file_2", file_name: "fil_1" }
+      { file_id: "123123_file_1", file_name: "file_1" },
+      { file_id: "653534_file_2", file_name: "file_2" }
     ],
     created_at: "2023-07-04T07:23:53.308Z",
   }
