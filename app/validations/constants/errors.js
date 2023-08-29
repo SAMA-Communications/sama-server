@@ -1,127 +1,139 @@
 export const ERROR_STATUES = {
   // Default -->
-  UNAUTHORIZED: { status: 404, message: "Unauthorized" },
-  FORBIDDEN: { status: 403, message: "Forbidden" },
-  BAD_REQUEST: { status: 400, message: "Bad Request" },
-  INCORRECT_TYPE: { status: 422, message: "Incorrect type" },
-  INCORRECT_TOKEN: { status: 422, message: "Incorrect token" },
-  TOKEN_EXPIRED: { status: 422, message: "Token expired" },
+  UNAUTHORIZED: { status: 404, message: "Unauthorized." },
+  FORBIDDEN: { status: 403, message: "Forbidden." },
+  BAD_REQUEST: { status: 400, message: "Bad Request." },
+  INCORRECT_TYPE: {
+    status: 422,
+    message: "The type you entered is incorrect.",
+  },
+  INCORRECT_TOKEN: { status: 422, message: "Incorrect token." },
+  TOKEN_EXPIRED: { status: 422, message: "The token has expired." },
   // Users -->
-  USER_ID_MISSED: { status: 422, message: "User ID missed" },
-  USER_NOT_FOUND: { status: 422, message: "User not found" },
+  USER_ID_MISSED: { status: 422, message: "User ID missed." },
+  USER_NOT_FOUND: {
+    status: 422,
+    message: "We couldn't find the specified user.",
+  },
   USER_LOGIN_OR_PASS: {
     status: 422,
-    message: "User 'login' or 'password' field missed",
+    message: "The 'login' or 'password' field is missing.",
   },
-  USER_SELECTED: { status: 422, message: "Select at least one user" },
-  USER_ALREADY_EXISTS: { status: 422, message: "User already exists" },
-  TOO_MANY_USERS: {
+  USER_SELECTED: { status: 422, message: "Please select at least one user." },
+  USER_ALREADY_EXISTS: { status: 422, message: "That email is already taken." },
+  TOO_MANY_USERS_IN_PRIVATE: {
     status: 422,
-    message: "Too many users in private conversation",
+    message: "There are too many users in the private conversation.",
   },
-  INCORRECT_USER: { status: 422, message: "Incorrect user" },
-  INCORRECT_PASSWORD: { status: 422, message: "Incorrect password" },
-  INCORRECT_LOGIN: { status: 422, message: "Incorrect login" },
+  INCORRECT_USER: { status: 422, message: "The specified user is incorrect." },
+  INCORRECT_PASSWORD: {
+    status: 422,
+    message: "The password entered is incorrect.",
+  },
+  INCORRECT_LOGIN: { status: 422, message: "The login provided is incorrect." },
   INCORRECT_CURRENT_PASSWORD: {
     status: 422,
-    message: "Incorrect current password",
+    message: "The current password you entered is incorrect.",
   },
-  DEVICE_ID_MISSED: { status: 422, message: "'deviceId' is required" },
+  DEVICE_ID_MISSED: { status: 422, message: "'deviceId' is required." },
   // Contacts -->
-  CONTACT_NOT_FOUND: { status: 422, message: "Contact not found" },
-  CONTACT_ID_MISSED: { status: 422, message: "Contact id is missed" },
+  CONTACT_NOT_FOUND: { status: 422, message: "Contact not found." },
+  CONTACT_ID_MISSED: { status: 422, message: "Contact id is missed." },
   FULLNAME_IS_MISSED: {
     status: 422,
-    message: "'first_name' or 'last_name' is missed",
+    message: "'first_name' or 'last_name' is missed.",
   },
   EMAIL_OR_PHONE_IS_MISSED: {
     status: 422,
-    message: "Email or phone is missed",
+    message: "Email or phone is missed.",
   },
   // Conversation -->
-  CONVERSATION_NOT_FOUND: { status: 404, message: "Conversation not found" },
-  CONVERSATION_EXISTS: { status: 404, message: "Conversation exists" },
+  CONVERSATION_NOT_FOUND: { status: 404, message: "Conversation not found." },
+  CONVERSATION_EXISTS: { status: 404, message: "Conversation exists." },
   CONVERSATION_NAME_MISSED: {
     status: 422,
-    message: "No conversation name specified",
+    message: "You haven't specified a conversation name.",
   },
   CONVERSATION_TYPE_MISSED: {
     status: 422,
-    message: "Conversation Type missed",
+    message: "Conversation type missed.",
   },
   PARTICIPANTS_NOT_PROVIDED: {
     status: 422,
-    message: "Participants not provided",
+    message: "Participants not provided.",
   },
   PARTICIPANT_NOT_FOUND: {
     status: 404,
-    message: "ConversationParticipant not found",
+    message: "ConversationParticipant not found.",
   },
   PARTICIPANTS_LIMIT: {
     status: 422,
-    message: "Max participants limit reached",
+    message: "You've reached the maximum participant limit.",
   },
-  OPPONENT_NOT_FOUND: { status: 422, message: "Opponent Id not found" },
+  OPPONENT_NOT_FOUND: { status: 422, message: "Opponent ID not found." },
   // File -->
-  FILE_IDS_MISSED: { status: 422, message: "File IDS missed" },
-  FILE_LIMIT_EXCEEDED: { status: 422, message: "File limit exceded" },
+  FILE_IDS_MISSED: { status: 422, message: "File IDS missed." },
+  FILE_LIMIT_EXCEEDED: {
+    status: 422,
+    message: "You've exceeded the file limit.",
+  },
   FILE_IDS_EXCEEDED: {
     status: 422,
-    message: "File ids for get download url exceeded",
+    message: "File IDs for get download url exceeded.",
   },
-  FILE_NAME_MISSED: { status: 422, message: "File name missed" },
-  FILE_SIZE_MISSED: { status: 422, message: "File size missed" },
+  FILE_NAME_MISSED: { status: 422, message: "File name missed." },
+  FILE_SIZE_MISSED: { status: 422, message: "File size missed." },
   FILE_CONTENT_TYPE_MISSED: {
     status: 422,
-    message: "File content type missed",
+    message: "File content type missed.",
   },
   // Message -->
-  MESSAGE_ID_NOT_FOUND: { status: 422, message: "Message ID not found" },
-  MESSAGE_ID_MISSED: { status: 422, message: "Message ID missed" },
-  MESSAGE_TYPE_MISSED: { status: 422, message: "Message Type missed" },
+  MESSAGE_ID_NOT_FOUND: { status: 422, message: "Message ID not found." },
+  MESSAGE_ID_MISSED: { status: 422, message: "Message ID missed." },
+  MESSAGE_TYPE_MISSED: { status: 422, message: "Message type missed." },
   MESSAGE_BODY_AND_ATTACHMENTS_EMPTY: {
     status: 422,
-    message: "Either message body or attachments required",
+    message: "Either message body or attachments required.",
   },
   USER_BLOCKED: {
     status: 422,
     message:
-      "Communication is not possible - you are in a block list of the recipient",
+      "Communication is not possible - you are in a block list of the recipient.",
   },
   USER_BLOCKED_FOR_ALL_PARTICIPANTS: {
     status: 422,
     message:
-      "Communication is not possible - you are in a block list of all the recipients",
+      "Communication is not possible - you are in a block list of all the recipients.",
   },
   // Status -->
-  STATUS_ID_MISSED: { status: 422, message: "Status ID missed" },
-  STATUS_TYPE_MISSED: { status: 422, message: "Status Type missed" },
-  STATUS_T_MISSED: { status: 422, message: "Status 't' missed" },
+  STATUS_ID_MISSED: { status: 422, message: "Status ID missed." },
+  STATUS_TYPE_MISSED: { status: 422, message: "Status type missed." },
+  STATUS_T_MISSED: { status: 422, message: "Status 't' missed." },
   // Push Notification -->
-  INCORRECT_PLATFROM_TYPE: { status: 422, message: "Incorrect platform type" },
-  INCORRECT_DEVICE_ID: { status: 422, message: "Incorrect deviceId" },
+  INCORRECT_PLATFROM_TYPE: { status: 422, message: "Incorrect platform type." },
+  INCORRECT_DEVICE_ID: { status: 422, message: "Incorrect deviceId." },
   INCORRECT_RECIPIENTS_IDS: {
     status: 422,
-    message: "Incorrect recipients ids",
+    message: "Incorrect recipients IDs.",
   },
-  RECIPIENTS_NOT_FOUND: { status: 422, message: "Recipients not found" },
+  RECIPIENTS_NOT_FOUND: { status: 422, message: "Recipients not found." },
   NOTIFICATION_MESSAGE_MISSED: {
     status: 422,
-    message: "Notification message missed",
+    message: "Notification message missed.",
   },
   NOTIFICATION_NOT_FOUND: {
     status: 422,
-    message: "Push notification record not found",
+    message: "Push notification record not found.",
   },
-  INCORRECT_KEYS: { status: 422, message: "Incorrect keys" },
+  INCORRECT_KEYS: { status: 422, message: "Incorrect keys." },
   // Other -->
-  LOG_TIMETAMP_MISSED: { status: 422, message: "Gt or lt query missed" },
+  LOG_TIMETAMP_MISSED: { status: 422, message: "Gt or lt query missed." },
   CID_REQUIRED: {
     status: 422,
-    message: "'cid' field is required",
+    message: "'cid' field is required.",
   },
   CIDS_REQUIRED: {
     status: 422,
-    message: "'cids' field is required",
+    message: "'cids' field is required.",
   },
 };

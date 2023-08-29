@@ -49,7 +49,7 @@ describe("Sending 'typing' status", async () => {
     assert.strictEqual(responseData.typing.user, undefined);
     assert.deepEqual(responseData.typing.error, {
       status: 404,
-      message: "Unauthorized",
+      message: "Unauthorized.",
     });
 
     await sendLogin(mockedWS, "user_1");
@@ -70,7 +70,7 @@ describe("Sending 'typing' status", async () => {
     assert.strictEqual(responseData.typing.user, undefined);
     assert.deepEqual(responseData.typing.error, {
       status: 422,
-      message: "Status ID missed",
+      message: "Status ID missed.",
     });
   });
 
@@ -89,7 +89,7 @@ describe("Sending 'typing' status", async () => {
     assert.strictEqual(responseData.typing.user, undefined);
     assert.deepEqual(responseData.typing.error, {
       status: 422,
-      message: "Status Type missed",
+      message: "Status type missed.",
     });
   });
 
@@ -109,7 +109,7 @@ describe("Sending 'typing' status", async () => {
     assert.strictEqual(responseData.typing.user, undefined);
     assert.deepEqual(responseData.typing.error, {
       status: 422,
-      message: "Incorrect type",
+      message: "The type you entered is incorrect.",
     });
   });
 
@@ -128,11 +128,11 @@ describe("Sending 'typing' status", async () => {
     assert.strictEqual(responseData.typing.user, undefined);
     assert.deepEqual(responseData.typing.error, {
       status: 422,
-      message: "'cid' field is required",
+      message: "'cid' field is required.",
     });
   });
 
-  it("should fail conversation not found", async () => {
+  it("should fail Conversation not found.", async () => {
     const requestData = {
       typing: {
         id: "xyz",
@@ -149,7 +149,7 @@ describe("Sending 'typing' status", async () => {
     assert.strictEqual(responseData.typing.user, undefined);
     assert.deepEqual(responseData.typing.error, {
       status: 404,
-      message: "Conversation not found",
+      message: "Conversation not found.",
     });
   });
 

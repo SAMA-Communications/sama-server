@@ -120,11 +120,11 @@ describe("Contacts functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "'first_name' or 'last_name' is missed",
+        message: "'first_name' or 'last_name' is missed.",
       });
     });
 
-    it("should fail email or phone is missed", async () => {
+    it("should fail Email or phone is missed.", async () => {
       const requestData = {
         request: {
           contact_add: {
@@ -144,7 +144,7 @@ describe("Contacts functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Email or phone is missed",
+        message: "Email or phone is missed.",
       });
     });
   });
@@ -225,7 +225,7 @@ describe("Contacts functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Email or phone is missed",
+        message: "Email or phone is missed.",
       });
     });
 
@@ -252,7 +252,7 @@ describe("Contacts functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "'first_name' or 'last_name' is missed",
+        message: "'first_name' or 'last_name' is missed.",
       });
     });
   });
@@ -325,7 +325,7 @@ describe("Contacts functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Contact not found",
+        message: "Contact not found.",
       });
     });
 
@@ -351,7 +351,7 @@ describe("Contacts functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Contact id is missed",
+        message: "Contact id is missed.",
       });
     });
   });
@@ -493,7 +493,7 @@ describe("Contacts functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Contact id is missed",
+        message: "Contact id is missed.",
       });
     });
 

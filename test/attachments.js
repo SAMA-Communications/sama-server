@@ -130,7 +130,7 @@ describe("Attachments", async () => {
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.file_urls, undefined);
     assert.deepEqual(responseData.response.error, {
-      message: "File limit exceded",
+      message: "You've exceeded the file limit.",
       status: 422,
     });
   });
@@ -151,7 +151,7 @@ describe("Attachments", async () => {
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.file_urls, undefined);
     assert.deepEqual(responseData.response.error, {
-      message: "File IDS missed",
+      message: "File IDS missed.",
       status: 422,
     });
   });
@@ -189,12 +189,12 @@ describe("Attachments", async () => {
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.file_urls, undefined);
     assert.deepEqual(responseData.response.error, {
-      message: "File ids for get download url exceeded",
+      message: "File IDs for get download url exceeded.",
       status: 422,
     });
   });
 
-  it("should fail file name missed", async () => {
+  it("should fail File name missed.", async () => {
     const requestData = {
       request: {
         create_files: [{ size: 123, content_type: "image" }],
@@ -209,12 +209,12 @@ describe("Attachments", async () => {
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.files, undefined);
     assert.deepEqual(responseData.response.error, {
-      message: "File name missed",
+      message: "File name missed.",
       status: 422,
     });
   });
 
-  it("should fail file size missed", async () => {
+  it("should fail File size missed.", async () => {
     const requestData = {
       request: {
         create_files: [{ name: "1.png", content_type: "image" }],
@@ -229,12 +229,12 @@ describe("Attachments", async () => {
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.files, undefined);
     assert.deepEqual(responseData.response.error, {
-      message: "File size missed",
+      message: "File size missed.",
       status: 422,
     });
   });
 
-  it("should fail file content type missed", async () => {
+  it("should fail File content type missed.", async () => {
     const requestData = {
       request: {
         create_files: [{ name: "1.png", size: 123 }],
@@ -249,7 +249,7 @@ describe("Attachments", async () => {
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.files, undefined);
     assert.deepEqual(responseData.response.error, {
-      message: "File content type missed",
+      message: "File content type missed.",
       status: 422,
     });
 
