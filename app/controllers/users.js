@@ -181,7 +181,7 @@ class UsersController extends BaseController {
     }
 
     if (
-      current_password &&
+      new_password &&
       !(await currentUser.isValidPassword(current_password))
     ) {
       throw new Error(ERROR_STATUES.INCORRECT_CURRENT_PASSWORD.message, {
