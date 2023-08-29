@@ -559,7 +559,7 @@ All conversation's participants who is online will receive the following message
 ```
 {
   message: {
-    id: "63480e68f4794709f802a2fa",
+    _id: "63480e68f4794709f802a2fa",
     t: 15673838833,
     from: "634ec51c0b65918393dca5bf",
     body: "hey how is going?",
