@@ -539,13 +539,13 @@ After adding users to a conversation, if they are online, they will receive the 
 ```
 {
   message: {
-    id: '5а34p21m0xj23'
+    id: "5а34p21m0xj23",
     body: "hey how is going?",
-    cid: "63480e68f4794709f802a2fa'",
+    cid: "63480e68f4794709f802a2fa",
     x: {
       param1: "value",
       param2: "value"
-    }
+    },
     attachments: [
       { name: "file_1", size: 240, content_type: "type" },
       { name: "file_2", size: 126, content_type: "type" }
