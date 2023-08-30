@@ -386,8 +386,6 @@ A `type` param must have only one of two values:
 - `u` - (user) - a private conversations for two people only
 - `g` - (group) - conversations for a group of users, two or more.
 
-If the value of the `type` param is equal to `u`, then the `opponent_id` param is required instead of `participants`.
-
 After conversation created, all the online participants will receive the following event about newly created conversation:
 
 ```

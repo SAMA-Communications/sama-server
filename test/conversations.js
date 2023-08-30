@@ -4,7 +4,7 @@ import User from "./../app/models/user.js";
 import UserToken from "../app/models/user_token.js";
 import assert from "assert";
 import { connectToDBPromise } from "./../app/lib/db.js";
-import { createUserArray, sendLogin, sendLogout } from "./utils.js";
+import { createUserArray, mockedWS, sendLogin, sendLogout } from "./utils.js";
 import { default as PacketProcessor } from "./../app/routes/packet_processor.js";
 
 let currentUserToken = "";
@@ -220,7 +220,6 @@ describe("Conversation functions", async () => {
             name: "chat123",
             description: "for admin and users",
             type: "u",
-            opponent_id: usersIds[2],
             participants: [usersIds[2]],
           },
           id: "1_1",
@@ -277,6 +276,38 @@ describe("Conversation functions", async () => {
       assert.deepEqual(responseData.response.error, {
         status: 422,
         message: "Participants not provided.",
+      });
+    });
+
+    it("should fail because the participant limit has been exceeded", async () => {
+      const requestData = {
+        request: {
+          conversation_create: {
+            name: "testing",
+            description: "test1",
+            type: "g",
+            participants: [
+              usersIds[1],
+              usersIds[2],
+              ...["1", "1", "1", "1", "1", "1", "1", "1", "1", "1"],
+              ...["1", "1", "1", "1", "1", "1", "1", "1", "1", "1"],
+              ...["1", "1", "1", "1", "1", "1", "1", "1", "1", "1"],
+              ...["1", "1", "1", "1", "1", "1", "1", "1", "1", "1"],
+              ...["1", "1", "1", "1", "1", "1", "1", "1", "1", "1"],
+            ],
+          },
+          id: "1_2",
+        },
+      };
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      assert.strictEqual(responseData.response.conversation, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "There are too many users in the group conversation",
       });
     });
 
@@ -831,25 +862,25 @@ describe("Conversation functions", async () => {
 
   describe("Re-store conversation 1-1", async () => {
     it("should work create conversation, I deleted, I restored", async () => {
-      currentUserToken = (await sendLogin("conv_re_store", "user_1")).response
-        .user._id;
-      let requestData = {
+      await sendLogout("test", currentUserToken);
+      currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user
+        ._id;
+      let requestData_create = {
         request: {
           conversation_create: {
             type: "u",
-            opponent_id: usersIds[3],
             participants: [usersIds[3]],
           },
           id: "1",
         },
       };
       let responseData = await PacketProcessor.processJsonMessageOrError(
-        "conv_re_store",
-        requestData
+        mockedWS,
+        requestData_create
       );
       currentConversationId = responseData.response.conversation._id.toString();
 
-      requestData = {
+      const requestData_delete = {
         request: {
           conversation_delete: {
             id: currentConversationId,
@@ -858,8 +889,8 @@ describe("Conversation functions", async () => {
         },
       };
       responseData = await PacketProcessor.processJsonMessageOrError(
-        "conv_re_store",
-        requestData
+        mockedWS,
+        requestData_delete
       );
 
       let participantsCount = await ConversationParticipant.count({
@@ -867,27 +898,29 @@ describe("Conversation functions", async () => {
       });
       assert.equal(participantsCount, 1);
 
-      requestData = {
+      requestData_create = {
         request: {
           conversation_create: {
             type: "u",
-            opponent_id: usersIds[3],
             participants: [usersIds[3]],
           },
           id: "1",
         },
       };
-      responseData = await PacketProcessor.processJsonMessageOrError(
-        "conv_re_store",
-        requestData
-      );
 
+      responseData = await PacketProcessor.processJsonMessageOrError(
+        mockedWS,
+        requestData_create
+      );
       participantsCount = await ConversationParticipant.findAll({
         conversation_id: currentConversationId,
       });
       assert.equal(participantsCount.length, 2);
 
-      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.strictEqual(
+        requestData_create.request.id,
+        responseData.response.id
+      );
       assert.equal(
         responseData.response.conversation._id.toString(),
         currentConversationId
@@ -897,8 +930,8 @@ describe("Conversation functions", async () => {
     });
 
     it("should work create conversation, I deleted, opponent restored", async () => {
-      currentUserToken = (await sendLogin("conv_re_store", "user_1")).response
-        .user._id;
+      currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user
+        ._id;
       let participantsCount = await ConversationParticipant.count({
         conversation_id: currentConversationId,
       });
@@ -913,7 +946,7 @@ describe("Conversation functions", async () => {
         },
       };
       let responseData = await PacketProcessor.processJsonMessageOrError(
-        "conv_re_store",
+        mockedWS,
         requestData
       );
 
@@ -921,24 +954,24 @@ describe("Conversation functions", async () => {
         conversation_id: currentConversationId,
       });
       assert.equal(participantsCount.length, 1);
-      currentUserToken = (await sendLogin("conv_re_store", "user_4")).response
-        .user._id;
+
+      await sendLogout(mockedWS, currentUserToken);
+      currentUserToken = (await sendLogin(mockedWS, "user_4")).response.user
+        ._id;
 
       requestData = {
         request: {
           conversation_create: {
             type: "u",
-            opponent_id: usersIds[0],
             participants: [usersIds[0]],
           },
           id: "1",
         },
       };
       responseData = await PacketProcessor.processJsonMessageOrError(
-        "conv_re_store",
+        mockedWS,
         requestData
       );
-
       participantsCount = await ConversationParticipant.findAll({
         conversation_id: currentConversationId,
       });

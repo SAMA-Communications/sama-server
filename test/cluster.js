@@ -5,6 +5,7 @@ import MessageStatus from "./../app/models/message_status.js";
 import SessionRepository from "./../app/repositories/session_repository.js";
 import User from "./../app/models/user.js";
 import assert from "assert";
+import clusterManager from "./../app/cluster/cluster_manager.js";
 import ip from "ip";
 import uWS from "uWebSockets.js";
 import { connectToDBPromise } from "./../app/lib/db.js";
@@ -15,7 +16,6 @@ import {
   sendLogin,
 } from "./utils.js";
 import { ACTIVE } from "./../app/store/session.js";
-import clusterManager from "./../app/cluster/cluster_manager.js";
 import { default as PacketProcessor } from "./../app/routes/packet_processor.js";
 
 let currentConversationId = "";
