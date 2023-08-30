@@ -17,7 +17,7 @@ class PushNotificationsController extends BaseController {
     );
   }
 
-  async pushSubscriptionCreate(ws, data) {
+  async push_subscription_create(ws, data) {
     const {
       id: requestId,
       push_subscription_create: {
@@ -53,7 +53,7 @@ class PushNotificationsController extends BaseController {
     };
   }
 
-  async pushSubscriptionList(ws, data) {
+  async push_subscription_list(ws, data) {
     const {
       id: requestId,
       push_subscription_list: { user_id },
@@ -64,7 +64,7 @@ class PushNotificationsController extends BaseController {
     return { response: { id: requestId, subscriptions } };
   }
 
-  async pushSubscriptionDelete(ws, data) {
+  async push_subscription_delete(ws, data) {
     const {
       id: requestId,
       push_subscription_delete: { device_udid },
@@ -86,7 +86,7 @@ class PushNotificationsController extends BaseController {
     return { response: { id: requestId, success: true } };
   }
 
-  async pushEventCreate(ws, data) {
+  async push_event_create(ws, data) {
     const {
       id: requestId,
       push_event_create: { recipients_ids, message },

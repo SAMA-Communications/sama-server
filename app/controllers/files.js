@@ -6,7 +6,7 @@ class FilesController extends BaseController {
     super();
   }
 
-  async createUrl(ws, data) {
+  async create_url(ws, data) {
     const { id: requestId, create_files: reqFiles } = data;
 
     const resFiles = [];
@@ -26,7 +26,7 @@ class FilesController extends BaseController {
     return { response: { id: requestId, files: resFiles } };
   }
 
-  async getDownloadUrl(ws, data) {
+  async get_download_url(ws, data) {
     const {
       id: requestId,
       get_file_urls: { file_ids: objectIds },

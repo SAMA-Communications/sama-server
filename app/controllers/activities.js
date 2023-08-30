@@ -10,7 +10,7 @@ class LastActivitiesController extends BaseController {
     this.sessionRepository = new SessionRepository(ACTIVE);
   }
 
-  async statusSubscribe(ws, data) {
+  async status_subscribe(ws, data) {
     const {
       id: requestId,
       user_last_activity_subscribe: { id: uId },
@@ -20,7 +20,7 @@ class LastActivitiesController extends BaseController {
     const obj = {};
 
     if (ACTIVITY.SUBSCRIBED_TO[currentUId]) {
-      this.statusUnsubscribe(ws, { id: requestId });
+      this.status_unsubscribe(ws, { id: requestId });
     }
     ACTIVITY.SUBSCRIBED_TO[currentUId] = uId;
 
@@ -40,7 +40,7 @@ class LastActivitiesController extends BaseController {
     return { response: { id: requestId, last_activity: obj } };
   }
 
-  async statusUnsubscribe(ws, data) {
+  async status_unsubscribe(ws, data) {
     const { id: requestId } = data;
     const currentUId = this.sessionRepository.getSessionUserId(ws);
 
@@ -59,7 +59,7 @@ class LastActivitiesController extends BaseController {
     return { response: { id: requestId, success: true } };
   }
 
-  async getUserStatus(ws, data) {
+  async get_user_status(ws, data) {
     const {
       id: requestId,
       user_last_activity: { ids: uIds },
