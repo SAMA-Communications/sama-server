@@ -285,7 +285,7 @@ class UsersController extends BaseController {
       });
     }
 
-    await LastActivityiesController.statusUnsubscribe(ws, {
+    await LastActivityiesController.status_unsubscribe(ws, {
       request: { id: requestId },
     });
 

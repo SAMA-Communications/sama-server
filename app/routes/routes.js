@@ -153,7 +153,7 @@ export const routes = {
   get_participants_by_cids: (ws, json) =>
     ConversationsController.validate(
       json.get_participants_by_cids,
-      conversationsSchemaValidation.getParticipantsByCids
+      conversationsSchemaValidation.get_participants_by_cids
     ).get_participants_by_cids(ws, json),
   conversation_create: (ws, json) =>
     ConversationsController.validate(
