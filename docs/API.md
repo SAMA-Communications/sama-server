@@ -913,9 +913,9 @@ There is a way to subscribe to some user activity status upodate in real-time:
     user_last_activity_subscribe: {
       id: uid1
     },
-    id: "4",
-  },
-};
+    id: "4"
+  }
+}
 
 {
   response: {
