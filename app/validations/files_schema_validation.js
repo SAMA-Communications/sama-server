@@ -20,23 +20,20 @@ export const filesSchemaValidation = {
             return new Error(ERROR_STATUES.FILE_LIMIT_EXCEEDED.message, {
               cause: ERROR_STATUES.FILE_LIMIT_EXCEEDED,
             });
-          case "any.required":
+          default:
             switch (error.local.key) {
               case "name":
-                return new Error(ERROR_STATUES.FILE_NAME_MISSED.message, {
-                  cause: ERROR_STATUES.FILE_NAME_MISSED,
+                return new Error(ERROR_STATUES.INCORRECT_FILE_NAME.message, {
+                  cause: ERROR_STATUES.INCORRECT_FILE_NAME,
                 });
               case "size":
-                return new Error(ERROR_STATUES.FILE_SIZE_MISSED.message, {
-                  cause: ERROR_STATUES.FILE_SIZE_MISSED,
+                return new Error(ERROR_STATUES.INCORRECT_FILE_SIZE.message, {
+                  cause: ERROR_STATUES.INCORRECT_FILE_SIZE,
                 });
               case "content_type":
-                return new Error(
-                  ERROR_STATUES.FILE_CONTENT_TYPE_MISSED.message,
-                  {
-                    cause: ERROR_STATUES.FILE_CONTENT_TYPE_MISSED,
-                  }
-                );
+                return new Error(ERROR_STATUES.INCORRECT_CONTENT_TYPE.message, {
+                  cause: ERROR_STATUES.INCORRECT_CONTENT_TYPE,
+                });
             }
         }
       });

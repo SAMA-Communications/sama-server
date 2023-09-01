@@ -135,6 +135,31 @@ describe("Attachments", async () => {
     });
   });
 
+  it("should fail file name exceded", async () => {
+    const requestData = {
+      request: {
+        create_files: [
+          {
+            name: "1asdbchmfcasgjksxbcagmhaxfndcbgdgbjxfjkahbesbvzvcbhjvxnmbgdsacfbsgvaxdxfjadsxbdfv.png",
+            size: 123,
+            content_type: "image",
+          },
+        ],
+        id: "createUploadUrlForFile",
+      },
+    };
+    const responseData = await PacketProcessor.processJsonMessageOrError(
+      mockedWS,
+      requestData
+    );
+    assert.strictEqual(requestData.request.id, responseData.response.id);
+    assert.strictEqual(responseData.response.file_urls, undefined);
+    assert.deepEqual(responseData.response.error, {
+      message: "Incorrect file name.",
+      status: 422,
+    });
+  });
+
   it("should fail file_ids empty", async () => {
     const requestData = {
       request: {
@@ -209,7 +234,7 @@ describe("Attachments", async () => {
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.files, undefined);
     assert.deepEqual(responseData.response.error, {
-      message: "File name missed.",
+      message: "Incorrect file name.",
       status: 422,
     });
   });
@@ -229,7 +254,7 @@ describe("Attachments", async () => {
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.files, undefined);
     assert.deepEqual(responseData.response.error, {
-      message: "File size missed.",
+      message: "Incorrect file size.",
       status: 422,
     });
   });
@@ -249,7 +274,7 @@ describe("Attachments", async () => {
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.files, undefined);
     assert.deepEqual(responseData.response.error, {
-      message: "File content type missed.",
+      message: "Incorrect content type.",
       status: 422,
     });
 
