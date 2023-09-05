@@ -25,6 +25,10 @@ export const ERROR_STATUES = {
     status: 422,
     message: "There are too many users in the private conversation.",
   },
+  TOO_MANY_USERS_IN_GROUP: {
+    status: 422,
+    message: "There are too many users in the group conversation.",
+  },
   INCORRECT_USER: { status: 422, message: "The specified user is incorrect." },
   INCORRECT_PASSWORD: {
     status: 422,
@@ -81,11 +85,11 @@ export const ERROR_STATUES = {
     status: 422,
     message: "File IDs for get download url exceeded.",
   },
-  FILE_NAME_MISSED: { status: 422, message: "File name missed." },
-  FILE_SIZE_MISSED: { status: 422, message: "File size missed." },
-  FILE_CONTENT_TYPE_MISSED: {
+  INCORRECT_FILE_NAME: { status: 422, message: "Incorrect file name." },
+  INCORRECT_FILE_SIZE: { status: 422, message: "Incorrect file size." },
+  INCORRECT_CONTENT_TYPE: {
     status: 422,
-    message: "File content type missed.",
+    message: "Incorrect content type.",
   },
   // Message -->
   MESSAGE_ID_NOT_FOUND: { status: 422, message: "Message ID not found." },
