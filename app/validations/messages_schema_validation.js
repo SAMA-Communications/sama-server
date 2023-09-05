@@ -32,7 +32,7 @@ export const messagesSchemaValidation = {
         .items(
           Joi.object({
             file_id: Joi.string(),
-            file_name: Joi.string().max(40),
+            file_name: Joi.string().max(255),
           })
         )
         .min(1)
