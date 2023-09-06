@@ -59,7 +59,7 @@ export default class Message extends BaseModel {
   static async getCountOfUnredMessagesByCid(cids, uId) {
     const lastReadMessageByUserForCids =
       await MessageStatus.getLastReadMessageByUserForCid(cids, uId);
-    console.log("lastReadMessageByUserForCids: ", lastReadMessageByUserForCids);
+
     const arrayParams = cids.map((cid) => {
       const query = { cid: ObjectId(cid), from: { $ne: ObjectId(uId) } };
       if (lastReadMessageByUserForCids[cid]) {
