@@ -59,7 +59,7 @@ export default class Message extends BaseModel {
   static async getCountOfUnredMessagesByCid(cids, uId) {
     const lastReadMessageByUserForCids =
       await MessageStatus.getLastReadMessageByUserForCid(cids, uId);
-
+    console.log("lastReadMessageByUserForCids: ", lastReadMessageByUserForCids);
     const arrayParams = cids.map((cid) => {
       const query = { cid: ObjectId(cid), from: { $ne: ObjectId(uId) } };
       if (lastReadMessageByUserForCids[cid]) {
@@ -69,7 +69,7 @@ export default class Message extends BaseModel {
     });
     const $group = {
       _id: "$cid",
-      unred_messages: { $push: "$_id" },
+      unread_messages: { $push: "$_id" },
     };
     const aggregatedResult = await this.aggregate([
       { $match: arrayParams.length ? { $or: arrayParams } : {} },
@@ -77,7 +77,7 @@ export default class Message extends BaseModel {
     ]);
     const result = {};
     aggregatedResult?.forEach((obj) => {
-      result[obj._id] = [...new Set(obj.unred_messages)].length;
+      result[obj._id] = [...new Set(obj.unread_messages)].length;
     });
     return result;
   }
