@@ -154,7 +154,6 @@ class MessagesController extends BaseController {
     };
   }
 
-  //TODO: add attachments change support
   async edit(ws, data) {
     const { id: requestId, message_edit: messageParams } = data;
     const messageId = messageParams.id;

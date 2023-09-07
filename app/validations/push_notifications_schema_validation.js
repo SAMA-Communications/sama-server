@@ -2,7 +2,7 @@ import Joi from "joi";
 import { ERROR_STATUES } from "./constants/errors.js";
 
 export const pushNotificationsSchemaValidation = {
-  pushSubscriptionCreate: Joi.object({
+  push_subscription_create: Joi.object({
     platform: Joi.string()
       .valid("web", "ios", "android")
       .required()
@@ -40,7 +40,7 @@ export const pushNotificationsSchemaValidation = {
         })
       ),
   }).required(),
-  pushSubscriptionList: Joi.object({
+  push_subscription_list: Joi.object({
     user_id: Joi.string()
       .required()
       .error(
@@ -49,7 +49,7 @@ export const pushNotificationsSchemaValidation = {
         })
       ),
   }).required(),
-  pushSubscriptionDelete: Joi.object({
+  push_subscription_delete: Joi.object({
     device_udid: Joi.string()
       .required()
       .error(
@@ -58,7 +58,7 @@ export const pushNotificationsSchemaValidation = {
         })
       ),
   }).required(),
-  pushEventCreate: Joi.object({
+  push_event_create: Joi.object({
     recipients_ids: Joi.array()
       .items(Joi.string().required())
       .min(1)

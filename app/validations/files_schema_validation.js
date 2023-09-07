@@ -2,7 +2,7 @@ import Joi from "joi";
 import { ERROR_STATUES } from "./constants/errors.js";
 
 export const filesSchemaValidation = {
-  createUrl: Joi.array()
+  create_url: Joi.array()
     .items(
       Joi.object({
         name: Joi.string().max(255).required(),
@@ -38,7 +38,7 @@ export const filesSchemaValidation = {
         }
       });
     }),
-  getDownloadUrl: Joi.object({
+  get_download_url: Joi.object({
     file_ids: Joi.array()
       .items(Joi.string())
       .min(1)

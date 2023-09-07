@@ -432,7 +432,7 @@ class ConversationsController extends BaseController {
       {
         _id: { $in: usersIds.filter((el, i) => usersIds.indexOf(el) === i) },
       },
-      ["_id", "login"],
+      ["_id", "first_name", "last_name", "login", "email", "phone"],
       null
     );
 

@@ -108,13 +108,13 @@ export const routes = {
   create_files: (ws, json) =>
     FilesController.validate(
       json.create_files,
-      filesSchemaValidation.createUrl
-    ).createUrl(ws, json),
+      filesSchemaValidation.create_url
+    ).create_url(ws, json),
   get_file_urls: (ws, json) =>
     FilesController.validate(
       json.get_file_urls,
-      filesSchemaValidation.getDownloadUrl
-    ).getDownloadUrl(ws, json),
+      filesSchemaValidation.get_download_url
+    ).get_download_url(ws, json),
   op_log_list: (ws, json) =>
     OperationsLogController.validate(
       json.op_log_list,
@@ -138,22 +138,22 @@ export const routes = {
   user_last_activity_subscribe: (ws, json) =>
     LastActivityiesController.validate(
       json.user_last_activity_subscribe,
-      activitiesSchemaValidation.statusSubscribe
-    ).statusSubscribe(ws, json),
+      activitiesSchemaValidation.status_subscribe
+    ).status_subscribe(ws, json),
   user_last_activity_unsubscribe: (ws, json) =>
     LastActivityiesController.validate(
       json.user_last_activity_unsubscribe,
-      activitiesSchemaValidation.statusUnsubscribe
-    ).statusUnsubscribe(ws, json),
+      activitiesSchemaValidation.status_unsubscribe
+    ).status_unsubscribe(ws, json),
   user_last_activity: (ws, json) =>
     LastActivityiesController.validate(
       json.user_last_activity,
-      activitiesSchemaValidation.getUserStatus
-    ).getUserStatus(ws, json),
+      activitiesSchemaValidation.get_user_status
+    ).get_user_status(ws, json),
   get_participants_by_cids: (ws, json) =>
     ConversationsController.validate(
       json.get_participants_by_cids,
-      conversationsSchemaValidation.getParticipantsByCids
+      conversationsSchemaValidation.get_participants_by_cids
     ).get_participants_by_cids(ws, json),
   conversation_create: (ws, json) =>
     ConversationsController.validate(
@@ -178,21 +178,21 @@ export const routes = {
   push_subscription_create: (ws, json) =>
     PushNotificationsController.validate(
       json.push_subscription_create,
-      pushNotificationsSchemaValidation.pushSubscriptionCreate
-    ).pushSubscriptionCreate(ws, json),
+      pushNotificationsSchemaValidation.push_subscription_create
+    ).push_subscription_create(ws, json),
   push_subscription_list: (ws, json) =>
     PushNotificationsController.validate(
       json.push_subscription_list,
-      pushNotificationsSchemaValidation.pushSubscriptionList
-    ).pushSubscriptionList(ws, json),
+      pushNotificationsSchemaValidation.push_subscription_list
+    ).push_subscription_list(ws, json),
   push_subscription_delete: (ws, json) =>
     PushNotificationsController.validate(
       json.push_subscription_delete,
-      pushNotificationsSchemaValidation.pushSubscriptionDelete
-    ).pushSubscriptionDelete(ws, json),
+      pushNotificationsSchemaValidation.push_subscription_delete
+    ).push_subscription_delete(ws, json),
   push_event_create: (ws, json) =>
     PushNotificationsController.validate(
       json.push_event_create,
-      pushNotificationsSchemaValidation.pushEventCreate
-    ).pushEventCreate(ws, json),
+      pushNotificationsSchemaValidation.push_event_create
+    ).push_event_create(ws, json),
 };

@@ -81,7 +81,7 @@ export const conversationsSchemaValidation = {
   delete: Joi.object({
     id: Joi.string().required(),
   }).required(),
-  getParticipantsByCids: Joi.object({
+  get_participants_by_cids: Joi.object({
     cids: Joi.array()
       .items(Joi.alternatives().try(Joi.object(), Joi.string()))
       .required()
