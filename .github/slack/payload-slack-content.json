@@ -1,0 +1,74 @@
+{
+	"attachments": [
+		{
+			"color": "#008000",
+			"blocks": [
+				{
+					"type": "header",
+					"text": {
+						"type": "plain_text",
+						"text": "New Release Created in: ${{ env.REPOSITORY_NAME }}",
+						"emoji": true
+					}
+				},
+				{
+					"type": "divider"
+				},
+				{
+					"type": "section",
+					"text": {
+						"type": "mrkdwn",
+						"text": "*Version*: ${{ env.version }}"
+					}
+				},
+				{
+					"type": "actions",
+					"elements": [
+						{
+							"type": "button",
+							"text": {
+								"type": "plain_text",
+								"text": "View Release",
+								"emoji": true
+							},
+							"value": "click_me_123",
+							"url": "${{ env.RELEASE_URL }}",
+							"action_id": "button-action"
+						}
+					]
+				},
+				{
+					"type": "divider"
+				},
+				{
+					"type": "context",
+					"elements": [
+						{
+							"type": "image",
+							"image_url": "https://www.editorialoffice.co.uk/wp-content/uploads/2021/05/Red-Icon-Squares-new-white-person-tick.jpg",
+							"alt_text": "author"
+						},
+						{
+							"type": "mrkdwn",
+							"text": "*Author:* ${{ env.AUTHOR }}"
+						}
+					]
+				},
+				{
+					"type": "context",
+					"elements": [
+						{
+							"type": "image",
+							"image_url": "https://technicaeditorial.com/wordpress/wp-content/uploads/2021/04/peer-review-1.png",
+							"alt_text": "reviewers"
+						},
+						{
+							"type": "mrkdwn",
+							"text": "*Reviewers:* ${{ env.REVIEWERS}}"
+						}
+					]
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,77 @@
+name: Create Release on PR
+
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  create-release:
+    if: |
+      contains(github.event.pull_request.title, 'release') == true &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'main'
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
+      - name: Extract Version
+        id: extract-version
+        run: |
+          # Use grep to find the first occurrence of the version number matching "## v" pattern
+          version=$(grep -m 1 -oP '## v\d+\.\d+\.\d+' CHANGELOG.md | cut -d ' ' -f 2)
+          echo "version=$version" >> $GITHUB_ENV
+
+      - name: Extract Changelog
+        id: extract-changelog
+        run: |
+          # Extract the content between the last two version headers
+          changelog=$(awk '/^## v[0-9]+\.[0-9]+\.[0-9]+/{if (!version) {version=$0; next}} /^## v[0-9]+\.[0-9]+\.[0-9]+/{exit} {if (version) description = description ORS $0} END {if (version) print description}' CHANGELOG.md | sed -e '/^## v[0-9]+\.[0-9]+\.[0-9]+/d; s/^# //' > changelog.txt)
+          echo "changelog_file=changelog.txt" >> $GITHUB_ENV
+          
+      - name: Create Release
+        id: create-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.version }}
+          release_name: ${{ env.version }}
+          body_path: ${{ env.changelog_file }}
+          draft: false
+          prerelease: false
+
+      - name: Post to a Slack channel
+        if: success()
+        id: slack
+        uses: slackapi/slack-github-action@v1.24.0
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          REPOSITORY_NAME: ${{ github.repository }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          REVIEWERS: ${{ join(github.event.pull_request.requested_reviewers.*.login, ', ') }}
+          RELEASE_URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ env.version }}
+        with:
+          # You can pass in multiple channels to post to by providing a comma-delimited list of channel IDs.
+          channel-id: 'git-releases'
+          payload-file-path: "./.github/slack/payload-slack-content.json"
+
+  deploy:
+    if: |
+      contains(github.event.pull_request.title, 'release') == true &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'main'
+    needs: [create-release]
+    runs-on: self-hosted
+    steps:
+    - name: Deploy using Ansible
+      run: |
+        ansible localhost -m community.general.jenkins_build -a "{\"name\": \"SAMA/api\", \"user\": \"$DEPLOY_USER\", \"password\": \"$DEPLOY_PASSWORD\", \"url\": \"$DEPLOY_URL\", \"state\": \"present\", \"args\": {\"branch\": \"main\", \"environment\": \"prod\"}}" -B 3600 -P 0
+        sleep 3 # just to make sure that the request was processed
+        echo "Starting prod deploying job was successful."
+      env:
+        DEPLOY_USER: ${{ secrets.JENKINS_USER }}
+        DEPLOY_PASSWORD: ${{ secrets.JENKINS_PASSWORD }}
+        DEPLOY_URL: ${{ secrets.JENKINS_URL }}
