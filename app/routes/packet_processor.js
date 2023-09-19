@@ -224,7 +224,7 @@ class PacketProcessor {
         { _id: uId },
         { $set: { recent_activity: currentTime } }
       );
-      await LastActivityiesController.statusUnsubscribe(ws, {
+      await LastActivityiesController.status_unsubscribe(ws, {
         request: { id: rId || "Unsubscribe" },
       });
     }
