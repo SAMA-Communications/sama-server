@@ -171,8 +171,8 @@ describe("User cycle", async () => {
 
       assert.strictEqual(responseData.response.user, undefined);
       assert.deepEqual(responseData.response.error, {
-        status: 404,
-        message: "Unauthorized.",
+        status: 422,
+        message: "Incorrect username or password.",
       });
     });
 
@@ -195,8 +195,8 @@ describe("User cycle", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(responseData.response.user, undefined);
       assert.deepEqual(responseData.response.error, {
-        status: 404,
-        message: "Unauthorized.",
+        status: 422,
+        message: "Incorrect username or password.",
       });
     });
 
