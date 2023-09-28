@@ -31,9 +31,9 @@ class UsersController extends BaseController {
 
     reqData.login = reqData.login.toLowerCase();
 
-    const existingParam = [{ login: reqData.login }];
-    reqData.email && existingParam.push({ email: reqData.email });
-    reqData.phone && existingParam.push({ phone: reqData.phone });
+    const existingParam = [{ login: `/${reqData.login}/i` }];
+    reqData.email && existingParam.push({ email: `/${reqData.email}/i` });
+    reqData.phone && existingParam.push({ phone: `/${reqData.phone}/i` });
     const existingUser = await User.findOne({ $or: existingParam });
     if (existingUser) {
       throw new Error(ERROR_STATUES.USER_ALREADY_EXISTS.message, {
@@ -59,24 +59,7 @@ class UsersController extends BaseController {
     const deviceId = userInfo.deviceId.toString();
 
     let user, token;
-    if (!userInfo.token) {
-      user = await User.findOne({ login: userInfo.login });
-      if (!user) {
-        throw new Error(ERROR_STATUES.UNAUTHORIZED.message, {
-          cause: ERROR_STATUES.UNAUTHORIZED,
-        });
-      }
-
-      if (!(await user.isValidPassword(userInfo.password))) {
-        throw new Error(ERROR_STATUES.UNAUTHORIZED.message, {
-          cause: ERROR_STATUES.UNAUTHORIZED,
-        });
-      }
-      token = await UserToken.findOne({
-        user_id: user.params._id,
-        device_id: deviceId,
-      });
-    } else {
+    if (userInfo.token) {
       token = await UserToken.findOne({
         token: userInfo.token,
         device_id: deviceId,
@@ -87,6 +70,23 @@ class UsersController extends BaseController {
         });
       }
       user = await User.findOne({ _id: token.params.user_id });
+    } else {
+      user = await User.findOne({ login: `/${userInfo.login}/i` });
+      if (!user) {
+        throw new Error(ERROR_STATUES.INCORRECT_LOGIN_OR_PASSWORD.message, {
+          cause: ERROR_STATUES.INCORRECT_LOGIN_OR_PASSWORD,
+        });
+      }
+
+      if (!(await user.isValidPassword(userInfo.password))) {
+        throw new Error(ERROR_STATUES.INCORRECT_LOGIN_OR_PASSWORD.message, {
+          cause: ERROR_STATUES.INCORRECT_LOGIN_OR_PASSWORD,
+        });
+      }
+      token = await UserToken.findOne({
+        user_id: user.params._id,
+        device_id: deviceId,
+      });
     }
     const userId = user.params._id;
 
