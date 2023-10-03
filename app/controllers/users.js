@@ -31,11 +31,9 @@ class UsersController extends BaseController {
 
     reqData.login = reqData.login.toLowerCase();
 
-    const existingParam = [{ login: new RegExp(reqData.login, "i") }];
-    reqData.email &&
-      existingParam.push({ email: new RegExp(reqData.email, "i") });
-    reqData.phone &&
-      existingParam.push({ phone: new RegExp(reqData.phone, "i") });
+    const existingParam = [{ login: reqData.login }];
+    reqData.email && existingParam.push({ email: reqData.email });
+    reqData.phone && existingParam.push({ phone: reqData.phone });
 
     const existingUser = await User.findOne({ $or: existingParam });
     if (existingUser) {
@@ -75,7 +73,7 @@ class UsersController extends BaseController {
       }
       user = await User.findOne({ _id: token.params.user_id });
     } else {
-      user = await User.findOne({ login: new RegExp(userInfo.login, "i") });
+      user = await User.findOne({ login: userInfo.login });
       if (!user) {
         throw new Error(ERROR_STATUES.INCORRECT_LOGIN_OR_PASSWORD.message, {
           cause: ERROR_STATUES.INCORRECT_LOGIN_OR_PASSWORD,
