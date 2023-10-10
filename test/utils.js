@@ -61,10 +61,11 @@ async function createUserArray(count, currentCountOfUsers, email, phone) {
         id: "UserCreate",
       },
     };
-
-    usersIds[i] = (
-      await PacketProcessor.processJsonMessageOrError("UserCreate", requestData)
-    )?.response.user._id;
+    const user = await PacketProcessor.processJsonMessageOrError(
+      "UserCreate",
+      requestData
+    );
+    usersIds[i] = user?.response.user._id;
   }
 
   return usersIds;

@@ -39,6 +39,10 @@ export const ERROR_STATUES = {
     status: 422,
     message: "The current password you entered is incorrect.",
   },
+  INCORRECT_LOGIN_OR_PASSWORD: {
+    status: 422,
+    message: "Incorrect username or password.",
+  },
   DEVICE_ID_MISSED: { status: 422, message: "'deviceId' is required." },
   // Contacts -->
   CONTACT_NOT_FOUND: { status: 422, message: "Contact not found." },
