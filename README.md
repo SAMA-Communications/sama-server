@@ -36,7 +36,7 @@ https://medium.com/sama-communications/introducing-sama-simple-but-advanced-mess
 - `npm run migrate-mongo-up` to run DB migrations 
 - `npm run start` to run server
 
-There is also a frontend app which can be uses with server https://github.com/SAMA-Communications/sama-client
+There are also other components. Make sure to check [Deploying SAMA chat server stack: a comprehensive guide](https://medium.com/sama-communications/deploying-sama-chat-server-stack-a-comprehensive-guide-294ddb9a2d78)
 
 ## API
 
