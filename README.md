@@ -40,7 +40,15 @@ There are also other components. Make sure to check [Deploying SAMA chat server 
 
 ## API
 
-[API documentation](docs/API.md)
+[API reference](docs/API.md)
+
+Also, there is a set of detailed articles for each API:
+- [Users API](https://medium.com/sama-communications/sama-chat-server-api-users-edf65ea6a341)
+- [Conversations API](https://medium.com/sama-communications/sama-chat-server-api-conversations-1ae505b07d17)
+- [Messages API](https://medium.com/sama-communications/sama-chat-server-api-messages-dc00e9684dc0)
+- [Activities API](https://medium.com/sama-communications/sama-chat-server-api-activities-97b712b88671)
+- [Address Book API](https://medium.com/sama-communications/sama-chat-server-api-address-book-f297ce25faa1)
+- [Push Notifications API - coming soon](#)
 
 ## Clustering
 
