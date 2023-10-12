@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.0.1 (Example)
+## 0.0.1 (Example)
 
 ### Important Notes
 

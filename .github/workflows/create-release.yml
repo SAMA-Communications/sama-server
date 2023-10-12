@@ -20,15 +20,15 @@ jobs:
       - name: Extract Version
         id: extract-version
         run: |
-          # Use grep to find the first occurrence of the version number matching "## v" pattern
-          version=$(grep -m 1 -oP '## v\d+\.\d+\.\d+' CHANGELOG.md | cut -d ' ' -f 2)
+          # Use grep to find the first occurrence of the version number matching "## 0.0.0" pattern
+          version=$(grep -m 1 -oP '## \d+\.\d+\.\d+' CHANGELOG.md | cut -d ' ' -f 2)
           echo "version=$version" >> $GITHUB_ENV
 
       - name: Extract Changelog
         id: extract-changelog
         run: |
           # Extract the content between the last two version headers
-          changelog=$(awk '/^## v[0-9]+\.[0-9]+\.[0-9]+/{if (!version) {version=$0; next}} /^## v[0-9]+\.[0-9]+\.[0-9]+/{exit} {if (version) description = description ORS $0} END {if (version) print description}' CHANGELOG.md | sed -e '/^## v[0-9]+\.[0-9]+\.[0-9]+/d; s/^# //' > changelog.txt)
+          changelog=$(awk '/^## [0-9]+\.[0-9]+\.[0-9]+/{if (!version) {version=$0; next}} /^## [0-9]+\.[0-9]+\.[0-9]+/{exit} {if (version) description = description ORS $0} END {if (version) print description}' CHANGELOG.md | sed -e '/^## [0-9]+\.[0-9]+\.[0-9]+/d; s/^# //' > changelog.txt)
           echo "changelog_file=changelog.txt" >> $GITHUB_ENV
           
       - name: Create Release
