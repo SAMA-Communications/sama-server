@@ -46,7 +46,6 @@ class UsersController extends BaseController {
     const user = new User(reqData);
     await user.save();
 
-    console.log("user: ", user.visibleParams());
     await this.contactMatchRepository.matchUserWithContactOnCreate(
       user.visibleParams()._id.toString(),
       user.params.phone,
