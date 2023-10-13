@@ -3,6 +3,7 @@ import clusterManager from "../cluster/cluster_manager.js";
 import ip from "ip";
 import uWS from "uWebSockets.js";
 import { ACTIVE } from "../store/session.js";
+import { ERROR_STATUES } from "../validations/constants/errors.js";
 import { StringDecoder } from "string_decoder";
 import { default as PacketProcessor } from "./packet_processor.js";
 const decoder = new StringDecoder("utf8");
@@ -53,32 +54,49 @@ class ClientManager {
       },
 
       message: async (ws, message, isBinary) => {
-        const json = JSON.parse(decoder.write(Buffer.from(message)));
-        const consoleMessage = JSON.parse(JSON.stringify(json));
+        try {
+          const json = JSON.parse(decoder.write(Buffer.from(message)));
+          const consoleMessage = JSON.parse(JSON.stringify(json));
 
-        if (
-          consoleMessage?.request?.user_login?.password ||
-          consoleMessage?.request?.user_create?.password
-        ) {
-          consoleMessage.request[Object.keys(json.request)[0]].password =
-            "********";
-        }
-        console.log(
-          `[ClientManager] ws on message (pid=${process.pid})`,
-          consoleMessage
-        );
-
-        const responseData = await PacketProcessor.processJsonMessageOrError(
-          ws,
-          json
-        );
-
-        if (responseData) {
-          try {
-            ws.send(JSON.stringify(responseData));
-          } catch (e) {
-            console.error("[ClientManager] connection with client ws is lost");
+          if (
+            consoleMessage?.request?.user_login?.password ||
+            consoleMessage?.request?.user_create?.password
+          ) {
+            consoleMessage.request[Object.keys(json.request)[0]].password =
+              "********";
           }
+          console.log(
+            `[ClientManager] ws on message (pid=${process.pid})`,
+            consoleMessage
+          );
+
+          const responseData = await PacketProcessor.processJsonMessageOrError(
+            ws,
+            json
+          );
+
+          if (responseData) {
+            try {
+              ws.send(JSON.stringify(responseData));
+            } catch (e) {
+              console.error(
+                "[ClientManager] connection with client ws is lost"
+              );
+            }
+          }
+        } catch (err) {
+          const rawPacket = decoder.write(Buffer.from(message));
+          console.error("[ClientManager] ws on message error", err, rawPacket);
+          ws.send(
+            JSON.stringify({
+              response: {
+                error: {
+                  status: ERROR_STATUES.INVALID_DATA_FORMAT.status,
+                  message: ERROR_STATUES.INVALID_DATA_FORMAT.message,
+                },
+              },
+            })
+          );
         }
       },
     });
