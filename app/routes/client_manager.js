@@ -85,7 +85,8 @@ class ClientManager {
             }
           }
         } catch (err) {
-          console.error("[ClientManager] ws on message error", err);
+          const rawPacket = decoder.write(Buffer.from(message));
+          console.error("[ClientManager] ws on message error", err, rawPacket);
           ws.send(
             JSON.stringify({
               response: {
