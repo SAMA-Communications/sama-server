@@ -23,7 +23,7 @@
 
 - Added migrations for the database
 - Implemented saving files using minio
-  ​- Implemented a controller for communication with MongoDB
+- Implemented a controller for communication with MongoDB
 - Implemented a system for saving user sessions and user activity
 
 ### Technical
