@@ -608,21 +608,21 @@ describe("Contacts functions", async () => {
                 first_name: "Name11_6",
                 last_name: "Surname11_6",
                 company: "UserCompany",
-                email: [{ type: "work", value: "test_matched_6_email" }],
+                email: [{ type: "work", value: "testmatched6@email.com" }],
                 phone: [{ type: "home", value: "test_6_phone" }],
               },
               {
                 first_name: "Name22_6",
                 last_name: "Surname22_6",
                 company: "UserCompany",
-                email: [{ type: "work", value: "test_matched_6_email" }],
+                email: [{ type: "work", value: "testmatched6@email.com" }],
                 phone: [{ type: "home", value: "test_6_phone" }],
               },
               {
                 first_name: "Name33_6",
                 last_name: "Surname33_6",
                 company: "UserCompany",
-                email: [{ type: "work", value: "test_matched_6_email" }],
+                email: [{ type: "work", value: "testmatched6@email.com" }],
                 phone: [{ type: "home", value: "test_6_phone" }],
               },
             ],
@@ -641,7 +641,7 @@ describe("Contacts functions", async () => {
       requestData = {
         request: {
           user_edit: {
-            email: "test_matched_6_email",
+            email: "testmatched6@email.com",
             phone: "test_6_phone",
           },
           id: "1",
@@ -666,6 +666,7 @@ describe("Contacts functions", async () => {
         mockedWS,
         requestData
       );
+      console.log(responseData.response.contacts[0]);
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(
@@ -702,7 +703,7 @@ describe("Contacts functions", async () => {
       let requestData = {
         request: {
           user_edit: {
-            email: "test_matched_7_email",
+            email: "testmatched7@email.com",
           },
           id: "1",
         },
@@ -730,15 +731,15 @@ describe("Contacts functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(
         responseData.response.contacts[0].email[0].value,
-        "test_matched_7_email"
+        "testmatched7@email.com"
       );
       assert.strictEqual(
         responseData.response.contacts[1].email[0].value,
-        "test_matched_7_email"
+        "testmatched7@email.com"
       );
       assert.strictEqual(
         responseData.response.contacts[2].email[0].value,
-        "test_matched_7_email"
+        "testmatched7@email.com"
       );
       assert.strictEqual(
         responseData.response.contacts[0].email[0].matched_user_id,

@@ -1,5 +1,5 @@
 import BaseRepository from "./base.js";
-import PushEvents from "../models/push_event.js";
+import PushEvent from "../models/push_event.js";
 import PushSubscription from "../models/push_subscription.js";
 import SessionRepository from "./session_repository.js";
 import { ACTIVE } from "../store/session.js";
@@ -37,7 +37,7 @@ export default class PushNotificationsRepository extends BaseRepository {
       message: JSON.stringify(pushMessage),
     };
 
-    const pushEvent = new PushEvents(pushEventParams);
+    const pushEvent = new PushEvent(pushEventParams);
     await pushEvent.save();
 
     await this.sendPushNotification(recipients_ids, pushMessage);
