@@ -1,4 +1,4 @@
-import PushEvents from "../app/models/push_event.js";
+import PushEvent from "../app/models/push_event.js";
 import PushSubscription from "../app/models/push_subscription.js";
 import User from "./../app/models/user.js";
 import assert from "assert";
@@ -574,7 +574,7 @@ describe("PushNotification functions", async () => {
   after(async () => {
     await User.clearCollection();
     await PushSubscription.clearCollection();
-    await PushEvents.clearCollection();
+    await PushEvent.clearCollection();
     usersIds = [];
   });
 });

@@ -35,5 +35,5 @@ export const down = async (db, client) => {
   await db
     .collection("message_statuses")
     .rename("message_status", { dropTarget: true });
-  await db.collection("file").rename("file", { dropTarget: true });
+  await db.collection("files").rename("file", { dropTarget: true });
 };

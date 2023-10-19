@@ -409,7 +409,7 @@ describe("User cycle", async () => {
           user_create: {
             login: "login_12345",
             password: "new_pasw31",
-            email: "copy_email",
+            email: "copyemail@email.com",
             phone: "copy_phone",
             deviceId: "pc",
           },
@@ -449,7 +449,7 @@ describe("User cycle", async () => {
       const requestData = {
         request: {
           user_edit: {
-            email: "copy_email",
+            email: "copyemail@email.com",
           },
           id: "5_1",
         },

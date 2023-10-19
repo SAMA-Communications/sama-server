@@ -1,6 +1,6 @@
 import BaseModel from "./base/base.js";
 
-export default class PushEvents extends BaseModel {
+export default class PushEvent extends BaseModel {
   constructor(params) {
     super(params);
   }
