@@ -7,7 +7,7 @@ export default class MessageStatus extends BaseModel {
   }
 
   static get collection() {
-    return "message_status";
+    return "message_statuses";
   }
 
   static get visibleFields() {

@@ -6,7 +6,7 @@ export default class File extends BaseModel {
   }
 
   static get collection() {
-    return "file";
+    return "files";
   }
 
   static get visibleFields() {
