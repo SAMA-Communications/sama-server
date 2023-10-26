@@ -38,6 +38,10 @@ https://medium.com/sama-communications/introducing-sama-simple-but-advanced-mess
 
 There are also other components. Make sure to check [Deploying SAMA chat server stack: a comprehensive guide](https://medium.com/sama-communications/deploying-sama-chat-server-stack-a-comprehensive-guide-294ddb9a2d78)
 
+## Public cloud
+
+The whole SAMA stack can be tested using https://app.samacloud.io public cloud.
+
 ## API
 
 [API reference](docs/API.md)
@@ -48,7 +52,7 @@ Also, there is a set of detailed articles for each API:
 - [Messages API](https://medium.com/sama-communications/sama-chat-server-api-messages-dc00e9684dc0)
 - [Activities API](https://medium.com/sama-communications/sama-chat-server-api-activities-97b712b88671)
 - [Address Book API](https://medium.com/sama-communications/sama-chat-server-api-address-book-f297ce25faa1)
-- [Push Notifications API - coming soon](#)
+- [Push Notifications API - coming soon](https://medium.com/sama-communications/sama-chat-server-api-push-notifications-7e904eb04a0c)
 
 ## Clustering
 
