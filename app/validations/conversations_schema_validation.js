@@ -92,6 +92,7 @@ export const conversationsSchemaValidation = {
       ),
     includes: Joi.array()
       .items(Joi.string().valid("id"))
+      .min(1)
       .error(
         new Error(ERROR_STATUES.INCORRECT_INCLUDES.message, {
           cause: ERROR_STATUES.INCORRECT_INCLUDES,
