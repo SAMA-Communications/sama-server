@@ -90,5 +90,12 @@ export const conversationsSchemaValidation = {
           cause: ERROR_STATUES.CIDS_REQUIRED,
         })
       ),
+    includes: Joi.array()
+      .items(Joi.string().valid("id"))
+      .error(
+        new Error(ERROR_STATUES.INCORRECT_INCLUDES.message, {
+          cause: ERROR_STATUES.INCORRECT_INCLUDES,
+        })
+      ),
   }).required(),
 };
