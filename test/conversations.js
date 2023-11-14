@@ -785,6 +785,62 @@ describe("Conversation functions", async () => {
       assert.equal(responseData.response.error, undefined);
     });
 
+    it("should work with includes param", async () => {
+      const requestData = {
+        request: {
+          get_participants_by_cids: {
+            cids: [currentConversationId],
+            includes: ["id"],
+          },
+          id: "4_2_1",
+        },
+      };
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      assert.strictEqual(requestData.request.id, responseData.response.id);
+      assert.equal(responseData.response.users.length, 2);
+      assert.equal(
+        responseData.response.users[1]._id.toString(),
+        usersIds[0].toString()
+      );
+      assert.equal(
+        responseData.response.users[0]._id.toString(),
+        usersIds[1].toString()
+      );
+      assert.equal(responseData.response.users[1].login, undefined);
+      assert.equal(responseData.response.users[0].login, undefined);
+      assert.equal(responseData.response.error, undefined);
+    });
+
+    it("should fail, includes field incorrect", async () => {
+      await sendLogout("test", currentUserToken);
+      currentUserToken = (await sendLogin("test", "user_3")).response.user
+        .token;
+
+      const requestData = {
+        request: {
+          get_participants_by_cids: {
+            cids: [currentConversationId],
+            includes: ["ids"],
+          },
+          id: "4_2_2",
+        },
+      };
+      const responseData = await PacketProcessor.processJsonMessageOrError(
+        "test",
+        requestData
+      );
+
+      assert.strictEqual(responseData.response.conversation, undefined);
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "Incorrect includes field.",
+      });
+    });
+
     it("should fail, participant is not in the chat", async () => {
       await sendLogout("test", currentUserToken);
       currentUserToken = (await sendLogin("test", "user_3")).response.user

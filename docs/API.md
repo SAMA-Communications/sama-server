@@ -504,12 +504,13 @@ After adding users to a conversation, if they are online, they will receive the 
 ```
 {
   request: {
-    getParticipantsByCids: {
+    get_participants_by_cids: {
       cids: [
         "635a3b4cb15254ebe43e76ff",
         "63563a2ad745dc1c6ad01b5f",
         "63563a0cd745dc1c6ad01b5c"
-      ]
+      ],
+      includes: ["id"]
     },
     id: "e3a1fcbf-bb1a-4c6d-b13a-8952db609585"
   }

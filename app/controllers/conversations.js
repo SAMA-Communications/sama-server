@@ -389,7 +389,7 @@ class ConversationsController extends BaseController {
   async get_participants_by_cids(ws, data) {
     const {
       id: requestId,
-      get_participants_by_cids: { cids },
+      get_participants_by_cids: { cids, includes },
     } = data;
 
     const availableConversation = await ConversationParticipant.findAll({
@@ -432,7 +432,9 @@ class ConversationsController extends BaseController {
       {
         _id: { $in: usersIds.filter((el, i) => usersIds.indexOf(el) === i) },
       },
-      ["_id", "first_name", "last_name", "login", "email", "phone"],
+      includes
+        ? ["_id"]
+        : ["_id", "first_name", "last_name", "login", "email", "phone"],
       null
     );
 

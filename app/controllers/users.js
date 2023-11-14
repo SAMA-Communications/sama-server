@@ -42,7 +42,7 @@ class UsersController extends BaseController {
       });
     }
 
-    reqData["recent_activity"] = Date.now() / 1000;
+    reqData["recent_activity"] = Math.round(Date.now() / 1000);
     const user = new User(reqData);
     await user.save();
 
