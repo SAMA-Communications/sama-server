@@ -1,0 +1,23 @@
+FROM alpine/git as clone
+
+WORKDIR /app
+
+RUN git clone https://github.com/SAMA-Communications/sama-push-deamon.git .
+
+FROM node:18.16.0 as builder
+
+WORKDIR /app
+
+COPY --from=clone /app .
+
+RUN npm install
+
+FROM node:18-slim
+
+WORKDIR /app
+
+COPY --from=builder /app /app
+
+COPY .env.push .env
+
+CMD ["npm", "run", "start"]

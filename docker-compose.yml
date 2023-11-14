@@ -1,7 +1,87 @@
 version: "3.8"
+
+networks:
+  sama_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.25.0.0/16"
+
 services:
+
+  nginx:
+    networks:
+      sama_network:
+        ipv4_address: 172.25.0.8
+    restart: always
+    build:
+      context: ./prefs/nginx
+      dockerfile: Dockerfile.nginx
+    entrypoint: >
+      sh -c "if [ \$RUN_SAMA = 'true' ]; then
+               ./docker-entrypoint.sh nginx -g 'daemon off;';
+             else
+               sleep infinity;
+             fi"
+    ports:
+      - "9000:9000"
+
+  sama-client:
+    build:
+      context: ./prefs/client
+      dockerfile: Dockerfile.frontend
+    entrypoint: >
+      sh -c "if [ \$RUN_SAMA = 'true' ]; then
+               npm run start;
+             else
+               sleep infinity;
+             fi"
+    networks:
+      sama_network:
+        ipv4_address: 172.25.0.9
+    ports:
+      - "3000:3000"
+
+  sama-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    depends_on:
+      mongo:
+        condition: service_healthy
+    entrypoint: >
+      sh -c "if [ \$RUN_SAMA = 'true' ]; then
+               npm run migrate-mongo-up;
+               pm2-runtime start pm2.config.cjs;
+             else
+               sleep infinity;
+             fi"
+    networks:
+      sama_network:
+        ipv4_address: 172.25.0.7
+    volumes:
+      - ./.env.local:/app/.env
+
+  sama-push-daemon:
+    build:
+      context: ./prefs/push
+      dockerfile: Dockerfile.push
+    entrypoint: >
+      sh -c "if [ \$RUN_SAMA = 'true' ]; then
+               npm run start;
+             else
+               sleep infinity;
+             fi"
+    networks:
+      sama_network:
+        ipv4_address: 172.25.0.10
+
   s3:
     image: minio/minio
+    networks:
+      sama_network:
+        ipv4_address: 172.25.0.2
     ports:
       - "9011:9001"
       - "9010:9000"
@@ -19,6 +99,9 @@ services:
 
   s3-service:
     image: minio/mc
+    networks:
+      sama_network:
+        ipv4_address: 172.25.0.3
     depends_on:
       s3:
         condition: service_healthy
@@ -31,16 +114,30 @@ services:
       "
 
   mongo:
+    platform: linux/x86_64
     image: mongo:4.4
+    networks:
+      sama_network:
+        ipv4_address: 172.25.0.4
     container_name: server_mongo_database
     restart: always
+    volumes:
+      - mongo:/data/db
     environment:
       - MONGO_INITDB_DATABASE=samadb
     ports:
       - "27017:27017"
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo localhost:27017/samadb --quiet
+      interval: 30s
+      timeout: 20s
+      retries: 3
 
   redis:
     image: redis
+    networks:
+      sama_network:
+        ipv4_address: 172.25.0.5
     container_name: server_redis_database
     restart: always
     ports:
@@ -50,6 +147,9 @@ services:
     container_name: redis-commander
     hostname: redis-commander
     image: rediscommander/redis-commander:latest
+    networks:
+      sama_network:
+        ipv4_address: 172.25.0.6
     restart: always
     environment:
       - REDIS_HOSTS=local:redis:6379
@@ -58,3 +158,5 @@ services:
 
 volumes:
   data:
+  mongo:
+  mongo-tests:

@@ -38,6 +38,32 @@ https://medium.com/sama-communications/introducing-sama-simple-but-advanced-mess
 
 There are also other components. Make sure to check [Deploying SAMA chat server stack: a comprehensive guide](https://medium.com/sama-communications/deploying-sama-chat-server-stack-a-comprehensive-guide-294ddb9a2d78)
 
+### Docker one-command deployment
+To build and run the `SAMA` with all dependencies, you can use the following command:
+```
+RUN_SAMA=true docker-compose up --build
+```
+If you only want to run dependency services (for local development without Docker), use this command:
+```
+docker-compose up
+```
+
+Then, open `http://localhost:9011/access-keys`, create Access Keys, and set `S3_ACCESS_KEY` and `S3_SECRET_KEY` in either `.env` or `.env.local`. To access the Minio dashboard, use the `MINIO_ROOT_USER` from the `docker-compose.yml` as the username and `MINIO_ROOT_PASSWORD` as the password.
+
+Finally run `docker compose restart`
+
+Now you can access the web client at the following address: http://localhost:3000
+
+### Docker e2e tests
+Run migrations:
+```
+docker-compose exec sama-server sh -c "MONGODB_URL=mongodb://172.25.0.4/samatests npm run migrate-mongo-up"
+```
+Run e2e tests:
+```
+docker-compose exec sama-server sh -c "MONGODB_URL=mongodb://172.25.0.4/samatests npm run test"
+```
+
 ## Public cloud
 
 The whole SAMA stack can be tested using https://app.samacloud.io public cloud.
