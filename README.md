@@ -48,7 +48,7 @@ If you only want to run dependency services (for local development without Docke
 docker-compose up
 ```
 
-Then, open `http://localhost:9011/access-keys`, create Access Keys, and set `S3_ACCESS_KEY` and `S3_SECRET_KEY` in either `.env` or `.env.local`. To access the Minio dashboard, use the `MINIO_ROOT_USER` from the `docker-compose.yml` as the username and `MINIO_ROOT_PASSWORD` as the password.
+Then, open `http://localhost:9011/access-keys`, create Access Keys, and set `MINIO_ACCESS_KEY` and `MINIO_SECRET_KEY` in either `.env` or `.env.local`. To access the Minio dashboard, use the `MINIO_ROOT_USER` from the `docker-compose.yml` as the username and `MINIO_ROOT_PASSWORD` as the password.
 
 Finally run `docker compose restart`
 
