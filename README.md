@@ -41,18 +41,27 @@ There are also other components. Make sure to check [Deploying SAMA chat server 
 ### Docker one-command deployment
 To build and run the `SAMA` with all dependencies, you can use the following command:
 ```
-RUN_SAMA=true docker-compose up --build
+docker-compose -f docker-compose-full.yml up --build
 ```
 If you only want to run dependency services (for local development without Docker), use this command:
 ```
 docker-compose up
 ```
-
+Run dependency services with `SAMA` main apps:
+```
+RUN_SAMA=true docker-compose up
+```
 Then, open `http://localhost:9011/access-keys`, create Access Keys, and set `MINIO_ACCESS_KEY` and `MINIO_SECRET_KEY` in either `.env` or `.env.local`. To access the Minio dashboard, use the `MINIO_ROOT_USER` from the `docker-compose.yml` as the username and `MINIO_ROOT_PASSWORD` as the password.
 
 Finally run `docker compose restart`
 
-Now you can access the web client at the following address: http://localhost:3000
+Now you can access apps at the following addresses:
+- [Server-API](http://localhost:9000)
+- [Web-Client](http://localhost:3000)
+- [Minio-API](http://localhost:9010)
+- [Minio-Client](http://localhost:9011)
+- [Push-dashboard](http://localhost:3001/ui)
+- [Server-dashboard](http://localhost:9002)
 
 ### Docker e2e tests
 Run migrations:

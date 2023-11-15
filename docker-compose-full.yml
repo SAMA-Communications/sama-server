@@ -10,57 +10,75 @@ networks:
 
 services:
 
+  nginx:
+    networks:
+      sama_network:
+        ipv4_address: 172.25.0.8
+    restart: always
+    build:
+      context: ./prefs/nginx
+      dockerfile: Dockerfile.nginx
+    ports:
+      - "9000:9000"
+
   sama-client:
     build:
       context: ./prefs/client
       dockerfile: Dockerfile.frontend
-    entrypoint: >
-      sh -c "if [ \$RUN_SAMA = 'true' ]; then
-               npm run start;
-             else
-               sleep infinity;
-             fi"
     networks:
       sama_network:
-        ipv4_address: 172.25.0.8
+        ipv4_address: 172.25.0.9
     ports:
       - "3000:3000"
+    volumes:
+      - ./prefs/client/.env.frontend:/app/.env
 
   sama-server:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.local
     depends_on:
       mongo:
         condition: service_healthy
-    entrypoint: >
-      sh -c "if [ \$RUN_SAMA = 'true' ]; then
-               npm run migrate-mongo-up;
-               pm2-runtime start pm2.config.cjs;
-             else
-               sleep infinity;
-             fi"
     networks:
       sama_network:
         ipv4_address: 172.25.0.7
     volumes:
       - ./.env.local:/app/.env
-    ports:
-      - "9000:9001"
 
   sama-push-daemon:
     build:
       context: ./prefs/push
       dockerfile: Dockerfile.push
-    entrypoint: >
-      sh -c "if [ \$RUN_SAMA = 'true' ]; then
-               npm run start;
-             else
-               sleep infinity;
-             fi"
     networks:
       sama_network:
         ipv4_address: 172.25.0.10
+    volumes:
+      - ./prefs/push/.env.push:/app/.env
+
+  sama-push-dashboard:
+    build:
+      context: ./prefs/push-dashboard
+      dockerfile: Dockerfile.push-dashboard
+    networks:
+      sama_network:
+        ipv4_address: 172.25.0.11
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./prefs/push-dashboard/.env.push-dashboard:/app/.env
+
+  sama-server-dashboard:
+    build:
+      context: ./prefs/server-dashboard
+      dockerfile: Dockerfile.server-dashboard
+    networks:
+      sama_network:
+        ipv4_address: 172.25.0.12
+    ports:
+      - "9002:9002"
+    volumes:
+      - ./prefs/server-dashboard/.env.server-dashboard:/app/.env
 
   s3:
     image: minio/minio
