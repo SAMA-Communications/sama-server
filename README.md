@@ -31,7 +31,6 @@ https://medium.com/sama-communications/introducing-sama-simple-but-advanced-mess
 - Make sure you have `Node 18` installed.
 - Copy `.env.example` to `.env`.
 - Run `docker-compose up` to run dependant services (MongoDB, Minio, Redis)
-- Open `http://localhost:9011/access-keys`, create Access Keys and set `MINIO_ACCESS_KEY` and `MINIO_SECRET_KEY` in `.env`. To access the minio dashboard, you need to enter `MINIO_ROOT_USER` from `docker-compose.yml` as for the `username` field and `MINIO_ROOT_PASSWORD` as for the `password` field. 
 - `npm install` to install dependencies 
 - `npm run migrate-mongo-up` to run DB migrations 
 - `npm run start` to run server
@@ -49,11 +48,8 @@ docker-compose up
 ```
 Run dependency services with `SAMA` main apps:
 ```
-RUN_SAMA=true docker-compose up
+RUN_SAMA=true docker-compose up --build
 ```
-Then, open `http://localhost:9011/access-keys`, create Access Keys, and set `MINIO_ACCESS_KEY` and `MINIO_SECRET_KEY` in either `.env` or `.env.local`. To access the Minio dashboard, use the `MINIO_ROOT_USER` from the `docker-compose.yml` as the username and `MINIO_ROOT_PASSWORD` as the password.
-
-Finally run `docker compose restart`
 
 Now you can access apps at the following addresses:
 - [Server-API](http://localhost:9000)
@@ -62,6 +58,7 @@ Now you can access apps at the following addresses:
 - [Minio-Client](http://localhost:9011)
 - [Push-dashboard](http://localhost:3001/ui)
 - [Server-dashboard](http://localhost:9002)
+- [Redis-commander](http://localhost:8081)
 
 ### Docker e2e tests
 Run migrations:

@@ -14,8 +14,10 @@ services:
     build:
       context: ./prefs/client
       dockerfile: Dockerfile.frontend
+    environment:
+      - RUN_SAMA=${RUN_SAMA:-false}
     entrypoint: >
-      sh -c "if [ \$RUN_SAMA = 'true' ]; then
+      sh -c "if [ \$$RUN_SAMA = 'true' ]; then
                npm run start;
              else
                sleep infinity;
@@ -25,6 +27,8 @@ services:
         ipv4_address: 172.25.0.8
     ports:
       - "3000:3000"
+    volumes:
+      - ./prefs/client/.env.frontend:/app/.env
 
   sama-server:
     build:
@@ -33,10 +37,12 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
+    environment:
+      - RUN_SAMA=${RUN_SAMA:-false}
     entrypoint: >
-      sh -c "if [ \$RUN_SAMA = 'true' ]; then
+      sh -c "if [ \$$RUN_SAMA = 'true' ]; then
                npm run migrate-mongo-up;
-               pm2-runtime start pm2.config.cjs;
+               npm run start;
              else
                sleep infinity;
              fi"
@@ -52,8 +58,10 @@ services:
     build:
       context: ./prefs/push
       dockerfile: Dockerfile.push
+    environment:
+      - RUN_SAMA=${RUN_SAMA:-false}
     entrypoint: >
-      sh -c "if [ \$RUN_SAMA = 'true' ]; then
+      sh -c "if [ \$$RUN_SAMA = 'true' ]; then
                npm run start;
              else
                sleep infinity;
@@ -61,6 +69,8 @@ services:
     networks:
       sama_network:
         ipv4_address: 172.25.0.10
+    volumes:
+      - ./prefs/push/.env.push:/app/.env
 
   s3:
     image: minio/minio
@@ -72,9 +82,8 @@ services:
       - "9010:9000"
     volumes:
       - data:/data
-    environment:
-      MINIO_ROOT_USER: e7walulcatDu7waekVSk
-      MINIO_ROOT_PASSWORD: PYiRFiqUljLFRdKvwnVQ
+    env_file:
+      - ./.env.local
     command: server --address 0.0.0.0:9000 --console-address :9001 /data
     healthcheck:
       test: ["CMD", "mc", "ready", "local"]
@@ -90,12 +99,14 @@ services:
     depends_on:
       s3:
         condition: service_healthy
-    restart: on-failure
+    env_file:
+      - ./.env.local
     entrypoint: >
       /bin/sh -c "
-      /usr/bin/mc alias set sama http://s3:9000 e7walulcatDu7waekVSk PYiRFiqUljLFRdKvwnVQ;
+      /usr/bin/mc alias set sama http://s3:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD};
       /usr/bin/mc mb sama/samabucket;
       /usr/bin/mc policy set public sama/samabucket;
+      /usr/bin/mc admin user svcacct add --access-key $${MINIO_ACCESS_KEY} --secret-key $${MINIO_SECRET_KEY} sama $${MINIO_ROOT_USER}
       "
 
   mongo:
