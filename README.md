@@ -50,6 +50,17 @@ Run dependency services with `SAMA` main apps:
 ```
 RUN_SAMA=true docker-compose up --build
 ```
+:warning: If you are using MacOS or Windows, and want run `SAMA` apps, add these two variables before the launch command:
+MacOS
+```
+MINIO_ENDPOINT=$(ipconfig getifaddr en0) MINIO_PORT=9010
+```
+Windows
+```
+$env:MINIO_ENDPOINT = (Get-NetIPAddress | Where-Object { $_.AddressFamily -eq 'IPv4' -and $_.IPAddress -match '^192\.168\.|^10\.|^172\.(1[6-9]|2[0-9]|3[0-1])\.' } | Select-Object -ExpandProperty IPAddress)[1]; $env:MINIO_PORT = 9010;
+```
+
+If you are encountering issues with attachments in the web client, it suggests that an error occurred in the first variable. To resolve this, you can simply update the code segment with the private IP address of your machine.
 
 Now you can access apps at the following addresses:
 - [Server-API](http://localhost:9000)
