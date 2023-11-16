@@ -39,6 +39,8 @@ services:
         condition: service_healthy
     environment:
       - RUN_SAMA=${RUN_SAMA:-false}
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT:-172.25.0.2}
+      - MINIO_PORT=${MINIO_PORT:-9000}
     entrypoint: >
       sh -c "if [ \$$RUN_SAMA = 'true' ]; then
                npm run migrate-mongo-up;
