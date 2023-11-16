@@ -31,7 +31,6 @@ class PacketProcessor {
 
   async deliverToUserOnThisNode(ws, userId, packet, deviceId) {
     const activeDevices = ACTIVE.DEVICES[userId];
-
     if (!activeDevices) {
       this.isAllowedForOfflineStorage(packet) &&
         this.operationsLogRepository.savePacket(userId, packet);

@@ -230,6 +230,35 @@ class ConversationsController extends BaseController {
           ) {
             await participant.save();
             participants.push(participant.params._id);
+
+            const messageInHistory = new Message({
+              id: currentUserId + Date.now(),
+              body: `${addUsers[i]} has been added to the group`,
+              cid: new ObjectId(conversationId),
+              deleted_for: [],
+              from: new ObjectId(currentUserId),
+              t: parseInt(Math.round(Date.now() / 1000)),
+              x: {
+                type: "added_participant",
+              },
+            });
+            await messageInHistory.save();
+
+            const messageForDelivery = {
+              message: messageInHistory.visibleParams(),
+              push_message: {
+                title: conversation.name,
+                body: "New user has been added to the group",
+                cid: messageInHistory.params.cid,
+              },
+            };
+
+            await PacketProcessor.deliverToUserOrUsers(
+              ws,
+              messageForDelivery,
+              messageInHistory.params.cid
+            );
+            ws.send(JSON.stringify(messageForDelivery.message));
           }
         }
 
