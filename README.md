@@ -52,7 +52,7 @@ Also, there is a set of detailed articles for each API:
 - [Messages API](https://medium.com/sama-communications/sama-chat-server-api-messages-dc00e9684dc0)
 - [Activities API](https://medium.com/sama-communications/sama-chat-server-api-activities-97b712b88671)
 - [Address Book API](https://medium.com/sama-communications/sama-chat-server-api-address-book-f297ce25faa1)
-- [Push Notifications API - coming soon](https://medium.com/sama-communications/sama-chat-server-api-push-notifications-7e904eb04a0c)
+- [Push Notifications API](https://medium.com/sama-communications/sama-chat-server-api-push-notifications-7e904eb04a0c)
 
 ## Clustering
 
