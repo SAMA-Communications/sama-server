@@ -1,25 +1,25 @@
-import BaseController from "./base/base.js";
-import Conversation from "../models/conversation.js";
-import ConversationParticipant from "../models/conversation_participant.js";
-import ConversationRepository from "../repositories/conversation_repository.js";
-import Message from "../models/message.js";
-import SessionRepository from "../repositories/session_repository.js";
-import User from "../models/user.js";
+import BaseJSONController from "./base.js";
+import Conversation from "../../../app/models/conversation.js";
+import ConversationParticipant from "../../../app/models/conversation_participant.js";
+import ConversationRepository from "../../../app/repositories/conversation_repository.js";
+import Message from "../../../app/models/message.js";
+import SessionRepository from "../../../app/repositories/session_repository.js";
+import User from "../../../app/models/user.js";
 import validate, {
   validateConversationisUserOwner,
   validateIsConversation,
   validateIsUserSendHimSelf,
   validateParticipantsInUType,
   validateParticipantsLimit,
-} from "../lib/validation.js";
-import { ACTIVE } from "../store/session.js";
-import { CONSTANTS } from "../validations/constants/constants.js";
-import { ERROR_STATUES } from "../validations/constants/errors.js";
-import { ObjectId } from "../lib/db.js";
-import { default as PacketProcessor } from "../routes/packet_processor.js";
-import { inMemoryConversations } from "../store/in_memory.js";
+} from "../../../app/lib/validation.js";
+import { ACTIVE } from "../../../app/store/session.js";
+import { CONSTANTS } from "../../../app/validations/constants/constants.js";
+import { ERROR_STATUES } from "../../../app/validations/constants/errors.js";
+import { ObjectId } from "../../../app/lib/db.js";
+import packageManager from "../../../app/routes/packet_manager.js";
+import { inMemoryConversations } from "../../../app/store/in_memory.js";
 
-class ConversationsController extends BaseController {
+class ConversationsController extends BaseJSONController {
   constructor() {
     super();
     this.conversationRepository = new ConversationRepository(
@@ -40,7 +40,7 @@ class ConversationsController extends BaseController {
       body: `${currentUserLogin} created a new conversation`,
     };
 
-    await PacketProcessor.deliverToUserOrUsers(
+    await packageManager.deliverToUserOrUsers(
       ws,
       {
         event: { conversation_created: conversation },
@@ -62,7 +62,7 @@ class ConversationsController extends BaseController {
       body: `${currentUserLogin} added you to conversation`,
     };
 
-    await PacketProcessor.deliverToUserOrUsers(
+    await packageManager.deliverToUserOrUsers(
       ws,
       {
         event: { conversation_created: conversation },

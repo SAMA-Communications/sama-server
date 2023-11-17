@@ -1,21 +1,21 @@
-import BaseController from "./base/base.js";
-import BlockListRepository from "../repositories/blocklist_repository.js";
-import BlockedUser from "../models/blocked_user.js";
-import ContactsMatchRepository from "../repositories/contact_match_repository.js";
-import SessionRepository from "../repositories/session_repository.js";
-import User from "../models/user.js";
-import UserToken from "../models/user_token.js";
-import clusterManager from "../cluster/cluster_manager.js";
+import BaseJSONController from "./base.js";
+import BlockListRepository from "../../../app/repositories/blocklist_repository.js";
+import BlockedUser from "../../../app/models/blocked_user.js";
+import ContactsMatchRepository from "../../../app/repositories/contact_match_repository.js";
+import SessionRepository from "../../../app/repositories/session_repository.js";
+import User from "../../../app/models/user.js";
+import UserToken from "../../../app/models/user_token.js";
+import clusterManager from "../../../app/cluster/cluster_manager.js";
 import ip from "ip";
 import jwt from "jsonwebtoken";
-import { ACTIVE } from "../store/session.js";
-import { CONSTANTS } from "../validations/constants/constants.js";
-import { ERROR_STATUES } from "../validations/constants/errors.js";
+import { ACTIVE } from "../../../app/store/session.js";
+import { CONSTANTS } from "../../../app/validations/constants/constants.js";
+import { ERROR_STATUES } from "../../../app/validations/constants/errors.js";
 import { default as LastActivityiesController } from "./activities.js";
-import { default as PacketProcessor } from "../routes/packet_processor.js";
-import { inMemoryBlockList } from "../store/in_memory.js";
+import packageManager from "../../../app/routes/packet_manager.js";
+import { inMemoryBlockList } from "../../../app/store/in_memory.js";
 
-class UsersController extends BaseController {
+class UsersController extends BaseJSONController {
   constructor() {
     super();
     this.blockListRepository = new BlockListRepository(
@@ -91,7 +91,7 @@ class UsersController extends BaseController {
     }
     const userId = user.params._id;
 
-    await PacketProcessor.maybeUpdateAndSendUserActivity(
+    await packageManager.maybeUpdateAndSendUserActivity(
       ws,
       { uId: userId, rId: requestId },
       "online"
@@ -241,7 +241,7 @@ class UsersController extends BaseController {
 
     const deviceId = this.sessionRepository.getDeviceId(ws, userId);
     if (currentUserSession) {
-      await PacketProcessor.maybeUpdateAndSendUserActivity(ws, {
+      await packageManager.maybeUpdateAndSendUserActivity(ws, {
         uId: userId,
         rId: requestId,
       });

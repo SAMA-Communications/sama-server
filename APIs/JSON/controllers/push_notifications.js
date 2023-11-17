@@ -1,13 +1,13 @@
-import BaseController from "./base/base.js";
-import PushNotificationsRepository from "../repositories/push_notifications_repository.js";
-import PushSubscription from "./../models/push_subscription.js";
-import SessionRepository from "../repositories/session_repository.js";
-import User from "../models/user.js";
-import { ACTIVE } from "../store/session.js";
-import { ERROR_STATUES } from "../validations/constants/errors.js";
-import { ObjectId } from "../lib/db.js";
+import BaseJSONController from "./base.js";
+import PushNotificationsRepository from "../../../app/repositories/push_notifications_repository.js";
+import PushSubscription from "./../../../app/models/push_subscription.js";
+import SessionRepository from "../../../app/repositories/session_repository.js";
+import User from "../../../app/models/user.js";
+import { ACTIVE } from "../../../app/store/session.js";
+import { ERROR_STATUES } from "../../../app/validations/constants/errors.js";
+import { ObjectId } from "../../../app/lib/db.js";
 
-class PushNotificationsController extends BaseController {
+class PushNotificationsController extends BaseJSONController {
   constructor() {
     super();
 

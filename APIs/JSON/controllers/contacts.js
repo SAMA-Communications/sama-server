@@ -1,12 +1,12 @@
-import BaseController from "./base/base.js";
-import Contact from "./../models/contact.js";
-import ContactsMatchRepository from "../repositories/contact_match_repository.js";
-import SessionRepository from "./../repositories/session_repository.js";
-import { ACTIVE } from "./../store/session.js";
-import { ERROR_STATUES } from "./../validations/constants/errors.js";
-import { ObjectId } from "../lib/db.js";
+import BaseJSONController from "./base.js";
+import Contact from "./../../../app/models/contact.js";
+import ContactsMatchRepository from "../../../app/repositories/contact_match_repository.js";
+import SessionRepository from "./../../../app/repositories/session_repository.js";
+import { ACTIVE } from "./../../../app/store/session.js";
+import { ERROR_STATUES } from "./../../../app/validations/constants/errors.js";
+import { ObjectId } from "../../../app/lib/db.js";
 
-class ContactsController extends BaseController {
+class ContactsController extends BaseJSONController {
   constructor() {
     super();
 

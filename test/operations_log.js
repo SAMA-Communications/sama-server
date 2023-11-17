@@ -4,7 +4,7 @@ import User from "./../app/models/user.js";
 import assert from "assert";
 import { connectToDBPromise } from "./../app/lib/db.js";
 import { createUserArray, mockedWS, sendLogin } from "./utils.js";
-import { default as PacketProcessor } from "./../app/routes/packet_processor.js";
+import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js";
 
 let timeWhenUserOff = null;
 let usersIds = [];
@@ -43,9 +43,9 @@ describe("Operations Log functions", async () => {
         },
       };
 
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -69,9 +69,9 @@ describe("Operations Log functions", async () => {
         },
       };
 
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
       for (let i = 2; i < 6; i++) {
         controller.savePacket(usersIds[1], {
@@ -100,9 +100,9 @@ describe("Operations Log functions", async () => {
         },
       };
 
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.strictEqual(requestData.request.id, responseData.response.id);

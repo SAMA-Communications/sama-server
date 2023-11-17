@@ -1,11 +1,11 @@
-import BaseController from "./base/base.js";
-import BlockListRepository from "../repositories/blocklist_repository.js";
-import BlockedUser from "../models/blocked_user.js";
-import SessionRepository from "../repositories/session_repository.js";
-import { ACTIVE } from "../store/session.js";
-import { inMemoryBlockList } from "../store/in_memory.js";
+import BaseJSONController from "./base.js";
+import BlockListRepository from "../../../app/repositories/blocklist_repository.js";
+import BlockedUser from "../../../app/models/blocked_user.js";
+import SessionRepository from "../../../app/repositories/session_repository.js";
+import { ACTIVE } from "../../../app/store/session.js";
+import { inMemoryBlockList } from "../../../app/store/in_memory.js";
 
-class UsersBlockController extends BaseController {
+class UsersBlockController extends BaseJSONController {
   constructor() {
     super();
     this.blockListRepository = new BlockListRepository(

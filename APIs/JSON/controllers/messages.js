@@ -1,31 +1,31 @@
-import BaseController from "./base/base.js";
-import BlockListRepository from "../repositories/blocklist_repository.js";
-import BlockedUser from "../models/blocked_user.js";
-import Conversation from "../models/conversation.js";
-import ConversationParticipant from "../models/conversation_participant.js";
-import ConversationRepository from "../repositories/conversation_repository.js";
-import Message from "../models/message.js";
-import MessageStatus from "../models/message_status.js";
-import SessionRepository from "../repositories/session_repository.js";
-import User from "../models/user.js";
+import BaseJSONController from "./base.js";
+import BlockListRepository from "../../../app/repositories/blocklist_repository.js";
+import BlockedUser from "../../../app/models/blocked_user.js";
+import Conversation from "../../../app/models/conversation.js";
+import ConversationParticipant from "../../../app/models/conversation_participant.js";
+import ConversationRepository from "../../../app/repositories/conversation_repository.js";
+import Message from "../../../app/models/message.js";
+import MessageStatus from "../../../app/models/message_status.js";
+import SessionRepository from "../../../app/repositories/session_repository.js";
+import User from "../../../app/models/user.js";
 import groupBy from "../utils/groupBy.js";
 import validate, {
   validateIsConversation,
   validateIsConversationByCID,
   validateIsUserAccess,
   validateIsUserHasPermission,
-} from "../lib/validation.js";
+} from "../../../app/lib/validation.js";
 import {
   inMemoryBlockList,
   inMemoryConversations,
-} from "../store/in_memory.js";
-import { ACTIVE } from "../store/session.js";
-import { CONSTANTS } from "../validations/constants/constants.js";
-import { ERROR_STATUES } from "../validations/constants/errors.js";
-import { ObjectId } from "../lib/db.js";
-import { default as PacketProcessor } from "../routes/packet_processor.js";
+} from "../../../app/store/in_memory.js";
+import { ACTIVE } from "../../../app/store/session.js";
+import { CONSTANTS } from "../../../app/validations/constants/constants.js";
+import { ERROR_STATUES } from "../../../app/validations/constants/errors.js";
+import { ObjectId } from "../../../app/lib/db.js";
+import packageManager from "../../../app/routes/packet_manager.js";
 
-class MessagesController extends BaseController {
+class MessagesController extends BaseJSONController {
   constructor() {
     super();
     this.conversationRepository = new ConversationRepository(
@@ -109,7 +109,7 @@ class MessagesController extends BaseController {
           await participant.save();
         }
 
-        await PacketProcessor.deliverToUserOrUsers(
+        await packageManager.deliverToUserOrUsers(
           ws,
           {
             event: { conversation_created: conversation },
@@ -139,7 +139,7 @@ class MessagesController extends BaseController {
       cid: messageParams.cid,
     });
 
-    await PacketProcessor.deliverToUserOrUsers(
+    await packageManager.deliverToUserOrUsers(
       ws,
       { message: message.visibleParams(), push_message: pushPayload },
       messageParams.cid
@@ -177,7 +177,7 @@ class MessagesController extends BaseController {
         from: ObjectId(this.sessionRepository.getSessionUserId(ws)),
       },
     };
-    await PacketProcessor.deliverToUserOrUsers(ws, request, message.params.cid);
+    await packageManager.deliverToUserOrUsers(ws, request, message.params.cid);
 
     return { response: { id: requestId, success: true } };
   }
@@ -269,7 +269,7 @@ class MessagesController extends BaseController {
 
       for (const uId in unreadMessagesGrouppedByFrom) {
         const mids = unreadMessagesGrouppedByFrom[uId].map((el) => el._id);
-        await PacketProcessor.deliverToUserOrUsers(
+        await packageManager.deliverToUserOrUsers(
           ws,
           {
             message_read: {
@@ -315,7 +315,7 @@ class MessagesController extends BaseController {
           },
         };
 
-        await PacketProcessor.deliverToUserOrUsers(ws, request, cid);
+        await packageManager.deliverToUserOrUsers(ws, request, cid);
       }
       await Message.deleteMany({ _id: { $in: ids } });
     } else {

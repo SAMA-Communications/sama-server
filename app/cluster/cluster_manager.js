@@ -1,11 +1,13 @@
-import WebSocket from "ws";
-import uWS from "uWebSockets.js";
-import ip from "ip";
-import { StringDecoder } from "string_decoder";
-import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
-import { default as PacketProcessor } from "../routes/packet_processor.js";
-import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
-const decoder = new StringDecoder("utf8");
+import WebSocket from "ws"
+import uWS from "uWebSockets.js"
+import ip from "ip"
+import { StringDecoder } from "string_decoder"
+
+import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js"
+import { default as PacketManager } from "../routes/packet_manager.js"
+import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js"
+
+const decoder = new StringDecoder("utf8")
 
 class ClusterManager {
   #clusterPort = -1;
@@ -80,7 +82,7 @@ class ClusterManager {
           return;
         }
 
-        await PacketProcessor.deliverClusterMessageToUser(
+        await PacketManager.deliverClusterMessageToUser(
           json.userId,
           json.message
         );
@@ -135,7 +137,7 @@ class ClusterManager {
           return;
         }
 
-        await PacketProcessor.deliverClusterMessageToUser(
+        await PacketManager.deliverClusterMessageToUser(
           json.userId,
           json.message
         );

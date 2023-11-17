@@ -2,7 +2,7 @@ import User from "./../app/models/user.js";
 import assert from "assert";
 import { ACTIVE } from "./../app/store/session.js";
 import { connectToDBPromise } from "./../app/lib/db.js";
-import { default as PacketProcessor } from "./../app/routes/packet_processor.js";
+import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js";
 import { createUserArray, sendLogin, sendLogout } from "./utils.js";
 
 let currentUserToken = [];
@@ -40,7 +40,7 @@ describe("Carbons", async () => {
           id: "4_1",
         },
       };
-      await PacketProcessor.processJsonMessageOrError("ws6", requestData);
+      await packetJsonProcessor.processMessageOrError("ws6", JSON.stringify(requestData));
       console.log("delete user -->\n", ACTIVE.DEVICES);
 
       assert.strictEqual(JSON.stringify(ACTIVE.DEVICES), "{}");

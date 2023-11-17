@@ -16,7 +16,7 @@ import {
   sendLogin,
 } from "./utils.js";
 import { ACTIVE } from "./../app/store/session.js";
-import { default as PacketProcessor } from "./../app/routes/packet_processor.js";
+import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js";
 
 let currentConversationId = "";
 let usersIds = [];
@@ -78,7 +78,7 @@ describe("Message function", async () => {
         },
       };
 
-      await PacketProcessor.processJsonMessageOrError(mockedWS, requestData);
+      await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData));
 
       const response = JSON.parse(secondSocketResponse);
 

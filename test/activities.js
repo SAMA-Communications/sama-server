@@ -2,7 +2,7 @@ import User from "./../app/models/user.js";
 import assert from "assert";
 import { ACTIVITY } from "./../app/store/activity.js";
 import { connectToDBPromise, getClient } from "./../app/lib/db.js";
-import { default as PacketProcessor } from "./../app/routes/packet_processor.js";
+import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js";
 import { createUserArray, sendLogin, sendLogout } from "./utils.js";
 
 let currentUserToken1 = "";
@@ -28,9 +28,9 @@ describe("User activities", async () => {
         id: "1",
       },
     };
-    const responseData = await PacketProcessor.processJsonMessageOrError(
+    const responseData = await packetJsonProcessor.processMessageOrError(
       "line_1",
-      requestData
+      JSON.stringify(requestData)
     );
 
     assert.strictEqual(responseData.response.id, requestData.request.id);
@@ -46,9 +46,9 @@ describe("User activities", async () => {
         id: "1",
       },
     };
-    const responseData = await PacketProcessor.processJsonMessageOrError(
+    const responseData = await packetJsonProcessor.processMessageOrError(
       "line_1",
-      requestData
+      JSON.stringify(requestData)
     );
 
     assert.strictEqual(responseData.response.id, requestData.request.id);
@@ -67,9 +67,9 @@ describe("User activities", async () => {
         id: "1",
       },
     };
-    let responseData = await PacketProcessor.processJsonMessageOrError(
+    let responseData = await packetJsonProcessor.processMessageOrError(
       "line_2",
-      requestData
+      JSON.stringify(requestData)
     );
 
     requestData = {
@@ -78,9 +78,9 @@ describe("User activities", async () => {
         id: "1",
       },
     };
-    responseData = await PacketProcessor.processJsonMessageOrError(
+    responseData = await packetJsonProcessor.processMessageOrError(
       "line_1",
-      requestData
+      JSON.stringify(requestData)
     );
     await sendLogout("line_1", currentUserToken);
 
@@ -100,9 +100,9 @@ describe("User activities", async () => {
         id: "1",
       },
     };
-    const responseData = await PacketProcessor.processJsonMessageOrError(
+    const responseData = await packetJsonProcessor.processMessageOrError(
       "line_2",
-      requestData
+      JSON.stringify(requestData)
     );
 
     console.log(responseData.response.last_activity);
@@ -118,9 +118,9 @@ describe("User activities", async () => {
         id: "1",
       },
     };
-    const responseData = await PacketProcessor.processJsonMessageOrError(
+    const responseData = await packetJsonProcessor.processMessageOrError(
       "line_2",
-      requestData
+      JSON.stringify(requestData)
     );
 
     assert.strictEqual(responseData.response.id, requestData.request.id);

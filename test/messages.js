@@ -13,7 +13,7 @@ import {
   sendLogin,
   sendLogout,
 } from "./utils.js";
-import { default as PacketProcessor } from "./../app/routes/packet_processor.js";
+import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js";
 
 let filterUpdatedAt = "";
 let currentUserToken = "";
@@ -54,9 +54,9 @@ describe("Message function", async () => {
       };
       let responseData = {};
       try {
-        responseData = await PacketProcessor.processJsonMessageOrError(
+        responseData = await packetJsonProcessor.processMessageOrError(
           mockedWS,
-          requestData
+          JSON.stringify(requestData)
         );
       } catch (error) {
         responseData = {
@@ -82,9 +82,9 @@ describe("Message function", async () => {
           },
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.equal(responseData.ask, undefined);
@@ -105,9 +105,9 @@ describe("Message function", async () => {
           },
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.equal(responseData.ask, undefined);
@@ -131,9 +131,9 @@ describe("Message function", async () => {
           },
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
       await sendLogout(mockedWS, currentUserToken);
       currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user
@@ -161,9 +161,9 @@ describe("Message function", async () => {
             },
           },
         };
-        const responseData = await PacketProcessor.processJsonMessageOrError(
+        const responseData = await packetJsonProcessor.processMessageOrError(
           mockedWS,
-          requestData
+          JSON.stringify(requestData)
         );
 
         if (i == 3) {
@@ -186,9 +186,9 @@ describe("Message function", async () => {
           id: "2",
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
       const count = responseData.response.messages.length;
 
@@ -211,9 +211,9 @@ describe("Message function", async () => {
           id: "2",
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
       const count = responseData.response.messages.length;
 
@@ -237,9 +237,9 @@ describe("Message function", async () => {
           id: "2",
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
       const count = responseData.response.messages.length;
 
@@ -260,7 +260,7 @@ describe("Message function", async () => {
             id: "00",
           },
         };
-        await PacketProcessor.processJsonMessageOrError(mockedWS, requestData);
+        await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData));
       }
     });
 
@@ -276,9 +276,9 @@ describe("Message function", async () => {
           id: "2",
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.equal(responseData.response.success, undefined);
@@ -304,7 +304,7 @@ describe("Message function", async () => {
             id: "00",
           },
         };
-        await PacketProcessor.processJsonMessageOrError(mockedWS, requestData);
+        await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData));
       }
     });
   });
@@ -323,14 +323,14 @@ describe("Message function", async () => {
         };
         i === 3
           ? (messageId1 = (
-              await PacketProcessor.processJsonMessageOrError(
+              await packetJsonProcessor.processMessageOrError(
                 mockedWS,
-                requestData
+                JSON.stringify(requestData)
               )
             ).ask.server_mid)
-          : await PacketProcessor.processJsonMessageOrError(
+          : await packetJsonProcessor.processMessageOrError(
               mockedWS,
-              requestData
+              JSON.stringify(requestData)
             );
       }
     });
@@ -346,9 +346,9 @@ describe("Message function", async () => {
           id: "1",
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -367,9 +367,9 @@ describe("Message function", async () => {
           id: "2",
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -388,9 +388,9 @@ describe("Message function", async () => {
           id: "1",
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.equal(responseData.response.success, undefined);
@@ -410,9 +410,9 @@ describe("Message function", async () => {
           id: "1",
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.equal(responseData.response.success, undefined);
@@ -433,9 +433,9 @@ describe("Message function", async () => {
           id: "1",
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.equal(responseData.response.success, undefined);
@@ -456,9 +456,9 @@ describe("Message function", async () => {
           id: "1",
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.equal(responseData.response.success, undefined);
@@ -479,9 +479,9 @@ describe("Message function", async () => {
           id: "1",
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.equal(responseData.response.success, undefined);
@@ -502,9 +502,9 @@ describe("Message function", async () => {
           id: "1",
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.equal(responseData.response.success, undefined);
@@ -526,9 +526,9 @@ describe("Message function", async () => {
           id: "1",
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -546,9 +546,9 @@ describe("Message function", async () => {
           id: "1",
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.equal(responseData.response.success, undefined);
@@ -567,9 +567,9 @@ describe("Message function", async () => {
           id: "2",
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.equal(responseData.response.success, undefined);
@@ -590,9 +590,9 @@ describe("Message function", async () => {
           id: "1",
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.equal(responseData.response.success, undefined);
@@ -613,9 +613,9 @@ describe("Message function", async () => {
           id: "2",
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.equal(responseData.response.success, undefined);
@@ -649,9 +649,9 @@ describe("Message function", async () => {
             id: "0",
           },
         };
-        const responseData = await PacketProcessor.processJsonMessageOrError(
+        const responseData = await packetJsonProcessor.processMessageOrError(
           mockedWS,
-          requestDataCreate
+          JSON.stringify(requestDataCreate)
         );
         usersIds[i] = responseData.response.user._id;
       }
@@ -670,9 +670,9 @@ describe("Message function", async () => {
           id: "0",
         },
       };
-      let responseData = await PacketProcessor.processJsonMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
       currentConversationId = responseData.response.conversation._id.toString();
 
@@ -685,9 +685,9 @@ describe("Message function", async () => {
             cid: currentConversationId,
           },
         };
-        responseData = await PacketProcessor.processJsonMessageOrError(
+        responseData = await packetJsonProcessor.processMessageOrError(
           mockedWS,
-          requestData
+          JSON.stringify(requestData)
         );
         messagesIds.push(responseData.ask.server_mid);
       }
@@ -704,9 +704,9 @@ describe("Message function", async () => {
           id: "123",
         },
       };
-      responseData = await PacketProcessor.processJsonMessageOrError(
+      responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
     });
 

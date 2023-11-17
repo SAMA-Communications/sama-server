@@ -1,7 +1,7 @@
-import BaseController from "./base/base.js";
-import File from "./../models/file.js";
+import BaseJSONController from "./base.js";
+import File from "./../../../app/models/file.js";
 
-class FilesController extends BaseController {
+class FilesController extends BaseJSONController {
   constructor() {
     super();
   }

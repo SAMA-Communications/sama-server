@@ -4,7 +4,7 @@ import User from "./../app/models/user.js";
 import assert from "assert";
 import { connectToDBPromise } from "./../app/lib/db.js";
 import { createUserArray, mockedWS, sendLogin } from "./utils.js";
-import { default as PacketProcessor } from "./../app/routes/packet_processor.js";
+import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js";
 
 let usersIds = [];
 
@@ -29,9 +29,9 @@ describe("PushNotification functions", async () => {
           id: 1,
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -75,9 +75,9 @@ describe("PushNotification functions", async () => {
         },
       };
 
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(
@@ -100,9 +100,9 @@ describe("PushNotification functions", async () => {
         },
       };
 
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -124,9 +124,9 @@ describe("PushNotification functions", async () => {
         },
       };
 
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -148,9 +148,9 @@ describe("PushNotification functions", async () => {
         },
       };
 
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -172,9 +172,9 @@ describe("PushNotification functions", async () => {
         },
       };
 
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -196,9 +196,9 @@ describe("PushNotification functions", async () => {
         },
       };
 
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -220,9 +220,9 @@ describe("PushNotification functions", async () => {
         },
       };
 
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -242,9 +242,9 @@ describe("PushNotification functions", async () => {
           id: 1,
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -288,9 +288,9 @@ describe("PushNotification functions", async () => {
           id: 1,
         },
       };
-      let responseData = await PacketProcessor.processJsonMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestDataCreate
+        JSON.stringify(requestDataCreate)
       );
 
       let requestData = {
@@ -301,9 +301,9 @@ describe("PushNotification functions", async () => {
           id: 1,
         },
       };
-      responseData = await PacketProcessor.processJsonMessageOrError(
+      responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -341,9 +341,9 @@ describe("PushNotification functions", async () => {
           id: 1,
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -364,9 +364,9 @@ describe("PushNotification functions", async () => {
           id: 1,
         },
       };
-      let responseData = await PacketProcessor.processJsonMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -380,9 +380,9 @@ describe("PushNotification functions", async () => {
           id: 1,
         },
       };
-      responseData = await PacketProcessor.processJsonMessageOrError(
+      responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.strictEqual(responseData.response.subscriptions.length, 1);
@@ -397,9 +397,9 @@ describe("PushNotification functions", async () => {
           id: 1,
         },
       };
-      let responseData = await PacketProcessor.processJsonMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -416,9 +416,9 @@ describe("PushNotification functions", async () => {
           id: 1,
         },
       };
-      let responseData = await PacketProcessor.processJsonMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -445,9 +445,9 @@ describe("PushNotification functions", async () => {
           id: 1,
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -478,9 +478,9 @@ describe("PushNotification functions", async () => {
           id: 1,
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -504,9 +504,9 @@ describe("PushNotification functions", async () => {
           id: 1,
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -531,9 +531,9 @@ describe("PushNotification functions", async () => {
           id: 1,
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -558,9 +558,9 @@ describe("PushNotification functions", async () => {
           id: 1,
         },
       };
-      const responseData = await PacketProcessor.processJsonMessageOrError(
+      const responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
-        requestData
+        JSON.stringify(requestData)
       );
 
       assert.strictEqual(requestData.request.id, responseData.response.id);

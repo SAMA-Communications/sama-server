@@ -9,20 +9,16 @@ import clusterManager from "../cluster/cluster_manager.js";
 import ip from "ip";
 import { ACTIVE } from "../store/session.js";
 import { ACTIVITY } from "../store/activity.js";
-import { ERROR_STATUES } from "../validations/constants/errors.js";
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
-import { default as LastActivityiesController } from "../controllers/activities.js";
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
-import { routes } from "./routes.js";
 
-class PacketProcessor {
+class PacketManager {
   constructor() {
     this.pushNotificationsRepository = new PushNotificationsRepository(
       PushSubscription
     );
     this.operationsLogRepository = new OperationsLogRepository(OpLog);
     this.sessionRepository = new SessionRepository(ACTIVE);
-    this.jsonRequest = routes;
   }
 
   isAllowedForOfflineStorage(packet) {
@@ -44,7 +40,7 @@ class PacketProcessor {
 
     try {
       wsRecipient.forEach(
-        (r) => r.ws !== ws && r.ws.send(JSON.stringify(packet))
+        (r) => r.ws !== ws && r.ws.send(packet)
       );
     } catch (err) {
       console.error(`[PacketProcessor] send on socket error`, err);
@@ -149,57 +145,6 @@ class PacketProcessor {
     }
   }
 
-  async #processJsonMessage(ws, json) {
-    if (
-      !ACTIVE.SESSIONS.get(ws) &&
-      !json.request?.user_create &&
-      !json.request?.user_login
-    ) {
-      throw new Error(ERROR_STATUES.UNAUTHORIZED.message, {
-        cause: ERROR_STATUES.UNAUTHORIZED,
-      });
-    }
-
-    let reqFirstParams = Object.keys(json)[0];
-    let reqData = null;
-
-    if (reqFirstParams === "request") {
-      reqData = json.request;
-      reqFirstParams = Object.keys(reqData)[0];
-    } else {
-      reqData = json;
-    }
-
-    return this.jsonRequest[reqFirstParams](ws, reqData);
-  }
-
-  async processJsonMessageOrError(ws, json) {
-    let responseData;
-    try {
-      responseData = await this.#processJsonMessage(ws, json);
-    } catch (e) {
-      console.error(e);
-      if (json.request) {
-        responseData = {
-          response: {
-            id: json.request.id,
-            error: e.cause,
-          },
-        };
-      } else {
-        const topLevelElement = Object.keys(json)[0];
-        responseData = {
-          [topLevelElement]: {
-            id: json[topLevelElement].id,
-            error: e.cause,
-          },
-        };
-      }
-    }
-
-    return responseData;
-  }
-
   async deliverClusterMessageToUser(userId, packet) {
     try {
       await this.deliverToUserOnThisNode(null, userId, packet);
@@ -224,9 +169,9 @@ class PacketProcessor {
         { _id: uId },
         { $set: { recent_activity: currentTime } }
       );
-      await LastActivityiesController.status_unsubscribe(ws, {
-        request: { id: rId || "Unsubscribe" },
-      });
+      // await LastActivityiesController.status_unsubscribe(ws, {
+      //   request: { id: rId || "Unsubscribe" },
+      // });
     }
 
     const message = { last_activity: { [uId]: status || currentTime } };
@@ -238,4 +183,4 @@ class PacketProcessor {
   }
 }
 
-export default new PacketProcessor();
+export default new PacketManager();

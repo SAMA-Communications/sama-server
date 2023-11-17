@@ -1,10 +1,10 @@
-import BaseController from "./base/base.js";
-import SessionRepository from "../repositories/session_repository.js";
-import User from "../models/user.js";
-import { ACTIVE } from "../store/session.js";
-import { ACTIVITY } from "../store/activity.js";
+import BaseJSONController from "./base.js";
+import SessionRepository from "../../../app/repositories/session_repository.js";
+import User from "../../../app/models/user.js";
+import { ACTIVE } from "../../../app/store/session.js";
+import { ACTIVITY } from "../../../app/store/activity.js";
 
-class LastActivitiesController extends BaseController {
+class LastActivitiesController extends BaseJSONController {
   constructor() {
     super();
     this.sessionRepository = new SessionRepository(ACTIVE);

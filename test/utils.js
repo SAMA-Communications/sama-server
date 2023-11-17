@@ -1,7 +1,7 @@
 import Minio from "./../app/lib/storage/minio.js";
 import RedisClient from "../app/lib/redis.js";
 import S3 from "./../app/lib/storage/s3.js";
-import { default as PacketProcessor } from "./../app/routes/packet_processor.js";
+import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js";
 
 globalThis.storageClient =
   process.env.STORAGE_DRIVER === "minio" ? new Minio() : new S3();
@@ -18,9 +18,9 @@ async function sendLogin(ws, login, device) {
       id: "UserLogin",
     },
   };
-  const response = await PacketProcessor.processJsonMessageOrError(
+  const response = await packetJsonProcessor.processMessageOrError(
     ws,
-    requestData
+    JSON.stringify(requestData)
   );
   return response;
 }
@@ -32,7 +32,7 @@ async function sendLogout(ws, currentUserToken) {
       id: "UserLogout",
     },
   };
-  await PacketProcessor.processJsonMessageOrError(ws, requestData);
+  await packetJsonProcessor.processMessageOrError(ws, JSON.stringify(requestData));
 }
 
 const mockedWS = {
@@ -61,9 +61,9 @@ async function createUserArray(count, currentCountOfUsers, email, phone) {
         id: "UserCreate",
       },
     };
-    const user = await PacketProcessor.processJsonMessageOrError(
+    const user = await packetJsonProcessor.processMessageOrError(
       "UserCreate",
-      requestData
+      JSON.stringify(requestData)
     );
     usersIds[i] = user?.response.user._id;
   }
@@ -89,7 +89,7 @@ async function createConversation(ws, name, description, type, participants) {
   };
 
   return (
-    await PacketProcessor.processJsonMessageOrError(ws, requestData)
+    await packetJsonProcessor.processMessageOrError(ws, JSON.stringify(requestData))
   )?.response.conversation._id.toString();
 }
 

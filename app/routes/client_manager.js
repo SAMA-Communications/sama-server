@@ -1,11 +1,14 @@
-import SessionRepository from "../repositories/session_repository.js";
-import clusterManager from "../cluster/cluster_manager.js";
 import ip from "ip";
 import uWS from "uWebSockets.js";
-import { ACTIVE } from "../store/session.js";
-import { ERROR_STATUES } from "../validations/constants/errors.js";
-import { StringDecoder } from "string_decoder";
-import { default as PacketProcessor } from "./packet_processor.js";
+import { StringDecoder } from "string_decoder"
+
+import SessionRepository from "../repositories/session_repository.js";
+import clusterManager from "../cluster/cluster_manager.js"
+import { ACTIVE } from "../store/session.js"
+import { ERROR_STATUES } from "../validations/constants/errors.js"
+import { default as PacketManager } from "./packet_manager.js"
+import APIs from "./APIs.js"
+
 const decoder = new StringDecoder("utf8");
 const sessionRepository = new SessionRepository(ACTIVE);
 
@@ -48,36 +51,34 @@ class ClientManager {
             }
             return true;
           });
-          await PacketProcessor.maybeUpdateAndSendUserActivity(ws, { uId });
+          await PacketManager.maybeUpdateAndSendUserActivity(ws, { uId });
         }
         ACTIVE.SESSIONS.delete(ws);
       },
 
       message: async (ws, message, isBinary) => {
         try {
-          const json = JSON.parse(decoder.write(Buffer.from(message)));
-          const consoleMessage = JSON.parse(JSON.stringify(json));
-
-          if (
-            consoleMessage?.request?.user_login?.password ||
-            consoleMessage?.request?.user_create?.password
-          ) {
-            consoleMessage.request[Object.keys(json.request)[0]].password =
-              "********";
+          const stringMessage = decoder.write(Buffer.from(message));
+          if (!ws.apiType) {
+            const apiType = Object.entries(APIs).find(([type, api]) => {
+              try {
+                return api.detectMessage(ws, stringMessage)
+              } catch (error) {
+                return false
+              }
+            })
+            if (!apiType) {
+              throw new Error('Unknown message format')
+            }
+            ws.apiType = apiType.at(0)
           }
-          console.log(
-            `[ClientManager] ws on message (pid=${process.pid})`,
-            consoleMessage
-          );
 
-          const responseData = await PacketProcessor.processJsonMessageOrError(
-            ws,
-            json
-          );
+          const api = APIs[ws.apiType]
+          const responseData = await api.onMessage(ws, stringMessage);
 
           if (responseData) {
             try {
-              ws.send(JSON.stringify(responseData));
+              ws.send(responseData);
             } catch (e) {
               console.error(
                 "[ClientManager] connection with client ws is lost"

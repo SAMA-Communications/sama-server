@@ -1,6 +1,3 @@
-import { activitiesSchemaValidation } from "../validations/activities_schema_validation.js";
-import { contactsSchemaValidation } from "../validations/contacts_schema_validation.js";
-import { conversationsSchemaValidation } from "../validations/conversations_schema_validation.js";
 import { default as ContactsController } from "../controllers/contacts.js";
 import { default as ConversationsController } from "../controllers/conversations.js";
 import { default as FilesController } from "../controllers/files.js";
@@ -11,6 +8,10 @@ import { default as PushNotificationsController } from "../controllers/push_noti
 import { default as StatusesController } from "../controllers/status.js";
 import { default as UsersBlockController } from "../controllers/users_block.js";
 import { default as UsersController } from "../controllers/users.js";
+
+import { activitiesSchemaValidation } from "../validations/activities_schema_validation.js";
+import { contactsSchemaValidation } from "../validations/contacts_schema_validation.js";
+import { conversationsSchemaValidation } from "../validations/conversations_schema_validation.js";
 import { filesSchemaValidation } from "../validations/files_schema_validation.js";
 import { messagesSchemaValidation } from "../validations/messages_schema_validation.js";
 import { operationsLogSchemaValidation } from "../validations/operations_log_schema_validation.js";

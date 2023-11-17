@@ -10,6 +10,7 @@ export default class BaseController {
         cause: validResult.error.cause,
       });
     }
+
     return this;
   }
 }
