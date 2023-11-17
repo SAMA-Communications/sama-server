@@ -216,51 +216,80 @@ class ConversationsController extends BaseController {
           validateParticipantsLimit,
         ]);
 
-        const participants = [];
-        for (let i = 0; i < addUsers.length; i++) {
+        const participants = await Promise.all(
+          addUsers.map(async (uId) => {
+            if (
+              !(await ConversationParticipant.findOne({
+                user_id: uId,
+                conversation_id: conversationId,
+              }))
+            ) {
+              return uId;
+            }
+          })
+        );
+
+        let currentUserParams;
+        const participantsInfo = (
+          await User.findAll(
+            { _id: { $in: [currentUserId, ...participants] } },
+            [
+              "login",
+              "first_name",
+              "last_name",
+              "email",
+              "phone",
+              "recent_activity",
+            ]
+          )
+        ).filter((obj) => {
+          if (obj._id.toString() === currentUserId) {
+            currentUserParams = obj;
+            return false;
+          }
+          return true;
+        });
+
+        const participantSavePromises = participantsInfo.map(async (u) => {
           const participant = new ConversationParticipant({
-            user_id: ObjectId(addUsers[i]),
+            user_id: ObjectId(u._id),
             conversation_id: ObjectId(conversationId),
           });
-          if (
-            !(await ConversationParticipant.findOne({
-              user_id: addUsers[i],
-              conversation_id: conversationId,
-            }))
-          ) {
-            await participant.save();
-            participants.push(participant.params._id);
+          await participant.save();
 
-            const messageInHistory = new Message({
-              id: currentUserId + Date.now(),
-              body: `${addUsers[i]} has been added to the group`,
-              cid: new ObjectId(conversationId),
-              deleted_for: [],
-              from: new ObjectId(currentUserId),
-              t: parseInt(Math.round(Date.now() / 1000)),
-              x: {
-                type: "added_participant",
-              },
-            });
-            await messageInHistory.save();
+          let uName =
+            u.first_name || u.last_name
+              ? `${u.first_name || ""} ${u.last_name || ""}`
+              : u.login;
 
-            const messageForDelivery = {
-              message: messageInHistory.visibleParams(),
-              push_message: {
-                title: conversation.name,
-                body: "New user has been added to the group",
-                cid: messageInHistory.params.cid,
-              },
-            };
+          const messageInHistory = new Message({
+            id: currentUserId + Date.now(),
+            body: uName.trim() + " has been added to the group",
+            cid: new ObjectId(conversationId),
+            deleted_for: [],
+            from: new ObjectId(currentUserId),
+            t: parseInt(Math.round(Date.now() / 1000)),
+            x: { type: "added_participant", user: u },
+          });
+          await messageInHistory.save();
 
-            await PacketProcessor.deliverToUserOrUsers(
-              ws,
-              messageForDelivery,
-              messageInHistory.params.cid
-            );
-            ws.send(JSON.stringify(messageForDelivery.message));
-          }
-        }
+          const messageForDelivery = {
+            message: messageInHistory.visibleParams(),
+            push_message: {
+              title: `${currentUserParams.login} | ${conversation.name}`,
+              body: messageInHistory.params.body,
+              cid: messageInHistory.params.cid,
+            },
+          };
+
+          await PacketProcessor.deliverToUserOrUsers(
+            ws,
+            messageForDelivery,
+            messageInHistory.params.cid
+          );
+          ws.send(JSON.stringify({ message: messageForDelivery.message }));
+        });
+        await Promise.all(participantSavePromises);
 
         if (participants.length && conversation.type !== "u") {
           const currentUserLogin = (await User.findOne({ _id: currentUserId }))
