@@ -5,6 +5,7 @@ import ConversationRepository from "../repositories/conversation_repository.js";
 import Message from "../models/message.js";
 import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
+import getUserName from "../utils/get_user_name.js";
 import validate, {
   validateConversationisUserOwner,
   validateIsConversation,
@@ -257,14 +258,9 @@ class ConversationsController extends BaseController {
           });
           await participant.save();
 
-          let uName =
-            u.first_name || u.last_name
-              ? `${u.first_name || ""} ${u.last_name || ""}`
-              : u.login;
-
           const messageInHistory = new Message({
             id: currentUserId + Date.now(),
-            body: uName.trim() + " has been added to the group",
+            body: getUserName(u) + " has been added to the group",
             cid: new ObjectId(conversationId),
             deleted_for: [],
             from: new ObjectId(currentUserId),
@@ -276,7 +272,7 @@ class ConversationsController extends BaseController {
           const messageForDelivery = {
             message: messageInHistory.visibleParams(),
             push_message: {
-              title: `${currentUserParams.login} | ${conversation.name}`,
+              title: `${getUserName(currentUserParams)} | ${conversation.name}`,
               body: messageInHistory.params.body,
               cid: messageInHistory.params.cid,
             },
@@ -292,6 +288,15 @@ class ConversationsController extends BaseController {
         await Promise.all(participantSavePromises);
 
         if (participants.length && conversation.type !== "u") {
+          const convObjectId = conversation._id;
+          conversation["last_message"] = (
+            await Message.getLastMessageForConversation(
+              [convObjectId],
+              currentUserId
+            )
+          )[convObjectId];
+          conversation["unread_messages_count"] = 1;
+
           const currentUserLogin = (await User.findOne({ _id: currentUserId }))
             ?.params?.login;
           await this.#notifyAboutConversationUpdate(
