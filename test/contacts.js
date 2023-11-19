@@ -516,7 +516,7 @@ describe("Contacts functions", async () => {
     });
   });
 
-  describe("Contact mathced", async () => {
+  describe("Contact matched", async () => {
     it("should work user_create", async () => {
       let requestData = {
         request: {

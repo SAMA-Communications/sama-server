@@ -132,7 +132,7 @@ describe("Sending 'typing' status", async () => {
     });
   });
 
-  it("should fail Conversation not found.", async () => {
+  it("should fail Conversation not found", async () => {
     const requestData = {
       typing: {
         id: "xyz",

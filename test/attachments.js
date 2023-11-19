@@ -48,10 +48,12 @@ describe("Attachments", async () => {
         id: "createUploadUrlForFile",
       },
     };
+
     const responseData = await packetJsonProcessor.processMessageOrError(
       mockedWS,
       JSON.stringify(requestData)
     );
+
     files = responseData.response.files;
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.notEqual(responseData.response.files, undefined);
