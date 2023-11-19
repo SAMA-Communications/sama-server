@@ -77,7 +77,7 @@ class ContactsController extends BaseJSONController {
 
     const queryParams = { user_id: currentUser.toString() };
     if (query.updated_at) {
-      queryParams.updated_at = { $gt: query.updated_at };
+      queryParams.updated_at = { $gt: new Date(query.updated_at) };
     }
 
     const contacts = await Contact.findAll(queryParams, null, query.limit);
