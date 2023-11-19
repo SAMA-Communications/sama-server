@@ -13,4 +13,9 @@ export default class BaseController {
 
     return this;
   }
+
+  middleware(middleware, ws, message) {
+    middleware.handle(ws, message)
+    return this
+  }
 }

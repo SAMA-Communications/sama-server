@@ -9,6 +9,8 @@ import { default as StatusesController } from "../controllers/status.js";
 import { default as UsersBlockController } from "../controllers/users_block.js";
 import { default as UsersController } from "../controllers/users.js";
 
+import authGuardMiddleware from "../middleware/auth_guard.js"
+
 import { activitiesSchemaValidation } from "../validations/activities_schema_validation.js";
 import { contactsSchemaValidation } from "../validations/contacts_schema_validation.js";
 import { conversationsSchemaValidation } from "../validations/conversations_schema_validation.js";
@@ -22,178 +24,252 @@ import { usersSchemaValidation } from "../validations/users_schema_validation.js
 
 export const routes = {
   typing: (ws, json) =>
-    StatusesController.validate(
+    StatusesController
+    .middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.typing,
       statusSchemaValidation.typing
     ).typing(ws, json),
   message: (ws, json) =>
-    MessagesController.validate(
+    MessagesController
+    .middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.message,
       messagesSchemaValidation.create
-    ).create(ws, json),
+    )
+    .create(ws, json),
   message_edit: (ws, json) =>
-    MessagesController.validate(
+    MessagesController
+    .middleware(authGuardMiddleware, ws, json)
+    .middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.message_edit,
       messagesSchemaValidation.edit
-    ).edit(ws, json),
+    )
+    .edit(ws, json),
   message_list: (ws, json) =>
-    MessagesController.validate(
+    MessagesController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.message_list,
       messagesSchemaValidation.list
-    ).list(ws, json),
+    )
+    .list(ws, json),
   message_read: (ws, json) =>
-    MessagesController.validate(
+    MessagesController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.message_read,
       messagesSchemaValidation.read
-    ).read(ws, json),
+    )
+    .read(ws, json),
   message_delete: (ws, json) =>
-    MessagesController.validate(
+    MessagesController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.message_delete,
       messagesSchemaValidation.delete
-    ).delete(ws, json),
+    )
+    .delete(ws, json),
   user_create: (ws, json) =>
-    UsersController.validate(
+    UsersController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.user_create,
       usersSchemaValidation.create
-    ).create(ws, json),
+    )
+    .create(ws, json),
   user_edit: (ws, json) =>
-    UsersController.validate(json.user_edit, usersSchemaValidation.edit).edit(
+    UsersController.middleware(authGuardMiddleware, ws, json)
+    .validate(json.user_edit, usersSchemaValidation.edit)
+    .middleware(authGuardMiddleware, ws, json)
+    .edit(
       ws,
       json
     ),
   user_login: (ws, json) =>
-    UsersController.validate(
+    UsersController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.user_login,
       usersSchemaValidation.login
-    ).login(ws, json),
+    )
+    .login(ws, json),
   user_logout: (ws, json) =>
-    UsersController.validate(
+    UsersController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.user_logout,
       usersSchemaValidation.logout
-    ).logout(ws, json),
+    )
+    .logout(ws, json),
   user_delete: (ws, json) =>
-    UsersController.validate(
+    UsersController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.user_delete,
       usersSchemaValidation.delete
-    ).delete(ws, json),
+    )
+    .delete(ws, json),
   user_search: (ws, json) =>
-    UsersController.validate(
+    UsersController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.user_search,
       usersSchemaValidation.search
-    ).search(ws, json),
+    )
+    .search(ws, json),
   contact_add: (ws, json) =>
-    ContactsController.validate(
+    ContactsController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.contact_add,
       contactsSchemaValidation.contact_add
-    ).contact_add(ws, json),
+    )
+    .contact_add(ws, json),
   contact_batch_add: (ws, json) =>
-    ContactsController.validate(
+    ContactsController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.contact_batch_add,
       contactsSchemaValidation.contact_batch_add
-    ).contact_batch_add(ws, json),
+    )
+    .contact_batch_add(ws, json),
   contact_update: (ws, json) =>
-    ContactsController.validate(
+    ContactsController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.contact_update,
       contactsSchemaValidation.contact_update
-    ).contact_update(ws, json),
+    )
+    .contact_update(ws, json),
   contact_delete: (ws, json) =>
-    ContactsController.validate(
+    ContactsController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.contact_delete,
       contactsSchemaValidation.contact_delete
-    ).contact_delete(ws, json),
+    )
+    .contact_delete(ws, json),
   contact_list: (ws, json) =>
-    ContactsController.validate(
+    ContactsController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.contact_list,
       contactsSchemaValidation.contact_list
-    ).contact_list(ws, json),
+    )
+    .contact_list(ws, json),
   create_files: (ws, json) =>
-    FilesController.validate(
+    FilesController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.create_files,
       filesSchemaValidation.create_url
-    ).create_url(ws, json),
+    )
+    .create_url(ws, json),
   get_file_urls: (ws, json) =>
-    FilesController.validate(
+    FilesController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.get_file_urls,
       filesSchemaValidation.get_download_url
-    ).get_download_url(ws, json),
+    )
+    .get_download_url(ws, json),
   op_log_list: (ws, json) =>
-    OperationsLogController.validate(
+    OperationsLogController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.op_log_list,
       operationsLogSchemaValidation.logs
-    ).logs(ws, json),
+    )
+    .logs(ws, json),
   block_user: (ws, json) =>
-    UsersBlockController.validate(
+    UsersBlockController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.block_user,
       usersBlockSchemaValidation.block
-    ).block(ws, json),
+    )
+    .block(ws, json),
   unblock_user: (ws, json) =>
-    UsersBlockController.validate(
+    UsersBlockController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.unblock_user,
       usersBlockSchemaValidation.unblock
-    ).unblock(ws, json),
+    )
+    .unblock(ws, json),
   list_blocked_users: (ws, json) =>
-    UsersBlockController.validate(
+    UsersBlockController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.list_blocked_users,
       usersBlockSchemaValidation.list
-    ).list(ws, json),
+    )
+    .list(ws, json),
   user_last_activity_subscribe: (ws, json) =>
-    LastActivityiesController.validate(
+    LastActivityiesController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.user_last_activity_subscribe,
       activitiesSchemaValidation.status_subscribe
-    ).status_subscribe(ws, json),
+    )
+    .status_subscribe(ws, json),
   user_last_activity_unsubscribe: (ws, json) =>
-    LastActivityiesController.validate(
+    LastActivityiesController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.user_last_activity_unsubscribe,
       activitiesSchemaValidation.status_unsubscribe
-    ).status_unsubscribe(ws, json),
+    )
+    .status_unsubscribe(ws, json),
   user_last_activity: (ws, json) =>
-    LastActivityiesController.validate(
+    LastActivityiesController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.user_last_activity,
       activitiesSchemaValidation.get_user_status
-    ).get_user_status(ws, json),
+    )
+    .get_user_status(ws, json),
   get_participants_by_cids: (ws, json) =>
-    ConversationsController.validate(
+    ConversationsController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.get_participants_by_cids,
       conversationsSchemaValidation.get_participants_by_cids
-    ).get_participants_by_cids(ws, json),
+    )
+    .get_participants_by_cids(ws, json),
   conversation_create: (ws, json) =>
-    ConversationsController.validate(
+    ConversationsController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.conversation_create,
       conversationsSchemaValidation.create
-    ).create(ws, json),
+    )
+    .create(ws, json),
   conversation_delete: (ws, json) =>
-    ConversationsController.validate(
+    ConversationsController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.conversation_delete,
       conversationsSchemaValidation.delete
-    ).delete(ws, json),
+    )
+    .delete(ws, json),
   conversation_update: (ws, json) =>
-    ConversationsController.validate(
+    ConversationsController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.conversation_update,
       conversationsSchemaValidation.update
-    ).update(ws, json),
+    )
+    .update(ws, json),
   conversation_list: (ws, json) =>
-    ConversationsController.validate(
+    ConversationsController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.conversation_list,
       conversationsSchemaValidation.list
-    ).list(ws, json),
+    )
+    .list(ws, json),
   push_subscription_create: (ws, json) =>
-    PushNotificationsController.validate(
+    PushNotificationsController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.push_subscription_create,
       pushNotificationsSchemaValidation.push_subscription_create
-    ).push_subscription_create(ws, json),
+    )
+    .push_subscription_create(ws, json),
   push_subscription_list: (ws, json) =>
-    PushNotificationsController.validate(
+    PushNotificationsController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.push_subscription_list,
       pushNotificationsSchemaValidation.push_subscription_list
-    ).push_subscription_list(ws, json),
+    )
+    .push_subscription_list(ws, json),
   push_subscription_delete: (ws, json) =>
-    PushNotificationsController.validate(
+    PushNotificationsController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.push_subscription_delete,
       pushNotificationsSchemaValidation.push_subscription_delete
-    ).push_subscription_delete(ws, json),
+    )
+    .push_subscription_delete(ws, json),
   push_event_create: (ws, json) =>
-    PushNotificationsController.validate(
+    PushNotificationsController.middleware(authGuardMiddleware, ws, json)
+    .validate(
       json.push_event_create,
       pushNotificationsSchemaValidation.push_event_create
-    ).push_event_create(ws, json),
+    )
+    .push_event_create(ws, json),
 };

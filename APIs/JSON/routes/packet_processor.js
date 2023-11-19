@@ -23,7 +23,7 @@ class PacketJsonProcessor extends BasePacketProcessor {
       reqData = json;
     }
 
-    return this.router[reqFirstParams](ws, reqData);
+    return await this.router[reqFirstParams](ws, reqData);
   }
 
   async processMessageOrError(ws, message) {

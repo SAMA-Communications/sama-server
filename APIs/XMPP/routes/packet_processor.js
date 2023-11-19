@@ -16,7 +16,7 @@ class PacketXmppProcessor extends BasePacketProcessor {
 
   async #processMessage(ws, xmlElement) {
     const routeName = xmlElement.name
-    return this.router[routeName](ws, xmlElement)
+    return await this.router[routeName](ws, xmlElement)
   }
 
   async processMessageOrError(ws, message) {
