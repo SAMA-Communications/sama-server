@@ -68,10 +68,6 @@ export default class BaseModel {
           ? (query.user_id.$in = query.user_id.$in.map(
               (id) => new ObjectId(id)
             ))
-          : query.user_id.$nin
-          ? (query.user_id.$nin = query.user_id.$nin.map(
-              (id) => new ObjectId(id)
-            ))
           : (query.user_id = new ObjectId(query.user_id));
       }
       if (query.conversation_id) {
