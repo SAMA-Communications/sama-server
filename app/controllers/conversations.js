@@ -5,7 +5,7 @@ import ConversationRepository from "../repositories/conversation_repository.js";
 import Message from "../models/message.js";
 import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
-import getUserName from "../utils/get_user_name.js";
+import getDisplayName from "../utils/get_display_name.js";
 import validate, {
   validateConversationisUserOwner,
   validateIsConversation,
@@ -217,23 +217,25 @@ class ConversationsController extends BaseController {
           validateParticipantsLimit,
         ]);
 
-        const participants = await Promise.all(
-          addUsers.map(async (uId) => {
-            if (
-              !(await ConversationParticipant.findOne({
-                user_id: uId,
-                conversation_id: conversationId,
-              }))
-            ) {
-              return uId;
-            }
-          })
-        );
+        const allParticipantsByCid = await ConversationParticipant.findAll({
+          conversation_id: conversationId,
+        });
+
+        let participantsIds = [];
+        let existingParticipants = [];
+        allParticipantsByCid.forEach((p) => {
+          const uId = p._id.toString();
+
+          (addUsers.includes(uId)
+            ? existingParticipants
+            : participantsIds
+          ).push(uId);
+        });
 
         let currentUserParams;
         const participantsInfo = (
           await User.findAll(
-            { _id: { $in: [currentUserId, ...participants] } },
+            { _id: { $in: [currentUserId, ...participantsIds] } },
             [
               "login",
               "first_name",
@@ -260,7 +262,7 @@ class ConversationsController extends BaseController {
 
           const messageInHistory = new Message({
             id: currentUserId + Date.now(),
-            body: getUserName(u) + " has been added to the group",
+            body: getDisplayName(u) + " has been added to the group",
             cid: new ObjectId(conversationId),
             deleted_for: [],
             from: new ObjectId(currentUserId),
@@ -272,7 +274,9 @@ class ConversationsController extends BaseController {
           const messageForDelivery = {
             message: messageInHistory.visibleParams(),
             push_message: {
-              title: `${getUserName(currentUserParams)} | ${conversation.name}`,
+              title: `${getDisplayName(currentUserParams)} | ${
+                conversation.name
+              }`,
               body: messageInHistory.params.body,
               cid: messageInHistory.params.cid,
             },
@@ -281,13 +285,14 @@ class ConversationsController extends BaseController {
           await PacketProcessor.deliverToUserOrUsers(
             ws,
             messageForDelivery,
-            messageInHistory.params.cid
+            null,
+            existingParticipants
           );
           ws.send(JSON.stringify({ message: messageForDelivery.message }));
         });
         await Promise.all(participantSavePromises);
 
-        if (participants.length && conversation.type !== "u") {
+        if (participantsIds.length && conversation.type !== "u") {
           const convObjectId = conversation._id;
           conversation["last_message"] = (
             await Message.getLastMessageForConversation(
@@ -303,7 +308,7 @@ class ConversationsController extends BaseController {
             ws,
             conversation,
             currentUserLogin,
-            participants
+            participantsIds
           );
         }
       }
