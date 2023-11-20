@@ -217,25 +217,23 @@ class ConversationsController extends BaseController {
           validateParticipantsLimit,
         ]);
 
-        const allParticipantsByCid = await ConversationParticipant.findAll({
-          conversation_id: conversationId,
-        });
+        const existingParticipantsIds = (
+          await ConversationParticipant.findAll(
+            {
+              conversation_id: conversationId,
+            },
+            ["user_id"]
+          )
+        ).map((p) => p.user_id.toString());
 
-        let participantsIds = [];
-        let existingParticipants = [];
-        allParticipantsByCid.forEach((p) => {
-          const uId = p._id.toString();
-
-          (addUsers.includes(uId)
-            ? existingParticipants
-            : participantsIds
-          ).push(uId);
-        });
+        let newParticipantsIds = addUsers.filter(
+          (uId) => !existingParticipantsIds.includes(uId)
+        );
 
         let currentUserParams;
         const participantsInfo = (
           await User.findAll(
-            { _id: { $in: [currentUserId, ...participantsIds] } },
+            { _id: { $in: [currentUserId, ...newParticipantsIds] } },
             [
               "login",
               "first_name",
@@ -286,13 +284,13 @@ class ConversationsController extends BaseController {
             ws,
             messageForDelivery,
             null,
-            existingParticipants
+            existingParticipantsIds
           );
           ws.send(JSON.stringify({ message: messageForDelivery.message }));
         });
         await Promise.all(participantSavePromises);
 
-        if (participantsIds.length && conversation.type !== "u") {
+        if (newParticipantsIds.length && conversation.type !== "u") {
           const convObjectId = conversation._id;
           conversation["last_message"] = (
             await Message.getLastMessageForConversation(
@@ -308,7 +306,7 @@ class ConversationsController extends BaseController {
             ws,
             conversation,
             currentUserLogin,
-            participantsIds
+            newParticipantsIds
           );
         }
       }
