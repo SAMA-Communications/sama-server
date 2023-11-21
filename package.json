@@ -11,7 +11,7 @@
     "migrate-mongo-status": "npm run migrate-mongo status",
     "migrate-mongo-create": "npm run migrate-mongo create",
     "start": "nodemon -r dotenv/config index.js",
-    "test": "nyc mocha -r dotenv/config"
+    "test": "nyc mocha -r dotenv/config --exit"
   },
   "repository": {
     "type": "git",
