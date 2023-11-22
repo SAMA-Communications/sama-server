@@ -30,43 +30,27 @@ class ConversationsController extends BaseController {
     this.sessionRepository = new SessionRepository(ACTIVE);
   }
 
-  async #notifyAboutConversationCreate(
+  async #notifyAboutConversationEvent(
     ws,
     conversation,
-    currentUserLogin,
-    recipients
+    currentUserParams,
+    recipients,
+    eventType
   ) {
     const push_message = {
       title: conversation.name,
-      body: `${currentUserLogin} created a new conversation`,
+      body:
+        getDisplayName(currentUserParams) +
+        CONSTANTS.EVENT_TYPE_PARAMS[eventType].push_message_body,
     };
 
     await PacketProcessor.deliverToUserOrUsers(
       ws,
       {
-        event: { conversation_created: conversation },
-        push_message,
-      },
-      conversation._id,
-      recipients
-    );
-  }
-
-  async #notifyAboutConversationUpdate(
-    ws,
-    conversation,
-    currentUserLogin,
-    recipients
-  ) {
-    const push_message = {
-      title: conversation.name,
-      body: `${currentUserLogin} added you to conversation`,
-    };
-
-    await PacketProcessor.deliverToUserOrUsers(
-      ws,
-      {
-        event: { conversation_created: conversation },
+        event: {
+          [CONSTANTS.EVENT_TYPE_PARAMS[eventType].event_request_name]:
+            conversation,
+        },
         push_message,
       },
       conversation._id,
@@ -77,8 +61,8 @@ class ConversationsController extends BaseController {
   async create(ws, data) {
     const { id: requestId, conversation_create: conversationParams } = data;
     const currentUserId = this.sessionRepository.getSessionUserId(ws);
-    const currentUserLogin = (await User.findOne({ _id: currentUserId }))
-      ?.params?.login;
+    const currentUserParams = (await User.findOne({ _id: currentUserId }))
+      ?.params;
 
     const participants = await User.getAllIdsBy({
       _id: { $in: conversationParams.participants },
@@ -130,11 +114,12 @@ class ConversationsController extends BaseController {
           });
           await participant.save();
 
-          await this.#notifyAboutConversationCreate(
+          await this.#notifyAboutConversationEvent(
             ws,
             existingConversation,
-            currentUserLogin,
-            [missedParticipantId]
+            currentUserParams,
+            [missedParticipantId],
+            "create"
           );
         }
         return {
@@ -172,11 +157,12 @@ class ConversationsController extends BaseController {
     }
 
     const convParams = conversationObj.visibleParams();
-    await this.#notifyAboutConversationCreate(
+    await this.#notifyAboutConversationEvent(
       ws,
       convParams,
-      currentUserLogin,
-      participants
+      currentUserParams,
+      participants,
+      "create"
     );
 
     return {
@@ -202,56 +188,74 @@ class ConversationsController extends BaseController {
 
     let isOwnerChange = false;
     if (
+      conversation.type !== "u" &&
       requestData.participants &&
       Object.keys(requestData.participants) != 0
     ) {
       const participantsToUpdate = requestData.participants;
       delete requestData.participants;
 
+      let currentUserParams;
       const { add: addUsers, remove: removeUsers } = participantsToUpdate;
       const countParticipants = await ConversationParticipant.count({
         conversation_id: conversationId,
       });
-      if (addUsers) {
+
+      const existingParticipantsIds = (
+        await ConversationParticipant.findAll(
+          { conversation_id: conversationId },
+          ["user_id"]
+        )
+      ).map((p) => p.user_id.toString());
+
+      let newParticipantsIds = addUsers
+        ? addUsers.filter((uId) => !existingParticipantsIds.includes(uId))
+        : [];
+
+      let removeParticipantsIds = removeUsers
+        ? removeUsers.filter((uId) => existingParticipantsIds.includes(uId))
+        : [];
+
+      let removeParticipantsInfo = [];
+      let newParticipantsInfo = (
+        await User.findAll(
+          {
+            _id: {
+              $in: [
+                currentUserId,
+                ...newParticipantsIds,
+                ...removeParticipantsInfo,
+              ],
+            },
+          },
+          [
+            "login",
+            "first_name",
+            "last_name",
+            "email",
+            "phone",
+            "recent_activity",
+          ]
+        )
+      ).filter((obj) => {
+        const objStringId = obj._id.toString();
+        if (objStringId === currentUserId) {
+          currentUserParams = obj;
+          return false;
+        }
+        if (removeParticipantsIds.includes(objStringId)) {
+          removeParticipantsInfo.push(obj);
+          return false;
+        }
+        return true;
+      });
+
+      if (newParticipantsIds.length) {
         await validate(ws, countParticipants + addUsers.length, [
           validateParticipantsLimit,
         ]);
 
-        const existingParticipantsIds = (
-          await ConversationParticipant.findAll(
-            {
-              conversation_id: conversationId,
-            },
-            ["user_id"]
-          )
-        ).map((p) => p.user_id.toString());
-
-        let newParticipantsIds = addUsers.filter(
-          (uId) => !existingParticipantsIds.includes(uId)
-        );
-
-        let currentUserParams;
-        const participantsInfo = (
-          await User.findAll(
-            { _id: { $in: [currentUserId, ...newParticipantsIds] } },
-            [
-              "login",
-              "first_name",
-              "last_name",
-              "email",
-              "phone",
-              "recent_activity",
-            ]
-          )
-        ).filter((obj) => {
-          if (obj._id.toString() === currentUserId) {
-            currentUserParams = obj;
-            return false;
-          }
-          return true;
-        });
-
-        const participantSavePromises = participantsInfo.map(async (u) => {
+        const participantSavePromises = newParticipantsInfo.map(async (u) => {
           const participant = new ConversationParticipant({
             user_id: ObjectId(u._id),
             conversation_id: ObjectId(conversationId),
@@ -290,44 +294,80 @@ class ConversationsController extends BaseController {
         });
         await Promise.all(participantSavePromises);
 
-        if (newParticipantsIds.length && conversation.type !== "u") {
-          const convObjectId = conversation._id;
-          conversation["last_message"] = (
-            await Message.getLastMessageForConversation(
-              [convObjectId],
-              currentUserId
-            )
-          )[convObjectId];
-          conversation["unread_messages_count"] = 1;
+        const convObjectId = conversation._id;
+        conversation["last_message"] = (
+          await Message.getLastMessageForConversation(
+            [convObjectId],
+            currentUserId
+          )
+        )[convObjectId];
+        conversation["unread_messages_count"] = 1;
 
-          const currentUserLogin = (await User.findOne({ _id: currentUserId }))
-            ?.params?.login;
-          await this.#notifyAboutConversationUpdate(
-            ws,
-            conversation,
-            currentUserLogin,
-            newParticipantsIds
-          );
-        }
+        await this.#notifyAboutConversationEvent(
+          ws,
+          conversation,
+          currentUserParams,
+          newParticipantsIds,
+          "update"
+        );
       }
 
-      if (removeUsers) {
-        for (let i = 0; i < removeUsers.length; i++) {
-          const obj = await ConversationParticipant.findOne({
-            user_id: removeUsers[i],
-            conversation_id: conversationId,
-          });
-          if (!!obj) {
-            if (
-              conversation.owner_id.toString() === obj.params.user_id.toString()
-            ) {
-              isOwnerChange = true;
-            }
-            await obj.delete();
+      if (removeParticipantsIds.length) {
+        const participantRemovePromises = removeParticipantsInfo.map(
+          async (u) => {
+            isOwnerChange =
+              conversation.owner_id.toString() ===
+              obj.params.user_id.toString();
+
+            const participantObj = await ConversationParticipant.findOne({
+              user_id: u._id,
+              conversation_id: conversationId,
+            });
+            await participantObj.delete();
+
+            const messageInHistory = new Message({
+              id: currentUserId + Date.now(),
+              body: getDisplayName(u) + " has been removed from the group",
+              cid: new ObjectId(conversationId),
+              deleted_for: [],
+              from: new ObjectId(currentUserId),
+              t: parseInt(Math.round(Date.now() / 1000)),
+              x: { type: "removed_participant", user: u },
+            });
+            await messageInHistory.save();
+
+            const messageForDelivery = {
+              message: messageInHistory.visibleParams(),
+              push_message: {
+                title: `${getDisplayName(currentUserParams)} | ${
+                  conversation.name
+                }`,
+                body: messageInHistory.params.body,
+                cid: messageInHistory.params.cid,
+              },
+            };
+
+            await PacketProcessor.deliverToUserOrUsers(
+              ws,
+              messageForDelivery,
+              null,
+              existingParticipantsIds
+            );
+            ws.send(JSON.stringify({ message: messageForDelivery.message }));
           }
-        }
+        );
+        await Promise.all(participantRemovePromises);
+
+        await this.#notifyAboutConversationEvent(
+          ws,
+          conversation,
+          currentUserParams,
+          removeParticipantsIds,
+          "delete"
+        );
       }
     }
+
     if (isOwnerChange) {
       const isUserInConvesation = await ConversationParticipant.findOne({
         conversation_id: conversationId,
