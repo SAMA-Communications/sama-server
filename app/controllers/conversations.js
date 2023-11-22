@@ -201,7 +201,7 @@ class ConversationsController extends BaseController {
         conversation_id: conversationId,
       });
 
-      const existingParticipantsIds = (
+      let existingParticipantsIds = (
         await ConversationParticipant.findAll(
           { conversation_id: conversationId },
           ["user_id"]
@@ -224,7 +224,7 @@ class ConversationsController extends BaseController {
               $in: [
                 currentUserId,
                 ...newParticipantsIds,
-                ...removeParticipantsInfo,
+                ...removeParticipantsIds,
               ],
             },
           },
@@ -315,15 +315,18 @@ class ConversationsController extends BaseController {
       if (removeParticipantsIds.length) {
         const participantRemovePromises = removeParticipantsInfo.map(
           async (u) => {
-            isOwnerChange =
-              conversation.owner_id.toString() ===
-              obj.params.user_id.toString();
+            const uStringId = u._id.toString();
+            isOwnerChange = conversation.owner_id.toString() === uStringId;
 
             const participantObj = await ConversationParticipant.findOne({
               user_id: u._id,
               conversation_id: conversationId,
             });
             await participantObj.delete();
+
+            existingParticipantsIds = existingParticipantsIds.filter(
+              (uId) => uId !== uStringId
+            );
 
             const messageInHistory = new Message({
               id: currentUserId + Date.now(),
