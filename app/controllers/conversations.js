@@ -247,46 +247,53 @@ class ConversationsController extends BaseController {
       ).map((p) => p.user_id.toString());
 
       let newParticipantsIds = addUsers
-        ? addUsers.filter((uId) => !existingParticipantsIds.includes(uId))
+        ? addUsers.filter(
+            (uId) => !existingParticipantsIds.includes(uId.toString())
+          )
         : [];
 
       let removeParticipantsIds = removeUsers
-        ? removeUsers.filter((uId) => existingParticipantsIds.includes(uId))
+        ? removeUsers.filter((uId) =>
+            existingParticipantsIds.includes(uId.toString())
+          )
         : [];
 
       let removeParticipantsInfo = [];
-      let newParticipantsInfo = (
-        await User.findAll(
-          {
-            _id: {
-              $in: [
-                currentUserId,
-                ...newParticipantsIds,
-                ...removeParticipantsIds,
-              ],
-            },
-          },
-          [
-            "login",
-            "first_name",
-            "last_name",
-            "email",
-            "phone",
-            "recent_activity",
-          ]
-        )
-      ).filter((obj) => {
-        const objStringId = obj._id.toString();
-        if (objStringId === currentUserId) {
-          currentUserParams = obj;
-          return false;
-        }
-        if (removeParticipantsIds.includes(objStringId)) {
-          removeParticipantsInfo.push(obj);
-          return false;
-        }
-        return true;
-      });
+      let newParticipantsInfo =
+        newParticipantsIds.length || removeParticipantsIds.length
+          ? (
+              await User.findAll(
+                {
+                  _id: {
+                    $in: [
+                      currentUserId,
+                      ...newParticipantsIds,
+                      ...removeParticipantsIds,
+                    ],
+                  },
+                },
+                [
+                  "login",
+                  "first_name",
+                  "last_name",
+                  "email",
+                  "phone",
+                  "recent_activity",
+                ]
+              )
+            ).filter((obj) => {
+              const objStringId = obj._id.toString();
+              if (objStringId === currentUserId) {
+                currentUserParams = obj;
+                return false;
+              }
+              if (removeParticipantsIds.includes(objStringId)) {
+                removeParticipantsInfo.push(obj);
+                return false;
+              }
+              return true;
+            })
+          : [];
 
       if (newParticipantsIds.length) {
         await validate(ws, countParticipants + addUsers.length, [
