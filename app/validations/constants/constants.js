@@ -1,6 +1,6 @@
 export const CONSTANTS = {
   LIMIT_MAX: 100,
-  EVENT_TYPE_PARAMS : {
+  EVENT_TYPE_PARAMS: {
     create: {
       push_message_body: ` created a new conversation`,
       event_request_name: "conversation_created",
@@ -13,5 +13,5 @@ export const CONSTANTS = {
       push_message_body: ` removed you from conversation`,
       event_request_name: "conversation_kicked",
     },
-  };
+  },
 };
