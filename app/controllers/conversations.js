@@ -247,15 +247,15 @@ class ConversationsController extends BaseController {
       ).map((p) => p.user_id.toString());
 
       let newParticipantsIds = addUsers
-        ? addUsers.filter(
-            (uId) => !existingParticipantsIds.includes(uId.toString())
-          )
+        ? addUsers
+            .map((uId) => uId.toString())
+            .filter((uId) => !existingParticipantsIds.includes(uId))
         : [];
 
       let removeParticipantsIds = removeUsers
-        ? removeUsers.filter((uId) =>
-            existingParticipantsIds.includes(uId.toString())
-          )
+        ? removeUsers
+            .map((uId) => uId.toString())
+            .filter((uId) => existingParticipantsIds.includes(uId))
         : [];
 
       let removeParticipantsInfo = [];
@@ -336,6 +336,7 @@ class ConversationsController extends BaseController {
         );
       }
 
+      console.log(removeParticipantsIds);
       if (removeParticipantsIds.length) {
         const participantRemovePromises = removeParticipantsInfo.map(
           async (u) => {
