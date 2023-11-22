@@ -61,19 +61,18 @@ class ConversationsController extends BaseController {
   async #storeMessageAboutParticipantAction(
     ws,
     conversation,
-    currentUserId,
+    currentUserParams,
     actionUserParams,
     usersIdsForDelivery,
     actionType
   ) {
     const messageInHistory = new Message({
-      id: currentUserId + Date.now(),
       body:
         getDisplayName(actionUserParams) +
-        ACTION_PARTICIPANT_MESSAGE[actionType],
+        CONSTANTS.ACTION_PARTICIPANT_MESSAGE[actionType],
       cid: conversation._id,
       deleted_for: [],
-      from: new ObjectId(currentUserId),
+      from: currentUserParams._id,
       t: parseInt(Math.round(Date.now() / 1000)),
       x: { type: actionType, user: actionUserParams },
     });
@@ -304,7 +303,7 @@ class ConversationsController extends BaseController {
           this.#storeMessageAboutParticipantAction(
             ws,
             conversation,
-            currentUserId,
+            currentUserParams,
             u,
             existingParticipantsIds,
             "added_participant"
@@ -349,7 +348,7 @@ class ConversationsController extends BaseController {
             this.#storeMessageAboutParticipantAction(
               ws,
               conversation,
-              currentUserId,
+              currentUserParams,
               u,
               existingParticipantsIds,
               "removed_participant"
