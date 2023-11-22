@@ -58,6 +58,45 @@ class ConversationsController extends BaseController {
     );
   }
 
+  async #storeMessageAboutParticipantAction(
+    ws,
+    conversation,
+    currentUserId,
+    actionUserParams,
+    usersIdsForDelivery,
+    actionType
+  ) {
+    const messageInHistory = new Message({
+      id: currentUserId + Date.now(),
+      body:
+        getDisplayName(actionUserParams) +
+        ACTION_PARTICIPANT_MESSAGE[actionType],
+      cid: conversation._id,
+      deleted_for: [],
+      from: new ObjectId(currentUserId),
+      t: parseInt(Math.round(Date.now() / 1000)),
+      x: { type: actionType, user: actionUserParams },
+    });
+    await messageInHistory.save();
+
+    const messageForDelivery = {
+      message: messageInHistory.visibleParams(),
+      push_message: {
+        title: `${getDisplayName(currentUserParams)} | ${conversation.name}`,
+        body: messageInHistory.params.body,
+        cid: messageInHistory.params.cid,
+      },
+    };
+
+    await PacketProcessor.deliverToUserOrUsers(
+      ws,
+      messageForDelivery,
+      null,
+      usersIdsForDelivery
+    );
+    ws.send(JSON.stringify({ message: messageForDelivery.message }));
+  }
+
   async create(ws, data) {
     const { id: requestId, conversation_create: conversationParams } = data;
     const currentUserId = this.sessionRepository.getSessionUserId(ws);
@@ -262,35 +301,14 @@ class ConversationsController extends BaseController {
           });
           await participant.save();
 
-          const messageInHistory = new Message({
-            id: currentUserId + Date.now(),
-            body: getDisplayName(u) + " has been added to the group",
-            cid: new ObjectId(conversationId),
-            deleted_for: [],
-            from: new ObjectId(currentUserId),
-            t: parseInt(Math.round(Date.now() / 1000)),
-            x: { type: "added_participant", user: u },
-          });
-          await messageInHistory.save();
-
-          const messageForDelivery = {
-            message: messageInHistory.visibleParams(),
-            push_message: {
-              title: `${getDisplayName(currentUserParams)} | ${
-                conversation.name
-              }`,
-              body: messageInHistory.params.body,
-              cid: messageInHistory.params.cid,
-            },
-          };
-
-          await PacketProcessor.deliverToUserOrUsers(
+          this.#storeMessageAboutParticipantAction(
             ws,
-            messageForDelivery,
-            null,
-            existingParticipantsIds
+            conversation,
+            currentUserId,
+            u,
+            existingParticipantsIds,
+            "added_participant"
           );
-          ws.send(JSON.stringify({ message: messageForDelivery.message }));
         });
         await Promise.all(participantSavePromises);
 
@@ -328,35 +346,14 @@ class ConversationsController extends BaseController {
               (uId) => uId !== uStringId
             );
 
-            const messageInHistory = new Message({
-              id: currentUserId + Date.now(),
-              body: getDisplayName(u) + " has been removed from the group",
-              cid: new ObjectId(conversationId),
-              deleted_for: [],
-              from: new ObjectId(currentUserId),
-              t: parseInt(Math.round(Date.now() / 1000)),
-              x: { type: "removed_participant", user: u },
-            });
-            await messageInHistory.save();
-
-            const messageForDelivery = {
-              message: messageInHistory.visibleParams(),
-              push_message: {
-                title: `${getDisplayName(currentUserParams)} | ${
-                  conversation.name
-                }`,
-                body: messageInHistory.params.body,
-                cid: messageInHistory.params.cid,
-              },
-            };
-
-            await PacketProcessor.deliverToUserOrUsers(
+            this.#storeMessageAboutParticipantAction(
               ws,
-              messageForDelivery,
-              null,
-              existingParticipantsIds
+              conversation,
+              currentUserId,
+              u,
+              existingParticipantsIds,
+              "removed_participant"
             );
-            ws.send(JSON.stringify({ message: messageForDelivery.message }));
           }
         );
         await Promise.all(participantRemovePromises);
