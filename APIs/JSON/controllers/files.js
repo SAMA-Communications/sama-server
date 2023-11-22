@@ -1,5 +1,5 @@
 import BaseJSONController from "./base.js";
-import File from "./../../../app/models/file.js";
+import File from "@sama/models/file.js";
 
 class FilesController extends BaseJSONController {
   constructor() {

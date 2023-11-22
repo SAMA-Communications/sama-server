@@ -1,7 +1,7 @@
 import { default as XML } from "@xmpp/xml"
 import { default as XMLParser } from "@xmpp/xml/lib/parse.js"
 
-import BasePacketProcessor from "../../../app/common/packet_processor.js"
+import BasePacketProcessor from "@sama/common/packet_processor.js"
 import { routes } from "./routes.js"
 
 class PacketXmppProcessor extends BasePacketProcessor {

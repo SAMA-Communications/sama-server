@@ -1,23 +1,23 @@
 import BaseJSONController from "./base.js";
-import Conversation from "../../../app/models/conversation.js";
-import ConversationParticipant from "../../../app/models/conversation_participant.js";
-import ConversationRepository from "../../../app/repositories/conversation_repository.js";
-import Message from "../../../app/models/message.js";
-import SessionRepository from "../../../app/repositories/session_repository.js";
-import User from "../../../app/models/user.js";
+import Conversation from "@sama/models/conversation.js";
+import ConversationParticipant from "@sama/models/conversation_participant.js";
+import ConversationRepository from "@sama/repositories/conversation_repository.js";
+import Message from "@sama/models/message.js";
+import SessionRepository from "@sama/repositories/session_repository.js";
+import User from "@sama/models/user.js";
 import validate, {
   validateConversationisUserOwner,
   validateIsConversation,
   validateIsUserSendHimSelf,
   validateParticipantsInUType,
   validateParticipantsLimit,
-} from "../../../app/lib/validation.js";
-import { ACTIVE } from "../../../app/store/session.js";
-import { CONSTANTS } from "../../../app/validations/constants/constants.js";
-import { ERROR_STATUES } from "../../../app/validations/constants/errors.js";
-import { ObjectId } from "../../../app/lib/db.js";
-import packageManager from "../../../app/routes/packet_manager.js";
-import { inMemoryConversations } from "../../../app/store/in_memory.js";
+} from "@sama/lib/validation.js";
+import { ACTIVE } from "@sama/store/session.js";
+import { CONSTANTS } from "@sama/validations/constants/constants.js";
+import { ERROR_STATUES } from "@sama/validations/constants/errors.js";
+import { ObjectId } from "@sama/lib/db.js";
+import packageManager from "@sama/routes/packet_manager.js";
+import { inMemoryConversations } from "@sama/store/in_memory.js";
 
 class ConversationsController extends BaseJSONController {
   constructor() {

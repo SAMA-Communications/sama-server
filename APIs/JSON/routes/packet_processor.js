@@ -1,4 +1,4 @@
-import BasePacketProcessor from "../../../app/common/packet_processor.js"
+import BasePacketProcessor from "@sama/common/packet_processor.js"
 import { routes } from "./routes.js"
 
 class PacketJsonProcessor extends BasePacketProcessor {

@@ -1,8 +1,8 @@
 import BaseJSONController from "./base.js";
-import SessionRepository from "../../../app/repositories/session_repository.js";
-import User from "../../../app/models/user.js";
-import { ACTIVE } from "../../../app/store/session.js";
-import { ACTIVITY } from "../../../app/store/activity.js";
+import SessionRepository from "@sama/repositories/session_repository.js";
+import User from "@sama/models/user.js";
+import { ACTIVE } from "@sama/store/session.js";
+import { ACTIVITY } from "@sama/store/activity.js";
 
 class LastActivitiesController extends BaseJSONController {
   constructor() {

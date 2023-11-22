@@ -1,5 +1,5 @@
-import BaseMiddleware from "../../../app/common/middleware.js"
-import { ACTIVE } from "../../../app/store/session.js"
+import BaseMiddleware from "@sama/common/middleware.js"
+import { ACTIVE } from "@sama/store/session.js"
 import { ERROR_STATUES } from "../validations/constants/errors.js"
 
 class AuthGuardMiddleware extends BaseMiddleware {

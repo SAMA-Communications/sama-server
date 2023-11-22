@@ -1,11 +1,11 @@
 import BaseJSONController from "./base.js";
-import PushNotificationsRepository from "../../../app/repositories/push_notifications_repository.js";
-import PushSubscription from "./../../../app/models/push_subscription.js";
-import SessionRepository from "../../../app/repositories/session_repository.js";
-import User from "../../../app/models/user.js";
-import { ACTIVE } from "../../../app/store/session.js";
-import { ERROR_STATUES } from "../../../app/validations/constants/errors.js";
-import { ObjectId } from "../../../app/lib/db.js";
+import PushNotificationsRepository from "@sama/repositories/push_notifications_repository.js";
+import PushSubscription from "@sama/models/push_subscription.js";
+import SessionRepository from "@sama/repositories/session_repository.js";
+import User from "@sama/models/user.js";
+import { ACTIVE } from "@sama/store/session.js";
+import { ERROR_STATUES } from "@sama/validations/constants/errors.js";
+import { ObjectId } from "@sama/lib/db.js";
 
 class PushNotificationsController extends BaseJSONController {
   constructor() {

@@ -1,19 +1,19 @@
 import BaseJSONController from "./base.js";
-import BlockListRepository from "../../../app/repositories/blocklist_repository.js";
-import BlockedUser from "../../../app/models/blocked_user.js";
-import ContactsMatchRepository from "../../../app/repositories/contact_match_repository.js";
-import SessionRepository from "../../../app/repositories/session_repository.js";
-import User from "../../../app/models/user.js";
-import UserToken from "../../../app/models/user_token.js";
-import clusterManager from "../../../app/cluster/cluster_manager.js";
+import BlockListRepository from "@sama/repositories/blocklist_repository.js";
+import BlockedUser from "@sama/models/blocked_user.js";
+import ContactsMatchRepository from "@sama/repositories/contact_match_repository.js";
+import SessionRepository from "@sama/repositories/session_repository.js";
+import User from "@sama/models/user.js";
+import UserToken from "@sama/models/user_token.js";
+import clusterManager from "@sama/cluster/cluster_manager.js";
 import ip from "ip";
 import jwt from "jsonwebtoken";
-import { ACTIVE } from "../../../app/store/session.js";
-import { CONSTANTS } from "../../../app/validations/constants/constants.js";
-import { ERROR_STATUES } from "../../../app/validations/constants/errors.js";
+import { ACTIVE } from "@sama/store/session.js";
+import { CONSTANTS } from "@sama/validations/constants/constants.js";
+import { ERROR_STATUES } from "@sama/validations/constants/errors.js";
 import { default as LastActivityiesController } from "./activities.js";
-import packageManager from "../../../app/routes/packet_manager.js";
-import { inMemoryBlockList } from "../../../app/store/in_memory.js";
+import packageManager from "@sama/routes/packet_manager.js";
+import { inMemoryBlockList } from "@sama/store/in_memory.js";
 
 class UsersController extends BaseJSONController {
   constructor() {

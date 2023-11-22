@@ -105,7 +105,7 @@ class ClientManager {
     this.#localSocket.listen(port, listenOptions, (listenSocket) => {
       if (listenSocket) {
         console.log(
-          `    [ClientManager][createLocalSocket] listening on port ${uWS.us_socket_local_port(
+          `[ClientManager][createLocalSocket] listening on port ${uWS.us_socket_local_port(
             listenSocket
           )}, pid=${process.pid}`
         );

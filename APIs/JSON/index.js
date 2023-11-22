@@ -1,4 +1,4 @@
-import BaseAPI from "../../app/common/API.js"
+import BaseAPI from "@sama/common/API.js"
 import packetJsonProcessor from "./routes/packet_processor.js"
 import { detectJsonMessage } from "./utils/detect_message.js"
 

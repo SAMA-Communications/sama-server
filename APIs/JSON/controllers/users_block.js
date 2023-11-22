@@ -1,9 +1,9 @@
 import BaseJSONController from "./base.js";
-import BlockListRepository from "../../../app/repositories/blocklist_repository.js";
-import BlockedUser from "../../../app/models/blocked_user.js";
-import SessionRepository from "../../../app/repositories/session_repository.js";
-import { ACTIVE } from "../../../app/store/session.js";
-import { inMemoryBlockList } from "../../../app/store/in_memory.js";
+import BlockListRepository from "@sama/repositories/blocklist_repository.js";
+import BlockedUser from "@sama/models/blocked_user.js";
+import SessionRepository from "@sama/repositories/session_repository.js";
+import { ACTIVE } from "@sama/store/session.js";
+import { inMemoryBlockList } from "@sama/store/in_memory.js";
 
 class UsersBlockController extends BaseJSONController {
   constructor() {

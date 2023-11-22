@@ -1,7 +1,7 @@
 import BaseJSONController from "./base.js";
-import OpLog from "../../../app/models/operations_log.js";
-import SessionRepository from "../../../app/repositories/session_repository.js";
-import { ACTIVE } from "../../../app/store/session.js";
+import OpLog from "@sama/models/operations_log.js";
+import SessionRepository from "@sama/repositories/session_repository.js";
+import { ACTIVE } from "@sama/store/session.js";
 
 class OperationsLogController extends BaseJSONController {
   constructor() {
