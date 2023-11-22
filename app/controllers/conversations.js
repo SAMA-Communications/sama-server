@@ -336,7 +336,6 @@ class ConversationsController extends BaseController {
         );
       }
 
-      console.log(removeParticipantsIds);
       if (removeParticipantsIds.length) {
         const participantRemovePromises = removeParticipantsInfo.map(
           async (u) => {
