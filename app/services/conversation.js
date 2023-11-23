@@ -21,54 +21,45 @@ export default class ConversationService extends BaseServie {
       : [];
   }
 
-  async getNewAndRemoveParticipantsParams(
-    existingParticipantsIds,
-    newParticipants,
-    removeParticipants
-  ) {
+  async #getParticipantsInfo(participantsIds) {
+    return participantsIds.length
+      ? await User.findAll({ _id: { $in: participantsIds } }, [
+          "login",
+          "first_name",
+          "last_name",
+          "email",
+          "phone",
+          "recent_activity",
+        ])
+      : [];
+  }
+
+  async getNewParticipantsParams(existingParticipantsIds, newParticipants) {
     const newParticipantsIds = await this.#validateNewParticipantsIds(
       existingParticipantsIds,
       newParticipants
     );
 
+    const newParticipantsInfo = await this.#getParticipantsInfo(
+      newParticipantsIds
+    );
+
+    return { newParticipantsIds, newParticipantsInfo };
+  }
+
+  async getRemovearticipantsParams(
+    existingParticipantsIds,
+    removeParticipants
+  ) {
     const removeParticipantsIds = await this.#validateRemoveParticipantsIds(
       existingParticipantsIds,
       removeParticipants
     );
 
-    const removeParticipantsInfo = [];
-    const newParticipantsInfo =
-      newParticipantsIds.length || removeParticipantsIds.length
-        ? (
-            await User.findAll(
-              {
-                _id: {
-                  $in: [...newParticipantsIds, ...removeParticipantsIds],
-                },
-              },
-              [
-                "login",
-                "first_name",
-                "last_name",
-                "email",
-                "phone",
-                "recent_activity",
-              ]
-            )
-          ).filter((obj) => {
-            if (removeParticipantsIds.includes(obj._id.toString())) {
-              removeParticipantsInfo.push(obj);
-              return false;
-            }
-            return true;
-          })
-        : [];
+    const removeParticipantsInfo = await this.#getParticipantsInfo(
+      removeParticipantsIds
+    );
 
-    return {
-      newParticipantsIds,
-      newParticipantsInfo,
-      removeParticipantsIds,
-      removeParticipantsInfo,
-    };
+    return { removeParticipantsIds, removeParticipantsInfo };
   }
 }
