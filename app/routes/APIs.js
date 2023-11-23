@@ -1,9 +1,14 @@
 import JsonAPI from '../../APIs/JSON/index.js'
-import XmppAPI from '../../APIs/XMPP/index.js'
 
 const APIs = {
   JSON: new JsonAPI(),
-  XMPP: new XmppAPI()
+}
+
+try {
+  const { default: XmppApi } = await import('../../APIs/XMPP/index.js')
+  APIs['XMPP'] = new XmppApi()
+} catch (error) {
+
 }
 
 export default APIs
