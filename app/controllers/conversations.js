@@ -2,6 +2,7 @@ import BaseController from "./base/base.js";
 import Conversation from "../models/conversation.js";
 import ConversationParticipant from "../models/conversation_participant.js";
 import ConversationRepository from "../repositories/conversation_repository.js";
+import ConversationService from "../services/conversation.js";
 import Message from "../models/message.js";
 import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
@@ -27,6 +28,7 @@ class ConversationsController extends BaseController {
       Conversation,
       inMemoryConversations
     );
+    this.conversationService = new ConversationService();
     this.sessionRepository = new SessionRepository(ACTIVE);
   }
 
@@ -233,11 +235,13 @@ class ConversationsController extends BaseController {
       const participantsToUpdate = requestData.participants;
       delete requestData.participants;
 
-      let currentUserParams;
       const { add: addUsers, remove: removeUsers } = participantsToUpdate;
       const countParticipants = await ConversationParticipant.count({
         conversation_id: conversationId,
       });
+
+      const currentUserParams = (await User.findOne({ _id: currentUserId }))
+        ?.params;
 
       let existingParticipantsIds = (
         await ConversationParticipant.findAll(
@@ -246,54 +250,16 @@ class ConversationsController extends BaseController {
         )
       ).map((p) => p.user_id.toString());
 
-      let newParticipantsIds = addUsers
-        ? addUsers
-            .map((uId) => uId.toString())
-            .filter((uId) => !existingParticipantsIds.includes(uId))
-        : [];
-
-      let removeParticipantsIds = removeUsers
-        ? removeUsers
-            .map((uId) => uId.toString())
-            .filter((uId) => existingParticipantsIds.includes(uId))
-        : [];
-
-      let removeParticipantsInfo = [];
-      let newParticipantsInfo =
-        newParticipantsIds.length || removeParticipantsIds.length
-          ? (
-              await User.findAll(
-                {
-                  _id: {
-                    $in: [
-                      currentUserId,
-                      ...newParticipantsIds,
-                      ...removeParticipantsIds,
-                    ],
-                  },
-                },
-                [
-                  "login",
-                  "first_name",
-                  "last_name",
-                  "email",
-                  "phone",
-                  "recent_activity",
-                ]
-              )
-            ).filter((obj) => {
-              const objStringId = obj._id.toString();
-              if (objStringId === currentUserId) {
-                currentUserParams = obj;
-                return false;
-              }
-              if (removeParticipantsIds.includes(objStringId)) {
-                removeParticipantsInfo.push(obj);
-                return false;
-              }
-              return true;
-            })
-          : [];
+      const {
+        newParticipantsIds,
+        newParticipantsInfo,
+        removeParticipantsIds,
+        removeParticipantsInfo,
+      } = await this.conversationService.getNewAndRemoveParticipantsParams(
+        existingParticipantsIds,
+        addUsers,
+        removeUsers
+      );
 
       if (newParticipantsIds.length) {
         await validate(ws, countParticipants + addUsers.length, [
