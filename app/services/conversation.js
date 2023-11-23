@@ -2,22 +2,39 @@ import BaseServie from "./base.js";
 import User from "../models/user.js";
 
 export default class ConversationService extends BaseServie {
-  async getNewAndRemoveParticipantsParams(
-    existingParticipantsIds,
-    newParticipants,
-    removeparticipants
-  ) {
-    const newParticipantsIds = newParticipants
+  async #validateNewParticipantsIds(existingParticipantsIds, newParticipants) {
+    return newParticipants
       ? newParticipants
           .map((uId) => uId.toString())
           .filter((uId) => !existingParticipantsIds.includes(uId))
       : [];
+  }
 
-    const removeParticipantsIds = removeparticipants
-      ? removeparticipants
+  async #validateRemoveParticipantsIds(
+    existingParticipantsIds,
+    removeParticipants
+  ) {
+    return removeParticipants
+      ? removeParticipants
           .map((uId) => uId.toString())
           .filter((uId) => existingParticipantsIds.includes(uId))
       : [];
+  }
+
+  async getNewAndRemoveParticipantsParams(
+    existingParticipantsIds,
+    newParticipants,
+    removeParticipants
+  ) {
+    const newParticipantsIds = await this.#validateNewParticipantsIds(
+      existingParticipantsIds,
+      newParticipants
+    );
+
+    const removeParticipantsIds = await this.#validateRemoveParticipantsIds(
+      existingParticipantsIds,
+      removeParticipants
+    );
 
     const removeParticipantsInfo = [];
     const newParticipantsInfo =
