@@ -1,5 +1,10 @@
 export const CONSTANTS = {
   LIMIT_MAX: 100,
+  CONVERSATION_EVENT: {
+    CREATE: "create",
+    UPDATE: "update",
+    DELETE: "delete",
+  },
   EVENT_TYPE_PARAMS: {
     create: {
       push_message_body: ` created a new conversation`,

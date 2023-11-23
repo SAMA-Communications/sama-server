@@ -31,11 +31,11 @@ class ConversationsController extends BaseController {
   }
 
   async #notifyAboutConversationEvent(
+    eventType,
     ws,
     conversation,
     currentUserParams,
-    recipients,
-    eventType
+    recipients
   ) {
     const push_message = {
       title: conversation.name,
@@ -58,7 +58,7 @@ class ConversationsController extends BaseController {
     );
   }
 
-  async #storeMessageAboutParticipantAction(
+  async #storeAndNotifyAboutParticipantAction(
     ws,
     conversation,
     currentUserParams,
@@ -153,11 +153,11 @@ class ConversationsController extends BaseController {
           await participant.save();
 
           await this.#notifyAboutConversationEvent(
+            CONSTANTS.CONVERSATION_EVENT.CREATE,
             ws,
             existingConversation,
             currentUserParams,
-            [missedParticipantId],
-            "create"
+            [missedParticipantId]
           );
         }
         return {
@@ -196,11 +196,11 @@ class ConversationsController extends BaseController {
 
     const convParams = conversationObj.visibleParams();
     await this.#notifyAboutConversationEvent(
+      CONSTANTS.CONVERSATION_EVENT.CREATE,
       ws,
       convParams,
       currentUserParams,
-      participants,
-      "create"
+      participants
     );
 
     return {
@@ -307,7 +307,7 @@ class ConversationsController extends BaseController {
           });
           await participant.save();
 
-          this.#storeMessageAboutParticipantAction(
+          this.#storeAndNotifyAboutParticipantAction(
             ws,
             conversation,
             currentUserParams,
@@ -328,11 +328,11 @@ class ConversationsController extends BaseController {
         conversation["unread_messages_count"] = 1;
 
         await this.#notifyAboutConversationEvent(
+          CONSTANTS.CONVERSATION_EVENT.UPDATE,
           ws,
           conversation,
           currentUserParams,
-          newParticipantsIds,
-          "update"
+          newParticipantsIds
         );
       }
 
@@ -352,7 +352,7 @@ class ConversationsController extends BaseController {
               (uId) => uId !== uStringId
             );
 
-            this.#storeMessageAboutParticipantAction(
+            this.#storeAndNotifyAboutParticipantAction(
               ws,
               conversation,
               currentUserParams,
@@ -365,11 +365,11 @@ class ConversationsController extends BaseController {
         await Promise.all(participantRemovePromises);
 
         await this.#notifyAboutConversationEvent(
+          CONSTANTS.CONVERSATION_EVENT.DELETE,
           ws,
           conversation,
           currentUserParams,
-          removeParticipantsIds,
-          "delete"
+          removeParticipantsIds
         );
       }
     }
