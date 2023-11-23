@@ -47,7 +47,7 @@ export default class ConversationService extends BaseServie {
     return { newParticipantsIds, newParticipantsInfo };
   }
 
-  async getRemovearticipantsParams(
+  async getRemoveParticipantsParams(
     existingParticipantsIds,
     removeParticipants
   ) {

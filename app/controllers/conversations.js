@@ -250,7 +250,7 @@ class ConversationsController extends BaseController {
         )
       ).map((p) => p.user_id.toString());
 
-      const { newParticipantsIds, newParticipantsInfo } = addUsers.length
+      const { newParticipantsIds, newParticipantsInfo } = addUsers?.length
         ? await this.conversationService.getNewParticipantsParams(
             existingParticipantsIds,
             addUsers
@@ -258,14 +258,14 @@ class ConversationsController extends BaseController {
         : {};
 
       const { removeParticipantsIds, removeParticipantsInfo } =
-        removeUsers.length
+        removeUsers?.length
           ? await this.conversationService.getRemoveParticipantsParams(
               existingParticipantsIds,
               removeUsers
             )
           : {};
 
-      if (newParticipantsIds.length) {
+      if (addUsers && newParticipantsIds.length) {
         await validate(ws, countParticipants + addUsers.length, [
           validateParticipantsLimit,
         ]);
@@ -306,7 +306,7 @@ class ConversationsController extends BaseController {
         );
       }
 
-      if (removeParticipantsIds.length) {
+      if (removeUsers && removeParticipantsIds.length) {
         const participantRemovePromises = removeParticipantsInfo.map(
           async (u) => {
             const uStringId = u._id.toString();
