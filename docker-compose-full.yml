@@ -40,6 +40,8 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
+    entrypoint: >
+      sh -c "npm run migrate-mongo-up && npm run start"
     networks:
       sama_network:
         ipv4_address: 172.25.0.7
