@@ -1,3 +1,3 @@
-[submodule "sama-xmpp"]
+[submodule "xmpp-adapter"]
 	path = APIs/XMPP
-	url = git@gitlab.com:banshiAnton/sama-xmpp.git
+	url = git@github.com:SAMA-Communications/xmpp-adapter.git
