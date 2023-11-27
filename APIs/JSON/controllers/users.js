@@ -1,4 +1,8 @@
+import ip from "ip";
+import jwt from "jsonwebtoken";
+
 import BaseJSONController from "./base.js";
+
 import BlockListRepository from "@sama/repositories/blocklist_repository.js";
 import BlockedUser from "@sama/models/blocked_user.js";
 import ContactsMatchRepository from "@sama/repositories/contact_match_repository.js";
@@ -6,13 +10,11 @@ import SessionRepository from "@sama/repositories/session_repository.js";
 import User from "@sama/models/user.js";
 import UserToken from "@sama/models/user_token.js";
 import clusterManager from "@sama/cluster/cluster_manager.js";
-import ip from "ip";
-import jwt from "jsonwebtoken";
 import { ACTIVE } from "@sama/store/session.js";
-import { CONSTANTS } from "@sama/validations/constants/constants.js";
-import { ERROR_STATUES } from "@sama/validations/constants/errors.js";
-import { default as LastActivityiesController } from "./activities.js";
-import packageManager from "@sama/routes/packet_manager.js";
+import { CONSTANTS } from "@sama/constants/constants.js";
+import { ERROR_STATUES } from "@sama/constants/errors.js";
+import activityManager from "@sama/networking/activity_manager.js"
+import packageManager from "@sama/networking/packet_manager.js";
 import { inMemoryBlockList } from "@sama/store/in_memory.js";
 
 class UsersController extends BaseJSONController {
@@ -286,9 +288,7 @@ class UsersController extends BaseJSONController {
       });
     }
 
-    await LastActivityiesController.status_unsubscribe(ws, {
-      request: { id: requestId },
-    });
+    await activityManager.status_unsubscribe(ws);
 
     if (ACTIVE.SESSIONS.get(ws)) {
       delete ACTIVE.DEVICES[userId];

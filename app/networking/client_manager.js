@@ -5,8 +5,8 @@ import { StringDecoder } from "string_decoder"
 import SessionRepository from "../repositories/session_repository.js";
 import clusterManager from "../cluster/cluster_manager.js"
 import { ACTIVE } from "../store/session.js"
-import { ERROR_STATUES } from "../validations/constants/errors.js"
-import { default as PacketManager } from "./packet_manager.js"
+import { ERROR_STATUES } from "../constants/errors.js"
+import { default as packetManager } from "./packet_manager.js"
 import APIs from "./APIs.js"
 
 const decoder = new StringDecoder("utf8");
@@ -51,7 +51,7 @@ class ClientManager {
             }
             return true;
           });
-          await PacketManager.maybeUpdateAndSendUserActivity(ws, { uId });
+          await packetManager.maybeUpdateAndSendUserActivity(ws, { uId });
         }
         ACTIVE.SESSIONS.delete(ws);
       },

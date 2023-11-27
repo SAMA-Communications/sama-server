@@ -1,8 +1,10 @@
 import BaseJSONController from "./base.js";
-import SessionRepository from "@sama/repositories/session_repository.js";
-import User from "@sama/models/user.js";
-import { ACTIVE } from "@sama/store/session.js";
-import { ACTIVITY } from "@sama/store/activity.js";
+
+import SessionRepository from "@sama/repositories/session_repository.js"
+import User from "@sama/models/user.js"
+import { ACTIVE } from "@sama/store/session.js"
+import { ACTIVITY } from "@sama/store/activity.js"
+import activityManager from "@sama/networking/activity_manager.js"
 
 class LastActivitiesController extends BaseJSONController {
   constructor() {
@@ -20,7 +22,7 @@ class LastActivitiesController extends BaseJSONController {
     const obj = {};
 
     if (ACTIVITY.SUBSCRIBED_TO[currentUId]) {
-      this.status_unsubscribe(ws, { id: requestId });
+      activityManager.status_unsubscribe(ws);
     }
     ACTIVITY.SUBSCRIBED_TO[currentUId] = uId;
 
@@ -42,19 +44,8 @@ class LastActivitiesController extends BaseJSONController {
 
   async status_unsubscribe(ws, data) {
     const { id: requestId } = data;
-    const currentUId = this.sessionRepository.getSessionUserId(ws);
-
-    const oldTrackerUserId = ACTIVITY.SUBSCRIBED_TO[currentUId];
-    const oldUserSubscribers = ACTIVITY.SUBSCRIBERS[oldTrackerUserId];
-    delete ACTIVITY.SUBSCRIBED_TO[currentUId];
-
-    if (oldUserSubscribers) {
-      if (Object.keys(oldUserSubscribers).length <= 1) {
-        delete ACTIVITY.SUBSCRIBERS[oldTrackerUserId];
-      } else if (oldUserSubscribers[currentUId]) {
-        delete ACTIVITY.SUBSCRIBERS[oldTrackerUserId][currentUId];
-      }
-    }
+    
+    await activityManager.status_unsubscribe(ws);
 
     return { response: { id: requestId, success: true } };
   }

@@ -4,7 +4,7 @@ import ip from "ip"
 import { StringDecoder } from "string_decoder"
 
 import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js"
-import { default as PacketManager } from "../routes/packet_manager.js"
+import { default as PacketManager } from "../networking/packet_manager.js"
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js"
 
 const decoder = new StringDecoder("utf8")

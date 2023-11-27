@@ -13,10 +13,10 @@ import validate, {
   validateParticipantsLimit,
 } from "@sama/lib/validation.js";
 import { ACTIVE } from "@sama/store/session.js";
-import { CONSTANTS } from "@sama/validations/constants/constants.js";
-import { ERROR_STATUES } from "@sama/validations/constants/errors.js";
+import { CONSTANTS } from "@sama/constants/constants.js";
+import { ERROR_STATUES } from "@sama/constants/errors.js";
 import { ObjectId } from "@sama/lib/db.js";
-import packageManager from "@sama/routes/packet_manager.js";
+import packageManager from "@sama/networking/packet_manager.js";
 import { inMemoryConversations } from "@sama/store/in_memory.js";
 
 class ConversationsController extends BaseJSONController {

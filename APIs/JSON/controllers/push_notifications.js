@@ -4,7 +4,7 @@ import PushSubscription from "@sama/models/push_subscription.js";
 import SessionRepository from "@sama/repositories/session_repository.js";
 import User from "@sama/models/user.js";
 import { ACTIVE } from "@sama/store/session.js";
-import { ERROR_STATUES } from "@sama/validations/constants/errors.js";
+import { ERROR_STATUES } from "@sama/constants/errors.js";
 import { ObjectId } from "@sama/lib/db.js";
 
 class PushNotificationsController extends BaseJSONController {

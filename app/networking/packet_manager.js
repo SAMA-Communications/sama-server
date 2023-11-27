@@ -1,16 +1,16 @@
-import ConversationParticipant from "../models/conversation_participant.js";
-import OpLog from "../models/operations_log.js";
-import OperationsLogRepository from "../repositories/operations_log_repository.js";
-import PushNotificationsRepository from "../repositories/push_notifications_repository.js";
-import PushSubscription from "../models/push_subscription.js";
-import SessionRepository from "../repositories/session_repository.js";
-import User from "../models/user.js";
-import clusterManager from "../cluster/cluster_manager.js";
-import ip from "ip";
-import { ACTIVE } from "../store/session.js";
-import { ACTIVITY } from "../store/activity.js";
-import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
-import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js";
+import ip from 'ip';
+
+import activityManager from './activity_manager.js'
+import ConversationParticipant from '../models/conversation_participant.js'
+import OpLog from '../models/operations_log.js'
+import OperationsLogRepository from '../repositories/operations_log_repository.js'
+import PushNotificationsRepository from '../repositories/push_notifications_repository.js'
+import PushSubscription from '../models/push_subscription.js'
+import SessionRepository from '../repositories/session_repository.js'
+import clusterManager from '../cluster/cluster_manager.js'
+import { ACTIVE } from '../store/session.js'
+import { buildWsEndpoint } from '../utils/build_ws_enpdoint.js'
+import { getIpFromWsUrl } from '../utils/get_ip_from_ws_url.js'
 
 class PacketManager {
   constructor() {
@@ -74,12 +74,12 @@ class PacketManager {
             // force create connection with cluster node
             const recClusterNodeWs = await clusterManager.createSocketWithNode(
               getIpFromWsUrl(nodeUrl),
-              nodeUrl.split(":")[2]
+              nodeUrl.split(':')[2]
             );
             recClusterNodeWs.send(JSON.stringify({ userId, message: packet }));
           } catch (err) {
             console.error(
-              "[PacketProcessor][deliverToUserDevices] createSocketWithNode error",
+              '[PacketProcessor][deliverToUserDevices] createSocketWithNode error',
               err.slice(39)
             );
 
@@ -115,7 +115,7 @@ class PacketManager {
           {
             conversation_id: cid,
           },
-          ["user_id"],
+          ['user_id'],
           100
         )
       ).map((obj) => obj.user_id);
@@ -150,36 +150,23 @@ class PacketManager {
       await this.deliverToUserOnThisNode(null, userId, packet);
     } catch (err) {
       console.error(
-        "[cluster_manager][deliverClusterMessageToUser] error",
+        '[cluster_manager][deliverClusterMessageToUser] error',
         err
       );
       this.isAllowedForOfflineStorage(packet) &&
-        this.perationsLogRepository.savePacket(userId, packet);
+        this.operationsLogRepository.savePacket(userId, packet);
     }
   }
 
-  async maybeUpdateAndSendUserActivity(ws, { uId, rId }, status) {
-    if (!ACTIVITY.SUBSCRIBERS[uId]) {
-      return;
+  async maybeUpdateAndSendUserActivity(ws, ids, status) {
+    const deliver = await activityManager.maybeUpdateAndSendUserActivity(ws, ids, status)
+    if (!deliver) {
+      return
     }
 
-    const currentTime = Math.round(new Date() / 1000);
-    if (status !== "online") {
-      await User.updateOne(
-        { _id: uId },
-        { $set: { recent_activity: currentTime } }
-      );
-      // await LastActivityiesController.status_unsubscribe(ws, {
-      //   request: { id: rId || "Unsubscribe" },
-      // });
+    for (const uId of deliver.subscriptions) {
+      await this.deliverToUserOnThisNode(ws, uId, deliver.message)
     }
-
-    const message = { last_activity: { [uId]: status || currentTime } };
-    const arrSubscribers = Object.keys(ACTIVITY.SUBSCRIBERS[uId]);
-
-    arrSubscribers.forEach((uId) =>
-      this.deliverToUserOnThisNode(ws, uId, message)
-    );
   }
 }
 

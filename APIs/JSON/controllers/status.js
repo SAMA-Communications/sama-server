@@ -3,7 +3,7 @@ import SessionRepository from "@sama/repositories/session_repository.js";
 import Status from "@sama/models/status.js";
 import validate, { validateIsConversationByCID } from "@sama/lib/validation.js";
 import { ACTIVE } from "@sama/store/session.js";
-import packageManager from "@sama/routes/packet_manager.js";
+import packageManager from "@sama/networking/packet_manager.js";
 
 class StatusesController extends BaseJSONController {
   constructor() {

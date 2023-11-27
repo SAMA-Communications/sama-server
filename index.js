@@ -1,7 +1,7 @@
 /* Simplified stock exchange made with uWebSockets.js pub/sub */
 import uWS from "uWebSockets.js";
 
-import clientManager from "./app/routes/client_manager.js";
+import clientManager from "./app/networking/client_manager.js";
 import clusterManager from "./app/cluster/cluster_manager.js";
 
 // get MongoDB driver connection

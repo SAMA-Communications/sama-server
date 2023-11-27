@@ -3,7 +3,7 @@ import Contact from "@sama/models/contact.js";
 import ContactsMatchRepository from "@sama/repositories/contact_match_repository.js";
 import SessionRepository from "@sama/repositories/session_repository.js";
 import { ACTIVE } from "@sama/store/session.js";
-import { ERROR_STATUES } from "@sama/validations/constants/errors.js";
+import { ERROR_STATUES } from "@sama/constants/errors.js";
 import { ObjectId } from "@sama/lib/db.js";
 
 class ContactsController extends BaseJSONController {

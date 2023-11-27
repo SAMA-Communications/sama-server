@@ -3,7 +3,7 @@ import ConversationParticipant from "../models/conversation_participant.js";
 import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
 import { ACTIVE } from "../store/session.js";
-import { ERROR_STATUES } from "../validations/constants/errors.js";
+import { ERROR_STATUES } from "../constants/errors.js";
 
 const sessionRepository = new SessionRepository(ACTIVE);
 
