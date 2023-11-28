@@ -5,6 +5,7 @@ import ConversationRepository from "../repositories/conversation_repository.js";
 import Message from "../models/message.js";
 import SessionRepository from "../repositories/session_repository.js";
 import User from "../models/user.js";
+import getDisplayName from "../utils/get_display_name.js";
 import validate, {
   validateConversationisUserOwner,
   validateIsConversation,
@@ -216,31 +217,96 @@ class ConversationsController extends BaseController {
           validateParticipantsLimit,
         ]);
 
-        const participants = [];
-        for (let i = 0; i < addUsers.length; i++) {
+        const existingParticipantsIds = (
+          await ConversationParticipant.findAll(
+            {
+              conversation_id: conversationId,
+            },
+            ["user_id"]
+          )
+        ).map((p) => p.user_id.toString());
+
+        let newParticipantsIds = addUsers.filter(
+          (uId) => !existingParticipantsIds.includes(uId)
+        );
+
+        let currentUserParams;
+        const participantsInfo = (
+          await User.findAll(
+            { _id: { $in: [currentUserId, ...newParticipantsIds] } },
+            [
+              "login",
+              "first_name",
+              "last_name",
+              "email",
+              "phone",
+              "recent_activity",
+            ]
+          )
+        ).filter((obj) => {
+          if (obj._id.toString() === currentUserId) {
+            currentUserParams = obj;
+            return false;
+          }
+          return true;
+        });
+
+        const participantSavePromises = participantsInfo.map(async (u) => {
           const participant = new ConversationParticipant({
-            user_id: ObjectId(addUsers[i]),
+            user_id: ObjectId(u._id),
             conversation_id: ObjectId(conversationId),
           });
-          if (
-            !(await ConversationParticipant.findOne({
-              user_id: addUsers[i],
-              conversation_id: conversationId,
-            }))
-          ) {
-            await participant.save();
-            participants.push(participant.params._id);
-          }
-        }
+          await participant.save();
 
-        if (participants.length && conversation.type !== "u") {
+          const messageInHistory = new Message({
+            id: currentUserId + Date.now(),
+            body: getDisplayName(u) + " has been added to the group",
+            cid: new ObjectId(conversationId),
+            deleted_for: [],
+            from: new ObjectId(currentUserId),
+            t: parseInt(Math.round(Date.now() / 1000)),
+            x: { type: "added_participant", user: u },
+          });
+          await messageInHistory.save();
+
+          const messageForDelivery = {
+            message: messageInHistory.visibleParams(),
+            push_message: {
+              title: `${getDisplayName(currentUserParams)} | ${
+                conversation.name
+              }`,
+              body: messageInHistory.params.body,
+              cid: messageInHistory.params.cid,
+            },
+          };
+
+          await PacketProcessor.deliverToUserOrUsers(
+            ws,
+            messageForDelivery,
+            null,
+            existingParticipantsIds
+          );
+          ws.send(JSON.stringify({ message: messageForDelivery.message }));
+        });
+        await Promise.all(participantSavePromises);
+
+        if (newParticipantsIds.length && conversation.type !== "u") {
+          const convObjectId = conversation._id;
+          conversation["last_message"] = (
+            await Message.getLastMessageForConversation(
+              [convObjectId],
+              currentUserId
+            )
+          )[convObjectId];
+          conversation["unread_messages_count"] = 1;
+
           const currentUserLogin = (await User.findOne({ _id: currentUserId }))
             ?.params?.login;
           await this.#notifyAboutConversationUpdate(
             ws,
             conversation,
             currentUserLogin,
-            participants
+            newParticipantsIds
           );
         }
       }
