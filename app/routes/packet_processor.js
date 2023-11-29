@@ -62,12 +62,6 @@ class PacketProcessor {
         clusterManager.clusterPort
       );
       if (nodeUrl === this.curentNodeUrl) {
-        console.log(
-          userId,
-          nodeDeviceId,
-          currentDeviceId,
-          nodeDeviceId !== currentDeviceId
-        );
         nodeDeviceId !== currentDeviceId &&
           (await this.deliverToUserOnThisNode(
             ws,
