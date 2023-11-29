@@ -76,7 +76,7 @@ class ConversationsController extends BaseController {
       deleted_for: [],
       from: currentUserParams._id,
       t: parseInt(Math.round(Date.now() / 1000)),
-      x: { type: actionType, user: actionUserParams },
+      // x: { type: actionType, user: actionUserParams },
     });
     await messageInHistory.save();
 
