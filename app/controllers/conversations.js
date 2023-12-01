@@ -92,7 +92,7 @@ class ConversationsController extends BaseController {
     await PacketProcessor.deliverToUserOrUsers(
       ws,
       messageForDelivery,
-      null,
+      conversation._id,
       usersIdsForDelivery
     );
     ws.send(JSON.stringify({ message: messageForDelivery.message }));
@@ -282,7 +282,7 @@ class ConversationsController extends BaseController {
             conversation,
             currentUserParams,
             u,
-            existingParticipantsIds,
+            null,
             "added_participant"
           );
         });
