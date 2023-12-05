@@ -1,7 +1,7 @@
 import BaseRepository from "./base.js";
 import RedisClient from "../lib/redis.js";
-import { buildWsEndpoint } from "../utils/build_ws_enpdoint.js";
-import { splitWsEnpoint } from "../utils/split_ws_enpoint.js";
+import { buildWsEndpoint } from "../utils/build_ws_endpoint.js";
+import { splitWsEndpoint } from "../utils/split_ws_endpoint.js";
 
 export default class SessionRepository extends BaseRepository {
   constructor(inMemoryStorage) {
@@ -32,7 +32,7 @@ export default class SessionRepository extends BaseRepository {
       return;
     }
 
-    const [nodeIp, nodePort] = splitWsEnpoint(nodeUrl);
+    const [nodeIp, nodePort] = splitWsEndpoint(nodeUrl);
     users.forEach((u) => {
       const [userId, deviceId] = u.split(":");
       this.removeUserNodeData(userId, deviceId, nodeIp, nodePort);

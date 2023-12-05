@@ -40,13 +40,14 @@ class ConversationsController extends BaseJSONController {
       body: `${currentUserLogin} created a new conversation`,
     };
 
+    const eventMessage = {
+      event: { conversation_created: conversation },
+      push_message,
+    }
+  
     await packageManager.deliverToUserOrUsers(
       ws,
-      {
-        event: { conversation_created: conversation },
-        push_message,
-      },
-      conversation._id,
+      JSON.stringify(eventMessage),
       recipients
     );
   }
@@ -62,13 +63,14 @@ class ConversationsController extends BaseJSONController {
       body: `${currentUserLogin} added you to conversation`,
     };
 
+    const eventMessage = {
+      event: { conversation_created: conversation },
+      push_message,
+    }
+  
     await packageManager.deliverToUserOrUsers(
       ws,
-      {
-        event: { conversation_created: conversation },
-        push_message,
-      },
-      conversation._id,
+      JSON.stringify(eventMessage),
       recipients
     );
   }

@@ -14,7 +14,6 @@ import { ACTIVE } from "@sama/store/session.js";
 import { CONSTANTS } from "@sama/constants/constants.js";
 import { ERROR_STATUES } from "@sama/constants/errors.js";
 import activityManager from "@sama/networking/activity_manager.js"
-import packageManager from "@sama/networking/packet_manager.js";
 import { inMemoryBlockList } from "@sama/store/in_memory.js";
 
 class UsersController extends BaseJSONController {
@@ -93,7 +92,7 @@ class UsersController extends BaseJSONController {
     }
     const userId = user.params._id;
 
-    await packageManager.maybeUpdateAndSendUserActivity(
+    await activityManager.updateAndSendUserActivity(
       ws,
       { uId: userId, rId: requestId },
       "online"
@@ -243,7 +242,7 @@ class UsersController extends BaseJSONController {
 
     const deviceId = this.sessionRepository.getDeviceId(ws, userId);
     if (currentUserSession) {
-      await packageManager.maybeUpdateAndSendUserActivity(ws, {
+      await activityManager.updateAndSendUserActivity(ws, {
         uId: userId,
         rId: requestId,
       });

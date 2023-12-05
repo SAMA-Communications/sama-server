@@ -2,8 +2,9 @@ import BaseJSONController from "./base.js";
 import BlockListRepository from "@sama/repositories/blocklist_repository.js";
 import BlockedUser from "@sama/models/blocked_user.js";
 import Conversation from "@sama/models/conversation.js";
-import ConversationParticipant from "@sama/models/conversation_participant.js";
 import ConversationRepository from "@sama/repositories/conversation_repository.js";
+import ConversationParticipant from "@sama/models/conversation_participant.js";
+import ConversationParticipantsRepository from "@sama/repositories/conversation_participants_repository.js"
 import Message from "@sama/models/message.js";
 import MessageStatus from "@sama/models/message_status.js";
 import SessionRepository from "@sama/repositories/session_repository.js";
@@ -32,6 +33,7 @@ class MessagesController extends BaseJSONController {
       Conversation,
       inMemoryConversations
     );
+    this.conversationParticipantsRepository = new ConversationParticipantsRepository(ConversationParticipant)
     this.blockListRepository = new BlockListRepository(
       BlockedUser,
       inMemoryBlockList
@@ -95,13 +97,13 @@ class MessagesController extends BaseJSONController {
     await message.save();
 
     if (conversation.type === "u") {
-      const recipentsThatChatNotVisible = [
+      const recipientsThatChatNotVisible = [
         conversation.opponent_id,
         conversation.owner_id.toString(),
       ].filter((u) => !participants.includes(u));
 
-      if (recipentsThatChatNotVisible.length) {
-        for (let userId of recipentsThatChatNotVisible) {
+      if (recipientsThatChatNotVisible.length) {
+        for (let userId of recipientsThatChatNotVisible) {
           const participant = new ConversationParticipant({
             user_id: ObjectId(userId),
             conversation_id: conversation._id,
@@ -109,14 +111,14 @@ class MessagesController extends BaseJSONController {
           await participant.save();
         }
 
+        const eventMessage = {
+          event: { conversation_created: conversation },
+          id: messageId,
+        }
         await packageManager.deliverToUserOrUsers(
           ws,
-          {
-            event: { conversation_created: conversation },
-            id: messageId,
-          },
-          conversation._id,
-          recipentsThatChatNotVisible
+          JSON.stringify(eventMessage),
+          recipientsThatChatNotVisible
         );
       }
     }
@@ -139,10 +141,12 @@ class MessagesController extends BaseJSONController {
       cid: messageParams.cid,
     });
 
+    const pushMessage = { message: message.visibleParams(), push_message: pushPayload }
+    const recipients = await this.conversationParticipantsRepository.findParticipantsByConversation(messageParams.cid)
     await packageManager.deliverToUserOrUsers(
       ws,
-      { message: message.visibleParams(), push_message: pushPayload },
-      messageParams.cid
+      JSON.stringify(pushMessage),
+      recipients
     );
 
     await this.conversationRepository.updateOne(messageParams.cid, {
@@ -177,7 +181,8 @@ class MessagesController extends BaseJSONController {
         from: ObjectId(this.sessionRepository.getSessionUserId(ws)),
       },
     };
-    await packageManager.deliverToUserOrUsers(ws, request, message.params.cid);
+    const recipients = await this.conversationParticipantsRepository.findParticipantsByConversation(messageParams.cid)
+    await packageManager.deliverToUserOrUsers(ws, JSON.stringify(request), recipients);
 
     return { response: { id: requestId, success: true } };
   }
@@ -265,21 +270,21 @@ class MessagesController extends BaseJSONController {
         };
       });
       await MessageStatus.insertMany(insertMessages.reverse());
-      const unreadMessagesGrouppedByFrom = groupBy(unreadMessages, "from");
+      const unreadMessagesGroupedByFrom = groupBy(unreadMessages, "from");
 
-      for (const uId in unreadMessagesGrouppedByFrom) {
-        const mids = unreadMessagesGrouppedByFrom[uId].map((el) => el._id);
+      for (const uId in unreadMessagesGroupedByFrom) {
+        const mids = unreadMessagesGroupedByFrom[uId].map((el) => el._id);
+        const message = {
+          message_read: {
+            cid: ObjectId(cid),
+            ids: mids,
+            from: ObjectId(uId),
+          },
+        }
         await packageManager.deliverToUserOrUsers(
           ws,
-          {
-            message_read: {
-              cid: ObjectId(cid),
-              ids: mids,
-              from: ObjectId(uId),
-            },
-          },
-          cid,
-          Object.keys(unreadMessagesGrouppedByFrom)
+          JSON.stringify(message),
+          Object.keys(unreadMessagesGroupedByFrom)
         );
       }
     }
@@ -314,8 +319,8 @@ class MessagesController extends BaseJSONController {
             from: ObjectId(this.sessionRepository.getSessionUserId(ws)),
           },
         };
-
-        await packageManager.deliverToUserOrUsers(ws, request, cid);
+        const recipients = await this.conversationParticipantsRepository.findParticipantsByConversation(cid)
+        await packageManager.deliverToUserOrUsers(ws, JSON.stringify(request), recipients);
       }
       await Message.deleteMany({ _id: { $in: ids } });
     } else {

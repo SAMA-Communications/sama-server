@@ -81,8 +81,8 @@ describe("Message function", async () => {
       await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData));
 
       const response = JSON.parse(secondSocketResponse);
+      response.message = JSON.parse(response.message)
 
-      console.log(response);
       assert.notEqual(response, undefined);
       assert.strictEqual(response.userId, usersIds[1].toString());
       assert.notEqual(response.message, undefined);

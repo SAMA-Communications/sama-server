@@ -13,4 +13,9 @@ export default class JsonAPI extends BaseAPI {
       return JSON.stringify(responseData)
     }
   }
+
+  buildLastActivityPackage(userId, timestamp, status) {
+    const message = { last_activity: { [userId]: status || timestamp } }
+    return JSON.stringify(message)
+  }
 }

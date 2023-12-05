@@ -2,10 +2,17 @@ import User from '../models/user.js'
 import { ACTIVE } from '../store/session.js'
 import { ACTIVITY } from '../store/activity.js'
 import SessionRepository from '../repositories/session_repository.js'
+import packetManager from './packet_manager.js'
+import APIs from "./APIs.js"
 
 class ActivityManager {
   constructor() {
     this.sessionRepository = new SessionRepository(ACTIVE)
+  }
+
+  detectSocketAPI(ws) {
+    const api = APIs[ws.apiType]
+    return api
   }
 
   async status_unsubscribe(ws) {
@@ -24,7 +31,7 @@ class ActivityManager {
     }
   }
 
-  async maybeUpdateAndSendUserActivity(ws, { uId, rId }, status) {
+  async updateUserActivity(ws, { uId, rId }, status) {
     if (!ACTIVITY.SUBSCRIBERS[uId]) {
       return
     }
@@ -39,10 +46,27 @@ class ActivityManager {
       await this.status_unsubscribe(ws)
     }
 
-    const message = { last_activity: { [uId]: status || currentTime } }
     const subscriptions = Object.keys(ACTIVITY.SUBSCRIBERS[uId])
 
-    return { subscriptions, message }
+    return { subscriptions, last_activity: { userId: uId, timestamp: currentTime, status } }
+  }
+
+  async updateAndSendUserActivity(ws, ids, status) {
+    const deliver = await this.updateUserActivity(ws, ids, status)
+    if (!deliver) {
+      return
+    }
+
+    const api = this.detectSocketAPI(ws)
+    const message = api.buildLastActivityPackage(
+      deliver.last_activity.userId,
+      deliver.last_activity.timestamp,
+      deliver.last_activity.status
+    )
+
+    for (const uId of deliver.subscriptions) {
+      await packetManager.deliverToUserOnThisNode(ws, uId, message)
+    }
   }
 }
 
