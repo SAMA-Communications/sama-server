@@ -84,7 +84,8 @@ class ClusterManager {
 
         await PacketManager.deliverClusterMessageToUser(
           json.userId,
-          json.message
+          json.message,
+          json.notSaveInOfflineStorage
         );
       });
 
@@ -139,7 +140,8 @@ class ClusterManager {
 
         await PacketManager.deliverClusterMessageToUser(
           json.userId,
-          json.message
+          json.message,
+          json.notSaveInOfflineStorage
         );
       },
     });

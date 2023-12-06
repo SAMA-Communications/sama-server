@@ -182,7 +182,7 @@ class MessagesController extends BaseJSONController {
       },
     };
     const recipients = await this.conversationParticipantsRepository.findParticipantsByConversation(messageParams.cid)
-    await packageManager.deliverToUserOrUsers(ws, JSON.stringify(request), recipients);
+    await packageManager.deliverToUserOrUsers(ws, JSON.stringify(request), recipients, true);
 
     return { response: { id: requestId, success: true } };
   }
@@ -305,23 +305,18 @@ class MessagesController extends BaseJSONController {
     await validate(ws, { cid }, [validateIsConversationByCID]);
 
     if (type == "all") {
-      const participants = await ConversationParticipant.findAll(
-        { conversation_id: cid },
-        ["user_id"],
-        100
-      );
-      for (const user in participants) {
-        const request = {
-          message_delete: {
-            cid,
-            ids,
-            type: "all",
-            from: ObjectId(this.sessionRepository.getSessionUserId(ws)),
-          },
-        };
-        const recipients = await this.conversationParticipantsRepository.findParticipantsByConversation(cid)
-        await packageManager.deliverToUserOrUsers(ws, JSON.stringify(request), recipients);
-      }
+      const request = {
+        message_delete: {
+          cid,
+          ids,
+          type: "all",
+          from: ObjectId(this.sessionRepository.getSessionUserId(ws)),
+        },
+      };
+
+      const recipients = await this.conversationParticipantsRepository.findParticipantsByConversation(cid)
+      await packageManager.deliverToUserOrUsers(ws, JSON.stringify(request), recipients, true);
+
       await Message.deleteMany({ _id: { $in: ids } });
     } else {
       await Message.updateMany(

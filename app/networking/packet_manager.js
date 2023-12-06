@@ -19,10 +19,10 @@ class PacketManager {
     this.sessionRepository = new SessionRepository(ACTIVE)
   }
 
-  async deliverToUserOnThisNode(ws, userId, packet, deviceId) {
+  async deliverToUserOnThisNode(ws, userId, packet, deviceId, notSaveInOfflineStorage) {
     const activeDevices = ACTIVE.DEVICES[userId] 
 
-    if (!activeDevices) {
+    if (!activeDevices && !notSaveInOfflineStorage) {
       this.operationsLogRepository.savePacket(userId, packet)
       return
     }
@@ -40,7 +40,7 @@ class PacketManager {
     }
   }
 
-  #deliverToUserDevices(ws, nodeConnections, userId, packet) {
+  #deliverToUserDevices(ws, nodeConnections, userId, packet, notSaveInOfflineStorage) {
     nodeConnections.forEach(async (data) => {
       const nodeInfo = JSON.parse(data)
       const nodeUrl = nodeInfo[Object.keys(nodeInfo)[0]]
@@ -57,7 +57,8 @@ class PacketManager {
             ws,
             userId,
             packet,
-            nodeDeviceId
+            nodeDeviceId,
+            notSaveInOfflineStorage
           ))
       } else {
         const recipientClusterNodeWS =
@@ -69,7 +70,7 @@ class PacketManager {
               getIpFromWsUrl(nodeUrl),
               nodeUrl.split(':')[2]
             )
-            recClusterNodeWs.send(JSON.stringify({ userId, message: packet }))
+            recClusterNodeWs.send(JSON.stringify({ userId, message: packet, notSaveInOfflineStorage}))
           } catch (err) {
             console.error(
               '[PacketProcessor][deliverToUserDevices] createSocketWithNode error',
@@ -77,7 +78,9 @@ class PacketManager {
             )
 
             await this.sessionRepository.clearNodeUsersSession(nodeUrl)
-            this.operationsLogRepository.savePacket(userId, packet)
+            if (!notSaveInOfflineStorage) {
+              this.operationsLogRepository.savePacket(userId, packet)
+            }
           }
           return
         }
@@ -88,13 +91,15 @@ class PacketManager {
           )
         } catch (err) {
           await this.sessionRepository.clearNodeUsersSession(nodeUrl)
-          this.operationsLogRepository.savePacket(userId, packet)
+          if (!notSaveInOfflineStorage) {
+            this.operationsLogRepository.savePacket(userId, packet)
+          }
         }
       }
     })
   }
 
-  async deliverToUserOrUsers(ws, packet, usersIds) {
+  async deliverToUserOrUsers(ws, packet, usersIds, notSaveInOfflineStorage) {
     if (!usersIds?.length) {
       return
     }
@@ -107,11 +112,13 @@ class PacketManager {
       const userNodeData = await this.sessionRepository.getUserNodeData(uId)
 
       if (!userNodeData?.length) {
-        this.operationsLogRepository.savePacket(uId, packet)
+        if (!notSaveInOfflineStorage) {
+          this.operationsLogRepository.savePacket(uId, packet)
+        }
         !packet.message_read && offlineUsersByPackets.push(uId)
         continue
       }
-      this.#deliverToUserDevices(ws, userNodeData, uId, packet)
+      this.#deliverToUserDevices(ws, userNodeData, uId, packet, notSaveInOfflineStorage)
     }
 
     if (offlineUsersByPackets.length) {
@@ -122,15 +129,17 @@ class PacketManager {
     }
   }
 
-  async deliverClusterMessageToUser(userId, packet) {
+  async deliverClusterMessageToUser(userId, packet, notSaveInOfflineStorage) {
     try {
-      await this.deliverToUserOnThisNode(null, userId, packet)
+      await this.deliverToUserOnThisNode(null, userId, packet, notSaveInOfflineStorage)
     } catch (err) {
       console.error(
         '[cluster_manager][deliverClusterMessageToUser] error',
         err
       )
-      this.operationsLogRepository.savePacket(userId, packet)
+      if (!notSaveInOfflineStorage) {
+        this.operationsLogRepository.savePacket(userId, packet)
+      }
     }
   }
 }
