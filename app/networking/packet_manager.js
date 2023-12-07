@@ -2,8 +2,6 @@ import ip from 'ip'
 
 import OpLog from '../models/operations_log.js'
 import OperationsLogRepository from '../repositories/operations_log_repository.js'
-import PushNotificationsRepository from '../repositories/push_notifications_repository.js'
-import PushSubscription from '../models/push_subscription.js'
 import SessionRepository from '../repositories/session_repository.js'
 import clusterManager from '../cluster/cluster_manager.js'
 import { ACTIVE } from '../store/session.js'
@@ -12,9 +10,6 @@ import { getIpFromWsUrl } from '../utils/get_ip_from_ws_url.js'
 
 class PacketManager {
   constructor() {
-    this.pushNotificationsRepository = new PushNotificationsRepository(
-      PushSubscription
-    )
     this.operationsLogRepository = new OperationsLogRepository(OpLog)
     this.sessionRepository = new SessionRepository(ACTIVE)
   }
@@ -104,10 +99,6 @@ class PacketManager {
       return
     }
 
-    const offlineUsersByPackets = []
-    const pushMessage = packet.push_message
-    pushMessage && delete packet.push_message
-
     for (const uId of usersIds) {
       const userNodeData = await this.sessionRepository.getUserNodeData(uId)
 
@@ -115,17 +106,9 @@ class PacketManager {
         if (!notSaveInOfflineStorage) {
           this.operationsLogRepository.savePacket(uId, packet)
         }
-        !packet.message_read && offlineUsersByPackets.push(uId)
         continue
       }
       this.#deliverToUserDevices(ws, userNodeData, uId, packet, notSaveInOfflineStorage)
-    }
-
-    if (offlineUsersByPackets.length) {
-      this.pushNotificationsRepository.sendPushNotification(
-        offlineUsersByPackets,
-        pushMessage
-      )
     }
   }
 

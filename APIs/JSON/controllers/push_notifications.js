@@ -1,20 +1,20 @@
 import BaseJSONController from "./base.js";
-import PushNotificationsRepository from "@sama/repositories/push_notifications_repository.js";
-import PushSubscription from "@sama/models/push_subscription.js";
+
 import SessionRepository from "@sama/repositories/session_repository.js";
 import User from "@sama/models/user.js";
 import { ACTIVE } from "@sama/store/session.js";
 import { ERROR_STATUES } from "@sama/constants/errors.js";
 import { ObjectId } from "@sama/lib/db.js";
 
+import PushSubscription from '../models/push_subscription.js'
+import PushNotificationsRepository from '../repositories/push_notifications_repository.js'
+
 class PushNotificationsController extends BaseJSONController {
   constructor() {
     super();
 
     this.sessionRepository = new SessionRepository(ACTIVE);
-    this.pushNotificationsRepository = new PushNotificationsRepository(
-      PushSubscription
-    );
+    this.pushNotificationsRepository = new PushNotificationsRepository();
   }
 
   async push_subscription_create(ws, data) {

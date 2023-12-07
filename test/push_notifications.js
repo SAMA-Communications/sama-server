@@ -1,10 +1,13 @@
-import PushEvent from "../app/models/push_event.js";
-import PushSubscription from "../app/models/push_subscription.js";
-import User from "./../app/models/user.js";
 import assert from "assert";
+
+import User from "./../app/models/user.js";
 import { connectToDBPromise } from "./../app/lib/db.js";
-import { createUserArray, mockedWS, sendLogin } from "./utils.js";
+
+import PushEvent from "../APIs/JSON/models/push_event.js";
+import PushSubscription from "../APIs/JSON/models/push_subscription.js";
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js";
+
+import { createUserArray, mockedWS, sendLogin } from "./utils.js";
 
 let usersIds = [];
 

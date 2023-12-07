@@ -1,4 +1,4 @@
-import BaseModel from "./base/base.js";
+import BaseModel from '@sama/models/base/base.js'
 
 export default class PushSubscription extends BaseModel {
   constructor(params) {

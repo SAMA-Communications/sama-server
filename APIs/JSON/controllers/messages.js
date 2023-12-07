@@ -1,4 +1,5 @@
 import BaseJSONController from "./base.js";
+
 import BlockListRepository from "@sama/repositories/blocklist_repository.js";
 import BlockedUser from "@sama/models/blocked_user.js";
 import Conversation from "@sama/models/conversation.js";
@@ -9,7 +10,6 @@ import Message from "@sama/models/message.js";
 import MessageStatus from "@sama/models/message_status.js";
 import SessionRepository from "@sama/repositories/session_repository.js";
 import User from "@sama/models/user.js";
-import groupBy from "../utils/groupBy.js";
 import validate, {
   validateIsConversation,
   validateIsConversationByCID,
@@ -26,9 +26,14 @@ import { ERROR_STATUES } from "@sama/constants/errors.js";
 import { ObjectId } from "@sama/lib/db.js";
 import packageManager from "@sama/networking/packet_manager.js";
 
+import PushNotificationsRepository from '../repositories/push_notifications_repository.js'
+import groupBy from "../utils/groupBy.js";
+
+
 class MessagesController extends BaseJSONController {
   constructor() {
     super();
+    this.pushNotificationsRepository = new PushNotificationsRepository()
     this.conversationRepository = new ConversationRepository(
       Conversation,
       inMemoryConversations
@@ -141,8 +146,11 @@ class MessagesController extends BaseJSONController {
       cid: messageParams.cid,
     });
 
-    const pushMessage = { message: message.visibleParams(), push_message: pushPayload }
+    const pushMessage = { message: message.visibleParams() }
     const recipients = await this.conversationParticipantsRepository.findParticipantsByConversation(messageParams.cid)
+
+    await this.pushNotificationsRepository.addPushNotificationToQueueIfUsersOffline(recipients, pushPayload)
+    
     await packageManager.deliverToUserOrUsers(
       ws,
       JSON.stringify(pushMessage),

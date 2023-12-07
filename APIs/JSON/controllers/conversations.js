@@ -1,4 +1,5 @@
 import BaseJSONController from "./base.js";
+
 import Conversation from "@sama/models/conversation.js";
 import ConversationParticipant from "@sama/models/conversation_participant.js";
 import ConversationRepository from "@sama/repositories/conversation_repository.js";
@@ -19,9 +20,12 @@ import { ObjectId } from "@sama/lib/db.js";
 import packageManager from "@sama/networking/packet_manager.js";
 import { inMemoryConversations } from "@sama/store/in_memory.js";
 
+import PushNotificationsRepository from '../repositories/push_notifications_repository.js'
+
 class ConversationsController extends BaseJSONController {
   constructor() {
     super();
+    this.pushNotificationsRepository = new PushNotificationsRepository()
     this.conversationRepository = new ConversationRepository(
       Conversation,
       inMemoryConversations
@@ -35,15 +39,16 @@ class ConversationsController extends BaseJSONController {
     currentUserLogin,
     recipients
   ) {
-    const push_message = {
+    const pushMessage = {
       title: conversation.name,
       body: `${currentUserLogin} created a new conversation`,
     };
 
     const eventMessage = {
       event: { conversation_created: conversation },
-      push_message,
     }
+
+    await this.pushNotificationsRepository.addPushNotificationToQueueIfUsersOffline(recipients, pushMessage)
   
     await packageManager.deliverToUserOrUsers(
       ws,
@@ -58,15 +63,16 @@ class ConversationsController extends BaseJSONController {
     currentUserLogin,
     recipients
   ) {
-    const push_message = {
+    const pushMessage = {
       title: conversation.name,
       body: `${currentUserLogin} added you to conversation`,
     };
 
     const eventMessage = {
       event: { conversation_created: conversation },
-      push_message,
     }
+
+    await this.pushNotificationsRepository.addPushNotificationToQueueIfUsersOffline(recipients, pushMessage)
   
     await packageManager.deliverToUserOrUsers(
       ws,
