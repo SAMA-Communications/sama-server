@@ -1,7 +1,9 @@
 import JsonAPI from '../../APIs/JSON/index.js'
 
+const BASE_API = 'JSON'
+
 const APIs = {
-  JSON: new JsonAPI(),
+  [BASE_API]: new JsonAPI(),
 }
 
 try {
@@ -11,4 +13,16 @@ try {
 
 }
 
-export default APIs
+const detectAPIType = (ws, stringMessage) => {
+  const apiType = Object.entries(APIs).find(([type, api]) => {
+    try {
+      return api.detectMessage(ws, stringMessage)
+    } catch (error) {
+      return false
+    }
+  })
+
+  return apiType
+}
+
+export { BASE_API, APIs, detectAPIType }

@@ -4,6 +4,7 @@ import OpLog from '../models/operations_log.js'
 import OperationsLogRepository from '../repositories/operations_log_repository.js'
 import SessionRepository from '../repositories/session_repository.js'
 import clusterManager from '../cluster/cluster_manager.js'
+import packetMapper from './packet_mapper.js'
 import { ACTIVE } from '../store/session.js'
 import { buildWsEndpoint } from '../utils/build_ws_endpoint.js'
 import { getIpFromWsUrl } from '../utils/get_ip_from_ws_url.js'
@@ -26,12 +27,13 @@ class PacketManager {
       ? [activeDevices.find((obj) => obj.deviceId === deviceId)]
       : activeDevices
 
-    try {
-      wsRecipient.forEach(
-        (r) => r.ws !== ws && r.ws.send(packet)
-      )
-    } catch (err) {
-      console.error(`[PacketProcessor] send on socket error`, err)
+    for (const recipient of wsRecipient) {
+      try {
+        const mappedMessage = await packetMapper.mapPacket(ws.apiType, recipient.ws.apiType, packet)
+        recipient.ws.send(mappedMessage)
+      } catch (err) {
+        console.error(`[PacketProcessor] send on socket error`, err)
+      }
     }
   }
 

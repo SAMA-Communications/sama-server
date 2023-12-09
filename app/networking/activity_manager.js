@@ -3,7 +3,7 @@ import { ACTIVE } from '../store/session.js'
 import { ACTIVITY } from '../store/activity.js'
 import SessionRepository from '../repositories/session_repository.js'
 import packetManager from './packet_manager.js'
-import APIs from "./APIs.js"
+import { APIs } from './APIs.js'
 
 class ActivityManager {
   constructor() {

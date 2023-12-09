@@ -17,7 +17,7 @@ import { ACTIVE } from "@sama/store/session.js";
 import { CONSTANTS } from "@sama/constants/constants.js";
 import { ERROR_STATUES } from "@sama/constants/errors.js";
 import { ObjectId } from "@sama/lib/db.js";
-import packageManager from "@sama/networking/packet_manager.js";
+import packetManager from "@sama/networking/packet_manager.js";
 import { inMemoryConversations } from "@sama/store/in_memory.js";
 
 import PushNotificationsRepository from '../repositories/push_notifications_repository.js'
@@ -50,7 +50,7 @@ class ConversationsController extends BaseJSONController {
 
     await this.pushNotificationsRepository.addPushNotificationToQueueIfUsersOffline(recipients, pushMessage)
   
-    await packageManager.deliverToUserOrUsers(
+    await packetManager.deliverToUserOrUsers(
       ws,
       JSON.stringify(eventMessage),
       recipients
@@ -74,7 +74,7 @@ class ConversationsController extends BaseJSONController {
 
     await this.pushNotificationsRepository.addPushNotificationToQueueIfUsersOffline(recipients, pushMessage)
   
-    await packageManager.deliverToUserOrUsers(
+    await packetManager.deliverToUserOrUsers(
       ws,
       JSON.stringify(eventMessage),
       recipients

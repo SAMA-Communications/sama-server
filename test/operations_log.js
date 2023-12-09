@@ -19,12 +19,14 @@ describe("Operations Log functions", async () => {
     await sendLogin(mockedWS, "user_1");
 
     for (let i = 0; i < 2; i++) {
-      controller.savePacket(usersIds[1], {
-        message_update: {
-          id: `mid${i}`,
-          body: `body${i}`,
-        },
-      });
+      controller.savePacket(usersIds[1], JSON.stringify(
+        {
+          message_update: {
+            id: `mid${i}`,
+            body: `body${i}`,
+          },
+        }
+      ));
     }
   });
 
@@ -74,12 +76,14 @@ describe("Operations Log functions", async () => {
         JSON.stringify(requestData)
       );
       for (let i = 2; i < 6; i++) {
-        controller.savePacket(usersIds[1], {
-          message_update: {
-            id: `mid${i}`,
-            body: `body${i}`,
-          },
-        });
+        controller.savePacket(usersIds[1], JSON.stringify(
+          {
+            message_update: {
+              id: `mid${i}`,
+              body: `body${i}`,
+            },
+          }
+        ));
       }
 
       assert.strictEqual(requestData.request.id, responseData.response.id);

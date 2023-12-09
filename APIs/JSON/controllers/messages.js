@@ -24,7 +24,7 @@ import { ACTIVE } from "@sama/store/session.js";
 import { CONSTANTS } from "@sama/constants/constants.js";
 import { ERROR_STATUES } from "@sama/constants/errors.js";
 import { ObjectId } from "@sama/lib/db.js";
-import packageManager from "@sama/networking/packet_manager.js";
+import packetManager from "@sama/networking/packet_manager.js";
 
 import PushNotificationsRepository from '../repositories/push_notifications_repository.js'
 import groupBy from "../utils/groupBy.js";
@@ -120,7 +120,7 @@ class MessagesController extends BaseJSONController {
           event: { conversation_created: conversation },
           id: messageId,
         }
-        await packageManager.deliverToUserOrUsers(
+        await packetManager.deliverToUserOrUsers(
           ws,
           JSON.stringify(eventMessage),
           recipientsThatChatNotVisible
@@ -151,7 +151,7 @@ class MessagesController extends BaseJSONController {
 
     await this.pushNotificationsRepository.addPushNotificationToQueueIfUsersOffline(recipients, pushPayload)
     
-    await packageManager.deliverToUserOrUsers(
+    await packetManager.deliverToUserOrUsers(
       ws,
       JSON.stringify(pushMessage),
       recipients
@@ -190,7 +190,7 @@ class MessagesController extends BaseJSONController {
       },
     };
     const recipients = await this.conversationParticipantsRepository.findParticipantsByConversation(messageParams.cid)
-    await packageManager.deliverToUserOrUsers(ws, JSON.stringify(request), recipients, true);
+    await packetManager.deliverToUserOrUsers(ws, JSON.stringify(request), recipients, true);
 
     return { response: { id: requestId, success: true } };
   }
@@ -289,7 +289,7 @@ class MessagesController extends BaseJSONController {
             from: ObjectId(uId),
           },
         }
-        await packageManager.deliverToUserOrUsers(
+        await packetManager.deliverToUserOrUsers(
           ws,
           JSON.stringify(message),
           Object.keys(unreadMessagesGroupedByFrom)
@@ -323,7 +323,7 @@ class MessagesController extends BaseJSONController {
       };
 
       const recipients = await this.conversationParticipantsRepository.findParticipantsByConversation(cid)
-      await packageManager.deliverToUserOrUsers(ws, JSON.stringify(request), recipients, true);
+      await packetManager.deliverToUserOrUsers(ws, JSON.stringify(request), recipients, true);
 
       await Message.deleteMany({ _id: { $in: ids } });
     } else {

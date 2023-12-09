@@ -7,9 +7,9 @@ import clusterManager from "../cluster/cluster_manager.js"
 import { ACTIVE } from "../store/session.js"
 import { ERROR_STATUES } from "../constants/errors.js"
 import activityManager from "./activity_manager.js"
-import APIs from "./APIs.js"
+import { APIs, detectAPIType } from "./APIs.js"
 
-const decoder = new StringDecoder("utf8");
+const decoder = new StringDecoder('utf8');
 const sessionRepository = new SessionRepository(ACTIVE);
 
 class ClientManager {
@@ -60,13 +60,7 @@ class ClientManager {
         try {
           const stringMessage = decoder.write(Buffer.from(message));
           if (!ws.apiType) {
-            const apiType = Object.entries(APIs).find(([type, api]) => {
-              try {
-                return api.detectMessage(ws, stringMessage)
-              } catch (error) {
-                return false
-              }
-            })
+            const apiType = detectAPIType(ws, stringMessage)
             if (!apiType) {
               throw new Error('Unknown message format')
             }

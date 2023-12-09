@@ -5,7 +5,7 @@ import ConversationParticipant from "@sama/models/conversation_participant.js";
 import ConversationParticipantsRepository from "@sama/repositories/conversation_participants_repository.js"
 import validate, { validateIsConversationByCID } from "@sama/lib/validation.js";
 import { ACTIVE } from "@sama/store/session.js";
-import packageManager from "@sama/networking/packet_manager.js";
+import packetManager from "@sama/networking/packet_manager.js";
 
 class StatusesController extends BaseJSONController {
   constructor() {
@@ -26,7 +26,7 @@ class StatusesController extends BaseJSONController {
     status.params.t = parseInt(currentTs);
 
     const recipients = await this.conversationParticipantsRepository.findParticipantsByConversation(statusParams.cid)
-    await packageManager.deliverToUserOrUsers(ws, JSON.stringify(status), recipients);
+    await packetManager.deliverToUserOrUsers(ws, JSON.stringify(status), recipients);
   }
 }
 
