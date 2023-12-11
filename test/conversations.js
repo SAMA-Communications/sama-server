@@ -771,7 +771,6 @@ describe("Conversation functions", async () => {
         "test",
         requestData
       );
-
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.users.length, 2);
       assert.equal(
