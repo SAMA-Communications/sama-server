@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.11.0
+
+### Features
+
+- Implemented the event of adding users to the created group
+- Implemented the event of removing users from a group
+
 ## 0.0.1
 
 ### Features
