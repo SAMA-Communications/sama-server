@@ -68,15 +68,21 @@ class ClientManager {
           }
 
           const api = APIs[ws.apiType]
-          const responseData = await api.onMessage(ws, stringMessage);
+          let responseData = await api.onMessage(ws, stringMessage);
+          if (!Array.isArray(responseData)) {
+            responseData = [responseData]
+          }
 
-          if (responseData) {
-            try {
-              ws.send(responseData);
-            } catch (e) {
-              console.error(
-                "[ClientManager] connection with client ws is lost"
-              );
+          for (const responseDataItem of responseData) {
+            if (responseDataItem) {
+              try {
+                console.log('[SENT]', responseDataItem)
+                ws.send(responseDataItem);
+              } catch (e) {
+                console.error(
+                  "[ClientManager] connection with client ws is lost"
+                );
+              }
             }
           }
         } catch (err) {
