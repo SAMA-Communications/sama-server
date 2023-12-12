@@ -10,7 +10,7 @@ import {
   sendLogout,
 } from "./utils.js";
 import {
-  validateConversationisUserOwner,
+  validateConversationsUserOwner,
   validateIsConversation,
   validateIsConversationByCID,
   validateIsUserAccess,
@@ -76,7 +76,7 @@ describe("Custom validate functions", async () => {
     });
   });
 
-  describe(" --> validateConversationisUserOwner", async () => {
+  describe(" --> validateConversationsUserOwner", async () => {
     it("should work", async () => {
       currentUserToken = (await sendLogin("validate", "user_1")).response.user
         .token;
@@ -85,7 +85,7 @@ describe("Custom validate functions", async () => {
         owner_id: usersIds[0],
       };
       assert.strictEqual(
-        validateConversationisUserOwner(requestData, "validate"),
+        validateConversationsUserOwner(requestData, "validate"),
         undefined
       );
     });
@@ -96,7 +96,7 @@ describe("Custom validate functions", async () => {
       };
       assert.throws(
         () => {
-          validateConversationisUserOwner(requestData, "validate");
+          validateConversationsUserOwner(requestData, "validate");
         },
         {
           name: "Error",

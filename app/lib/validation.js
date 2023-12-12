@@ -15,7 +15,7 @@ function validateIsUserAccess(vParams, ws) {
   }
 }
 
-function validateConversationisUserOwner(vParams, ws) {
+function validateConversationsUserOwner(vParams, ws) {
   if (vParams.owner_id.toString() !== sessionRepository.getSessionUserId(ws)) {
     throw new Error(ERROR_STATUES.FORBIDDEN.message, {
       cause: ERROR_STATUES.FORBIDDEN,
@@ -100,7 +100,7 @@ async function validateIsUserSendHimSelf(vParams, ws) {
 }
 
 export {
-  validateConversationisUserOwner,
+  validateConversationsUserOwner,
   validateIsConversation,
   validateIsConversationByCID,
   validateIsUserAccess,

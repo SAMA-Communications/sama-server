@@ -7,7 +7,7 @@ import Message from "@sama/models/message.js";
 import SessionRepository from "@sama/repositories/session_repository.js";
 import User from "@sama/models/user.js";
 import validate, {
-  validateConversationisUserOwner,
+  validateConversationsUserOwner,
   validateIsConversation,
   validateIsUserSendHimSelf,
   validateParticipantsInUType,
@@ -203,7 +203,7 @@ class ConversationsController extends BaseJSONController {
     const conversation = await this.conversationRepository.findById(
       conversationId
     );
-    await validate(ws, conversation, [validateConversationisUserOwner]);
+    await validate(ws, conversation, [validateConversationsUserOwner]);
 
     delete requestData.id;
 
