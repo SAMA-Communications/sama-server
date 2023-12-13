@@ -10,7 +10,7 @@ import S3 from "./app/lib/storage/s3.js";
 import Spaces from "./app/lib/storage/spaces.js";
 import { connectToDB } from "./app/lib/db.js";
 
-//cache storage
+// cache storage
 import BlockListRepository from "./app/repositories/blocklist_repository.js";
 import ClusterSyncer from "./app/cluster/cluster_syncer.js";
 import ConversationRepository from "./app/repositories/conversation_repository.js";

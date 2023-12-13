@@ -10,7 +10,7 @@ try {
   const { default: XmppApi } = await import('../../APIs/XMPP/index.js')
   APIs['XMPP'] = new XmppApi()
 } catch (error) {
-
+  console.log('[XMPP][package load][error]', error)
 }
 
 const detectAPIType = (ws, stringMessage) => {

@@ -9,7 +9,7 @@ import ContactsMatchRepository from "@sama/repositories/contact_match_repository
 import SessionRepository from "@sama/repositories/session_repository.js";
 import User from "@sama/models/user.js";
 import UserToken from "@sama/models/user_token.js";
-import clusterManager from "@sama/cluster/cluster_manager.js";
+import clusterPort from '@sama/store/cluster_port.js'
 import { ACTIVE } from "@sama/store/session.js";
 import { CONSTANTS } from "@sama/constants/constants.js";
 import { ERROR_STATUES } from "@sama/constants/errors.js";
@@ -152,7 +152,7 @@ class UsersController extends BaseJSONController {
       userId,
       deviceId,
       ip.address(),
-      clusterManager.clusterPort
+      clusterPort.port
     );
 
     return {
@@ -266,7 +266,7 @@ class UsersController extends BaseJSONController {
         userId,
         deviceId,
         ip.address(),
-        clusterManager.clusterPort
+        clusterPort.port
       );
 
       return { response: { id: requestId, success: true } };
