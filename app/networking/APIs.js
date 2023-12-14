@@ -1,4 +1,5 @@
 import JsonAPI from '../../APIs/JSON/index.js'
+import XmppAPI from '@sama-xmpp/index.js'
 
 const BASE_API = 'JSON'
 
@@ -6,11 +7,8 @@ const APIs = {
   [BASE_API]: new JsonAPI(),
 }
 
-try {
-  const { default: XmppApi } = await import('../../APIs/XMPP/index.js')
-  APIs['XMPP'] = new XmppApi()
-} catch (error) {
-  console.log('[XMPP][package load][error]', error)
+if (XmppAPI) {
+  APIs['XMPP'] = new XmppAPI()
 }
 
 const detectAPIType = (ws, stringMessage) => {
