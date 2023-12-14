@@ -32,6 +32,7 @@ export const messagesSchemaValidation = {
           Joi.object({
             file_id: Joi.string(),
             file_name: Joi.string().max(255),
+            file_blur_hash: Joi.string().max(55),
           })
         )
         .min(1)
