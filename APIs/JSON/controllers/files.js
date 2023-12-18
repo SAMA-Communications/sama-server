@@ -1,48 +1,48 @@
-import BaseJSONController from "./base.js";
-import File from "@sama/models/file.js";
+import BaseJSONController from './base.js'
+
+import File from '@sama/models/file.js'
+import Response from '@sama/networking/models/Response.js'
 
 class FilesController extends BaseJSONController {
-  constructor() {
-    super();
-  }
-
   async create_url(ws, data) {
-    const { id: requestId, create_files: reqFiles } = data;
+    const { id: requestId, create_files: reqFiles } = data
 
-    const resFiles = [];
-    for (let i = 0; i < reqFiles.length; i++) {
-      //TODO: update from many to one request if it posible
+    const resFiles = []
+
+    for (const reqFile of reqFiles) {
+      //TODO: update from many to one request if it possible
       const { objectId, url } = await globalThis.storageClient.getUploadUrl(
-        reqFiles[i].name
-      );
-      reqFiles[i]["object_id"] = objectId;
+        reqFile.name
+      )
+      reqFile['object_id'] = objectId
 
-      const file = new File(reqFiles[i]);
-      await file.save();
+      const file = new File(reqFile)
+      await file.save()
 
-      resFiles.push({ ...file.visibleParams(), upload_url: url });
+      resFiles.push({ ...file.visibleParams(), upload_url: url })
     }
 
-    return { response: { id: requestId, files: resFiles } };
+    return new Response().addBackMessage({ response: { id: requestId, files: resFiles } })
   }
 
   async get_download_url(ws, data) {
     const {
       id: requestId,
       get_file_urls: { file_ids: objectIds },
-    } = data;
+    } = data
 
-    let urls = {};
-    for (let i = 0; i < objectIds.length; i++) {
-      //TODO: update from many to one request if it posible
+    let urls = {}
+
+    for (const objectId of objectIds) {
+      //TODO: update from many to one request if it possible
       const fileUrl = await globalThis.storageClient.getDownloadUrl(
-        objectIds[i]
-      );
-      urls[objectIds[i]] = fileUrl;
+        objectId
+      )
+      urls[objectId] = fileUrl
     }
 
-    return { response: { id: requestId, file_urls: urls } };
+    return new Response().addBackMessage({ response: { id: requestId, file_urls: urls } })
   }
 }
 
-export default new FilesController();
+export default new FilesController()

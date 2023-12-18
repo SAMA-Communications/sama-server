@@ -1,93 +1,112 @@
-import ip from "ip";
-import uWS from "uWebSockets.js";
-import { StringDecoder } from "string_decoder"
+import ip from 'ip'
+import uWS from 'uWebSockets.js'
+import { StringDecoder } from 'string_decoder'
 
-import SessionRepository from "../repositories/session_repository.js";
-import clusterManager from "../cluster/cluster_manager.js"
-import { ACTIVE } from "../store/session.js"
-import { ERROR_STATUES } from "../constants/errors.js"
-import activityManager from "./activity_manager.js"
-import { APIs, detectAPIType } from "./APIs.js"
+import SessionRepository from '../repositories/session_repository.js'
+import clusterManager from '../cluster/cluster_manager.js'
+import { ACTIVE } from '../store/session.js'
+import { ERROR_STATUES } from '../constants/errors.js'
+import packetManager from './packet_manager.js'
+import activitySender from '../services/activity_sender.js'
+import { APIs, detectAPIType } from './APIs.js'
 
-const decoder = new StringDecoder('utf8');
-const sessionRepository = new SessionRepository(ACTIVE);
+const decoder = new StringDecoder('utf8')
+const sessionRepository = new SessionRepository(ACTIVE)
+
+const onMessage = async (ws, message) => {
+  const stringMessage = decoder.write(Buffer.from(message))
+
+  if (!ws.apiType) {
+    const apiType = detectAPIType(ws, stringMessage)
+    if (!apiType) {
+      throw new Error('Unknown message format')
+    }
+    ws.apiType = apiType.at(0)
+  }
+
+  const api = APIs[ws.apiType]
+  const response = await api.onMessage(ws, stringMessage)
+
+  for (const backMessage of response.backMessages) {
+    try {
+      console.log('[SENT]', backMessage)
+      ws.send(backMessage)
+    } catch (e) {
+      console.error(
+        '[ClientManager] connection with client ws is lost'
+      )
+    }
+  }
+
+  for (const deliverMessage of response.deliverMessages) {
+    try {
+      console.log('[DELIVER]', deliverMessage.usersIds, deliverMessage)
+      await packetManager.deliverToUserOrUsers(
+        deliverMessage.ws || ws,
+        deliverMessage.packet,
+        deliverMessage.usersIds,
+        deliverMessage.notSaveInOfflineStorage
+      )
+    } catch (e) {
+      console.error(
+        '[ClientManager] connection with client ws is lost'
+      )
+    }
+  }
+
+  if (response.lastActivityStatus) {
+    const userId = sessionRepository.getSessionUserId(ws)
+    console.log('[UPDATE_LAST_ACTIVITY]', userId, response.lastActivityStatus)
+    await activitySender.updateAndSendUserActivity(ws, userId, response.lastActivityStatus)
+  }
+}
 
 class ClientManager {
-  #localSocket = null;
+  #localSocket = null
 
   async createLocalSocket(appOptions, wsOptions, listenOptions, isSSL, port) {
-    if (isSSL) {
-      this.#localSocket = uWS.SSLApp(appOptions);
-    } else {
-      this.#localSocket = uWS.App(appOptions);
-    }
+    this.#localSocket = isSSL ? uWS.SSLApp(appOptions) : uWS.App(appOptions)
 
-    this.#localSocket.ws("/*", {
+    this.#localSocket.ws('/*', {
       ...wsOptions,
 
       open: (ws) => {
         console.log(
-          "[ClientManager] ws on Open",
+          '[ClientManager] ws on Open',
           `IP: ${Buffer.from(ws.getRemoteAddressAsText()).toString()}`
-        );
+        )
       },
 
       close: async (ws, code, message) => {
-        console.log("[ClientManager] ws on Close");
+        console.log('[ClientManager] ws on Close')
 
-        const uId = sessionRepository.getSessionUserId(ws);
-        const arrDevices = ACTIVE.DEVICES[uId];
+        const userId = sessionRepository.getSessionUserId(ws)
+        const arrDevices = ACTIVE.DEVICES[userId]
 
         if (arrDevices) {
-          ACTIVE.DEVICES[uId] = arrDevices.filter((obj) => {
+          ACTIVE.DEVICES[userId] = arrDevices.filter((obj) => {
             if (obj.ws === ws) {
               sessionRepository.removeUserNodeData(
-                uId,
+                userId,
                 obj.deviceId,
                 ip.address(),
                 clusterManager.clusterPort
-              );
-              return false;
+              )
+              return false
             }
-            return true;
-          });
-          await activityManager.updateAndSendUserActivity(ws, { uId });
+            return true
+          })
+          await activitySender.updateAndSendUserActivity(ws, userId, 'offline')
         }
-        ACTIVE.SESSIONS.delete(ws);
+        ACTIVE.SESSIONS.delete(ws)
       },
 
       message: async (ws, message, isBinary) => {
         try {
-          const stringMessage = decoder.write(Buffer.from(message));
-          if (!ws.apiType) {
-            const apiType = detectAPIType(ws, stringMessage)
-            if (!apiType) {
-              throw new Error('Unknown message format')
-            }
-            ws.apiType = apiType.at(0)
-          }
-
-          const api = APIs[ws.apiType]
-          let responseData = await api.onMessage(ws, stringMessage);
-          if (!Array.isArray(responseData)) {
-            responseData = [responseData]
-          }
-
-          for (const responseDataItem of responseData) {
-            if (responseDataItem) {
-              try {
-                console.log('[SENT]', responseDataItem)
-                ws.send(responseDataItem);
-              } catch (e) {
-                console.error(
-                  "[ClientManager] connection with client ws is lost"
-                );
-              }
-            }
-          }
+          await onMessage(ws, message)
         } catch (err) {
-          const rawPacket = decoder.write(Buffer.from(message));
-          console.error("[ClientManager] ws on message error", err, rawPacket);
+          const rawPacket = decoder.write(Buffer.from(message))
+          console.error('[ClientManager] ws on message error', err, rawPacket)
           ws.send(
             JSON.stringify({
               response: {
@@ -97,10 +116,10 @@ class ClientManager {
                 },
               },
             })
-          );
+          )
         }
       },
-    });
+    })
 
     this.#localSocket.listen(port, listenOptions, (listenSocket) => {
       if (listenSocket) {
@@ -108,12 +127,12 @@ class ClientManager {
           `[ClientManager][createLocalSocket] listening on port ${uWS.us_socket_local_port(
             listenSocket
           )}, pid=${process.pid}`
-        );
+        )
       } else {
-        throw "[ClientManager][createLocalSocket] socket.listen error: can't allocate port";
+        throw `[ClientManager][createLocalSocket] socket.listen error: can't allocate port`
       }
-    });
+    })
   }
 }
 
-export default new ClientManager();
+export default new ClientManager()

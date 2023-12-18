@@ -28,10 +28,13 @@ describe("User activities", async () => {
         id: "1",
       },
     };
-    const responseData = await packetJsonProcessor.processMessageOrError(
+
+    let responseData = await packetJsonProcessor.processMessageOrError(
       "line_1",
       JSON.stringify(requestData)
     );
+
+    responseData = responseData.backMessages.at(0)
 
     assert.strictEqual(responseData.response.id, requestData.request.id);
     assert.equal(ACTIVITY.SUBSCRIBED_TO[usersIds[0]], usersIds[1]);
@@ -46,10 +49,13 @@ describe("User activities", async () => {
         id: "1",
       },
     };
-    const responseData = await packetJsonProcessor.processMessageOrError(
+
+    let responseData = await packetJsonProcessor.processMessageOrError(
       "line_1",
       JSON.stringify(requestData)
     );
+
+    responseData = responseData.backMessages.at(0)
 
     assert.strictEqual(responseData.response.id, requestData.request.id);
     assert.deepEqual(responseData.response.error, {
@@ -67,10 +73,13 @@ describe("User activities", async () => {
         id: "1",
       },
     };
+
     let responseData = await packetJsonProcessor.processMessageOrError(
       "line_2",
       JSON.stringify(requestData)
     );
+
+    responseData = responseData.backMessages.at(0)
 
     requestData = {
       request: {
@@ -78,10 +87,14 @@ describe("User activities", async () => {
         id: "1",
       },
     };
+  
     responseData = await packetJsonProcessor.processMessageOrError(
       "line_1",
       JSON.stringify(requestData)
     );
+
+    responseData = responseData.backMessages.at(0)
+
     await sendLogout("line_1", currentUserToken);
 
     assert.strictEqual(responseData.response.id, requestData.request.id);
@@ -100,10 +113,13 @@ describe("User activities", async () => {
         id: "1",
       },
     };
-    const responseData = await packetJsonProcessor.processMessageOrError(
+  
+    let responseData = await packetJsonProcessor.processMessageOrError(
       "line_2",
       JSON.stringify(requestData)
     );
+
+    responseData = responseData.backMessages.at(0)
 
     console.log(responseData.response.last_activity);
     assert.strictEqual(responseData.response.id, requestData.request.id);
@@ -118,10 +134,13 @@ describe("User activities", async () => {
         id: "1",
       },
     };
-    const responseData = await packetJsonProcessor.processMessageOrError(
+
+    let responseData = await packetJsonProcessor.processMessageOrError(
       "line_2",
       JSON.stringify(requestData)
     );
+
+    responseData = responseData.backMessages.at(0)
 
     assert.strictEqual(responseData.response.id, requestData.request.id);
     assert.strictEqual(responseData.response.success, true);

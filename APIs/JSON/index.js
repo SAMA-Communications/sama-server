@@ -7,15 +7,23 @@ export default class JsonAPI extends BaseAPI {
     return detectJsonMessage(message)
   }
 
+  stringifyMessage(message) {
+    return JSON.stringify(message)
+  }
+
+  stringifyResponse(response) {
+    response.backMessages = response.backMessages.map(backMessage => this.stringifyMessage(backMessage))
+    response.deliverMessages = response.deliverMessages.map(deliverMessage => Object.assign(deliverMessage, { packet: this.stringifyMessage(deliverMessage.packet) }))
+    return response
+  }
+
   async onMessage(ws, message) {
     const responseData = await packetJsonProcessor.processMessageOrError(ws, message)
-    if (responseData) {
-      return JSON.stringify(responseData)
-    }
+    return this.stringifyResponse(responseData)
   }
 
   buildLastActivityPackage(userId, timestamp, status) {
     const message = { last_activity: { [userId]: status || timestamp } }
-    return JSON.stringify(message)
+    return this.stringifyMessage(message)
   }
 }

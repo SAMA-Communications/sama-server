@@ -18,11 +18,13 @@ async function sendLogin(ws, login, device) {
       id: "UserLogin",
     },
   };
+
   const response = await packetJsonProcessor.processMessageOrError(
     ws,
     JSON.stringify(requestData)
   );
-  return response;
+
+  return response.backMessages.at(0);
 }
 
 async function sendLogout(ws, currentUserToken) {
@@ -32,6 +34,7 @@ async function sendLogout(ws, currentUserToken) {
       id: "UserLogout",
     },
   };
+
   await packetJsonProcessor.processMessageOrError(ws, JSON.stringify(requestData));
 }
 
@@ -61,11 +64,13 @@ async function createUserArray(count, currentCountOfUsers, email, phone) {
         id: "UserCreate",
       },
     };
-    const user = await packetJsonProcessor.processMessageOrError(
+
+    const createUserResponse = await packetJsonProcessor.processMessageOrError(
       "UserCreate",
       JSON.stringify(requestData)
-    );
-    usersIds[i] = user?.response.user._id;
+    )
+
+    usersIds[i] = createUserResponse?.backMessages?.at?.(0)?.response.user._id;
   }
 
   return usersIds;
@@ -90,7 +95,7 @@ async function createConversation(ws, name, description, type, participants) {
 
   return (
     await packetJsonProcessor.processMessageOrError(ws, JSON.stringify(requestData))
-  )?.response.conversation._id.toString();
+  )?.response?.backMessages?.at?.(0).conversation._id.toString();
 }
 
 export { sendLogin, sendLogout, createUserArray, createConversation, mockedWS };

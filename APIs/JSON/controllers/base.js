@@ -1,4 +1,4 @@
-import BaseController from "@sama/common/controller.js";
+import BaseController from '@sama/common/controller.js'
 
 export default class BaseJSONController extends BaseController {
 

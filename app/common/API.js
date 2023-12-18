@@ -4,7 +4,7 @@ export default class BaseAPI {
   }
 
   async onMessage(ws, message) {
-    // return array(string)/string/null
+    // Response object
   }
 
   buildLastActivityPackage(userId, timestamp, status) {
