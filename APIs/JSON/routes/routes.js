@@ -199,9 +199,9 @@ export const routes = {
     LastActivityiesController.middleware(authGuardMiddleware, ws, json)
     .validate(
       json.user_last_activity_unsubscribe,
-      activitiesSchemaValidation.statusUnsubscribe
+      activitiesSchemaValidation.status_unsubscribe
     )
-    .statusUnsubscribe(ws, json),
+    .status_unsubscribe(ws, json),
   user_last_activity: (ws, json) =>
     LastActivityiesController.middleware(authGuardMiddleware, ws, json)
     .validate(

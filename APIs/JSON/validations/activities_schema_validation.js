@@ -12,7 +12,7 @@ export const activitiesSchemaValidation = {
         })
       ),
   }).required(),
-  statusUnsubscribe: Joi.object({}).required(),
+  status_unsubscribe: Joi.object({}).required(),
   get_user_status: Joi.object({
     ids: Joi.array()
       .items(Joi.alternatives().try(Joi.object(), Joi.string()).required())

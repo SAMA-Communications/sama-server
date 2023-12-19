@@ -46,7 +46,7 @@ class LastActivitiesController extends BaseJSONController {
     return new Response().addBackMessage({ response: { id: requestId, last_activity: obj } })
   }
 
-  async statusUnsubscribe(ws, data) {
+  async status_unsubscribe(ws, data) {
     const { id: requestId } = data
     
     await activityManager.statusUnsubscribe(ws)
