@@ -31,7 +31,7 @@ class StatusesController extends BaseJSONController {
 
     const recipients = await this.conversationParticipantsRepository.findParticipantsByConversation(statusParams.cid)
 
-    return new Response().addDeliverMessage({ packet: status, usersIds: recipients })
+    return new Response().addDeliverMessage({ packet: status, userIds: recipients })
   }
 }
 

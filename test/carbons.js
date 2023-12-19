@@ -34,12 +34,14 @@ describe("Carbons", async () => {
       assert.strictEqual(ACTIVE.DEVICES[currentUserToken].length, 3);
 
       console.log("ws4 logout -->\n", ACTIVE.DEVICES);
+
       const requestData = {
         request: {
           user_delete: {},
           id: "4_1",
         },
       };
+
       await packetJsonProcessor.processMessageOrError("ws6", JSON.stringify(requestData));
       console.log("delete user -->\n", ACTIVE.DEVICES);
 

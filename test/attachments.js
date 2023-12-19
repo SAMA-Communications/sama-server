@@ -49,10 +49,12 @@ describe("Attachments", async () => {
       },
     };
 
-    const responseData = await packetJsonProcessor.processMessageOrError(
+    let responseData = await packetJsonProcessor.processMessageOrError(
       mockedWS,
       JSON.stringify(requestData)
     );
+
+    responseData = responseData.backMessages.at(0)
 
     files = responseData.response.files;
     assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -84,10 +86,14 @@ describe("Attachments", async () => {
         id: "createUploadUrlForFile",
       },
     };
-    const responseData = await packetJsonProcessor.processMessageOrError(
+  
+    let responseData = await packetJsonProcessor.processMessageOrError(
       mockedWS,
       JSON.stringify(requestData)
     );
+
+    responseData = responseData.backMessages.at(0)
+
     const urls = responseData.response.file_urls;
 
     assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -124,10 +130,14 @@ describe("Attachments", async () => {
         id: "createUploadUrlForFile",
       },
     };
-    const responseData = await packetJsonProcessor.processMessageOrError(
+
+    let responseData = await packetJsonProcessor.processMessageOrError(
       mockedWS,
       JSON.stringify(requestData)
     );
+
+    responseData = responseData.backMessages.at(0)
+
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.file_urls, undefined);
     assert.deepEqual(responseData.response.error, {
@@ -149,10 +159,14 @@ describe("Attachments", async () => {
         id: "createUploadUrlForFile",
       },
     };
-    const responseData = await packetJsonProcessor.processMessageOrError(
+
+    let responseData = await packetJsonProcessor.processMessageOrError(
       mockedWS,
       JSON.stringify(requestData)
     );
+
+    responseData = responseData.backMessages.at(0)
+
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.file_urls, undefined);
     assert.deepEqual(responseData.response.error, {
@@ -170,10 +184,14 @@ describe("Attachments", async () => {
         id: "createUploadUrlForFile",
       },
     };
-    const responseData = await packetJsonProcessor.processMessageOrError(
+
+    let responseData = await packetJsonProcessor.processMessageOrError(
       mockedWS,
       JSON.stringify(requestData)
     );
+
+    responseData = responseData.backMessages.at(0)
+
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.file_urls, undefined);
     assert.deepEqual(responseData.response.error, {
@@ -208,10 +226,14 @@ describe("Attachments", async () => {
         id: "createUploadUrlForFile",
       },
     };
-    const responseData = await packetJsonProcessor.processMessageOrError(
+
+    let responseData = await packetJsonProcessor.processMessageOrError(
       mockedWS,
       JSON.stringify(requestData)
     );
+
+    responseData = responseData.backMessages.at(0)
+
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.file_urls, undefined);
     assert.deepEqual(responseData.response.error, {
@@ -227,10 +249,13 @@ describe("Attachments", async () => {
         id: "createUploadUrlForFile",
       },
     };
-    const responseData = await packetJsonProcessor.processMessageOrError(
+
+    let responseData = await packetJsonProcessor.processMessageOrError(
       mockedWS,
       JSON.stringify(requestData)
     );
+
+    responseData = responseData.backMessages.at(0)
 
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.files, undefined);
@@ -247,10 +272,13 @@ describe("Attachments", async () => {
         id: "createUploadUrlForFile",
       },
     };
-    const responseData = await packetJsonProcessor.processMessageOrError(
+
+    let responseData = await packetJsonProcessor.processMessageOrError(
       mockedWS,
       JSON.stringify(requestData)
     );
+
+    responseData = responseData.backMessages.at(0)
 
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.files, undefined);
@@ -267,10 +295,13 @@ describe("Attachments", async () => {
         id: "createUploadUrlForFile",
       },
     };
-    const responseData = await packetJsonProcessor.processMessageOrError(
+
+    let responseData = await packetJsonProcessor.processMessageOrError(
       mockedWS,
       JSON.stringify(requestData)
     );
+
+    responseData = responseData.backMessages.at(0)
 
     assert.strictEqual(requestData.request.id, responseData.response.id);
     assert.strictEqual(responseData.response.files, undefined);

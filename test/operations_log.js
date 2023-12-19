@@ -45,10 +45,12 @@ describe("Operations Log functions", async () => {
         },
       };
 
-      const responseData = await packetJsonProcessor.processMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.logs, undefined);
@@ -71,10 +73,13 @@ describe("Operations Log functions", async () => {
         },
       };
 
-      const responseData = await packetJsonProcessor.processMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
+
       for (let i = 2; i < 6; i++) {
         controller.savePacket(usersIds[1], JSON.stringify(
           {
@@ -104,10 +109,12 @@ describe("Operations Log functions", async () => {
         },
       };
 
-      const responseData = await packetJsonProcessor.processMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.logs.length, 4);

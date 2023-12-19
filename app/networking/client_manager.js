@@ -44,7 +44,7 @@ const onMessage = async (ws, message) => {
       await packetManager.deliverToUserOrUsers(
         deliverMessage.ws || ws,
         deliverMessage.packet,
-        deliverMessage.usersIds,
+        deliverMessage.userIds,
         deliverMessage.notSaveInOfflineStorage
       )
     } catch (e) {

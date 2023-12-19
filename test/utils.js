@@ -93,9 +93,11 @@ async function createConversation(ws, name, description, type, participants) {
     },
   };
 
-  return (
-    await packetJsonProcessor.processMessageOrError(ws, JSON.stringify(requestData))
-  )?.response?.backMessages?.at?.(0).conversation._id.toString();
+  let responseData = await packetJsonProcessor.processMessageOrError(ws, JSON.stringify(requestData))
+
+  responseData = responseData.backMessages.at(0)
+
+  return responseData?.response.conversation._id.toString();
 }
 
 export { sendLogin, sendLogout, createUserArray, createConversation, mockedWS };

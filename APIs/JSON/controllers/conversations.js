@@ -398,7 +398,7 @@ class ConversationsController extends BaseJSONController {
       })
     }
 
-    return new response.addBackMessage({ response: { id: requestId, success: true } })
+    return response.addBackMessage({ response: { id: requestId, success: true } })
   }
 
   async get_participants_by_cids(ws, data) {

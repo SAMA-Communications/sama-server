@@ -130,7 +130,7 @@ class MessagesController extends BaseJSONController {
           id: messageId,
         }
 
-        response.addDeliverMessage({ packet: eventMessage, userId: recipientsThatChatNotVisible })
+        response.addDeliverMessage({ packet: eventMessage, userIds: recipientsThatChatNotVisible })
       }
     }
 
@@ -279,12 +279,12 @@ class MessagesController extends BaseJSONController {
 
     if (unreadMessages.length) {
       const insertMessages = unreadMessages.map((msg) => {
-        return response.addBackMessage({
+        return {
           cid: ObjectId(cid),
           mid: ObjectId(msg._id),
           user_id: ObjectId(uId),
           status: 'read',
-        })
+        }
       })
     
       await MessageStatus.insertMany(insertMessages.reverse())

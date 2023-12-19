@@ -33,10 +33,12 @@ describe("Contacts functions", async () => {
         },
       };
 
-      const responseData = await packetJsonProcessor.processMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.error, undefined);
@@ -71,10 +73,12 @@ describe("Contacts functions", async () => {
         },
       };
 
-      const responseData = await packetJsonProcessor.processMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
       contactIdToUpdate = responseData.response.contact._id;
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -112,10 +116,12 @@ describe("Contacts functions", async () => {
         },
       };
 
-      const responseData = await packetJsonProcessor.processMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
@@ -136,10 +142,12 @@ describe("Contacts functions", async () => {
         },
       };
 
-      const responseData = await packetJsonProcessor.processMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
@@ -182,10 +190,12 @@ describe("Contacts functions", async () => {
         },
       };
 
-      const responseData = await packetJsonProcessor.processMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
       updatedAtParam = responseData.response.contacts[0].updated_at;
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -217,10 +227,12 @@ describe("Contacts functions", async () => {
         },
       };
 
-      const responseData = await packetJsonProcessor.processMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
@@ -244,10 +256,12 @@ describe("Contacts functions", async () => {
         },
       };
 
-      const responseData = await packetJsonProcessor.processMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
@@ -273,10 +287,12 @@ describe("Contacts functions", async () => {
         },
       };
 
-      const responseData = await packetJsonProcessor.processMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.error, undefined);
@@ -317,10 +333,12 @@ describe("Contacts functions", async () => {
         },
       };
 
-      const responseData = await packetJsonProcessor.processMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
@@ -343,10 +361,12 @@ describe("Contacts functions", async () => {
         },
       };
 
-      const responseData = await packetJsonProcessor.processMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
@@ -365,10 +385,12 @@ describe("Contacts functions", async () => {
         },
       };
 
-      const responseData = await packetJsonProcessor.processMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.error, undefined);
@@ -405,10 +427,12 @@ describe("Contacts functions", async () => {
         },
       };
 
-      const responseData = await packetJsonProcessor.processMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.error, undefined);
@@ -437,10 +461,12 @@ describe("Contacts functions", async () => {
         },
       };
 
-      const responseData = await packetJsonProcessor.processMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.error, undefined);
@@ -467,10 +493,12 @@ describe("Contacts functions", async () => {
         },
       };
 
-      const responseData = await packetJsonProcessor.processMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.error, undefined);
@@ -485,10 +513,12 @@ describe("Contacts functions", async () => {
         },
       };
 
-      const responseData = await packetJsonProcessor.processMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.deepEqual(responseData.response.error, {
@@ -505,10 +535,12 @@ describe("Contacts functions", async () => {
         },
       };
 
-      const responseData = await packetJsonProcessor.processMessageOrError(
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.error, undefined);
@@ -554,6 +586,8 @@ describe("Contacts functions", async () => {
         JSON.stringify(requestData)
       );
 
+      responseData = responseData.backMessages.at(0)
+
       usersIds = [
         ...usersIds,
         (
@@ -571,6 +605,8 @@ describe("Contacts functions", async () => {
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(
@@ -636,8 +672,11 @@ describe("Contacts functions", async () => {
         JSON.stringify(requestData)
       );
 
+      responseData = responseData.backMessages.at(0)
+
       await sendLogout(mockedWS, currentUserToken);
       currentUserToken = await sendLogin(mockedWS, "user_4");
+  
       requestData = {
         request: {
           user_edit: {
@@ -652,6 +691,9 @@ describe("Contacts functions", async () => {
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
+
       await sendLogout(mockedWS, currentUserToken);
       currentUserToken = await sendLogin(mockedWS, "user_1");
 
@@ -666,7 +708,8 @@ describe("Contacts functions", async () => {
         mockedWS,
         JSON.stringify(requestData)
       );
-      console.log(responseData.response.contacts[0]);
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(
@@ -713,6 +756,9 @@ describe("Contacts functions", async () => {
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
+
       await sendLogout(mockedWS, currentUserToken);
       currentUserToken = await sendLogin(mockedWS, "user_1");
 
@@ -727,6 +773,8 @@ describe("Contacts functions", async () => {
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(
@@ -783,6 +831,9 @@ describe("Contacts functions", async () => {
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
+
       await sendLogout(mockedWS, currentUserToken);
       currentUserToken = await sendLogin(mockedWS, "user_1");
 
@@ -797,6 +848,8 @@ describe("Contacts functions", async () => {
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(
@@ -840,6 +893,8 @@ describe("Contacts functions", async () => {
         JSON.stringify(requestData)
       );
 
+      responseData = responseData.backMessages.at(0)
+
       currentUserToken = await sendLogin(mockedWS, "user_1");
       requestData = {
         request: {
@@ -852,6 +907,8 @@ describe("Contacts functions", async () => {
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(

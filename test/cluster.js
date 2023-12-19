@@ -17,6 +17,7 @@ import {
 } from "./utils.js";
 import { ACTIVE } from "./../app/store/session.js";
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js";
+import packetManager from './../app/networking/packet_manager.js'
 
 let currentConversationId = "";
 let usersIds = [];
@@ -24,7 +25,7 @@ let deviceId = null;
 let secondClusterPort = null;
 let secondSocketResponse = null;
 
-describe("Message function", async () => {
+describe("Cluster Message function", async () => {
   before(async () => {
     await connectToDBPromise();
     usersIds = await createUserArray(2);
@@ -58,7 +59,10 @@ describe("Message function", async () => {
     });
 
     clusterManager.clusterNodesWS[ip.address()] = {
-      send: (data) => (secondSocketResponse = data),
+      send: (data) => {
+        console.log('[data]', data)
+        secondSocketResponse = data
+      },
     };
     await new SessionRepository().storeUserNodeData(
       usersIds[1],
@@ -78,7 +82,17 @@ describe("Message function", async () => {
         },
       };
 
-      await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData));
+      const controllerResponse = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData));
+      const deliverMessage = controllerResponse.deliverMessages.at(0)
+
+      assert.notEqual(deliverMessage, undefined);
+
+      await packetManager.deliverToUserOrUsers(
+        deliverMessage.ws || mockedWS,
+        JSON.stringify(deliverMessage.packet),
+        deliverMessage.userIds,
+        deliverMessage.notSaveInOfflineStorage
+      )
 
       const response = JSON.parse(secondSocketResponse);
       response.message = JSON.parse(response.message)

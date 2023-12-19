@@ -34,10 +34,13 @@ describe("Conversation functions", async () => {
           id: "5_1",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+  
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       currentConversationId = responseData.response.conversation._id.toString();
 
@@ -61,10 +64,13 @@ describe("Conversation functions", async () => {
           id: "5_2",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -82,10 +88,13 @@ describe("Conversation functions", async () => {
           id: "5_3",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -103,10 +112,13 @@ describe("Conversation functions", async () => {
           id: "5_4",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -130,10 +142,13 @@ describe("Conversation functions", async () => {
           id: "5_5",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -151,10 +166,13 @@ describe("Conversation functions", async () => {
           id: "5_6",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notStrictEqual(responseData.response.success, undefined);
@@ -164,6 +182,7 @@ describe("Conversation functions", async () => {
     after(async () => {
       const tmpToken = (await sendLogin("login_tmp", "user_1")).response.user
         .token;
+
       const requestDataDelete = {
         request: {
           conversation_delete: {
@@ -172,16 +191,19 @@ describe("Conversation functions", async () => {
           id: "00",
         },
       };
+
       await packetJsonProcessor.processMessageOrError(
         "login_tmp",
         JSON.stringify(requestDataDelete)
       );
+
       const requestDataLogout = {
         request: {
           user_logout: {},
           id: "0102",
         },
       };
+
       await packetJsonProcessor.processMessageOrError(
         "login_tmp",
         JSON.stringify(requestDataLogout)
@@ -202,10 +224,14 @@ describe("Conversation functions", async () => {
           id: "1_1",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
+
       currentConversationId = responseData.response.conversation._id.toString();
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -225,10 +251,14 @@ describe("Conversation functions", async () => {
           id: "1_1",
         },
       };
+
       let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
+
       const countRecordsFirst = await Conversation.findAll(
         {
           name: "chat123",
@@ -237,10 +267,14 @@ describe("Conversation functions", async () => {
         100
       );
       requestData.request.conversation_create.participants = [usersIds[2]];
+
       responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
+
       const countRecordsSecond = await Conversation.findAll(
         {
           name: "chat123",
@@ -267,10 +301,13 @@ describe("Conversation functions", async () => {
           id: "1_2",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -299,10 +336,13 @@ describe("Conversation functions", async () => {
           id: "1_2",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -323,10 +363,13 @@ describe("Conversation functions", async () => {
           id: "1_3",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -346,10 +389,13 @@ describe("Conversation functions", async () => {
           id: "1_4",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -369,10 +415,13 @@ describe("Conversation functions", async () => {
           id: "1_5",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -392,10 +441,13 @@ describe("Conversation functions", async () => {
           id: "1_6",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -416,10 +468,13 @@ describe("Conversation functions", async () => {
           id: "1_7",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -440,10 +495,13 @@ describe("Conversation functions", async () => {
           id: "1_8",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -466,10 +524,13 @@ describe("Conversation functions", async () => {
           id: "2_1",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -489,10 +550,13 @@ describe("Conversation functions", async () => {
           id: "2_2",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.conversation, undefined);
@@ -512,10 +576,13 @@ describe("Conversation functions", async () => {
           id: "2_3",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.conversation, undefined);
@@ -534,10 +601,13 @@ describe("Conversation functions", async () => {
           id: "2_4",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.conversation, undefined);
@@ -559,9 +629,10 @@ describe("Conversation functions", async () => {
             id: "0",
           },
         };
-        let responseData = (
-          await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
-        ).response.conversation;
+        let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData));
+
+        responseData = responseData.backMessages.at(0).response.conversation
+
         i == 1 ? (filterUpdatedAt = responseData.updated_at) : true;
         ArrayOfTmpConversaionts.push(responseData._id.toString());
       }
@@ -578,6 +649,9 @@ describe("Conversation functions", async () => {
           "test",
           JSON.stringify(requestData)
         );
+
+        responseData = responseData.backMessages.at(0)
+
         lastMessageInChat = responseData.ask.server_mid;
       }
     });
@@ -589,10 +663,13 @@ describe("Conversation functions", async () => {
           id: "3_0",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+  
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(
@@ -615,10 +692,13 @@ describe("Conversation functions", async () => {
           id: "3_0",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(
@@ -645,10 +725,14 @@ describe("Conversation functions", async () => {
           id: "3_1",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
+
       const count = responseData.response.conversations.length;
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -668,10 +752,14 @@ describe("Conversation functions", async () => {
           id: "3_2",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
+
       const count = responseData.response.conversations.length;
       assert.notEqual(responseData.response.conversations, undefined);
       assert.notEqual(count, numberOf);
@@ -694,10 +782,14 @@ describe("Conversation functions", async () => {
           id: "3_3",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
+
       const count = responseData.response.conversations.length;
       const checkDate =
         responseData.response.conversations[0].updated_at > filterUpdatedAt;
@@ -719,10 +811,14 @@ describe("Conversation functions", async () => {
           id: "3_4",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
+
       const count = responseData.response.conversations.length;
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
@@ -746,10 +842,13 @@ describe("Conversation functions", async () => {
           id: "4_2",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -767,10 +866,13 @@ describe("Conversation functions", async () => {
           id: "4_2",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.users.length, 2);
@@ -795,10 +897,13 @@ describe("Conversation functions", async () => {
           id: "4_2_1",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.users.length, 2);
@@ -829,10 +934,13 @@ describe("Conversation functions", async () => {
           id: "4_2_2",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(responseData.response.conversation, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -854,10 +962,13 @@ describe("Conversation functions", async () => {
           id: "4_2",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.users.length, 0);
@@ -884,10 +995,13 @@ describe("Conversation functions", async () => {
           id: "4_1",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
@@ -905,10 +1019,13 @@ describe("Conversation functions", async () => {
           id: "4_2",
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         "test",
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.success, undefined);
@@ -930,10 +1047,13 @@ describe("Conversation functions", async () => {
           id: "1",
         },
       };
+
       let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData_create)
       );
+
+      responseData = responseData.backMessages.at(0)
       currentConversationId = responseData.response.conversation._id.toString();
 
       const requestData_delete = {
@@ -944,10 +1064,13 @@ describe("Conversation functions", async () => {
           id: "1",
         },
       };
+
       responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData_delete)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       let participantsCount = await ConversationParticipant.count({
         conversation_id: currentConversationId,
@@ -968,9 +1091,12 @@ describe("Conversation functions", async () => {
         mockedWS,
         JSON.stringify(requestData_create)
       );
+
+      responseData = responseData.backMessages.at(0)
       participantsCount = await ConversationParticipant.findAll({
         conversation_id: currentConversationId,
       });
+
       assert.equal(participantsCount.length, 2);
 
       assert.strictEqual(
@@ -1001,14 +1127,17 @@ describe("Conversation functions", async () => {
           id: "1",
         },
       };
+
       let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
 
+      responseData = responseData.backMessages.at(0)
       participantsCount = await ConversationParticipant.findAll({
         conversation_id: currentConversationId,
       });
+
       assert.equal(participantsCount.length, 1);
 
       await sendLogout(mockedWS, currentUserToken);
@@ -1024,13 +1153,17 @@ describe("Conversation functions", async () => {
           id: "1",
         },
       };
+
       responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
       participantsCount = await ConversationParticipant.findAll({
         conversation_id: currentConversationId,
       });
+
       assert.equal(participantsCount.length, 2);
 
       assert.strictEqual(requestData.request.id, responseData.response.id);

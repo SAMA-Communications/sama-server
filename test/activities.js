@@ -121,7 +121,6 @@ describe("User activities", async () => {
 
     responseData = responseData.backMessages.at(0)
 
-    console.log(responseData.response.last_activity);
     assert.strictEqual(responseData.response.id, requestData.request.id);
     assert.notEqual(responseData.response.last_activity, undefined);
     assert.equal(responseData.response.last_activity[usersIds[2]], "online");

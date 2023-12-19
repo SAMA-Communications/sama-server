@@ -27,10 +27,13 @@ describe("UserBlocked functions", async () => {
           id: 2,
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(responseData.response.success, true);
@@ -45,10 +48,13 @@ describe("UserBlocked functions", async () => {
           id: 3,
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(responseData.response.success, true);
@@ -63,10 +69,13 @@ describe("UserBlocked functions", async () => {
           id: 4,
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(responseData.response.success, true);
@@ -81,10 +90,13 @@ describe("UserBlocked functions", async () => {
           id: 5,
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(responseData.response.success, true);
@@ -99,10 +111,13 @@ describe("UserBlocked functions", async () => {
           id: 6,
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.success, true);
@@ -117,10 +132,13 @@ describe("UserBlocked functions", async () => {
           id: 2,
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.users, undefined);
@@ -138,10 +156,13 @@ describe("UserBlocked functions", async () => {
           id: 2,
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(responseData.response.success, true);
@@ -156,10 +177,13 @@ describe("UserBlocked functions", async () => {
           id: 3,
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.strictEqual(responseData.response.success, true);
@@ -174,10 +198,13 @@ describe("UserBlocked functions", async () => {
           id: 6,
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.success, true);
@@ -190,10 +217,13 @@ describe("UserBlocked functions", async () => {
           id: 2,
         },
       };
-      const responseData = await packetJsonProcessor.processMessageOrError(
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify(requestData)
       );
+
+      responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.users, undefined);

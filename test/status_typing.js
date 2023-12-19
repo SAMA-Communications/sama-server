@@ -41,10 +41,13 @@ describe("Sending 'typing' status", async () => {
         cid: currentConversationId,
       },
     };
-    const responseData = await packetJsonProcessor.processMessageOrError(
+
+    let responseData = await packetJsonProcessor.processMessageOrError(
       mockedWS,
       JSON.stringify(requestData)
     );
+
+    responseData = responseData.backMessages.at(0)
 
     assert.strictEqual(responseData.typing.user, undefined);
     assert.deepEqual(responseData.typing.error, {
@@ -62,10 +65,13 @@ describe("Sending 'typing' status", async () => {
         cid: currentConversationId,
       },
     };
-    const responseData = await packetJsonProcessor.processMessageOrError(
+
+    let responseData = await packetJsonProcessor.processMessageOrError(
       mockedWS,
       JSON.stringify(requestData)
     );
+
+    responseData = responseData.backMessages.at(0)
 
     assert.strictEqual(responseData.typing.user, undefined);
     assert.deepEqual(responseData.typing.error, {
@@ -81,10 +87,13 @@ describe("Sending 'typing' status", async () => {
         cid: currentConversationId,
       },
     };
-    const responseData = await packetJsonProcessor.processMessageOrError(
+
+    let responseData = await packetJsonProcessor.processMessageOrError(
       mockedWS,
       JSON.stringify(requestData)
     );
+
+    responseData = responseData.backMessages.at(0)
 
     assert.strictEqual(responseData.typing.user, undefined);
     assert.deepEqual(responseData.typing.error, {
@@ -101,10 +110,13 @@ describe("Sending 'typing' status", async () => {
         cid: currentConversationId,
       },
     };
-    const responseData = await packetJsonProcessor.processMessageOrError(
+
+    let responseData = await packetJsonProcessor.processMessageOrError(
       mockedWS,
       JSON.stringify(requestData)
     );
+
+    responseData = responseData.backMessages.at(0)
 
     assert.strictEqual(responseData.typing.user, undefined);
     assert.deepEqual(responseData.typing.error, {
@@ -120,10 +132,13 @@ describe("Sending 'typing' status", async () => {
         type: "start",
       },
     };
-    const responseData = await packetJsonProcessor.processMessageOrError(
+
+    let responseData = await packetJsonProcessor.processMessageOrError(
       mockedWS,
       JSON.stringify(requestData)
     );
+
+    responseData = responseData.backMessages.at(0)
 
     assert.strictEqual(responseData.typing.user, undefined);
     assert.deepEqual(responseData.typing.error, {
@@ -141,10 +156,13 @@ describe("Sending 'typing' status", async () => {
         t: 15673838833,
       },
     };
-    const responseData = await packetJsonProcessor.processMessageOrError(
+
+    let responseData = await packetJsonProcessor.processMessageOrError(
       mockedWS,
       JSON.stringify(requestData)
     );
+
+    responseData = responseData.backMessages.at(0)
 
     assert.strictEqual(responseData.typing.user, undefined);
     assert.deepEqual(responseData.typing.error, {
@@ -162,10 +180,14 @@ describe("Sending 'typing' status", async () => {
         t: 15673838833,
       },
     };
-    const responseData = await packetJsonProcessor.processMessageOrError(
+
+    let responseData = await packetJsonProcessor.processMessageOrError(
       mockedWS,
       JSON.stringify(requestData)
     );
+    
+    responseData = responseData.backMessages.at(0)
+
     assert.strictEqual(responseData, undefined);
   });
 

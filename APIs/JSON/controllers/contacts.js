@@ -43,7 +43,7 @@ class ContactsController extends BaseJSONController {
 
       const contact = (
         await this.contact_add(ws, { contact_add: u, id: 'contact_batch_add' })
-      ).response.contact
+      ).backMessages.at(0).response.contact
       contactsList.push(contact)
     }
 
