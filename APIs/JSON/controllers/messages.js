@@ -31,6 +31,7 @@ import SessionRepository from '@sama/repositories/session_repository.js'
 
 import { ObjectId } from '@sama/lib/db.js'
 
+import DeliverMessage from '@sama/networking/models/DeliverMessage.js'
 import Response from '@sama/networking/models/Response.js'
 
 import groupBy from '../utils/groupBy.js'
@@ -130,7 +131,7 @@ class MessagesController extends BaseJSONController {
           id: messageId,
         }
 
-        response.addDeliverMessage({ packet: eventMessage, userIds: recipientsThatChatNotVisible })
+        response.addDeliverMessage(new DeliverMessage(recipientsThatChatNotVisible, eventMessage))
       }
     }
 
@@ -157,7 +158,7 @@ class MessagesController extends BaseJSONController {
 
     await this.pushNotificationsRepository.addPushNotificationToQueueIfUsersOffline(recipients, pushPayload)
     
-    response.addDeliverMessage({ packet: pushMessage, userIds: recipients })
+    response.addDeliverMessage(new DeliverMessage(recipients, pushMessage))
 
     await this.conversationRepository.updateOne(messageParams.cid, {
       updated_at: message.params.created_at,
@@ -197,7 +198,7 @@ class MessagesController extends BaseJSONController {
 
     return new Response()
       .addBackMessage({ response: { id: requestId, success: true } })
-      .addDeliverMessage({ packet: request, userIds: recipients, notSaveInOfflineStorage: true })
+      .addDeliverMessage(new DeliverMessage(recipients, request, true))
   }
 
   async list(ws, data) {
@@ -300,7 +301,7 @@ class MessagesController extends BaseJSONController {
           },
         }
 
-        response.addDeliverMessage({ packet: message, userIds: Object.keys(unreadMessagesGroupedByFrom) })
+        response.addDeliverMessage(new DeliverMessage(Object.keys(unreadMessagesGroupedByFrom), message))
       }
     }
 
@@ -332,7 +333,7 @@ class MessagesController extends BaseJSONController {
       }
 
       const recipients = await this.conversationParticipantsRepository.findParticipantsByConversation(cid)
-      response.addDeliverMessage({ packet: request, userIds: recipients, notSaveInOfflineStorage: true })
+      response.addDeliverMessage(new DeliverMessage(recipients, request, true))
       await Message.deleteMany({ _id: { $in: ids } })
     } else {
       await Message.updateMany(

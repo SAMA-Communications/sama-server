@@ -60,7 +60,6 @@ describe("Cluster Message function", async () => {
 
     clusterManager.clusterNodesWS[ip.address()] = {
       send: (data) => {
-        console.log('[data]', data)
         secondSocketResponse = data
       },
     };
