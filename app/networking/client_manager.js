@@ -7,8 +7,11 @@ import clusterManager from '../cluster/cluster_manager.js'
 import { ACTIVE } from '../store/session.js'
 import { ERROR_STATUES } from '../constants/errors.js'
 import packetManager from './packet_manager.js'
+import packetMapper from './packet_mapper.js'
 import activitySender from '../services/activity_sender.js'
 import { APIs, detectAPIType } from './APIs.js'
+
+import MappableMessage from './models/MappableMessage.js'
 
 const decoder = new StringDecoder('utf8')
 const sessionRepository = new SessionRepository(ACTIVE)
@@ -27,8 +30,13 @@ const onMessage = async (ws, message) => {
   const api = APIs[ws.apiType]
   const response = await api.onMessage(ws, stringMessage)
 
-  for (const backMessage of response.backMessages) {
+  const mapBackMessageFunc = async (packet) => packetMapper.mapPacket(null, ws.apiType, packet)
+
+  for (let backMessage of response.backMessages) {
     try {
+      if (backMessage instanceof MappableMessage) {
+        backMessage = await backMessage.mapMessage(mapBackMessageFunc)
+      }
       console.log('[SENT]', backMessage)
       ws.send(backMessage)
     } catch (e) {

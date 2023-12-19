@@ -78,7 +78,7 @@ describe("Operations Log functions", async () => {
         JSON.stringify(requestData)
       );
 
-      responseData = responseData.backMessages.at(0)
+      responseData = responseData.backMessages.at(0).packet
 
       for (let i = 2; i < 6; i++) {
         controller.savePacket(usersIds[1], JSON.stringify(
@@ -114,7 +114,7 @@ describe("Operations Log functions", async () => {
         JSON.stringify(requestData)
       );
 
-      responseData = responseData.backMessages.at(0)
+      responseData = responseData.backMessages.at(0).packet
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.equal(responseData.response.logs.length, 4);
