@@ -21,7 +21,6 @@ import Message from '@sama/models/message.js'
 import SessionRepository from '@sama/repositories/session_repository.js'
 import ConversationParticipant from '@sama/models/conversation_participant.js'
 import ConversationRepository from '@sama/repositories/conversation_repository.js'
-import PushNotificationsRepository from '../repositories/push_notifications_repository.js'
 
 import { ObjectId } from '@sama/lib/db.js'
 
@@ -31,7 +30,6 @@ import Response from '@sama/networking/models/Response.js'
 class ConversationsController extends BaseJSONController {
   constructor() {
     super()
-    this.pushNotificationsRepository = new PushNotificationsRepository()
     this.conversationRepository = new ConversationRepository(
       Conversation,
       inMemoryConversations
@@ -53,10 +51,8 @@ class ConversationsController extends BaseJSONController {
     const eventMessage = {
       event: { conversation_created: conversation },
     }
-
-    await this.pushNotificationsRepository.addPushNotificationToQueueIfUsersOffline(recipients, pushMessage)
   
-    return new DeliverMessage(recipients, eventMessage)
+    return new DeliverMessage(recipients, eventMessage).addPushMessage(pushMessage)
   }
 
   async #notifyAboutConversationUpdate(
@@ -73,10 +69,8 @@ class ConversationsController extends BaseJSONController {
     const eventMessage = {
       event: { conversation_created: conversation },
     }
-
-    await this.pushNotificationsRepository.addPushNotificationToQueueIfUsersOffline(recipients, pushMessage)
   
-    return new DeliverMessage(recipients, eventMessage)
+    return new DeliverMessage(recipients, eventMessage).addPushMessage(pushMessage)
   }
 
   async create(ws, data) {

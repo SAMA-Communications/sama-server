@@ -26,7 +26,6 @@ import ConversationRepository from '@sama/repositories/conversation_repository.j
 import ConversationParticipant from '@sama/models/conversation_participant.js'
 import ConversationParticipantsRepository from '@sama/repositories/conversation_participants_repository.js'
 import BlockListRepository from '@sama/repositories/blocklist_repository.js'
-import PushNotificationsRepository from '../repositories/push_notifications_repository.js'
 import SessionRepository from '@sama/repositories/session_repository.js'
 
 import { ObjectId } from '@sama/lib/db.js'
@@ -40,7 +39,6 @@ import groupBy from '../utils/groupBy.js'
 class MessagesController extends BaseJSONController {
   constructor() {
     super()
-    this.pushNotificationsRepository = new PushNotificationsRepository()
     this.conversationRepository = new ConversationRepository(
       Conversation,
       inMemoryConversations
@@ -155,10 +153,8 @@ class MessagesController extends BaseJSONController {
 
     const pushMessage = { message: message.visibleParams() }
     const recipients = await this.conversationParticipantsRepository.findParticipantsByConversation(messageParams.cid)
-
-    await this.pushNotificationsRepository.addPushNotificationToQueueIfUsersOffline(recipients, pushPayload)
     
-    response.addDeliverMessage(new DeliverMessage(recipients, pushMessage))
+    response.addDeliverMessage(new DeliverMessage(recipients, pushMessage).addPushMessage(pushPayload))
 
     await this.conversationRepository.updateOne(messageParams.cid, {
       updated_at: message.params.created_at,

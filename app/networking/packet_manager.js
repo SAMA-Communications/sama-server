@@ -1,16 +1,22 @@
 import ip from 'ip'
 
+import { ACTIVE } from '../store/session.js'
+
 import OpLog from '../models/operations_log.js'
+
+import PushNotificationsRepository from '../repositories/push_notifications_repository.js'
 import OperationsLogRepository from '../repositories/operations_log_repository.js'
 import SessionRepository from '../repositories/session_repository.js'
+
 import clusterManager from '../cluster/cluster_manager.js'
 import packetMapper from './packet_mapper.js'
-import { ACTIVE } from '../store/session.js'
+
 import { buildWsEndpoint } from '../utils/build_ws_endpoint.js'
 import { getIpFromWsUrl } from '../utils/get_ip_from_ws_url.js'
 
 class PacketManager {
   constructor() {
+    this.pushNotificationsRepository = new PushNotificationsRepository()
     this.operationsLogRepository = new OperationsLogRepository(OpLog)
     this.sessionRepository = new SessionRepository(ACTIVE)
   }
@@ -98,21 +104,33 @@ class PacketManager {
   }
 
   async deliverToUserOrUsers(ws, packet, usersIds, notSaveInOfflineStorage) {
-    console.log('[deliverToUserOrUsers]', packet, usersIds, notSaveInOfflineStorage)
     if (!usersIds?.length) {
       return
     }
 
-    for (const uId of usersIds) {
-      const userNodeData = await this.sessionRepository.getUserNodeData(uId)
+    const offlineUsersByPackets = []
+    const pushMessage = packet.pushMessage
+    delete packet.pushMessage
+
+    for (const userId of usersIds) {
+      const userNodeData = await this.sessionRepository.getUserNodeData(userId)
 
       if (!userNodeData?.length) {
         if (!notSaveInOfflineStorage) {
-          this.operationsLogRepository.savePacket(uId, packet)
+          this.operationsLogRepository.savePacket(userId, packet)
         }
+
+        offlineUsersByPackets.push(userId)
         continue
       }
-      this.#deliverToUserDevices(ws, userNodeData, uId, packet, notSaveInOfflineStorage)
+      this.#deliverToUserDevices(ws, userNodeData, userId, packet, notSaveInOfflineStorage)
+    }
+
+    if (offlineUsersByPackets.length && pushMessage) {
+      await this.pushNotificationsRepository.addPushNotificationToQueue(
+        offlineUsersByPackets,
+        pushMessage
+      );
     }
   }
 
