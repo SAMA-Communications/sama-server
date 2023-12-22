@@ -1,6 +1,6 @@
-import BaseMiddleware from "@sama/common/middleware.js"
-import { ACTIVE } from "@sama/store/session.js"
-import { ERROR_STATUES } from "@sama/constants/errors.js"
+import BaseMiddleware from '@sama/common/middleware.js'
+import { ACTIVE } from '@sama/store/session.js'
+import { ERROR_STATUES } from '@sama/constants/errors.js'
 
 class AuthGuardMiddleware extends BaseMiddleware {
   handle (ws, json) {

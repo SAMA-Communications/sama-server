@@ -1,11 +1,16 @@
 import BaseJSONController from './base.js'
 
 import { ERROR_STATUES } from '@sama/constants/errors.js'
+
 import { ACTIVE } from '@sama/store/session.js'
+
 import Contact from '@sama/models/contact.js'
+
 import ContactsMatchRepository from '@sama/repositories/contact_match_repository.js'
 import SessionRepository from '@sama/repositories/session_repository.js'
+
 import { ObjectId } from '@sama/lib/db.js'
+
 import Response from '@sama/networking/models/Response.js'
 
 class ContactsController extends BaseJSONController {

@@ -69,13 +69,14 @@ describe("Message function", async () => {
         };
       }
 
-      assert.strictEqual(requestData.message.id, responseData.ask.mid);
+      assert.strictEqual('xyz', responseData.ask.mid);
       assert.notEqual(responseData.ask.t, undefined);
     });
 
-    it("should fail ID not found", async () => {
+    it("should fail incorrect ID", async () => {
       const requestData = {
         message: {
+          id: 12312,
           body: "hey how is going?",
           cid: currentConversationId,
           x: {
@@ -95,7 +96,7 @@ describe("Message function", async () => {
       assert.equal(responseData.ask, undefined);
       assert.deepEqual(responseData.message.error, {
         status: 422,
-        message: "Message ID missed.",
+        message: "Incorrect message ID.",
       });
     });
 
@@ -641,7 +642,7 @@ describe("Message function", async () => {
       assert.equal(responseData.response.success, undefined);
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Message ID missed.",
+        message: "Message ID not found.",
       });
     });
 

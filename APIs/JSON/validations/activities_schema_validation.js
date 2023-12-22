@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { ERROR_STATUES } from "./constants/errors.js";
+import { ERROR_STATUES } from "@sama/constants/errors.js";
 
 export const activitiesSchemaValidation = {
   status_subscribe: Joi.object({

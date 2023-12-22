@@ -11,7 +11,7 @@
     "migrate-mongo-status": "npm run migrate-mongo status",
     "migrate-mongo-create": "npm run migrate-mongo create",
     "start": "nodemon --experimental-loader ./sama-loader.mjs -r dotenv/config index.js",
-    "test": "nyc mocha --node-option experimental-loader=./sama-loader.mjs --node-option require=dotenv/config"
+    "test": "nyc mocha --node-option experimental-loader=./sama-loader.mjs --node-option require=dotenv/config --exit"
   },
   "repository": {
     "type": "git",

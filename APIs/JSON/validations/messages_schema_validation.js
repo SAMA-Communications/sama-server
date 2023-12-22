@@ -1,15 +1,14 @@
 import Joi from "joi";
-import { ERROR_STATUES } from "./constants/errors.js";
+import { ERROR_STATUES } from "@sama/constants/errors.js";
 
 export const messagesSchemaValidation = {
   create: Joi.object()
     .keys({
       id: Joi.string()
         .min(1)
-        .required()
         .error(
-          new Error(ERROR_STATUES.MESSAGE_ID_MISSED.message, {
-            cause: ERROR_STATUES.MESSAGE_ID_MISSED,
+          new Error(ERROR_STATUES.INCORRECT_MESSAGE_ID.message, {
+            cause: ERROR_STATUES.INCORRECT_MESSAGE_ID,
           })
         ),
       cid: Joi.string()
@@ -49,10 +48,9 @@ export const messagesSchemaValidation = {
   edit: Joi.object({
     id: Joi.alternatives()
       .try(Joi.object(), Joi.string())
-      .required()
       .error(
-        new Error(ERROR_STATUES.MESSAGE_ID_MISSED.message, {
-          cause: ERROR_STATUES.MESSAGE_ID_MISSED,
+        new Error(ERROR_STATUES.INCORRECT_MESSAGE_ID.message, {
+          cause: ERROR_STATUES.INCORRECT_MESSAGE_ID,
         })
       ),
     body: Joi.string()

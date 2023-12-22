@@ -3,8 +3,9 @@ import jwt from 'jsonwebtoken'
 
 import BaseJSONController from './base.js'
 
-import { CONSTANTS } from '@sama/constants/constants.js'
+import { CONSTANTS as MAIN_CONSTANTS } from '@sama/constants/constants.js'
 import { ERROR_STATUES } from '@sama/constants/errors.js'
+
 import { ACTIVE } from '@sama/store/session.js'
 import clusterPort from '@sama/store/cluster_port.js'
 import { inMemoryBlockList } from '@sama/store/in_memory.js'
@@ -314,9 +315,9 @@ class UsersController extends BaseJSONController {
     const { id: requestId, user_search: requestParam } = data
 
     const limit =
-      requestParam.limit > CONSTANTS.LIMIT_MAX
-        ? CONSTANTS.LIMIT_MAX
-        : requestParam.limit || CONSTANTS.LIMIT_MAX
+      requestParam.limit > MAIN_CONSTANTS.LIMIT_MAX
+        ? MAIN_CONSTANTS.LIMIT_MAX
+        : requestParam.limit || MAIN_CONSTANTS.LIMIT_MAX
 
     const query = {
       login: { $regex: `^${requestParam.login.toLowerCase()}.*` },

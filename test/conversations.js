@@ -582,7 +582,9 @@ describe("Conversation functions", async () => {
         JSON.stringify(requestData)
       );
 
-      responseData = responseData.backMessages.at(0)
+      console.log('[responseData]', responseData)
+
+      responseData = responseData.backMessages.at(-1)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.conversation, undefined);
@@ -607,7 +609,7 @@ describe("Conversation functions", async () => {
         JSON.stringify(requestData)
       );
 
-      responseData = responseData.backMessages.at(0)
+      responseData = responseData.backMessages.at(-1)
 
       assert.strictEqual(requestData.request.id, responseData.response.id);
       assert.notEqual(responseData.response.conversation, undefined);

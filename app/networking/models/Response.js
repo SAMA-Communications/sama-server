@@ -4,9 +4,20 @@ class Response {
   lastActivityStatus = null
 
   constructor(backMessages, deliverMessages, lastActivityStatus) {
-    this.backMessages = backMessages ? backMessages : this.backMessages
-    this.deliverMessages = deliverMessages ? deliverMessages : this.deliverMessages
+    this.backMessages = this.backMessages.concat(backMessages || [])
+    this.deliverMessages = this.deliverMessages.concat(deliverMessages || [])
     this.lastActivityStatus = lastActivityStatus ? lastActivityStatus : this.lastActivityStatus
+  }
+
+  merge(response) {
+    this.backMessages = this.backMessages.concat(response.backMessages)
+    this.deliverMessages = this.deliverMessages.concat(response.deliverMessages)
+
+    if (response.lastActivityStatus) {
+      this.lastActivityStatus = response.lastActivityStatus
+    }
+
+    return this
   }
 
   addBackMessage(...messages) {

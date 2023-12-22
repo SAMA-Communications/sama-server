@@ -7,7 +7,7 @@ import validate, {
   validateIsUserHasPermission,
 } from '@sama/lib/validation.js'
 
-import { CONSTANTS } from '@sama/constants/constants.js'
+import { CONSTANTS as MAIN_CONSTANTS } from '@sama/constants/constants.js'
 import { ERROR_STATUES } from '@sama/constants/errors.js'
 
 import {
@@ -54,6 +54,7 @@ class MessagesController extends BaseJSONController {
   async create(ws, data) {
     const { message: messageParams } = data
     const messageId = messageParams.id
+    delete messageParams.id
 
     const response = new Response()
 
@@ -211,9 +212,9 @@ class MessagesController extends BaseJSONController {
     ])
 
     const limitParam =
-      limit > CONSTANTS.LIMIT_MAX
-        ? CONSTANTS.LIMIT_MAX
-        : limit || CONSTANTS.LIMIT_MAX
+      limit > MAIN_CONSTANTS.LIMIT_MAX
+        ? MAIN_CONSTANTS.LIMIT_MAX
+        : limit || MAIN_CONSTANTS.LIMIT_MAX
 
     const query = {
       cid,

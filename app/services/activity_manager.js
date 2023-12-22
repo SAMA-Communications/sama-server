@@ -1,10 +1,14 @@
-import User from '../models/user.js'
+import BaseService from './base.js'
+
 import { ACTIVE } from '../store/session.js'
 import { ACTIVITY } from '../store/activity.js'
+
+import User from '../models/user.js'
 import SessionRepository from '../repositories/session_repository.js'
 
-class ActivityManager {
+class ActivityManager extends BaseService {
   constructor() {
+    super()
     this.sessionRepository = new SessionRepository(ACTIVE)
   }
 

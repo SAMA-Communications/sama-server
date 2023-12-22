@@ -2,9 +2,13 @@ import BaseJSONController from './base.js'
 
 import { ACTIVE } from '@sama/store/session.js'
 import { ACTIVITY } from '@sama/store/activity.js'
+
 import User from '@sama/models/user.js'
+
 import SessionRepository from '@sama/repositories/session_repository.js'
+
 import activityManager from '@sama/services/activity_manager.js'
+
 import Response from '@sama/networking/models/Response.js'
 
 class LastActivitiesController extends BaseJSONController {
