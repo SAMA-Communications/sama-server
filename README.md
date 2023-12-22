@@ -31,12 +31,55 @@ https://medium.com/sama-communications/introducing-sama-simple-but-advanced-mess
 - Make sure you have `Node 18` installed.
 - Copy `.env.example` to `.env`.
 - Run `docker-compose up` to run dependant services (MongoDB, Minio, Redis)
-- Open `http://localhost:9011/access-keys`, create Access Keys and set `MINIO_ACCESS_KEY` and `MINIO_SECRET_KEY` in `.env`. To access the minio dashboard, you need to enter `MINIO_ROOT_USER` from `docker-compose.yml` as for the `username` field and `MINIO_ROOT_PASSWORD` as for the `password` field. 
 - `npm install` to install dependencies 
 - `npm run migrate-mongo-up` to run DB migrations 
 - `npm run start` to run server
 
 There are also other components. Make sure to check [Deploying SAMA chat server stack: a comprehensive guide](https://medium.com/sama-communications/deploying-sama-chat-server-stack-a-comprehensive-guide-294ddb9a2d78)
+
+### Docker one-command deployment
+To build and run the `SAMA` with all dependencies, you can use the following command:
+```
+docker-compose -f docker-compose-full.yml up --build
+```
+If you only want to run dependency services (for local development without Docker), use this command:
+```
+docker-compose up
+```
+Run dependency services with `SAMA` main apps:
+```
+RUN_SAMA=true docker-compose up --build
+```
+:warning: If you are using MacOS or Windows, and want run `SAMA` apps, add these two variables before the launch command:
+MacOS
+```
+MINIO_ENDPOINT=$(ipconfig getifaddr en0) MINIO_PORT=9010
+```
+Windows
+```
+$env:MINIO_ENDPOINT = (Get-NetIPAddress | Where-Object { $_.AddressFamily -eq 'IPv4' -and $_.IPAddress -match '^192\.168\.|^10\.|^172\.(1[6-9]|2[0-9]|3[0-1])\.' } | Select-Object -ExpandProperty IPAddress)[1]; $env:MINIO_PORT = 9010;
+```
+
+If you are encountering issues with attachments in the web client, it suggests that an error occurred in the first variable. To resolve this, you can simply update the code segment with the private IP address of your machine.
+
+Now you can access apps at the following addresses:
+- [Server-API](http://localhost:9000)
+- [Web-Client](http://localhost:3000)
+- [Minio-API](http://localhost:9010)
+- [Minio-Client](http://localhost:9011)
+- [Push-dashboard](http://localhost:3001/ui)
+- [Server-dashboard](http://localhost:9002)
+- [Redis-commander](http://localhost:8081)
+
+### Docker e2e tests
+Run migrations:
+```
+docker-compose exec sama-server sh -c "MONGODB_URL=mongodb://172.25.0.4/samatests npm run migrate-mongo-up"
+```
+Run e2e tests:
+```
+docker-compose exec sama-server sh -c "MONGODB_URL=mongodb://172.25.0.4/samatests npm run test"
+```
 
 ## Public cloud
 
@@ -52,7 +95,7 @@ Also, there is a set of detailed articles for each API:
 - [Messages API](https://medium.com/sama-communications/sama-chat-server-api-messages-dc00e9684dc0)
 - [Activities API](https://medium.com/sama-communications/sama-chat-server-api-activities-97b712b88671)
 - [Address Book API](https://medium.com/sama-communications/sama-chat-server-api-address-book-f297ce25faa1)
-- [Push Notifications API - coming soon](https://medium.com/sama-communications/sama-chat-server-api-push-notifications-7e904eb04a0c)
+- [Push Notifications API](https://medium.com/sama-communications/sama-chat-server-api-push-notifications-7e904eb04a0c)
 
 ## Clustering
 

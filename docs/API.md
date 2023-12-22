@@ -432,14 +432,123 @@ After adding users to a conversation, if they are online, they will receive the 
   event: {
     conversation_created: {
       _id: "646e2092d80fe5c4e688dfa0",
-      type: "u",
-      opponent_id: "646c823bf989c57fe910d289",
-      participants: [ "646c823bf989c57fe910d289" ],
+      name: "Group without Lane",
+      type: "g",
       owner_id: "646c82947b3aceab988c0073",
+      last_message: {
+        _id: "655f205fc52f990d27d58226",
+        body: "Lane Stark has been added to the group",
+        from: "64cb6b1eef440b9c5bf18d6a",
+        t: 1700733023,
+        status: "sent"
+      },
+      unread_messages_count: 1,
       created_at: "2023-05-24T14:34:58.066Z",
       updated_at: "2023-05-24T14:52:24.953Z"
     }
   }
+}
+
+```
+
+The following message will also be sent to all users who are online and saved in the `Message` collection:
+
+```
+{
+  _id: "655b479fe980b3e36f402234",
+  body: "Ivan Ivanovich has been added to the group",
+  cid: "646e2092d80fe5c4e688dfa0",
+  from: "646c82947b3aceab988c0073",
+  status: "sent"
+  t: 1700480927,
+  x: {
+    type: "added_participant",
+    user: {
+      _id: "64cb6b2def440b9c5bf18d6d",
+      login: "ivan1991",
+      recent_activity: 1700149064,
+      first_name: "Ivan",
+      last_name: "Ivanovich",
+      email: "DonateforUkraine@gmail.com"
+    }
+  },
+  created_at: "2023-05-24T14:34:58.066Z"
+}
+```
+
+After kicking users out of the conversation, if they are online, they will receive the following event:
+
+```
+{
+  event: {
+    conversation_kicked: {
+      _id: "646e2092d80fe5c4e688dfa0",
+      name: "Group without Lane",
+      type: "g",
+      owner_id: "646c82947b3aceab988c0073",
+        last_message: {
+        _id: "655f205fc52f990d27d58226",
+        body: "Lane Stark has been added to the group",
+        from: "64cb6b1eef440b9c5bf18d6a",
+        t: 1700733023,
+        status: "sent"
+      },
+      unread_messages_count: 1,
+      created_at: "2023-05-24T14:34:58.066Z",
+      updated_at: "2023-05-24T14:52:24.953Z"
+    }
+  }
+}
+
+```
+
+The following message will also be sent to all users who are online and saved in the `Message` collection:
+
+```
+{
+  _id: "655b479fe980b3e36f402234",
+  body: "Ivan Ivanovich has been added to the group",
+  cid: "646e2092d80fe5c4e688dfa0",
+  from: "646c82947b3aceab988c0073",
+  status: "sent"
+  t: 1700480927,
+  x: {
+    type: "added_participant",
+    user: {
+      _id: "64cb6b2def440b9c5bf18d6d",
+      login: "ivan1991",
+      recent_activity: 1700149064,
+      first_name: "Ivan",
+      last_name: "Ivanovich",
+      email: "DonateforUkraine@gmail.com"
+    }
+  },
+  created_at: "2023-05-24T14:34:58.066Z"
+}
+```
+
+The following message will also be sent to all users who are online and saved in the `Message` collection:
+
+```
+{
+  _id: "655b479fe980b3e36f402234",
+  body: "Lane Stark has been remove from the group",
+  cid: "646e2092d80fe5c4e688dfa0",
+  from: "646c82947b3aceab988c0073",
+  status: "sent"
+  t: 1700480927,
+  x: {
+    type: "removed_participant",
+    user: {
+      _id: "64cb6b2def440b9c5bf18d6d",
+      login: "lane1991",
+      recent_activity: 1700149064,
+      first_name: "Lane",
+      last_name: "Stark",
+      email: "DonateforUkraine@gmail.com"
+    }
+  },
+  created_at: "2023-05-24T14:34:58.066Z"
 }
 ```
 
