@@ -35,7 +35,7 @@ class PacketManager {
 
     for (const recipient of wsRecipient) {
       try {
-        const mappedMessage = await packetMapper.mapPacket(ws.apiType, recipient.ws.apiType, packet)
+        const mappedMessage = await packetMapper.mapPacket(ws?.apiType, recipient.ws?.apiType, packet)
         recipient.ws.send(mappedMessage)
       } catch (err) {
         console.error(`[PacketProcessor] send on socket error`, err)
