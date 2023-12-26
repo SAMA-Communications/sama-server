@@ -44,7 +44,6 @@ class PacketManager {
   }
 
   #deliverToUserDevices(ws, nodeConnections, userId, packet, notSaveInOfflineStorage) {
-    console.log('[deliverToUserDevices]', nodeConnections, userId, packet)
     nodeConnections.forEach(async (data) => {
       const nodeInfo = JSON.parse(data)
       const nodeUrl = nodeInfo[Object.keys(nodeInfo)[0]]

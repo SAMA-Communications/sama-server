@@ -18,6 +18,7 @@ const sessionRepository = new SessionRepository(ACTIVE)
 
 const onMessage = async (ws, message) => {
   const stringMessage = decoder.write(Buffer.from(message))
+  console.log('[RECV]', stringMessage)
 
   if (!ws.apiType) {
     const apiType = detectAPIType(ws, stringMessage)
@@ -48,7 +49,7 @@ const onMessage = async (ws, message) => {
 
   for (const deliverMessage of response.deliverMessages) {
     try {
-      console.log('[DELIVER]', deliverMessage.usersIds, deliverMessage)
+      console.log('[DELIVER]', deliverMessage)
       await packetManager.deliverToUserOrUsers(
         deliverMessage.ws || ws,
         deliverMessage.packet,
