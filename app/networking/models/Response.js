@@ -1,20 +1,20 @@
 class Response {
   backMessages = []
   deliverMessages = []
-  lastActivityStatus = null
+  lastActivityStatusResponse = null
 
-  constructor(backMessages, deliverMessages, lastActivityStatus) {
+  constructor(backMessages, deliverMessages, lastActivityStatusResponse) {
     this.backMessages = this.backMessages.concat(backMessages || [])
     this.deliverMessages = this.deliverMessages.concat(deliverMessages || [])
-    this.lastActivityStatus = lastActivityStatus ? lastActivityStatus : this.lastActivityStatus
+    this.lastActivityStatusResponse = lastActivityStatusResponse ? lastActivityStatusResponse : this.lastActivityStatusResponse
   }
 
   merge(response) {
     this.backMessages = this.backMessages.concat(response.backMessages)
     this.deliverMessages = this.deliverMessages.concat(response.deliverMessages)
 
-    if (response.lastActivityStatus) {
-      this.lastActivityStatus = response.lastActivityStatus
+    if (response.lastActivityStatusResponse) {
+      this.lastActivityStatusResponse = response.lastActivityStatusResponse
     }
 
     return this
@@ -30,8 +30,8 @@ class Response {
     return this
   }
 
-  updateLastActivityStatus(status) {
-    this.lastActivityStatus = status
+  updateLastActivityStatus(statusResponse) {
+    this.lastActivityStatusResponse = statusResponse
     return this
   }
 }

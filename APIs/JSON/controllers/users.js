@@ -21,6 +21,7 @@ import SessionRepository from '@sama/repositories/session_repository.js'
 import activityManager from '@sama/services/activity_manager.js'
 
 import Response from '@sama/networking/models/Response.js'
+import LastActivityStatusResponse from '@sama/networking/models/LastActivityStatusResponse.js'
 
 class UsersController extends BaseJSONController {
   constructor() {
@@ -157,7 +158,7 @@ class UsersController extends BaseJSONController {
 
     return new Response()
       .addBackMessage({ response: { id: requestId, user: user.visibleParams(), token: jwtToken } })
-      .updateLastActivityStatus(MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE)
+      .updateLastActivityStatus(new LastActivityStatusResponse(userId, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE))
   }
 
   async edit(ws, data) {
@@ -266,7 +267,7 @@ class UsersController extends BaseJSONController {
 
       return new Response()
         .addBackMessage({ response: { id: requestId, success: true } })
-        .updateLastActivityStatus(MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE)
+        .updateLastActivityStatus(new LastActivityStatusResponse(userId, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE))
     } else {
       throw new Error(ERROR_STATUES.UNAUTHORIZED.message, {
         cause: ERROR_STATUES.UNAUTHORIZED,

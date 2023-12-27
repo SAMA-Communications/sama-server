@@ -6,6 +6,7 @@ import { ACTIVE } from '../store/session.js'
 import { ACTIVITY } from '../store/activity.js'
 
 import User from '../models/user.js'
+
 import SessionRepository from '../repositories/session_repository.js'
 
 class ActivityManager extends BaseService {
@@ -14,8 +15,8 @@ class ActivityManager extends BaseService {
     this.sessionRepository = new SessionRepository(ACTIVE)
   }
 
-  async statusUnsubscribe(ws) {
-    const currentUId = this.sessionRepository.getSessionUserId(ws)
+  async statusUnsubscribe(ws, userId) {
+    const currentUId = this.sessionRepository.getSessionUserId(ws) || userId
 
     const oldTrackerUserId = ACTIVITY.SUBSCRIBED_TO[currentUId]
     const oldUserSubscribers = ACTIVITY.SUBSCRIBERS[oldTrackerUserId]
@@ -42,7 +43,7 @@ class ActivityManager extends BaseService {
         { _id: userId },
         { $set: { recent_activity: currentTime } }
       )
-      await this.statusUnsubscribe(ws)
+      await this.statusUnsubscribe(ws, userId)
     }
 
     const subscriptions = Object.keys(ACTIVITY.SUBSCRIBERS[userId])

@@ -64,10 +64,10 @@ const onMessage = async (ws, message) => {
     }
   }
 
-  if (response.lastActivityStatus) {
-    const userId = sessionRepository.getSessionUserId(ws)
-    console.log('[UPDATE_LAST_ACTIVITY]', userId, response.lastActivityStatus)
-    await activitySender.updateAndSendUserActivity(ws, userId, response.lastActivityStatus)
+  if (response.lastActivityStatusResponse) {
+    const userId = response.lastActivityStatusResponse.userId || sessionRepository.getSessionUserId(ws)
+    console.log('[UPDATE_LAST_ACTIVITY]', userId, response.lastActivityStatusResponse)
+    await activitySender.updateAndSendUserActivity(ws, userId, response.lastActivityStatusResponse.status)
   }
 }
 
