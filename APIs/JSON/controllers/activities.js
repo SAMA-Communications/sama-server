@@ -1,5 +1,7 @@
 import BaseJSONController from './base.js'
 
+import { CONSTANTS as MAIN_CONSTANTS } from '@sama/constants/constants.js'
+
 import { ACTIVE } from '@sama/store/session.js'
 import { ACTIVITY } from '@sama/store/activity.js'
 
@@ -41,7 +43,7 @@ class LastActivitiesController extends BaseJSONController {
 
     const activeSessions = await this.sessionRepository.getUserNodeData(uId)
     if (activeSessions.length) {
-      obj[uId] = 'online'
+      obj[uId] = MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE
     } else {
       const uLastActivity = await User.findOne({ _id: uId })
       obj[uId] = uLastActivity.params.recent_activity
@@ -73,7 +75,7 @@ class LastActivitiesController extends BaseJSONController {
     for (const user of uLastActivities) {
       const uId = user._id.toString()
       const isUserOnline = await this.sessionRepository.getUserNodeData(uId)
-      obj[uId] = !!isUserOnline? 'online' : user.recent_activity
+      obj[uId] = !!isUserOnline? MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE : user.recent_activity
     }
 
     return new Response().addBackMessage({ response: { id: requestId, last_activity: obj } })

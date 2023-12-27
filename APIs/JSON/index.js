@@ -1,6 +1,9 @@
-import BaseAPI from "@sama/common/API.js"
-import packetJsonProcessor from "./routes/packet_processor.js"
-import { detectJsonMessage } from "./utils/detect_message.js"
+import BaseAPI from '@sama/common/API.js'
+
+import { CONSTANTS as MAIN_CONSTANTS } from '@sama/constants/constants.js'
+
+import packetJsonProcessor from './routes/packet_processor.js'
+import { detectJsonMessage } from './utils/detect_message.js'
 
 export default class JsonAPI extends BaseAPI {
   detectMessage (ws, message) {
@@ -23,7 +26,11 @@ export default class JsonAPI extends BaseAPI {
   }
 
   buildLastActivityPackage(userId, timestamp, status) {
-    const message = { last_activity: { [userId]: status || timestamp } }
+    const message = {
+      last_activity: {
+        [userId]: status === MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE ? status : timestamp
+      }
+    }
     return this.stringifyMessage(message)
   }
 }

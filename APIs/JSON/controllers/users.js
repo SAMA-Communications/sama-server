@@ -157,7 +157,7 @@ class UsersController extends BaseJSONController {
 
     return new Response()
       .addBackMessage({ response: { id: requestId, user: user.visibleParams(), token: jwtToken } })
-      .updateLastActivityStatus('online')
+      .updateLastActivityStatus(MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE)
   }
 
   async edit(ws, data) {
@@ -266,7 +266,7 @@ class UsersController extends BaseJSONController {
 
       return new Response()
         .addBackMessage({ response: { id: requestId, success: true } })
-        .updateLastActivityStatus('offline')
+        .updateLastActivityStatus(MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE)
     } else {
       throw new Error(ERROR_STATUES.UNAUTHORIZED.message, {
         cause: ERROR_STATUES.UNAUTHORIZED,

@@ -5,6 +5,7 @@ import { StringDecoder } from 'string_decoder'
 import SessionRepository from '../repositories/session_repository.js'
 import clusterManager from '../cluster/cluster_manager.js'
 import { ACTIVE } from '../store/session.js'
+import { CONSTANTS as MAIN_CONSTANTS } from '../constants/constants.js'
 import { ERROR_STATUES } from '../constants/errors.js'
 import packetManager from './packet_manager.js'
 import packetMapper from './packet_mapper.js'
@@ -105,7 +106,7 @@ class ClientManager {
             }
             return true
           })
-          await activitySender.updateAndSendUserActivity(ws, userId, 'offline')
+          await activitySender.updateAndSendUserActivity(ws, userId, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE)
         }
         ACTIVE.SESSIONS.delete(ws)
       },

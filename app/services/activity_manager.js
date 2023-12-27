@@ -1,5 +1,7 @@
 import BaseService from './base.js'
 
+import { CONSTANTS as MAIN_CONSTANTS } from '../constants/constants.js'
+
 import { ACTIVE } from '../store/session.js'
 import { ACTIVITY } from '../store/activity.js'
 
@@ -35,7 +37,7 @@ class ActivityManager extends BaseService {
 
     const currentTime = Math.round(new Date() / 1000)
 
-    if (status !== 'online') {
+    if (status !== MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE) {
       await User.updateOne(
         { _id: userId },
         { $set: { recent_activity: currentTime } }
