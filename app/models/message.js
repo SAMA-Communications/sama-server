@@ -1,4 +1,4 @@
-import BaseModel from './base/base.js'
+import BaseModel from './base.js'
 import MessageStatus from './message_status.js'
 import { ObjectId } from '../lib/db.js'
 

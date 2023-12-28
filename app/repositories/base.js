@@ -4,7 +4,7 @@ export default class BaseRepository {
     this.inMemoryStorage = inMemoryStorage
   }
 
-  warmCache() {
-    throw 'not implemented'
+  async warmCache() {
+    throw new Error('Not implemented')
   }
 }

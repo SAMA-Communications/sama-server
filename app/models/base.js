@@ -1,5 +1,5 @@
-import { getDb, ObjectId } from '../../lib/db.js'
-import { slice } from '../../utils/req_res_utils.js'
+import { getDb, ObjectId } from '../lib/db.js'
+import { slice } from '../utils/req_res_utils.js'
 
 export default class BaseModel {
   constructor(params) {

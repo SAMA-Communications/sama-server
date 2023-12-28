@@ -1,4 +1,4 @@
-import BaseModel from '@sama/models/base/base.js'
+import BaseModel from '@sama/models/base.js'
 
 export default class PushEvent extends BaseModel {
   constructor(params) {

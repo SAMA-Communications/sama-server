@@ -1,4 +1,4 @@
-import BaseModel from './base/base.js'
+import BaseModel from './base.js'
 
 export default class Conversation extends BaseModel {
   constructor(params) {

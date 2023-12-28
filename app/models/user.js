@@ -1,4 +1,4 @@
-import BaseModel from './base/base.js'
+import BaseModel from './base.js'
 import { hashPassword, verifyPassword } from '../utils/crypto_utils.js'
 
 export default class User extends BaseModel {
