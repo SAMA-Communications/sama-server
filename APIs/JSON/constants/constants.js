@@ -22,4 +22,4 @@ export const CONSTANTS = {
     added_participant: 'has been added to the group',
     removed_participant: 'has been removed from the group',
   },
-};
+}

@@ -1,10 +1,10 @@
-import Joi from "joi";
-import { ERROR_STATUES } from "@sama/constants/errors.js";
+import Joi from 'joi'
+import { ERROR_STATUES } from '@sama/constants/errors.js'
 
 export const pushNotificationsSchemaValidation = {
   push_subscription_create: Joi.object({
     platform: Joi.string()
-      .valid("web", "ios", "android")
+      .valid('web', 'ios', 'android')
       .required()
       .error(
         new Error(ERROR_STATUES.INCORRECT_PLATFROM_TYPE.message, {
@@ -82,4 +82,4 @@ export const pushNotificationsSchemaValidation = {
         })
       ),
   }).required(),
-};
+}

@@ -1,14 +1,14 @@
-import BaseModel from "./base/base.js";
+import BaseModel from './base/base.js'
 
 export default class Status extends BaseModel {
   constructor(params) {
-    super(params);
+    super(params)
   }
   static get collection() {
-    return "status";
+    return 'status'
   }
 
   static get visibleFields() {
-    return ["_id", "created_at", "updated_at", "t", "type", "cid"];
+    return ['_id', 'created_at', 'updated_at', 't', 'type', 'cid']
   }
 }

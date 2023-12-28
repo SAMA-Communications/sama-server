@@ -11,7 +11,7 @@ class AuthGuardMiddleware extends BaseMiddleware {
     ) {
       throw new Error(ERROR_STATUES.UNAUTHORIZED.message, {
         cause: ERROR_STATUES.UNAUTHORIZED,
-      });
+      })
     }
   }
 }

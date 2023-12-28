@@ -1,5 +1,5 @@
-import Joi from "joi";
-import { ERROR_STATUES } from "@sama/constants/errors.js";
+import Joi from 'joi'
+import { ERROR_STATUES } from '@sama/constants/errors.js'
 
 export const messagesSchemaValidation = {
   create: Joi.object()
@@ -21,7 +21,7 @@ export const messagesSchemaValidation = {
       x: Joi.object(),
       body: Joi.string()
         .max(65536)
-        .allow("")
+        .allow('')
         .error(
           new Error(ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY.message, {
             cause: ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY,
@@ -44,7 +44,7 @@ export const messagesSchemaValidation = {
         Joi.alternatives().try(Joi.object(), Joi.string()).required()
       ),
     })
-    .or("body", "attachments"),
+    .or('body', 'attachments'),
   edit: Joi.object({
     id: Joi.alternatives()
       .try(Joi.object(), Joi.string())
@@ -92,21 +92,21 @@ export const messagesSchemaValidation = {
         })
       ),
     type: Joi.string()
-      .valid("all", "myself")
+      .valid('all', 'myself')
       .required()
       .error((errors) => {
         return errors.map((error) => {
           switch (error.code) {
-            case "any.only":
+            case 'any.only':
               return new Error(ERROR_STATUES.INCORRECT_TYPE.message, {
                 cause: ERROR_STATUES.INCORRECT_TYPE,
-              });
+              })
             default:
               return new Error(ERROR_STATUES.MESSAGE_TYPE_MISSED.message, {
                 cause: ERROR_STATUES.MESSAGE_TYPE_MISSED,
-              });
+              })
           }
-        });
+        })
       }),
     ids: Joi.array()
       .items(Joi.alternatives().try(Joi.object(), Joi.string()).required())
@@ -121,4 +121,4 @@ export const messagesSchemaValidation = {
       Joi.alternatives().try(Joi.object(), Joi.string()).required()
     ),
   }).required(),
-};
+}

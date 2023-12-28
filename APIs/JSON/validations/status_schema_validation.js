@@ -1,5 +1,5 @@
-import Joi from "joi";
-import { ERROR_STATUES } from "@sama/constants/errors.js";
+import Joi from 'joi'
+import { ERROR_STATUES } from '@sama/constants/errors.js'
 
 export const statusSchemaValidation = {
   typing: Joi.object({
@@ -19,21 +19,21 @@ export const statusSchemaValidation = {
         })
       ),
     type: Joi.string()
-      .valid("start", "stop")
+      .valid('start', 'stop')
       .required()
       .error((errors) => {
         return errors.map((error) => {
           switch (error.code) {
-            case "any.only":
+            case 'any.only':
               return new Error(ERROR_STATUES.INCORRECT_TYPE.message, {
                 cause: ERROR_STATUES.INCORRECT_TYPE,
-              });
+              })
             default:
               return new Error(ERROR_STATUES.STATUS_TYPE_MISSED.message, {
                 cause: ERROR_STATUES.STATUS_TYPE_MISSED,
-              });
+              })
           }
-        });
+        })
       }),
     t: Joi.number()
       .required()
@@ -43,4 +43,4 @@ export const statusSchemaValidation = {
         })
       ),
   }).required(),
-};
+}

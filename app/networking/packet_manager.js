@@ -129,7 +129,7 @@ class PacketManager {
       await this.pushNotificationsRepository.addPushNotificationToQueue(
         offlineUsersByPackets,
         pushMessage
-      );
+      )
     }
   }
 

@@ -1,27 +1,27 @@
-import Joi from "joi";
-import { ERROR_STATUES } from "@sama/constants/errors.js";
+import Joi from 'joi'
+import { ERROR_STATUES } from '@sama/constants/errors.js'
 
 export const conversationsSchemaValidation = {
   create: Joi.object({
     type: Joi.string()
-      .valid("u", "g")
+      .valid('u', 'g')
       .required()
       .error((errors) => {
         return errors.map((error) => {
           switch (error.code) {
-            case "any.only":
+            case 'any.only':
               return new Error(ERROR_STATUES.INCORRECT_TYPE.message, {
                 cause: ERROR_STATUES.INCORRECT_TYPE,
-              });
+              })
             default:
               return new Error(ERROR_STATUES.CONVERSATION_TYPE_MISSED.message, {
                 cause: ERROR_STATUES.CONVERSATION_TYPE_MISSED,
-              });
+              })
           }
-        });
+        })
       }),
-    name: Joi.alternatives().conditional("type", {
-      is: "g",
+    name: Joi.alternatives().conditional('type', {
+      is: 'g',
       then: Joi.string()
         .max(255)
         .required()
@@ -33,8 +33,8 @@ export const conversationsSchemaValidation = {
       otherwise: Joi.string().max(255),
     }),
     description: Joi.string().max(255),
-    opponent_id: Joi.alternatives().conditional("type", {
-      is: "u",
+    opponent_id: Joi.alternatives().conditional('type', {
+      is: 'u',
       then: Joi.alternatives().try(Joi.object(), Joi.string()),
     }),
     //not needed field in validation
@@ -47,16 +47,16 @@ export const conversationsSchemaValidation = {
       .error((errors) => {
         return errors.map((error) => {
           switch (error.code) {
-            case "array.max":
+            case 'array.max':
               return new Error(ERROR_STATUES.TOO_MANY_USERS_IN_GROUP.message, {
                 cause: ERROR_STATUES.TOO_MANY_USERS_IN_GROUP,
-              });
+              })
             default:
               return new Error(ERROR_STATUES.USER_SELECTED.message, {
                 cause: ERROR_STATUES.USER_SELECTED,
-              });
+              })
           }
-        });
+        })
       }),
   }).required(),
   update: Joi.object({
@@ -91,7 +91,7 @@ export const conversationsSchemaValidation = {
         })
       ),
     includes: Joi.array()
-      .items(Joi.string().valid("id"))
+      .items(Joi.string().valid('id'))
       .min(1)
       .error(
         new Error(ERROR_STATUES.INCORRECT_INCLUDES.message, {
@@ -99,4 +99,4 @@ export const conversationsSchemaValidation = {
         })
       ),
   }).required(),
-};
+}

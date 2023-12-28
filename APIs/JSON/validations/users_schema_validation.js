@@ -1,5 +1,5 @@
-import Joi from "joi";
-import { ERROR_STATUES } from "@sama/constants/errors.js";
+import Joi from 'joi'
+import { ERROR_STATUES } from '@sama/constants/errors.js'
 
 export const usersSchemaValidation = {
   create: Joi.object({
@@ -44,7 +44,7 @@ export const usersSchemaValidation = {
     login: Joi.string().min(3).max(40),
     first_name: Joi.string().min(1).max(20),
     last_name: Joi.string().min(1).max(20),
-  }).with("current_password", "current_password"),
+  }).with('current_password', 'current_password'),
   login: Joi.object()
     .keys({
       login: Joi.string().error(
@@ -63,8 +63,8 @@ export const usersSchemaValidation = {
           })
         ),
     })
-    .oxor("token", "login")
-    .with("login", "password"),
+    .oxor('token', 'login')
+    .with('login', 'password'),
   logout: Joi.object({}).required(),
   delete: Joi.object({}).required(),
   search: Joi.object({
@@ -77,4 +77,4 @@ export const usersSchemaValidation = {
       Joi.alternatives().try(Joi.object(), Joi.string())
     ),
   }).required(),
-};
+}

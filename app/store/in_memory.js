@@ -1,4 +1,4 @@
-const inMemoryConversations = {};
-const inMemoryBlockList = {};
+const inMemoryConversations = {}
+const inMemoryBlockList = {}
 
-export { inMemoryConversations, inMemoryBlockList };
+export { inMemoryConversations, inMemoryBlockList }

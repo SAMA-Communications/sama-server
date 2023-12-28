@@ -2,7 +2,7 @@ import BaseRepository from './base.js'
 
 export default class ConversationParticipantsRepository extends BaseRepository {
   constructor(model) {
-    super(model, null);
+    super(model, null)
   }
 
   async findParticipantsByConversation(cid) {

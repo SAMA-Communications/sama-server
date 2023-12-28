@@ -1,26 +1,26 @@
-import { default as ContactsController } from "../controllers/contacts.js";
-import { default as ConversationsController } from "../controllers/conversations.js";
-import { default as FilesController } from "../controllers/files.js";
-import { default as LastActivityiesController } from "../controllers/activities.js";
-import { default as MessagesController } from "../controllers/messages.js";
-import { default as OperationsLogController } from "../controllers/operations_log.js";
-import { default as PushNotificationsController } from "../controllers/push_notifications.js";
-import { default as StatusesController } from "../controllers/status.js";
-import { default as UsersBlockController } from "../controllers/users_block.js";
-import { default as UsersController } from "../controllers/users.js";
+import { default as ContactsController } from '../controllers/contacts.js'
+import { default as ConversationsController } from '../controllers/conversations.js'
+import { default as FilesController } from '../controllers/files.js'
+import { default as LastActivityiesController } from '../controllers/activities.js'
+import { default as MessagesController } from '../controllers/messages.js'
+import { default as OperationsLogController } from '../controllers/operations_log.js'
+import { default as PushNotificationsController } from '../controllers/push_notifications.js'
+import { default as StatusesController } from '../controllers/status.js'
+import { default as UsersBlockController } from '../controllers/users_block.js'
+import { default as UsersController } from '../controllers/users.js'
 
-import authGuardMiddleware from "../middleware/auth_guard.js"
+import authGuardMiddleware from '../middleware/auth_guard.js'
 
-import { activitiesSchemaValidation } from "../validations/activities_schema_validation.js";
-import { contactsSchemaValidation } from "../validations/contacts_schema_validation.js";
-import { conversationsSchemaValidation } from "../validations/conversations_schema_validation.js";
-import { filesSchemaValidation } from "../validations/files_schema_validation.js";
-import { messagesSchemaValidation } from "../validations/messages_schema_validation.js";
-import { operationsLogSchemaValidation } from "../validations/operations_log_schema_validation.js";
-import { pushNotificationsSchemaValidation } from "../validations/push_notifications_schema_validation.js";
-import { statusSchemaValidation } from "../validations/status_schema_validation.js";
-import { usersBlockSchemaValidation } from "../validations/users_block_schema_validation.js";
-import { usersSchemaValidation } from "../validations/users_schema_validation.js";
+import { activitiesSchemaValidation } from '../validations/activities_schema_validation.js'
+import { contactsSchemaValidation } from '../validations/contacts_schema_validation.js'
+import { conversationsSchemaValidation } from '../validations/conversations_schema_validation.js'
+import { filesSchemaValidation } from '../validations/files_schema_validation.js'
+import { messagesSchemaValidation } from '../validations/messages_schema_validation.js'
+import { operationsLogSchemaValidation } from '../validations/operations_log_schema_validation.js'
+import { pushNotificationsSchemaValidation } from '../validations/push_notifications_schema_validation.js'
+import { statusSchemaValidation } from '../validations/status_schema_validation.js'
+import { usersBlockSchemaValidation } from '../validations/users_block_schema_validation.js'
+import { usersSchemaValidation } from '../validations/users_schema_validation.js'
 
 export const routes = {
   typing: (ws, json) =>
@@ -272,4 +272,4 @@ export const routes = {
       pushNotificationsSchemaValidation.push_event_create
     )
     .push_event_create(ws, json),
-};
+}
