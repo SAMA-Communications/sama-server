@@ -1,6 +1,5 @@
 import User from './../app/models/user.js'
 import assert from 'assert'
-import { connectToDBPromise, getClient } from './../app/lib/db.js'
 import {
   createConversation,
   createUserArray,
@@ -16,7 +15,6 @@ let userId = []
 
 describe(`Sending 'typing' status`, async () => {
   before(async () => {
-    await connectToDBPromise()
     userId = await createUserArray(2)
 
     currentUserToken = (await sendLogin(mockedWS, 'user_1')).response.user
@@ -193,6 +191,5 @@ describe(`Sending 'typing' status`, async () => {
 
   after(async () => {
     await User.clearCollection()
-    await getClient().close()
   })
 })

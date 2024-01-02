@@ -1,11 +1,6 @@
-import Minio from './../app/lib/storage/minio.js'
-import RedisClient from '../app/lib/redis.js'
-import S3 from './../app/lib/storage/s3.js'
-import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
+import '../index.js'
 
-globalThis.storageClient =
-  process.env.STORAGE_DRIVER === 'minio' ? new Minio() : new S3()
-await RedisClient.connect()
+import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
 
 async function sendLogin(ws, login, device) {
   const requestData = {

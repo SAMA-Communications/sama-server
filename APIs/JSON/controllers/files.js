@@ -1,5 +1,7 @@
 import BaseJSONController from './base.js'
 
+import RuntimeDefinedContext from '@sama/store/RuntimeDefinedContext.js'
+
 import File from '@sama/models/file.js'
 
 import Response from '@sama/networking/models/Response.js'
@@ -12,7 +14,7 @@ class FilesController extends BaseJSONController {
 
     for (const reqFile of reqFiles) {
       //TODO: update from many to one request if it possible
-      const { objectId, url } = await globalThis.storageClient.getUploadUrl(
+      const { objectId, url } = await RuntimeDefinedContext.STORAGE.getUploadUrl(
         reqFile.name
       )
       reqFile['object_id'] = objectId
@@ -36,7 +38,7 @@ class FilesController extends BaseJSONController {
 
     for (const objectId of objectIds) {
       //TODO: update from many to one request if it possible
-      const fileUrl = await globalThis.storageClient.getDownloadUrl(
+      const fileUrl = await RuntimeDefinedContext.STORAGE.getDownloadUrl(
         objectId
       )
       urls[objectId] = fileUrl

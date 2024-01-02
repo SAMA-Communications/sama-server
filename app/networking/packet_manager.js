@@ -1,5 +1,4 @@
-import ip from 'ip'
-
+import RuntimeDefinedContext from '../store/RuntimeDefinedContext.js'
 import { ACTIVE } from '../store/session.js'
 
 import pushNotificationsRepository from '../repositories/push_notifications_repository.js'
@@ -43,8 +42,8 @@ class PacketManager {
       const currentDeviceId = sessionRepository.getDeviceId(ws, userId)
 
       this.currentNodeUrl = buildWsEndpoint(
-        ip.address(),
-        clusterManager.clusterPort
+        RuntimeDefinedContext.APP_IP,
+        RuntimeDefinedContext.CLUSTER_PORT
       )
       if (nodeUrl === this.currentNodeUrl) {
         nodeDeviceId !== currentDeviceId &&

@@ -1,7 +1,6 @@
 import './utils.js'
 import User from '../app/models/user.js'
 import assert from 'assert'
-import { connectToDBPromise, getClient } from './../app/lib/db.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
 
 let userLogin = [...Array(30)]
@@ -10,7 +9,6 @@ let userLogin = [...Array(30)]
 
 describe('User cycle', async () => {
   before(async () => {
-    await connectToDBPromise()
     await User.clearCollection()
   })
 
@@ -657,7 +655,6 @@ describe('User cycle', async () => {
   })
 
   after(async () => {
-    await getClient().close()
     await User.clearCollection()
   })
 })

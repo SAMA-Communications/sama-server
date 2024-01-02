@@ -5,7 +5,6 @@ import Message from './../app/models/message.js'
 import OpLog from './../app/models/operations_log.js'
 import User from './../app/models/user.js'
 import assert from 'assert'
-import { connectToDBPromise } from './../app/lib/db.js'
 import {
   createConversation,
   createUserArray,
@@ -22,7 +21,6 @@ let files
 
 describe('Attachments', async () => {
   before(async () => {
-    await connectToDBPromise()
     await File.clearCollection()
     usersIds = await createUserArray(3)
 
@@ -57,6 +55,7 @@ describe('Attachments', async () => {
     responseData = responseData.backMessages.at(0)
 
     files = responseData.response.files
+
     assert.strictEqual(requestData.request.id, responseData.response.id)
     assert.notEqual(responseData.response.files, undefined)
 

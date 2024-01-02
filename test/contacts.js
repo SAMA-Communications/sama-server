@@ -1,7 +1,6 @@
 import User from './../app/models/user.js'
 import Contact from './../app/models/contact.js'
 import assert from 'assert'
-import { connectToDBPromise } from './../app/lib/db.js'
 import { createUserArray, mockedWS, sendLogin, sendLogout } from './utils.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
 
@@ -12,7 +11,6 @@ let currentUserToken = ''
 
 describe('Contacts functions', async () => {
   before(async () => {
-    await connectToDBPromise()
     usersIds = await createUserArray(4)
 
     currentUserToken = await sendLogin(mockedWS, 'user_1')

@@ -8,7 +8,6 @@ import assert from 'assert'
 import clusterManager from './../app/cluster/cluster_manager.js'
 import ip from 'ip'
 import uWS from 'uWebSockets.js'
-import { connectToDBPromise } from './../app/lib/db.js'
 import {
   createConversation,
   createUserArray,
@@ -27,7 +26,6 @@ let secondSocketResponse = null
 
 describe('Cluster Message function', async () => {
   before(async () => {
-    await connectToDBPromise()
     usersIds = await createUserArray(2)
 
     await sendLogin(mockedWS, 'user_1')

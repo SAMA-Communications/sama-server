@@ -1,17 +1,15 @@
-import ip from 'ip'
 import uWS from 'uWebSockets.js'
 import { StringDecoder } from 'string_decoder'
 
 import { CONSTANTS as MAIN_CONSTANTS } from '../constants/constants.js'
 import { ERROR_STATUES } from '../constants/errors.js'
 
+import RuntimeDefinedContext from '../store/RuntimeDefinedContext.js'
 import { ACTIVE } from '../store/session.js'
 
 import { APIs, detectAPIType } from './APIs.js'
 
 import sessionRepository from '../repositories/session_repository.js'
-
-import clusterManager from '../cluster/cluster_manager.js'
 
 import packetManager from './packet_manager.js'
 import packetMapper from './packet_mapper.js'
@@ -105,8 +103,8 @@ class ClientManager {
               sessionRepository.removeUserNodeData(
                 userId,
                 obj.deviceId,
-                ip.address(),
-                clusterManager.clusterPort
+                RuntimeDefinedContext.APP_IP,
+                RuntimeDefinedContext.CLUSTER_PORT
               )
               return false
             }

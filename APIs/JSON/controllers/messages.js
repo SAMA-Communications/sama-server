@@ -10,6 +10,8 @@ import validate, {
 import { CONSTANTS as MAIN_CONSTANTS } from '@sama/constants/constants.js'
 import { ERROR_STATUES } from '@sama/constants/errors.js'
 
+import RuntimeDefinedContext from '@sama/store/RuntimeDefinedContext.js'
+
 import User from '@sama/models/user.js'
 import Message from '@sama/models/message.js'
 import MessageStatus from '@sama/models/message_status.js'
@@ -116,7 +118,7 @@ class MessagesController extends BaseJSONController {
       ?.login
     const firstAttachmentUrl = !messageParams.attachments?.length
       ? null
-      : await globalThis.storageClient.getDownloadUrl(
+      : await RuntimeDefinedContext.STORAGE.getDownloadUrl(
           messageParams.attachments[0].file_id
         )
 

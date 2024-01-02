@@ -2,7 +2,6 @@ import BlockedUser from './../app/models/blocked_user.js'
 import User from './../app/models/user.js'
 import UserToken from '../app/models/user_token.js'
 import assert from 'assert'
-import { connectToDBPromise } from './../app/lib/db.js'
 import { createUserArray, mockedWS, sendLogin } from './utils.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
 
@@ -10,7 +9,6 @@ let usersIds = []
 
 describe('UserBlocked functions', async () => {
   before(async () => {
-    await connectToDBPromise()
     await User.clearCollection()
     await UserToken.clearCollection()
     usersIds = await createUserArray(5)

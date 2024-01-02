@@ -1,4 +1,3 @@
-import ip from 'ip'
 import jwt from 'jsonwebtoken'
 
 import BaseJSONController from './base.js'
@@ -6,8 +5,8 @@ import BaseJSONController from './base.js'
 import { CONSTANTS as MAIN_CONSTANTS } from '@sama/constants/constants.js'
 import { ERROR_STATUES } from '@sama/constants/errors.js'
 
+import RuntimeDefinedContext from '@sama/store/RuntimeDefinedContext.js'
 import { ACTIVE } from '@sama/store/session.js'
-import clusterPort from '@sama/store/cluster_port.js'
 
 import User from '@sama/models/user.js'
 import UserToken from '@sama/models/user_token.js'
@@ -140,8 +139,8 @@ class UsersController extends BaseJSONController {
     await sessionRepository.storeUserNodeData(
       userId,
       deviceId,
-      ip.address(),
-      clusterPort.port
+      RuntimeDefinedContext.APP_IP,
+      RuntimeDefinedContext.CLUSTER_PORT
     )
 
     return new Response()
@@ -249,8 +248,8 @@ class UsersController extends BaseJSONController {
       await sessionRepository.removeUserNodeData(
         userId,
         deviceId,
-        ip.address(),
-        clusterPort.port
+        RuntimeDefinedContext.APP_IP,
+        RuntimeDefinedContext.CLUSTER_PORT
       )
 
       return new Response()

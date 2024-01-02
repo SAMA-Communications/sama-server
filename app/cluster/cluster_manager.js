@@ -1,29 +1,21 @@
 import WebSocket from 'ws'
 import uWS from 'uWebSockets.js'
-import ip from 'ip'
+
 import { StringDecoder } from 'string_decoder'
 
-import clusterPort from '../store/cluster_port.js'
+import RuntimeDefinedContext from '../store/RuntimeDefinedContext.js'
+
 import packetManager from '../networking/packet_manager.js'
+
 import { buildWsEndpoint } from '../utils/build_ws_endpoint.js'
 import { getIpFromWsUrl } from '../utils/get_ip_from_ws_url.js'
 
 const decoder = new StringDecoder('utf8')
 
 class ClusterManager {
-  #clusterPort = -1
   #clusterNodesWS = {}
 
   #localSocket = null
-
-  set clusterPort(port) {
-    clusterPort.port = port
-    this.#clusterPort = port
-  }
-
-  get clusterPort() {
-    return this.#clusterPort
-  }
 
   get clusterNodesWS() {
     return this.#clusterNodesWS
@@ -33,7 +25,7 @@ class ClusterManager {
     ws.send(
       JSON.stringify({
         node_info: {
-          ip: ip.address(),
+          ip: RuntimeDefinedContext.APP_IP,
         },
       })
     )
@@ -152,7 +144,6 @@ class ClusterManager {
             `[ClusterManager][createLocalSocket] listening on port ${clusterPort}`
           )
 
-          this.clusterPort = clusterPort
           return resolve(clusterPort)
         } else {
           throw new Error(`[ClusterManager][createLocalSocket] socket.listen error: can't allocate port`)

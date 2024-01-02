@@ -2,7 +2,6 @@ import OpLog from './../app/models/operations_log.js'
 import operationsLogRepository from './../app/repositories/operations_log_repository.js'
 import User from './../app/models/user.js'
 import assert from 'assert'
-import { connectToDBPromise } from './../app/lib/db.js'
 import { createUserArray, mockedWS, sendLogin } from './utils.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
 
@@ -11,7 +10,6 @@ let usersIds = []
 
 describe('Operations Log functions', async () => {
   before(async () => {
-    await connectToDBPromise()
     await OpLog.clearCollection()
     usersIds = await createUserArray(2)
 

@@ -1,5 +1,4 @@
-import ip from 'ip'
-import os from 'os'
+import RuntimeDefinedContext from '../store/RuntimeDefinedContext.js'
 
 import clusterManager from './cluster_manager.js'
 
@@ -9,9 +8,6 @@ import sessionRepository from '../repositories/session_repository.js'
 
 class ClusterSyncer {
   constructor() {
-    this.ip_address = ip.address()
-    this.hostname = process.env.HOSTNAME || os.hostname()
-
     this.nodes = {}
 
     this.nodesSyncInterval = null
@@ -47,8 +43,8 @@ class ClusterSyncer {
     // initiate connect to other node
     nodeList.forEach(async (n) => {
       if (
-        clusterManager.clusterPort !== n.port &&
-        `${this.hostname}${clusterManager.clusterPort}` < `${n.hostname}${n.port}`
+        RuntimeDefinedContext.CLUSTER_PORT !== n.port &&
+        `${RuntimeDefinedContext.APP_HOSTNAME}${RuntimeDefinedContext.CLUSTER_PORT}` < `${n.hostname}${n.port}`
       )
         try {
           await clusterManager.createSocketWithNode(n.ip_address, n.port)
@@ -89,9 +85,9 @@ class ClusterSyncer {
 
   async #syncCluster() {
     const clusterNodeParams = {
-      ip_address: this.ip_address,
-      hostname: this.hostname,
-      port: clusterManager.clusterPort,
+      ip_address: RuntimeDefinedContext.APP_IP,
+      hostname: RuntimeDefinedContext.APP_HOSTNAME,
+      port: RuntimeDefinedContext.CLUSTER_PORT,
       users_count: sessionRepository.sessionsTotal,
     }
     await this.#storeCurrentNode(clusterNodeParams)

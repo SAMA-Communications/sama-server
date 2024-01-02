@@ -5,7 +5,6 @@ import Message from './../app/models/message.js'
 import User from './../app/models/user.js'
 import assert from 'assert'
 import { ObjectId } from '../app/lib/db.js'
-import { connectToDBPromise } from '../app/lib/db.js'
 import {
   createConversation,
   createUserArray,
@@ -24,7 +23,6 @@ let messageId1 = ''
 
 describe('Message function', async () => {
   before(async () => {
-    await connectToDBPromise()
     usersIds = await createUserArray(3)
 
     await sendLogin(mockedWS, 'user_2')

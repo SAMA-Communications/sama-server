@@ -2,7 +2,6 @@ import Conversation from '../app/models/conversation.js'
 import ConversationParticipant from '../app/models/conversation_participant.js'
 import User from '../app/models/user.js'
 import assert from 'assert'
-import { connectToDBPromise } from '../app/lib/db.js'
 import {
   createConversation,
   createUserArray,
@@ -39,7 +38,6 @@ async function assertThrowsAsync(fn, regExp) {
 
 describe('Custom validate functions', async () => {
   before(async () => {
-    await connectToDBPromise()
     usersIds = await createUserArray(3)
   })
 

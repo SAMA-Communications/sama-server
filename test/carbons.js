@@ -1,7 +1,6 @@
 import User from './../app/models/user.js'
 import assert from 'assert'
 import { ACTIVE } from './../app/store/session.js'
-import { connectToDBPromise } from './../app/lib/db.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
 import { createUserArray, sendLogin, sendLogout } from './utils.js'
 
@@ -9,7 +8,6 @@ let currentUserToken = []
 
 describe('Carbons', async () => {
   before(async () => {
-    await connectToDBPromise()
     await createUserArray(2)
     ACTIVE.DEVICES = {}
   })

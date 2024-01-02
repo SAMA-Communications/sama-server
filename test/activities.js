@@ -2,7 +2,6 @@ import assert from 'assert'
 
 import User from './../app/models/user.js'
 import { ACTIVITY } from './../app/store/activity.js'
-import { connectToDBPromise, getClient } from './../app/lib/db.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
 import { createUserArray, sendLogin, sendLogout } from './utils.js'
 
@@ -12,7 +11,6 @@ let usersIds = []
 
 describe('User activities', async () => {
   before(async () => {
-    await connectToDBPromise()
     usersIds = await createUserArray(3)
     currentUserToken1 = (await sendLogin('line_2', 'user_3')).response.user
       .token
@@ -152,6 +150,5 @@ describe('User activities', async () => {
 
   after(async () => {
     await User.clearCollection()
-    await getClient().close()
   })
 })

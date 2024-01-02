@@ -1,7 +1,6 @@
 import assert from 'assert'
 
 import User from './../app/models/user.js'
-import { connectToDBPromise } from './../app/lib/db.js'
 
 import PushEvent from './../app/models/push_event.js'
 import PushSubscription from './../app/models/push_subscription.js'
@@ -13,7 +12,6 @@ let usersIds = []
 
 describe('PushNotification functions', async () => {
   before(async () => {
-    await connectToDBPromise()
     usersIds = await createUserArray(2)
     await sendLogin(mockedWS, 'user_1')
   })

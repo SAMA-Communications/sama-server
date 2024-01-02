@@ -3,7 +3,6 @@ import ConversationParticipant from './../app/models/conversation_participant.js
 import User from './../app/models/user.js'
 import UserToken from '../app/models/user_token.js'
 import assert from 'assert'
-import { connectToDBPromise } from './../app/lib/db.js'
 import { createUserArray, mockedWS, sendLogin, sendLogout } from './utils.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
 
@@ -16,7 +15,6 @@ let lastMessageInChat = ''
 
 describe('Conversation functions', async () => {
   before(async () => {
-    await connectToDBPromise()
     usersIds = await createUserArray(4)
     currentUserToken = (await sendLogin('test', 'user_1')).response.user._id
   })

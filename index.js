@@ -1,8 +1,15 @@
 /* Simplified stock exchange made with uWebSockets.js pub/sub */
+import ip from 'ip'
+import os from 'os'
+
 import uWS from 'uWebSockets.js'
 
-import clientManager from './app/networking/client_manager.js'
+import RuntimeDefinedContext from './app/store/RuntimeDefinedContext.js'
+
 import clusterManager from './app/cluster/cluster_manager.js'
+import clusterSyncer from './app/cluster/cluster_syncer.js'
+
+import clientManager from './app/networking/client_manager.js'
 
 // get MongoDB driver connection
 import Minio from './app/lib/storage/minio.js'
@@ -12,20 +19,21 @@ import Spaces from './app/lib/storage/spaces.js'
 import { connectToDBPromise } from './app/lib/db.js'
 import RedisClient from './app/lib/redis.js'
 
-import ClusterSyncer from './app/cluster/cluster_syncer.js'
-
 import blockListRepository from './app/repositories/blocklist_repository.js'
 import conversationRepository from './app/repositories/conversation_repository.js'
 
+RuntimeDefinedContext.APP_HOSTNAME = process.env.HOSTNAME || os.hostname()
+RuntimeDefinedContext.APP_IP = ip.address()
+
 switch (process.env.STORAGE_DRIVER) {
   case 'minio':
-    globalThis.storageClient = new Minio()
+    RuntimeDefinedContext.STORAGE = new Minio()
     break
   case 'spaces':
-    globalThis.storageClient = new Spaces()
+    RuntimeDefinedContext.STORAGE = new Spaces()
     break
   default:
-    globalThis.storageClient = new S3()
+    RuntimeDefinedContext.STORAGE = new S3()
     break
 }
 
@@ -54,12 +62,14 @@ await clientManager.createLocalSocket(
   appPort
 )
 
-const clusterPort = await clusterManager.createLocalSocket(
+RuntimeDefinedContext.CLUSTER_PORT = await clusterManager.createLocalSocket(
   isSSL ? SSL_APP_OPTIONS : APP_OPTIONS,
   WS_OPTIONS,
   WS_LISTEN_OPTIONS,
   isSSL
 )
+
+console.log('[RuntimeDefinedContext]', RuntimeDefinedContext)
 
 // perform a database connection when the server starts
 await connectToDBPromise().then(() => {
@@ -71,7 +81,7 @@ await connectToDBPromise().then(() => {
 
 await RedisClient.connect()
 
-await ClusterSyncer.startSyncingClusterNodes()
+await clusterSyncer.startSyncingClusterNodes()
 
 await blockListRepository.warmCache()
 await conversationRepository.warmCache()
