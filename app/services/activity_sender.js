@@ -3,6 +3,7 @@ import BaseService from './base.js'
 import { APIs } from '../networking/APIs.js'
 
 import packetManager from '../networking/packet_manager.js'
+
 import activityManager from './activity_manager.js'
 
 class ActivitySender extends BaseService {

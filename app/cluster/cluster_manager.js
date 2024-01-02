@@ -102,62 +102,62 @@ class ClusterManager {
   }
 
   async createLocalSocket(appOptions, wsOptions, listenOptions, isSSL) {
-    if (isSSL) {
-      this.#localSocket = uWS.SSLApp(appOptions)
-    } else {
-      this.#localSocket = uWS.App(appOptions)
-    }
+    return new Promise((resolve) => {
+      this.#localSocket = isSSL ? uWS.SSLApp(appOptions) : uWS.App(appOptions)
 
-    this.#localSocket.ws('/*', {
-      ...wsOptions,
+      this.#localSocket.ws('/*', {
+        ...wsOptions,
 
-      open: (ws) => {
-        console.log(
-          '[ClusterManager][createLocalSocket] ws on Open',
-          `IP: ${Buffer.from(ws.getRemoteAddressAsText()).toString()}`
-        )
-      },
+        open: (ws) => {
+          console.log(
+            '[ClusterManager][createLocalSocket] ws on Open',
+            `IP: ${Buffer.from(ws.getRemoteAddressAsText()).toString()}`
+          )
+        },
 
-      close: async (ws, code, message) => {
-        console.log('[ClusterManager][createLocalSocket] ws on Close')
-        for (const nodeIp in this.clusterNodesWS) {
-          if (this.clusterNodesWS[nodeIp] !== ws) {
-            continue
+        close: async (ws, code, message) => {
+          console.log('[ClusterManager][createLocalSocket] ws on Close')
+          for (const nodeIp in this.clusterNodesWS) {
+            if (this.clusterNodesWS[nodeIp] !== ws) {
+              continue
+            }
+
+            delete this.clusterNodesWS[nodeIp]
+            return
+          }
+        },
+
+        message: async (ws, message, isBinary) => {
+          const json = JSON.parse(decoder.write(Buffer.from(message)))
+          if (json.node_info) {
+            const nodeInfo = json.node_info
+            this.clusterNodesWS[nodeInfo.ip] = ws
+            this.#shareCurrentNodeInfo(ws)
+
+            return
           }
 
-          delete this.clusterNodesWS[nodeIp]
-          return
+          await packetManager.deliverClusterMessageToUser(
+            json.userId,
+            json.message,
+            json.notSaveInOfflineStorage
+          )
+        },
+      })
+
+      this.#localSocket.listen(0, listenOptions, (listenSocket) => {
+        if (listenSocket) {
+          const clusterPort = uWS.us_socket_local_port(listenSocket)
+          console.log(
+            `[ClusterManager][createLocalSocket] listening on port ${clusterPort}`
+          )
+
+          this.clusterPort = clusterPort
+          return resolve(clusterPort)
+        } else {
+          throw new Error(`[ClusterManager][createLocalSocket] socket.listen error: can't allocate port`)
         }
-      },
-
-      message: async (ws, message, isBinary) => {
-        const json = JSON.parse(decoder.write(Buffer.from(message)))
-        if (json.node_info) {
-          const nodeInfo = json.node_info
-          this.clusterNodesWS[nodeInfo.ip] = ws
-          this.#shareCurrentNodeInfo(ws)
-
-          return
-        }
-
-        await packetManager.deliverClusterMessageToUser(
-          json.userId,
-          json.message,
-          json.notSaveInOfflineStorage
-        )
-      },
-    })
-
-    this.#localSocket.listen(0, listenOptions, (listenSocket) => {
-      if (listenSocket) {
-        const clusterPort = uWS.us_socket_local_port(listenSocket)
-        console.log(
-          `[ClusterManager][createLocalSocket] listening on port ${clusterPort}`
-        )
-        this.clusterPort = clusterPort
-      } else {
-        throw `[ClusterManager][createLocalSocket] socket.listen error: can't allocate port`
-      }
+      })
     })
   }
 }

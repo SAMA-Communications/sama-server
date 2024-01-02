@@ -1,8 +1,9 @@
 import ip from 'ip'
 import os from 'os'
 
-import ClusterNode from '../models/cluster_node.js'
 import clusterManager from './cluster_manager.js'
+
+import ClusterNode from '../models/cluster_node.js'
 
 import sessionRepository from '../repositories/session_repository.js'
 

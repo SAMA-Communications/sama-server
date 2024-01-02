@@ -9,10 +9,9 @@ import Minio from './app/lib/storage/minio.js'
 import S3 from './app/lib/storage/s3.js'
 import Spaces from './app/lib/storage/spaces.js'
 
-import { connectToDB } from './app/lib/db.js'
+import { connectToDBPromise } from './app/lib/db.js'
 import RedisClient from './app/lib/redis.js'
 
-// cache storage
 import ClusterSyncer from './app/cluster/cluster_syncer.js'
 
 import blockListRepository from './app/repositories/blocklist_repository.js'
@@ -47,7 +46,7 @@ const WS_LISTEN_OPTIONS = {
 const isSSL = !!SSL_APP_OPTIONS.key_file_name && !!SSL_APP_OPTIONS.cert_file_name
 const appPort = parseInt(process.env.APP_PORT || process.env.PORT)
 
-clientManager.createLocalSocket(
+await clientManager.createLocalSocket(
   isSSL ? SSL_APP_OPTIONS : APP_OPTIONS,
   WS_OPTIONS,
   WS_LISTEN_OPTIONS,
@@ -55,7 +54,7 @@ clientManager.createLocalSocket(
   appPort
 )
 
-clusterManager.createLocalSocket(
+const clusterPort = await clusterManager.createLocalSocket(
   isSSL ? SSL_APP_OPTIONS : APP_OPTIONS,
   WS_OPTIONS,
   WS_LISTEN_OPTIONS,
@@ -63,18 +62,18 @@ clusterManager.createLocalSocket(
 )
 
 // perform a database connection when the server starts
-connectToDB(async (err) => {
-  if (err) {
-    console.error('[connectToDB] Error', err)
-    process.exit()
-  } else {
-    console.log('[connectToDB] Ok')
-    await ClusterSyncer.startSyncingClusterNodes()
-    await RedisClient.connect()
-
-    await blockListRepository.warmCache()
-    await conversationRepository.warmCache()
-  }
+await connectToDBPromise().then(() => {
+  console.log('[connectToDB] Ok')
+}).catch(err => {
+  console.error('[connectToDB] Error', err)
+  process.exit()
 })
+
+await RedisClient.connect()
+
+await ClusterSyncer.startSyncingClusterNodes()
+
+await blockListRepository.warmCache()
+await conversationRepository.warmCache()
 
 // https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph

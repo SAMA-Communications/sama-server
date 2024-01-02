@@ -2,15 +2,21 @@ import ip from 'ip'
 import uWS from 'uWebSockets.js'
 import { StringDecoder } from 'string_decoder'
 
-import sessionRepository from '../repositories/session_repository.js'
-import clusterManager from '../cluster/cluster_manager.js'
-import { ACTIVE } from '../store/session.js'
 import { CONSTANTS as MAIN_CONSTANTS } from '../constants/constants.js'
 import { ERROR_STATUES } from '../constants/errors.js'
+
+import { ACTIVE } from '../store/session.js'
+
+import { APIs, detectAPIType } from './APIs.js'
+
+import sessionRepository from '../repositories/session_repository.js'
+
+import clusterManager from '../cluster/cluster_manager.js'
+
 import packetManager from './packet_manager.js'
 import packetMapper from './packet_mapper.js'
+
 import activitySender from '../services/activity_sender.js'
-import { APIs, detectAPIType } from './APIs.js'
 
 import MappableMessage from './models/MappableMessage.js'
 
@@ -74,7 +80,8 @@ class ClientManager {
   #localSocket = null
 
   async createLocalSocket(appOptions, wsOptions, listenOptions, isSSL, port) {
-    this.#localSocket = isSSL ? uWS.SSLApp(appOptions) : uWS.App(appOptions)
+    return new Promise((resolve) => {
+      this.#localSocket = isSSL ? uWS.SSLApp(appOptions) : uWS.App(appOptions)
 
     this.#localSocket.ws('/*', {
       ...wsOptions,
@@ -137,9 +144,12 @@ class ClientManager {
             listenSocket
           )}, pid=${process.pid}`
         )
+
+        return resolve(port)
       } else {
-        throw `[ClientManager][createLocalSocket] socket.listen error: can't allocate port`
+        throw new Error(`[ClientManager][createLocalSocket] socket.listen error: can't allocate port`)
       }
+    })
     })
   }
 }

@@ -2,8 +2,6 @@ import ip from 'ip'
 
 import { ACTIVE } from '../store/session.js'
 
-import OpLog from '../models/operations_log.js'
-
 import pushNotificationsRepository from '../repositories/push_notifications_repository.js'
 import operationsLogRepository from '../repositories/operations_log_repository.js'
 import sessionRepository from '../repositories/session_repository.js'
@@ -15,10 +13,6 @@ import { buildWsEndpoint } from '../utils/build_ws_endpoint.js'
 import { getIpFromWsUrl } from '../utils/get_ip_from_ws_url.js'
 
 class PacketManager {
-  constructor() {
-
-  }
-
   async deliverToUserOnThisNode(ws, userId, packet, deviceId, notSaveInOfflineStorage) {
     const activeDevices = ACTIVE.DEVICES[userId] 
 
