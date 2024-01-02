@@ -39,7 +39,7 @@ class FilesController extends BaseController {
     for (const fileId of objectIds) {
       //TODO: update from many to one request if it posible
       const existUrl = (await this.fileRepository.getFileUrl(fileId))[0];
-      console.log(existUrl);
+
       if (existUrl) {
         urls[fileId] = existUrl;
         continue;
