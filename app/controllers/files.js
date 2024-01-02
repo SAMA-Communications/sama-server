@@ -1,9 +1,11 @@
 import BaseController from "./base/base.js";
 import File from "./../models/file.js";
+import FileRepository from "../repositories/file_repository.js";
 
 class FilesController extends BaseController {
   constructor() {
     super();
+    this.fileRepository = new FileRepository();
   }
 
   async create_url(ws, data) {
@@ -11,13 +13,14 @@ class FilesController extends BaseController {
 
     const resFiles = [];
     for (let i = 0; i < reqFiles.length; i++) {
+      const fileObj = reqFiles[i];
       //TODO: update from many to one request if it posible
       const { objectId, url } = await globalThis.storageClient.getUploadUrl(
-        reqFiles[i].name
+        fileObj.name
       );
-      reqFiles[i]["object_id"] = objectId;
+      fileObj["object_id"] = objectId;
 
-      const file = new File(reqFiles[i]);
+      const file = new File(fileObj);
       await file.save();
 
       resFiles.push({ ...file.visibleParams(), upload_url: url });
@@ -33,12 +36,18 @@ class FilesController extends BaseController {
     } = data;
 
     let urls = {};
-    for (let i = 0; i < objectIds.length; i++) {
+    for (const fileId of objectIds) {
       //TODO: update from many to one request if it posible
-      const fileUrl = await globalThis.storageClient.getDownloadUrl(
-        objectIds[i]
-      );
-      urls[objectIds[i]] = fileUrl;
+      const existUrl = (await this.fileRepository.getFileUrl(fileId))[0];
+      console.log(existUrl);
+      if (existUrl) {
+        urls[fileId] = existUrl;
+        continue;
+      }
+
+      const fileUrl = await globalThis.storageClient.getDownloadUrl(fileId);
+      await this.fileRepository.storeFileUrl(fileId, fileUrl);
+      urls[fileId] = fileUrl;
     }
 
     return { response: { id: requestId, file_urls: urls } };
