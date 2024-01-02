@@ -2,16 +2,19 @@ import BaseRepository from './base.js'
 
 import RedisClient from '../lib/redis.js'
 
+import { ACTIVE } from '../store/session.js'
+
 import { buildWsEndpoint } from '../utils/build_ws_endpoint.js'
 import { splitWsEndpoint } from '../utils/split_ws_endpoint.js'
 
-export default class SessionRepository extends BaseRepository {
-  constructor(inMemoryStorage) {
-    super(null, inMemoryStorage)
+class SessionRepository extends BaseRepository {
+  constructor(activeSessions) {
+    super(null)
+    this.activeSessions = activeSessions
   }
 
   get sessionsTotal() {
-    return this.inMemoryStorage.SESSIONS.size
+    return this.activeSessions.SESSIONS.size
   }
 
   async addUserToList(userId, deviceId, nodeIp, nodePort) {
@@ -98,17 +101,19 @@ export default class SessionRepository extends BaseRepository {
   }
 
   getSessionUserId(ws) {
-    if (this.inMemoryStorage.SESSIONS.get(ws)) {
-      return this.inMemoryStorage.SESSIONS.get(ws).user_id.toString()
+    if (this.activeSessions.SESSIONS.get(ws)) {
+      return this.activeSessions.SESSIONS.get(ws).user_id.toString()
     }
     return null
   }
 
   getDeviceId(ws, userId) {
-    if (this.inMemoryStorage.DEVICES[userId]) {
-      return this.inMemoryStorage.DEVICES[userId].find((el) => el.ws === ws)
+    if (this.activeSessions.DEVICES[userId]) {
+      return this.activeSessions.DEVICES[userId].find((el) => el.ws === ws)
         ?.deviceId
     }
     return null
   }
 }
+
+export default new SessionRepository(ACTIVE)

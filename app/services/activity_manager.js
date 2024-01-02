@@ -2,21 +2,15 @@ import BaseService from './base.js'
 
 import { CONSTANTS as MAIN_CONSTANTS } from '../constants/constants.js'
 
-import { ACTIVE } from '../store/session.js'
 import { ACTIVITY } from '../store/activity.js'
 
 import User from '../models/user.js'
 
-import SessionRepository from '../repositories/session_repository.js'
+import sessionRepository from '../repositories/session_repository.js'
 
 class ActivityManager extends BaseService {
-  constructor() {
-    super()
-    this.sessionRepository = new SessionRepository(ACTIVE)
-  }
-
   async statusUnsubscribe(ws, userId) {
-    const currentUId = this.sessionRepository.getSessionUserId(ws) || userId
+    const currentUId = sessionRepository.getSessionUserId(ws) || userId
 
     const oldTrackerUserId = ACTIVITY.SUBSCRIBED_TO[currentUId]
     const oldUserSubscribers = ACTIVITY.SUBSCRIBERS[oldTrackerUserId]

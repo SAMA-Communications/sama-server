@@ -2,7 +2,7 @@ import ip from 'ip'
 import uWS from 'uWebSockets.js'
 import { StringDecoder } from 'string_decoder'
 
-import SessionRepository from '../repositories/session_repository.js'
+import sessionRepository from '../repositories/session_repository.js'
 import clusterManager from '../cluster/cluster_manager.js'
 import { ACTIVE } from '../store/session.js'
 import { CONSTANTS as MAIN_CONSTANTS } from '../constants/constants.js'
@@ -15,7 +15,6 @@ import { APIs, detectAPIType } from './APIs.js'
 import MappableMessage from './models/MappableMessage.js'
 
 const decoder = new StringDecoder('utf8')
-const sessionRepository = new SessionRepository(ACTIVE)
 
 const onMessage = async (ws, message) => {
   const stringMessage = decoder.write(Buffer.from(message))

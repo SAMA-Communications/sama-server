@@ -1,24 +1,22 @@
-import { ACTIVE } from '../store/session.js'
+import BaseRepository from './base.js'
 
 import PushEvent from '../models/push_event.js'
 import PushSubscription from '../models/push_subscription.js'
 
-import BaseRepository from './base.js'
-import SessionRepository from './session_repository.js'
-
 import pushNotificationQueue from '../lib/push_queue.js'
 
-export default class PushNotificationsRepository extends BaseRepository {
-  constructor() {
-    super(null, null)
+class PushNotificationsRepository extends BaseRepository {
+  constructor(PushEventModel, PushSubscriptionModel) {
+    super(PushEventModel)
 
-    this.sessionRepository = new SessionRepository(ACTIVE)
+    this.PushSubscriptionModel = PushSubscriptionModel
   }
 
   async addPushNotificationToQueue(users_ids, message) {
     let devices = {}
+
     for (const id of users_ids) {
-      const userDevices = await PushSubscription.findAll({ user_id: id })
+      const userDevices = await this.PushSubscriptionModel.findAll({ user_id: id })
       if (!userDevices.length) {
         continue
       }
@@ -28,6 +26,7 @@ export default class PushNotificationsRepository extends BaseRepository {
     if (!Object.keys(devices).length) {
       return
     }
+
     const data = { devices, message }
     await pushNotificationQueue.add(data)
   }
@@ -40,7 +39,7 @@ export default class PushNotificationsRepository extends BaseRepository {
       message: JSON.stringify(pushMessage),
     }
 
-    const pushEvent = new PushEvent(pushEventParams)
+    const pushEvent = new this.Model(pushEventParams)
     await pushEvent.save()
 
     await this.addPushNotificationToQueue(recipients_ids, pushMessage)
@@ -48,3 +47,5 @@ export default class PushNotificationsRepository extends BaseRepository {
     return pushEvent.visibleParams()
   }
 }
+
+export default new PushNotificationsRepository(PushEvent, PushSubscription)

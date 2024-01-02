@@ -1,26 +1,18 @@
 import BaseJSONController from './base.js'
 
 import { ERROR_STATUES } from '@sama/constants/errors.js'
-import { ACTIVE } from '@sama/store/session.js'
 
 import User from '@sama/models/user.js'
 import PushSubscription from '@sama/models/push_subscription.js'
 
-import SessionRepository from '@sama/repositories/session_repository.js'
-import PushNotificationsRepository from '@sama/repositories/push_notifications_repository.js'
+import sessionRepository from '@sama/repositories/session_repository.js'
+import pushNotificationsRepository from '@sama/repositories/push_notifications_repository.js'
 
 import { ObjectId } from '@sama/lib/db.js'
 
 import Response from '@sama/networking/models/Response.js'
 
 class PushNotificationsController extends BaseJSONController {
-  constructor() {
-    super()
-
-    this.sessionRepository = new SessionRepository(ACTIVE)
-    this.pushNotificationsRepository = new PushNotificationsRepository()
-  }
-
   async push_subscription_create(ws, data) {
     const {
       id: requestId,
@@ -33,7 +25,7 @@ class PushNotificationsController extends BaseJSONController {
       },
     } = data
 
-    const userId = this.sessionRepository.getSessionUserId(ws)
+    const userId = sessionRepository.getSessionUserId(ws)
     let pushSubscription = new PushSubscription(
       (
         await PushSubscription.findOneAndUpdate(
@@ -74,7 +66,7 @@ class PushNotificationsController extends BaseJSONController {
       push_subscription_delete: { device_udid },
     } = data
 
-    const userId = this.sessionRepository.getSessionUserId(ws)
+    const userId = sessionRepository.getSessionUserId(ws)
     const pushSubscriptionRecord = await PushSubscription.findOne({
       device_udid,
       user_id: userId,
@@ -109,8 +101,8 @@ class PushNotificationsController extends BaseJSONController {
       })
     }
 
-    const userId = this.sessionRepository.getSessionUserId(ws)
-    const pushEvent = await this.pushNotificationsRepository.createPushEvent(
+    const userId = sessionRepository.getSessionUserId(ws)
+    const pushEvent = await pushNotificationsRepository.createPushEvent(
       recipients,
       userId,
       message

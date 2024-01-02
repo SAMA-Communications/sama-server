@@ -3,8 +3,8 @@ import os from 'os'
 
 import ClusterNode from '../models/cluster_node.js'
 import clusterManager from './cluster_manager.js'
-import SessionRepository from '../repositories/session_repository.js'
-import { ACTIVE } from '../store/session.js'
+
+import sessionRepository from '../repositories/session_repository.js'
 
 class ClusterSyncer {
   constructor() {
@@ -14,8 +14,6 @@ class ClusterSyncer {
     this.nodes = {}
 
     this.nodesSyncInterval = null
-
-    this.sessionRepository = new SessionRepository(ACTIVE)
   }
 
   async startSyncingClusterNodes() {
@@ -93,7 +91,7 @@ class ClusterSyncer {
       ip_address: this.ip_address,
       hostname: this.hostname,
       port: clusterManager.clusterPort,
-      users_count: this.sessionRepository.sessionsTotal,
+      users_count: sessionRepository.sessionsTotal,
     }
     await this.#storeCurrentNode(clusterNodeParams)
 

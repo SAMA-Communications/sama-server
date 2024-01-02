@@ -18,7 +18,7 @@ import {
   validateParticipantsInUType,
   validateParticipantsLimit,
 } from '../app/lib/validation.js'
-import SessionRepository from '../app/repositories/session_repository.js'
+import sessionRepository from '../app/repositories/session_repository.js'
 
 let currentUserToken = ''
 let usersIds = []
@@ -357,6 +357,6 @@ describe('Custom validate functions', async () => {
     await User.clearCollection()
     await Conversation.clearCollection()
     await ConversationParticipant.clearCollection()
-    await new SessionRepository().dropUserNodeDataBase()
+    await sessionRepository.dropUserNodeDataBase()
   })
 })

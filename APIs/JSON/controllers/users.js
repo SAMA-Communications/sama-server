@@ -8,15 +8,13 @@ import { ERROR_STATUES } from '@sama/constants/errors.js'
 
 import { ACTIVE } from '@sama/store/session.js'
 import clusterPort from '@sama/store/cluster_port.js'
-import { inMemoryBlockList } from '@sama/store/in_memory.js'
 
 import User from '@sama/models/user.js'
 import UserToken from '@sama/models/user_token.js'
-import BlockedUser from '@sama/models/blocked_user.js'
 
-import BlockListRepository from '@sama/repositories/blocklist_repository.js'
-import ContactsMatchRepository from '@sama/repositories/contact_match_repository.js'
-import SessionRepository from '@sama/repositories/session_repository.js'
+import blockListRepository from '@sama/repositories/blocklist_repository.js'
+import contactsMatchRepository from '@sama/repositories/contact_match_repository.js'
+import sessionRepository from '@sama/repositories/session_repository.js'
 
 import activityManager from '@sama/services/activity_manager.js'
 
@@ -24,16 +22,6 @@ import Response from '@sama/networking/models/Response.js'
 import LastActivityStatusResponse from '@sama/networking/models/LastActivityStatusResponse.js'
 
 class UsersController extends BaseJSONController {
-  constructor() {
-    super()
-    this.blockListRepository = new BlockListRepository(
-      BlockedUser,
-      inMemoryBlockList
-    )
-    this.sessionRepository = new SessionRepository(ACTIVE)
-    this.contactMatchRepository = new ContactsMatchRepository()
-  }
-
   async create(ws, data) {
     const { id: requestId, user_create: reqData } = data
 
@@ -54,7 +42,7 @@ class UsersController extends BaseJSONController {
     const user = new User(reqData)
     await user.save()
 
-    await this.contactMatchRepository.matchUserWithContactOnCreate(
+    await contactsMatchRepository.matchUserWithContactOnCreate(
       user.visibleParams()._id.toString(),
       user.params.phone,
       user.params.email
@@ -149,7 +137,7 @@ class UsersController extends BaseJSONController {
       )
     }
 
-    await this.sessionRepository.storeUserNodeData(
+    await sessionRepository.storeUserNodeData(
       userId,
       deviceId,
       ip.address(),
@@ -175,7 +163,7 @@ class UsersController extends BaseJSONController {
       },
     } = data
 
-    const userId = this.sessionRepository.getSessionUserId(ws)
+    const userId = sessionRepository.getSessionUserId(ws)
     const currentUser = await User.findOne({ _id: userId })
     if (!currentUser) {
       throw new Error(ERROR_STATUES.USER_LOGIN_OR_PASS.message, {
@@ -222,7 +210,7 @@ class UsersController extends BaseJSONController {
     }
     const updatedUser = new User(updateResponse.value)
 
-    await this.contactMatchRepository.matchUserWithContactOnUpdate(
+    await contactsMatchRepository.matchUserWithContactOnUpdate(
       updatedUser.visibleParams()._id.toString(),
       phone,
       email,
@@ -241,7 +229,7 @@ class UsersController extends BaseJSONController {
     const currentUserSession = ACTIVE.SESSIONS.get(ws)
     const userId = currentUserSession.user_id
 
-    const deviceId = this.sessionRepository.getDeviceId(ws, userId)
+    const deviceId = sessionRepository.getDeviceId(ws, userId)
     if (currentUserSession) {
       if (ACTIVE.DEVICES[userId].length > 1) {
         ACTIVE.DEVICES[userId] = ACTIVE.DEVICES[userId].filter((obj) => {
@@ -258,7 +246,7 @@ class UsersController extends BaseJSONController {
       })
       userToken.delete()
 
-      await this.sessionRepository.removeUserNodeData(
+      await sessionRepository.removeUserNodeData(
         userId,
         deviceId,
         ip.address(),
@@ -278,7 +266,7 @@ class UsersController extends BaseJSONController {
   async delete(ws, data) {
     const { id: requestId } = data
 
-    const userId = this.sessionRepository.getSessionUserId(ws)
+    const userId = sessionRepository.getSessionUserId(ws)
     if (!userId) {
       throw new Error(ERROR_STATUES.FORBIDDEN.message, {
         cause: ERROR_STATUES.FORBIDDEN,
@@ -289,7 +277,7 @@ class UsersController extends BaseJSONController {
 
     if (ACTIVE.SESSIONS.get(ws)) {
       delete ACTIVE.DEVICES[userId]
-      await this.sessionRepository.clearUserNodeData(userId)
+      await sessionRepository.clearUserNodeData(userId)
       ACTIVE.SESSIONS.delete(ws)
     }
 
@@ -300,8 +288,8 @@ class UsersController extends BaseJSONController {
       })
     }
 
-    await this.blockListRepository.delete(user.params._id)
-    await this.contactMatchRepository.matchUserWithContactOnDelete(
+    await blockListRepository.delete(user.params._id)
+    await contactsMatchRepository.matchUserWithContactOnDelete(
       user.visibleParams()._id.toString(),
       user.params.phone,
       user.params.email
@@ -324,7 +312,7 @@ class UsersController extends BaseJSONController {
       login: { $regex: `^${requestParam.login.toLowerCase()}.*` },
       _id: {
         $nin: [
-          this.sessionRepository.getSessionUserId(ws),
+          sessionRepository.getSessionUserId(ws),
           ...requestParam.ignore_ids,
         ],
       },

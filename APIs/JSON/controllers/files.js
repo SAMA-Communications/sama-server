@@ -1,6 +1,7 @@
 import BaseJSONController from './base.js'
 
 import File from '@sama/models/file.js'
+
 import Response from '@sama/networking/models/Response.js'
 
 class FilesController extends BaseJSONController {

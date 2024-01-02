@@ -2,7 +2,7 @@ import BaseService from '@sama/services/base.js'
 
 import User from '@sama/models/user.js'
 
-export default class ConversationService extends BaseService {
+class ConversationService extends BaseService {
   async #validateAndReturnParticipantsIdsToAdd(
     existingParticipantsIds,
     newParticipants
@@ -69,3 +69,5 @@ export default class ConversationService extends BaseService {
     return { removeParticipantsIds, removeParticipantsInfo }
   }
 }
+
+export default new ConversationService()

@@ -12,18 +12,15 @@ import { CONSTANTS as MAIN_CONSTANTS } from '@sama/constants/constants.js'
 import { CONSTANTS } from '../constants/constants.js'
 import { ERROR_STATUES } from '@sama/constants/errors.js'
 
-import { ACTIVE } from '@sama/store/session.js'
-import { inMemoryConversations } from '@sama/store/in_memory.js'
-
 import User from '@sama/models/user.js'
-import Conversation from '@sama/models/conversation.js'
 import Message from '@sama/models/message.js'
-
-import SessionRepository from '@sama/repositories/session_repository.js'
+import Conversation from '@sama/models/conversation.js'
 import ConversationParticipant from '@sama/models/conversation_participant.js'
-import ConversationRepository from '@sama/repositories/conversation_repository.js'
 
-import ConversationService from '../services/conversation.js'
+import sessionRepository from '@sama/repositories/session_repository.js'
+import conversationRepository from '@sama/repositories/conversation_repository.js'
+
+import conversationService from '../services/conversation.js'
 
 import { ObjectId } from '@sama/lib/db.js'
 
@@ -33,16 +30,6 @@ import Response from '@sama/networking/models/Response.js'
 import getDisplayName from '../utils/get_display_name.js'
 
 class ConversationsController extends BaseJSONController {
-  constructor() {
-    super()
-    this.conversationRepository = new ConversationRepository(
-      Conversation,
-      inMemoryConversations
-    )
-    this.conversationService = new ConversationService()
-    this.sessionRepository = new SessionRepository(ACTIVE)
-  }
-
   async #notifyAboutConversationEvent(
     eventType,
     conversation,
@@ -93,7 +80,7 @@ class ConversationsController extends BaseJSONController {
 
   async create(ws, data) {
     const { id: requestId, conversation_create: conversationParams } = data
-    const currentUserId = this.sessionRepository.getSessionUserId(ws)
+    const currentUserId = sessionRepository.getSessionUserId(ws)
     const currentUserParams = (await User.findOne({ _id: currentUserId }))
       ?.params
 
@@ -114,7 +101,7 @@ class ConversationsController extends BaseJSONController {
         validateIsUserSendHimSelf,
       ])
 
-      const existingConversation = await this.conversationRepository.findOne({
+      const existingConversation = await conversationRepository.findOne({
         $or: [
           {
             type: 'u',
@@ -212,9 +199,9 @@ class ConversationsController extends BaseJSONController {
     const { id: requestId, conversation_update: requestData } = data
     await validate(ws, requestData, [validateIsConversation])
 
-    const currentUserId = this.sessionRepository.getSessionUserId(ws)
+    const currentUserId = sessionRepository.getSessionUserId(ws)
     const conversationId = requestData.id
-    const conversation = await this.conversationRepository.findById(
+    const conversation = await conversationRepository.findById(
       conversationId
     )
     await validate(ws, conversation, [validateConversationsUserOwner])
@@ -248,7 +235,7 @@ class ConversationsController extends BaseJSONController {
       ).map((p) => p.user_id.toString())
 
       const { newParticipantsIds, newParticipantsInfo } = addUsers?.length
-        ? await this.conversationService.getNewParticipantsParams(
+        ? await conversationService.getNewParticipantsParams(
             existingParticipantsIds,
             addUsers
           )
@@ -256,7 +243,7 @@ class ConversationsController extends BaseJSONController {
 
       const { removeParticipantsIds, removeParticipantsInfo } =
         removeUsers?.length
-          ? await this.conversationService.getRemoveParticipantsParams(
+          ? await conversationService.getRemoveParticipantsParams(
               existingParticipantsIds,
               removeUsers
             )
@@ -357,10 +344,10 @@ class ConversationsController extends BaseJSONController {
     isOwnerChange = false
 
     if (Object.keys(requestData) != 0) {
-      await this.conversationRepository.updateOne(conversationId, requestData)
+      await conversationRepository.updateOne(conversationId, requestData)
     }
 
-    const returnConversation = await this.conversationRepository.findById(
+    const returnConversation = await conversationRepository.findById(
       conversationId
     )
 
@@ -378,7 +365,7 @@ class ConversationsController extends BaseJSONController {
       conversation_list: { limit, updated_at },
     } = data
 
-    const currentUser = this.sessionRepository.getSessionUserId(ws)
+    const currentUser = sessionRepository.getSessionUserId(ws)
     const limitParam =
       limit > MAIN_CONSTANTS.LIMIT_MAX
         ? MAIN_CONSTANTS.LIMIT_MAX
@@ -400,7 +387,7 @@ class ConversationsController extends BaseJSONController {
       query.updated_at = { $gt: new Date(timeFromUpdate.gt) }
     }
 
-    const userConversations = await this.conversationRepository.findAll(
+    const userConversations = await conversationRepository.findAll(
       query,
       null,
       limitParam
@@ -439,12 +426,12 @@ class ConversationsController extends BaseJSONController {
 
     const response = new Response()
 
-    const conversation = await this.conversationRepository.findById(
+    const conversation = await conversationRepository.findById(
       conversationId
     )
 
     const conversationParticipant = await ConversationParticipant.findOne({
-      user_id: this.sessionRepository.getSessionUserId(ws),
+      user_id: sessionRepository.getSessionUserId(ws),
       conversation_id: conversationId,
     })
 
@@ -461,13 +448,13 @@ class ConversationsController extends BaseJSONController {
       conversation_id: conversationId,
     })
     if (!existingUserInConversation) {
-      await this.conversationRepository.delete(conversation._id)
+      await conversationRepository.delete(conversation._id)
     } else if (
       conversation.owner_id.toString() ===
-        this.sessionRepository.getSessionUserId(ws) &&
+        sessionRepository.getSessionUserId(ws) &&
       conversation.type !== 'u'
     ) {
-      await this.conversationRepository.updateOne(conversationId, {
+      await conversationRepository.updateOne(conversationId, {
         owner_id: existingUserInConversation.params.user_id,
       })
     }
@@ -485,7 +472,7 @@ class ConversationsController extends BaseJSONController {
 
     const availableConversation = await ConversationParticipant.findAll({
       conversation_id: { $in: cids },
-      user_id: this.sessionRepository.getSessionUserId(ws),
+      user_id: sessionRepository.getSessionUserId(ws),
     })
 
     if (!availableConversation.length) {

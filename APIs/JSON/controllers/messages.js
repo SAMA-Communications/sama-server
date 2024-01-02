@@ -10,23 +10,15 @@ import validate, {
 import { CONSTANTS as MAIN_CONSTANTS } from '@sama/constants/constants.js'
 import { ERROR_STATUES } from '@sama/constants/errors.js'
 
-import {
-  inMemoryBlockList,
-  inMemoryConversations,
-} from '@sama/store/in_memory.js'
-import { ACTIVE } from '@sama/store/session.js'
-
 import User from '@sama/models/user.js'
 import Message from '@sama/models/message.js'
 import MessageStatus from '@sama/models/message_status.js'
-import BlockedUser from '@sama/models/blocked_user.js'
-import Conversation from '@sama/models/conversation.js'
-
-import ConversationRepository from '@sama/repositories/conversation_repository.js'
 import ConversationParticipant from '@sama/models/conversation_participant.js'
-import ConversationParticipantsRepository from '@sama/repositories/conversation_participants_repository.js'
-import BlockListRepository from '@sama/repositories/blocklist_repository.js'
-import SessionRepository from '@sama/repositories/session_repository.js'
+
+import conversationRepository from '@sama/repositories/conversation_repository.js'
+import conversationParticipantsRepository from '@sama/repositories/conversation_participants_repository.js'
+import blockListRepository from '@sama/repositories/blocklist_repository.js'
+import sessionRepository from '@sama/repositories/session_repository.js'
 
 import { ObjectId } from '@sama/lib/db.js'
 
@@ -37,20 +29,6 @@ import groupBy from '../utils/groupBy.js'
 
 
 class MessagesController extends BaseJSONController {
-  constructor() {
-    super()
-    this.conversationRepository = new ConversationRepository(
-      Conversation,
-      inMemoryConversations
-    )
-    this.conversationParticipantsRepository = new ConversationParticipantsRepository(ConversationParticipant)
-    this.blockListRepository = new BlockListRepository(
-      BlockedUser,
-      inMemoryBlockList
-    )
-    this.sessionRepository = new SessionRepository(ACTIVE)
-  }
-
   async create(ws, data) {
     const { message: messageParams } = data
     const messageId = messageParams.id
@@ -58,8 +36,8 @@ class MessagesController extends BaseJSONController {
 
     const response = new Response()
 
-    const currentUserId = this.sessionRepository.getSessionUserId(ws)
-    const conversation = await this.conversationRepository.findById(
+    const currentUserId = sessionRepository.getSessionUserId(ws)
+    const conversation = await conversationRepository.findById(
       messageParams.cid
     )
 
@@ -79,7 +57,7 @@ class MessagesController extends BaseJSONController {
       })
     }
 
-    const blockedUsersIds = await this.blockListRepository.getBlockingUsers(
+    const blockedUsersIds = await blockListRepository.getBlockingUsers(
       currentUserId,
       participants
     )
@@ -153,11 +131,11 @@ class MessagesController extends BaseJSONController {
     })
 
     const pushMessage = { message: message.visibleParams() }
-    const recipients = await this.conversationParticipantsRepository.findParticipantsByConversation(messageParams.cid)
+    const recipients = await conversationParticipantsRepository.findParticipantsByConversation(messageParams.cid)
     
     response.addDeliverMessage(new DeliverMessage(recipients, pushMessage).addPushMessage(pushPayload))
 
-    await this.conversationRepository.updateOne(messageParams.cid, {
+    await conversationRepository.updateOne(messageParams.cid, {
       updated_at: message.params.created_at,
     })
 
@@ -188,10 +166,10 @@ class MessagesController extends BaseJSONController {
       message_edit: {
         id: messageId,
         body: messageParams.body,
-        from: ObjectId(this.sessionRepository.getSessionUserId(ws)),
+        from: ObjectId(sessionRepository.getSessionUserId(ws)),
       },
     }
-    const recipients = await this.conversationParticipantsRepository.findParticipantsByConversation(messageParams.cid)
+    const recipients = await conversationParticipantsRepository.findParticipantsByConversation(messageParams.cid)
 
     return new Response()
       .addBackMessage({ response: { id: requestId, success: true } })
@@ -204,7 +182,7 @@ class MessagesController extends BaseJSONController {
       message_list: { cid, limit, updated_at },
     } = data
 
-    const currentUserId = this.sessionRepository.getSessionUserId(ws)
+    const currentUserId = sessionRepository.getSessionUserId(ws)
 
     await validate(ws, { id: cid, cid, uId: currentUserId }, [
       validateIsConversation,
@@ -258,7 +236,7 @@ class MessagesController extends BaseJSONController {
     
     const response = new Response()
 
-    const uId = this.sessionRepository.getSessionUserId(ws)
+    const uId = sessionRepository.getSessionUserId(ws)
 
     const query = { cid, user_id: uId }
     const filters = { cid, from: { $ne: uId } }
@@ -325,11 +303,11 @@ class MessagesController extends BaseJSONController {
           cid,
           ids,
           type: 'all',
-          from: ObjectId(this.sessionRepository.getSessionUserId(ws)),
+          from: ObjectId(sessionRepository.getSessionUserId(ws)),
         },
       }
 
-      const recipients = await this.conversationParticipantsRepository.findParticipantsByConversation(cid)
+      const recipients = await conversationParticipantsRepository.findParticipantsByConversation(cid)
       response.addDeliverMessage(new DeliverMessage(recipients, request, true))
       await Message.deleteMany({ _id: { $in: ids } })
     } else {
@@ -337,7 +315,7 @@ class MessagesController extends BaseJSONController {
         { id: { $in: ids } },
         {
           $addToSet: {
-            deleted_for: ObjectId(this.sessionRepository.getSessionUserId(ws)),
+            deleted_for: ObjectId(sessionRepository.getSessionUserId(ws)),
           },
         }
       )

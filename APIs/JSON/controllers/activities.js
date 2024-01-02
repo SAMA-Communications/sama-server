@@ -2,31 +2,24 @@ import BaseJSONController from './base.js'
 
 import { CONSTANTS as MAIN_CONSTANTS } from '@sama/constants/constants.js'
 
-import { ACTIVE } from '@sama/store/session.js'
 import { ACTIVITY } from '@sama/store/activity.js'
 
 import User from '@sama/models/user.js'
 
-import SessionRepository from '@sama/repositories/session_repository.js'
+import sessionRepository from '@sama/repositories/session_repository.js'
 
 import activityManager from '@sama/services/activity_manager.js'
 
 import Response from '@sama/networking/models/Response.js'
 
 class LastActivitiesController extends BaseJSONController {
-  constructor() {
-    super()
-
-    this.sessionRepository = new SessionRepository(ACTIVE)
-  }
-
   async status_subscribe(ws, data) {
     const {
       id: requestId,
       user_last_activity_subscribe: { id: uId },
     } = data
 
-    const currentUId = this.sessionRepository.getSessionUserId(ws)
+    const currentUId = sessionRepository.getSessionUserId(ws)
     const obj = {}
 
     if (ACTIVITY.SUBSCRIBED_TO[currentUId]) {
@@ -41,7 +34,8 @@ class LastActivitiesController extends BaseJSONController {
 
     ACTIVITY.SUBSCRIBERS[uId][currentUId] = true
 
-    const activeSessions = await this.sessionRepository.getUserNodeData(uId)
+    const activeSessions = await sessionRepository.getUserNodeData(uId)
+  
     if (activeSessions.length) {
       obj[uId] = MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE
     } else {
@@ -74,7 +68,7 @@ class LastActivitiesController extends BaseJSONController {
 
     for (const user of uLastActivities) {
       const uId = user._id.toString()
-      const isUserOnline = await this.sessionRepository.getUserNodeData(uId)
+      const isUserOnline = await sessionRepository.getUserNodeData(uId)
       obj[uId] = !!isUserOnline? MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE : user.recent_activity
     }
 

@@ -1,14 +1,11 @@
 import { ERROR_STATUES } from '../constants/errors.js'
 
-import { ACTIVE } from '../store/session.js'
-
 import User from '../models/user.js'
 import Conversation from '../models/conversation.js'
-
 import ConversationParticipant from '../models/conversation_participant.js'
-import SessionRepository from '../repositories/session_repository.js'
 
-const sessionRepository = new SessionRepository(ACTIVE)
+import sessionRepository from '../repositories/session_repository.js'
+
 
 function validateIsUserAccess(vParams, ws) {
   if (sessionRepository.getSessionUserId(ws) != vParams.from.toString()) {

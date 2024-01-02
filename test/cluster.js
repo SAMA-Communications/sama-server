@@ -2,7 +2,7 @@ import Conversation from './../app/models/conversation.js'
 import ConversationParticipant from './../app/models/conversation_participant.js'
 import Message from './../app/models/message.js'
 import MessageStatus from './../app/models/message_status.js'
-import SessionRepository from './../app/repositories/session_repository.js'
+import sessionRepository from './../app/repositories/session_repository.js'
 import User from './../app/models/user.js'
 import assert from 'assert'
 import clusterManager from './../app/cluster/cluster_manager.js'
@@ -63,7 +63,7 @@ describe('Cluster Message function', async () => {
         secondSocketResponse = data
       },
     }
-    await new SessionRepository().storeUserNodeData(
+    await sessionRepository.storeUserNodeData(
       usersIds[1],
       deviceId,
       ip.address(),

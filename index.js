@@ -8,13 +8,15 @@ import clusterManager from './app/cluster/cluster_manager.js'
 import Minio from './app/lib/storage/minio.js'
 import S3 from './app/lib/storage/s3.js'
 import Spaces from './app/lib/storage/spaces.js'
+
 import { connectToDB } from './app/lib/db.js'
+import RedisClient from './app/lib/redis.js'
 
 // cache storage
-import BlockListRepository from './app/repositories/blocklist_repository.js'
 import ClusterSyncer from './app/cluster/cluster_syncer.js'
-import ConversationRepository from './app/repositories/conversation_repository.js'
-import RedisClient from './app/lib/redis.js'
+
+import blockListRepository from './app/repositories/blocklist_repository.js'
+import conversationRepository from './app/repositories/conversation_repository.js'
 
 switch (process.env.STORAGE_DRIVER) {
   case 'minio':
@@ -42,11 +44,9 @@ const WS_OPTIONS = {
 const WS_LISTEN_OPTIONS = {
   LIBUS_LISTEN_EXCLUSIVE_PORT: 1,
 }
-
-const isSSL =
-  !!SSL_APP_OPTIONS.key_file_name && !!SSL_APP_OPTIONS.cert_file_name
-
+const isSSL = !!SSL_APP_OPTIONS.key_file_name && !!SSL_APP_OPTIONS.cert_file_name
 const appPort = parseInt(process.env.APP_PORT || process.env.PORT)
+
 clientManager.createLocalSocket(
   isSSL ? SSL_APP_OPTIONS : APP_OPTIONS,
   WS_OPTIONS,
@@ -54,7 +54,7 @@ clientManager.createLocalSocket(
   isSSL,
   appPort
 )
-//
+
 clusterManager.createLocalSocket(
   isSSL ? SSL_APP_OPTIONS : APP_OPTIONS,
   WS_OPTIONS,
@@ -71,8 +71,9 @@ connectToDB(async (err) => {
     console.log('[connectToDB] Ok')
     await ClusterSyncer.startSyncingClusterNodes()
     await RedisClient.connect()
-    await BlockListRepository.warmCache()
-    await ConversationRepository.warmCache()
+
+    await blockListRepository.warmCache()
+    await conversationRepository.warmCache()
   }
 })
 

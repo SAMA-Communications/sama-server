@@ -1,10 +1,8 @@
 import BaseJSONController from './base.js'
 
-import { ACTIVE } from '@sama/store/session.js'
-
 import OpLog from '@sama/models/operations_log.js'
 
-import SessionRepository from '@sama/repositories/session_repository.js'
+import sessionRepository from '@sama/repositories/session_repository.js'
 
 import MappableMessage from '@sama/networking/models/MappableMessage.js'
 import Response from '@sama/networking/models/Response.js'
@@ -23,12 +21,6 @@ const mapOpLogsMessage = async function (mapper) {
 }
 
 class OperationsLogController extends BaseJSONController {
-  constructor() {
-    super()
-
-    this.sessionRepository = new SessionRepository(ACTIVE)
-  }
-
   async logs(ws, data) {
     const {
       id: requestId,
@@ -38,7 +30,7 @@ class OperationsLogController extends BaseJSONController {
     } = data
 
     const query = {
-      user_id: this.sessionRepository.getSessionUserId(ws),
+      user_id: sessionRepository.getSessionUserId(ws),
       created_at: gt ? { $gt: new Date(gt) } : { $lt: new Date(lt) },
     }
 

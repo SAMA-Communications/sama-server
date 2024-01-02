@@ -2,30 +2,21 @@ import BaseJSONController from './base.js'
 
 import { ERROR_STATUES } from '@sama/constants/errors.js'
 
-import { ACTIVE } from '@sama/store/session.js'
-
 import Contact from '@sama/models/contact.js'
 
-import ContactsMatchRepository from '@sama/repositories/contact_match_repository.js'
-import SessionRepository from '@sama/repositories/session_repository.js'
+import contactsMatchRepository from '@sama/repositories/contact_match_repository.js'
+import sessionRepository from '@sama/repositories/session_repository.js'
 
 import { ObjectId } from '@sama/lib/db.js'
 
 import Response from '@sama/networking/models/Response.js'
 
 class ContactsController extends BaseJSONController {
-  constructor() {
-    super()
-
-    this.sessionRepository = new SessionRepository(ACTIVE)
-    this.contactMatchRepository = new ContactsMatchRepository()
-  }
-
   async contact_add(ws, data) {
     const { id: requestId, contact_add: contactData } = data
-    const currentUser = this.sessionRepository.getSessionUserId(ws)
+    const currentUser = sessionRepository.getSessionUserId(ws)
 
-    await this.contactMatchRepository.matchContactWithUser(contactData)
+    await contactsMatchRepository.matchContactWithUser(contactData)
     contactData.user_id = ObjectId(currentUser)
 
     const contact = new Contact(contactData)
@@ -60,7 +51,7 @@ class ContactsController extends BaseJSONController {
     const recordId = updatedData.id
     delete updatedData['id']
 
-    await this.contactMatchRepository.matchContactWithUser(updatedData)
+    await contactsMatchRepository.matchContactWithUser(updatedData)
 
     const updatedResult = await Contact.findOneAndUpdate(
       { _id: recordId },
@@ -78,7 +69,7 @@ class ContactsController extends BaseJSONController {
 
   async contact_list(ws, data) {
     const { id: requestId, contact_list: query } = data
-    const currentUser = this.sessionRepository.getSessionUserId(ws).toString()
+    const currentUser = sessionRepository.getSessionUserId(ws).toString()
 
     const queryParams = { user_id: currentUser.toString() }
     if (query.updated_at) {
@@ -96,7 +87,7 @@ class ContactsController extends BaseJSONController {
       contact_delete: { id },
     } = data
 
-    const userId = this.sessionRepository.getSessionUserId(ws)
+    const userId = sessionRepository.getSessionUserId(ws)
     const contact = await Contact.findOne({ _id: id, user_id: userId })
     contact && (await contact.delete())
 

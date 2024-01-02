@@ -1,5 +1,5 @@
 import OpLog from './../app/models/operations_log.js'
-import OperationsLogRepository from './../app/repositories/operations_log_repository.js'
+import operationsLogRepository from './../app/repositories/operations_log_repository.js'
 import User from './../app/models/user.js'
 import assert from 'assert'
 import { connectToDBPromise } from './../app/lib/db.js'
@@ -8,7 +8,6 @@ import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
 
 let timeWhenUserOff = null
 let usersIds = []
-const controller = new OperationsLogRepository(OpLog)
 
 describe('Operations Log functions', async () => {
   before(async () => {
@@ -19,7 +18,7 @@ describe('Operations Log functions', async () => {
     await sendLogin(mockedWS, 'user_1')
 
     for (let i = 0; i < 2; i++) {
-      controller.savePacket(usersIds[1], JSON.stringify(
+      await operationsLogRepository.savePacket(usersIds[1], JSON.stringify(
         {
           message_update: {
             id: `mid${i}`,
@@ -81,7 +80,7 @@ describe('Operations Log functions', async () => {
       responseData = responseData.backMessages.at(0).packet
 
       for (let i = 2; i < 6; i++) {
-        controller.savePacket(usersIds[1], JSON.stringify(
+        await operationsLogRepository.savePacket(usersIds[1], JSON.stringify(
           {
             message_update: {
               id: `mid${i}`,

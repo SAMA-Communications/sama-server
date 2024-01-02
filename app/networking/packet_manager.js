@@ -4,9 +4,9 @@ import { ACTIVE } from '../store/session.js'
 
 import OpLog from '../models/operations_log.js'
 
-import PushNotificationsRepository from '../repositories/push_notifications_repository.js'
-import OperationsLogRepository from '../repositories/operations_log_repository.js'
-import SessionRepository from '../repositories/session_repository.js'
+import pushNotificationsRepository from '../repositories/push_notifications_repository.js'
+import operationsLogRepository from '../repositories/operations_log_repository.js'
+import sessionRepository from '../repositories/session_repository.js'
 
 import clusterManager from '../cluster/cluster_manager.js'
 import packetMapper from './packet_mapper.js'
@@ -16,16 +16,14 @@ import { getIpFromWsUrl } from '../utils/get_ip_from_ws_url.js'
 
 class PacketManager {
   constructor() {
-    this.pushNotificationsRepository = new PushNotificationsRepository()
-    this.operationsLogRepository = new OperationsLogRepository(OpLog)
-    this.sessionRepository = new SessionRepository(ACTIVE)
+
   }
 
   async deliverToUserOnThisNode(ws, userId, packet, deviceId, notSaveInOfflineStorage) {
     const activeDevices = ACTIVE.DEVICES[userId] 
 
     if (!activeDevices && !notSaveInOfflineStorage) {
-      this.operationsLogRepository.savePacket(userId, packet)
+      operationsLogRepository.savePacket(userId, packet)
       return
     }
 
@@ -48,7 +46,7 @@ class PacketManager {
       const nodeInfo = JSON.parse(data)
       const nodeUrl = nodeInfo[Object.keys(nodeInfo)[0]]
       const nodeDeviceId = Object.keys(nodeInfo)[0]
-      const currentDeviceId = this.sessionRepository.getDeviceId(ws, userId)
+      const currentDeviceId = sessionRepository.getDeviceId(ws, userId)
 
       this.currentNodeUrl = buildWsEndpoint(
         ip.address(),
@@ -80,9 +78,9 @@ class PacketManager {
               err.slice(39)
             )
 
-            await this.sessionRepository.clearNodeUsersSession(nodeUrl)
+            await sessionRepository.clearNodeUsersSession(nodeUrl)
             if (!notSaveInOfflineStorage) {
-              this.operationsLogRepository.savePacket(userId, packet)
+              operationsLogRepository.savePacket(userId, packet)
             }
           }
           return
@@ -93,9 +91,9 @@ class PacketManager {
             JSON.stringify({ userId, message: packet })
           )
         } catch (err) {
-          await this.sessionRepository.clearNodeUsersSession(nodeUrl)
+          await sessionRepository.clearNodeUsersSession(nodeUrl)
           if (!notSaveInOfflineStorage) {
-            this.operationsLogRepository.savePacket(userId, packet)
+            operationsLogRepository.savePacket(userId, packet)
           }
         }
       }
@@ -112,11 +110,11 @@ class PacketManager {
     delete packet.pushMessage
 
     for (const userId of usersIds) {
-      const userNodeData = await this.sessionRepository.getUserNodeData(userId)
+      const userNodeData = await sessionRepository.getUserNodeData(userId)
 
       if (!userNodeData?.length) {
         if (!notSaveInOfflineStorage) {
-          this.operationsLogRepository.savePacket(userId, packet)
+          operationsLogRepository.savePacket(userId, packet)
         }
 
         offlineUsersByPackets.push(userId)
@@ -126,7 +124,7 @@ class PacketManager {
     }
 
     if (offlineUsersByPackets.length && pushMessage) {
-      await this.pushNotificationsRepository.addPushNotificationToQueue(
+      await pushNotificationsRepository.addPushNotificationToQueue(
         offlineUsersByPackets,
         pushMessage
       )
@@ -142,7 +140,7 @@ class PacketManager {
         err
       )
       if (!notSaveInOfflineStorage) {
-        this.operationsLogRepository.savePacket(userId, packet)
+        operationsLogRepository.savePacket(userId, packet)
       }
     }
   }

@@ -1,14 +1,18 @@
 import BaseRepository from './base.js'
+
 import Conversation from '../models/conversation.js'
+
 import { inMemoryConversations } from '../store/in_memory.js'
 
-export default class ConversationRepository extends BaseRepository {
-  constructor(model, inMemoryStorage) {
-    super(model, inMemoryStorage)
+class ConversationRepository extends BaseRepository {
+  constructor(ConversationModel, inMemoryStorage) {
+    super(ConversationModel)
+
+    this.inMemoryStorage = inMemoryStorage
   }
 
-  static async warmCache() {
-    const db_Conversation = await Conversation.findAll(
+  async warmCache() {
+    const dbConversation = await this.Model.findAll(
       {},
       null,
       process.env.CONVERSATION_PRELOAD_COUNT,
@@ -17,7 +21,7 @@ export default class ConversationRepository extends BaseRepository {
       }
     )
 
-    db_Conversation.forEach((conv) => {
+    dbConversation.forEach((conv) => {
       inMemoryConversations[conv._id] = conv
     })
 
@@ -25,11 +29,7 @@ export default class ConversationRepository extends BaseRepository {
   }
 
   async updateOne(_id, value) {
-    if (!_id) {
-      throw 'Invalid key'
-    }
-
-    const conv = (await Conversation.findOneAndUpdate({ _id }, { $set: value }))
+    const conv = (await this.Model.findOneAndUpdate({ _id }, { $set: value }))
       ?.value
 
     if (conv) {
@@ -40,20 +40,18 @@ export default class ConversationRepository extends BaseRepository {
   }
 
   async delete(convId) {
-    if (!convId) {
-      throw 'Invalid param'
-    }
-
     const conv = this.inMemoryStorage[convId]
+
     delete this.inMemoryStorage[convId]
-    await new Conversation(conv).delete()
+
+    await new this.Model(conv).delete()
   }
 
   async findById(_id) {
     let conv = this.inMemoryStorage[_id]
 
     if (!conv) {
-      conv = (await Conversation.findOne({ _id }))?.params
+      conv = (await this.Model.findOne({ _id }))?.params
       this.inMemoryStorage[_id] = conv
     }
 
@@ -61,7 +59,8 @@ export default class ConversationRepository extends BaseRepository {
   }
 
   async findOne(params) {
-    const conv = (await Conversation.findOne(params))?.params
+    const conv = (await this.Model.findOne(params))?.params
+
     if (conv) {
       this.inMemoryStorage[conv._id.toString()] = conv
     }
@@ -70,7 +69,8 @@ export default class ConversationRepository extends BaseRepository {
   }
 
   async findAll(params, fields, limit, sortParams) {
-    const list = await Conversation.findAll(params, fields, limit, sortParams)
+    const list = await this.Model.findAll(params, fields, limit, sortParams)
+
     list.forEach(
       (record) => (this.inMemoryStorage[record._id.toString()] = record)
     )
@@ -78,3 +78,5 @@ export default class ConversationRepository extends BaseRepository {
     return list
   }
 }
+
+export default new ConversationRepository(Conversation, inMemoryConversations)
