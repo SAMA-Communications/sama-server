@@ -7,7 +7,7 @@ export default class FileRepository extends BaseRepository {
   }
 
   async getFileUrl(fileId) {
-    return await RedisClient.client.sMembers(`file:${fileId}`);
+    return (await RedisClient.client.sMembers(`file:${fileId}`))[0];
   }
 
   async storeFileUrl(fileId, url) {
