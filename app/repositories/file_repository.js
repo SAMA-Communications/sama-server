@@ -6,16 +6,16 @@ export default class FileRepository extends BaseRepository {
     super(null, inMemoryStorage);
   }
 
-  #createKey(fileId) {
+  #generateKey(fileId) {
     return `file:${fileId}`;
   }
 
   async getFileUrl(fileId) {
-    return (await RedisClient.client.sMembers(`file:${fileId}`))[0];
+    return (await RedisClient.client.sMembers(this.#generateKey(fileId)))[0];
   }
 
   async storeFileUrl(fileId, url) {
-    await RedisClient.client.sAdd(this.createKey(fileId), url);
-    await RedisClient.client.expire(this.createKey(fileId), 3600);
+    await RedisClient.client.sAdd(this.#generateKey(fileId), url);
+    await RedisClient.client.expire(this.#generateKey(fileId), 3600);
   }
 }
