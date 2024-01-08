@@ -1,9 +1,8 @@
 import RuntimeDefinedContext from '../store/RuntimeDefinedContext.js'
 import { ACTIVE } from '../store/session.js'
 
-import pushNotificationsRepository from '../repositories/push_notifications_repository.js'
-import operationsLogRepository from '../repositories/operations_log_repository.js'
 import sessionRepository from '../repositories/session_repository.js'
+import operationsLogRepository from '../repositories/operations_log_repository.js'
 
 import clusterManager from '../cluster/cluster_manager.js'
 import packetMapper from './packet_mapper.js'
@@ -93,14 +92,12 @@ class PacketManager {
     })
   }
 
-  async deliverToUserOrUsers(ws, packet, usersIds, notSaveInOfflineStorage) {
+  async deliverToUserOrUsers(ws, packet, pushQueueMessage, usersIds, notSaveInOfflineStorage) {
     if (!usersIds?.length) {
       return
     }
 
     const offlineUsersByPackets = []
-    const pushMessage = packet.pushMessage
-    delete packet.pushMessage
 
     for (const userId of usersIds) {
       const userNodeData = await sessionRepository.getUserNodeData(userId)
@@ -116,11 +113,9 @@ class PacketManager {
       this.#deliverToUserDevices(ws, userNodeData, userId, packet, notSaveInOfflineStorage)
     }
 
-    if (offlineUsersByPackets.length && pushMessage) {
-      await pushNotificationsRepository.addPushNotificationToQueue(
-        offlineUsersByPackets,
-        pushMessage
-      )
+    if (pushQueueMessage && offlineUsersByPackets.length) {
+      pushQueueMessage.setRecipientIds(offlineUsersByPackets)
+      await RuntimeDefinedContext.PUSH_QUEUE_DRIVER.createPush(pushQueueMessage)
     }
   }
 

@@ -1,8 +1,9 @@
 export default class BaseStorage {
   async getUploadUrl() {
-    throw 'Not implemented'
+    throw new Error('Not implemented')
   }
+
   async getDownloadUrl() {
-    throw 'Not implemented'
+    throw new Error('Not implemented')
   }
 }
