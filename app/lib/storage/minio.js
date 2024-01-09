@@ -5,8 +5,10 @@ import BaseStorage from './base.js'
 import getUniqueId from '../../utils/uuid.js'
 
 export default class Minio extends BaseStorage {
-  constructor(params) {
-    super(params)
+  constructor(options) {
+    options = options || { bucketName: process.env.MINIO_BUCKET_NAME }
+    super(options)
+
     this.minioClient = new Client({
       endPoint: process.env.MINIO_ENDPOINT,
       port: +process.env.MINIO_PORT,
@@ -20,9 +22,9 @@ export default class Minio extends BaseStorage {
     const objectId = getUniqueId(fileName)
 
     const presignedUrl = await this.minioClient.presignedPutObject(
-      process.env.MINIO_BUCKET_NAME,
+      this.bucketName,
       objectId,
-      +process.env.FILE_UPLOAD_URL_EXPIRES_IN
+      this.expire
     )
 
     return { objectId, url: presignedUrl }
@@ -30,9 +32,9 @@ export default class Minio extends BaseStorage {
 
   async getDownloadUrl(fileId) {
     return await this.minioClient.presignedGetObject(
-      process.env.MINIO_BUCKET_NAME,
+      this.bucketName,
       fileId,
-      +process.env.FILE_DOWNLOAD_URL_EXPIRES_IN
+      this.expire
     )
   }
 }

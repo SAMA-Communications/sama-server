@@ -6,8 +6,10 @@ import BaseStorage from './base.js'
 import getUniqueId from '../../utils/uuid.js'
 
 export default class S3Storage extends BaseStorage {
-  constructor(params) {
-    super(params)
+  constructor(options) {
+    options = options || { bucketName: process.env.S3_BUCKET_NAME }
+    super(options)
+
     this.s3Client = new S3({
       endpoint: process.env.S3_ENDPOINT || null,
       region: process.env.S3_REGION,
@@ -21,14 +23,14 @@ export default class S3Storage extends BaseStorage {
   async getUploadUrl(fileName) {
     const objectId = getUniqueId(fileName)
     const bucketParams = {
-      Bucket: process.env.S3_BUCKET_NAME,
+      Bucket: this.bucketName,
       Key: objectId,
     }
 
     const presignedUrl = await getSignedUrl(
       this.s3Client,
       new PutObjectCommand(bucketParams),
-      { expiresIn: process.env.FILE_UPLOAD_URL_EXPIRES_IN }
+      { expiresIn: this.expire }
     )
 
     return { objectId, url: presignedUrl }
@@ -36,14 +38,14 @@ export default class S3Storage extends BaseStorage {
 
   async getDownloadUrl(fileId) {
     const bucketParams = {
-      Bucket: process.env.S3_BUCKET_NAME,
+      Bucket: this.bucketName,
       Key: fileId,
     }
 
     return await getSignedUrl(
       this.s3Client,
       new GetObjectCommand(bucketParams),
-      { expiresIn: process.env.FILE_DOWNLOAD_URL_EXPIRES_IN }
+      { expiresIn: this.expire }
     )
   }
 }
