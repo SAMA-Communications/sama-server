@@ -9,7 +9,7 @@ export default class S3Storage extends BaseStorage {
   constructor(params) {
     super(params)
     this.s3Client = new S3({
-      endpoint: process.env.S3_ENDPOINT,
+      endpoint: process.env.S3_ENDPOINT || null,
       region: process.env.S3_REGION,
       credentials: {
         accessKeyId: process.env.S3_ACCESS_KEY,
@@ -32,6 +32,7 @@ export default class S3Storage extends BaseStorage {
       )
       return { objectId, url: presignedUrl }
     } catch (err) {
+      console.log(err)
       return err
     }
   }
