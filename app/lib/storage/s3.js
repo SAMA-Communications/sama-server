@@ -20,36 +20,30 @@ export default class S3Storage extends BaseStorage {
 
   async getUploadUrl(fileName) {
     const objectId = getUniqueId(fileName)
-    try {
-      const bucketParams = {
-        Bucket: process.env.S3_BUCKET_NAME,
-        Key: objectId,
-      }
-      const presignedUrl = await getSignedUrl(
-        this.s3Client,
-        new PutObjectCommand(bucketParams),
-        { expiresIn: process.env.FILE_UPLOAD_URL_EXPIRES_IN }
-      )
-      return { objectId, url: presignedUrl }
-    } catch (err) {
-      console.log(err)
-      return err
+    const bucketParams = {
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: objectId,
     }
+
+    const presignedUrl = await getSignedUrl(
+      this.s3Client,
+      new PutObjectCommand(bucketParams),
+      { expiresIn: process.env.FILE_UPLOAD_URL_EXPIRES_IN }
+    )
+
+    return { objectId, url: presignedUrl }
   }
 
   async getDownloadUrl(fileId) {
-    try {
-      const bucketParams = {
-        Bucket: process.env.S3_BUCKET_NAME,
-        Key: fileId,
-      }
-      return await getSignedUrl(
-        this.s3Client,
-        new GetObjectCommand(bucketParams),
-        { expiresIn: process.env.FILE_DOWNLOAD_URL_EXPIRES_IN }
-      )
-    } catch (err) {
-      return err
+    const bucketParams = {
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: fileId,
     }
+
+    return await getSignedUrl(
+      this.s3Client,
+      new GetObjectCommand(bucketParams),
+      { expiresIn: process.env.FILE_DOWNLOAD_URL_EXPIRES_IN }
+    )
   }
 }
