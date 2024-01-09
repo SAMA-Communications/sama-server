@@ -9,10 +9,7 @@ export default class BasePushQueue {
       createPushEventOptions.user_id,
       createPushEventOptions.user_ids,
       createPushEventOptions.payload,
-      {
-        account_id: createPushEventOptions.account_id,
-        application_id: createPushEventOptions.application_id
-      }
+      {}
     )
 
     return pushEvents

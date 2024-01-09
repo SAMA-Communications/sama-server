@@ -8,8 +8,6 @@ export default class CreatePushEventOptions extends BasePushEvent {
     
     this.payload = payload
 
-    this.application_id = options.application_id
-    this.account_id = options.account_id
     this.user_ids = options.user_ids
   }
 

@@ -14,11 +14,7 @@ export default class SamaNativePushQueue extends BasePushQueue {
     const createPushEventOptions = new CreatePushEventOptions(
       createChatAlertEventOptions.senderID,
       createChatAlertEventOptions.payload,
-      {
-        account_id: createChatAlertEventOptions.account_id,
-        application_id: createChatAlertEventOptions.application_id,
-        user_ids: createChatAlertEventOptions.offlineUsersIDs
-      }
+      { user_ids: createChatAlertEventOptions.offlineUsersIDs }
     )
 
     const pushEvents = await this.buildPushEvents(createPushEventOptions)

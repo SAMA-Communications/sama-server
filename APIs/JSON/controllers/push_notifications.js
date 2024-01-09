@@ -106,8 +106,6 @@ class PushNotificationsController extends BaseJSONController {
     const userId = sessionRepository.getSessionUserId(ws)
 
     const createPushEventOptions = new CreatePushEventOptions(userId, message, {
-      account_id: 1,
-      application_id: 1,
       user_ids: recipients_ids,
     })
 

@@ -34,9 +34,6 @@ class PushNotificationsRepository extends BaseRepository {
     const pushEvents = []
 
     const pushEventParams = {
-      account_id: options.account_id,
-      application_id: options.application_id,
-
       user_id: userId,
       user_ids: userIds,
 

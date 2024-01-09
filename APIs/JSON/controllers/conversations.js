@@ -46,10 +46,7 @@ class ConversationsController extends BaseJSONController {
       event: { conversation_created: conversation },
     }
   
-    const createPushEventOptions = new CreatePushEventOptions(currentUserParams._id, pushPayload, {
-      account_id: 1,
-      application_id: 1
-    })
+    const createPushEventOptions = new CreatePushEventOptions(currentUserParams._id, pushPayload, {})
 
     return new DeliverMessage(recipients, eventMessage).addPushQueueMessage(createPushEventOptions)
   }
@@ -80,10 +77,7 @@ class ConversationsController extends BaseJSONController {
 
     const messageForDelivery = { message: messageInHistory.visibleParams() }
 
-    const createPushEventOptions = new CreatePushEventOptions(currentUserParams._id, pushPayload, {
-      account_id: 1,
-      application_id: 1
-    })
+    const createPushEventOptions = new CreatePushEventOptions(currentUserParams._id, pushPayload, {})
   
     const deliverMessage = new DeliverMessage(usersIdsForDelivery, messageForDelivery).addPushQueueMessage(createPushEventOptions)
     return new Response().addBackMessage(messageForDelivery).addDeliverMessage(deliverMessage)
