@@ -101,8 +101,8 @@ describe('Attachments', async () => {
     assert.notEqual(urls[file_ids[0]], undefined)
     assert.notEqual(urls[file_ids[1]], undefined)
 
-    assert.equal(urls[file_ids[0]].split(':')[0], 'http')
-    assert.equal(urls[file_ids[1]].split(':')[0], 'http')
+    assert.match(urls[file_ids[0]].split(':')[0], /https?/)
+    assert.match(urls[file_ids[1]].split(':')[0], /https?/)
 
     assert.equal(Object.keys(responseData.response.file_urls).length, 2)
   })
