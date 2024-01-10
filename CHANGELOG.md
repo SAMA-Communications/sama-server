@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.12.0
+
+### Features
+
+- Implemented storage for links to attached files in redis. This will help us **not** to generate **different** links to the file every time, but to return the **same link** if there has been a demand for it in the last hour.
+- Added a new field `file_blur_hash` for all attachments included in the message. The field is needed to display a **blurred** image while the full image is being loaded from the server.
+- Optimized the **process** of deploying our project on your device. All variables required for the system to work correctly are now run with a **single** command. For more information, check out the pull request - [One-command docker deployment #77](https://github.com/SAMA-Communications/sama-server/pull/77).
+
 ## 0.11.0
 
 ### Features
