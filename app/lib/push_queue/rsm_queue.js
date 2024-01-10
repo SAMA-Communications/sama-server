@@ -27,7 +27,7 @@ export default class RSMPushQueue extends BasePushQueue {
     await this.createQueueIfNoExists(this.chatAlertQueueName)
 
     const messagePayload = {
-      dialogId: createChatAlertEventOptions.dialogId,
+      dialogId: createChatAlertEventOptions.conversationId,
       messageId: createChatAlertEventOptions.messageId,
       senderID: createChatAlertEventOptions.senderID,
       offlineUsersIDs: createChatAlertEventOptions.offlineUsersIDs

@@ -4,7 +4,7 @@ export default class CreateChatAlertEventOptions extends BasePushEvent {
   constructor(options, payload) {
     super()
 
-    this.dialogId = options.dialogId
+    this.conversationId = options.conversationId
     this.messageId = options.messageId
     this.senderID = options.senderID
     this.offlineUsersIDs = options.offlineUsersIDs

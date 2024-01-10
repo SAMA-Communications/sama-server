@@ -137,7 +137,7 @@ class MessagesController extends BaseJSONController {
     const recipients = await conversationParticipantsRepository.findParticipantsByConversation(messageParams.cid)
     
     const createChatAlertEventOptions = new CreateChatAlertEventOptions({
-      dialogId: conversation._id,
+      conversationId: conversation._id,
       messageId: messageId,
       senderID: currentUserId,
     }, pushPayload)
