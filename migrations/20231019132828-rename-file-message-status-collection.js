@@ -22,13 +22,6 @@ export const up = async (db, client) => {
   //   vv DROP MESSAGE STATUSES vv   //
   await db.collection("message_status").drop();
 
-  //   vv FILES vv   //
-  await db.createCollection("files");
-  await db
-    .collection("file")
-    .aggregate([{ $out: "files" }])
-    .toArray();
-  await db.collection("file").drop();
 };
 
 export const down = async (db, client) => {
