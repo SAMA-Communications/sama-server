@@ -3,8 +3,10 @@ import { S3 } from '@aws-sdk/client-s3'
 import S3Storage from './s3.js'
 
 export default class Spaces extends S3Storage {
-  constructor(params) {
-    super(params)
+  constructor(options) {
+    options = options || { bucketName: process.env.SPACES_BUCKET_NAME }
+    super(options)
+
     this.s3Client = new S3({
       endpoint: process.env.SPACES_ENDPOINT || null,
       region: process.env.SPACES_REGION,

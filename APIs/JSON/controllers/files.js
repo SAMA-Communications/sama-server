@@ -4,6 +4,8 @@ import RuntimeDefinedContext from '@sama/store/RuntimeDefinedContext.js'
 
 import File from '@sama/models/file.js'
 
+import fileRepository from '@sama/repositories/file_repository.js'
+
 import Response from '@sama/networking/models/Response.js'
 
 class FilesController extends BaseJSONController {
@@ -17,6 +19,7 @@ class FilesController extends BaseJSONController {
       const { objectId, url } = await RuntimeDefinedContext.STORAGE_DRIVER.getUploadUrl(
         reqFile.name
       )
+      
       reqFile['object_id'] = objectId
 
       const file = new File(reqFile)
@@ -36,12 +39,21 @@ class FilesController extends BaseJSONController {
 
     let urls = {}
 
-    for (const objectId of objectIds) {
-      //TODO: update from many to one request if it possible
+    for (const fileId of objectIds) {
+      const existUrl = await fileRepository.getFileUrl(fileId)
+
+      if (existUrl) {
+        urls[fileId] = existUrl;
+        continue
+      }
+
       const fileUrl = await RuntimeDefinedContext.STORAGE_DRIVER.getDownloadUrl(
-        objectId
+        fileId
       )
-      urls[objectId] = fileUrl
+
+      await fileRepository.storeFileUrl(fileId, fileUrl)
+
+      urls[fileId] = fileUrl
     }
 
     return new Response().addBackMessage({ response: { id: requestId, file_urls: urls } })
