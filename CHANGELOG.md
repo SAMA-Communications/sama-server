@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.12.0
+
+### Features
+
+- Implemented the cache for attachments links. This will allow to preserve the same attachment’s link across multiple requests during the last hour (configurable via FILE_DOWNLOAD_URL_EXPIRES_IN env).
+- Added a new field `file_blur_hash` for all attachments included in the message. The field is needed to display a **blurred** image while the full image is being loaded from the server.
+- Optimized the **process** the project deployment.
+
 ## 0.11.0
 
 ### Features
