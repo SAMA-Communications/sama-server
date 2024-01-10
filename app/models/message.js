@@ -35,7 +35,7 @@ export default class Message extends BaseModel {
       _id: "$cid",
       last_message: { $first: "$$ROOT" },
     };
-    const $project = { _id: 1, body: 1, from: 1, t: 1, cid: 1 };
+    const $project = { _id: 1, body: 1, from: 1, t: 1, cid: 1, attachments: 1 };
     const aggregatedResult = await this.aggregate([
       { $match },
       { $project },

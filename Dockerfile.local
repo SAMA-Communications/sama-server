@@ -1,0 +1,21 @@
+FROM node:18.16.0 as builder
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install 
+
+COPY . .
+
+FROM node:18-slim
+
+WORKDIR /app
+
+COPY --from=builder /app /app
+
+RUN npm install pm2@5.2.0 -g 
+
+EXPOSE 52403
+
+CMD ["pm2-runtime", "start", "pm2.config.cjs"]
