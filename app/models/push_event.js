@@ -13,7 +13,7 @@ export default class PushEvent extends BaseModel {
       '_id',
       'created_at',
       'updated_at',
-      'notification_channel_id',
+      'platform',
       'user_id',
       'user_ids',
       'message',

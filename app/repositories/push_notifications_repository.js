@@ -10,7 +10,7 @@ class PushNotificationsRepository extends BaseRepository {
     this.PushSubscriptionModel = PushSubscriptionModel
   }
 
-  async usersNotificationChannels(users_ids) {
+  async usersPlatforms(users_ids) {
     let notificationChannelIds = new Set()
 
     for (const user_id of users_ids) {
@@ -27,7 +27,7 @@ class PushNotificationsRepository extends BaseRepository {
   }
 
   async createPushEvents(userId, userIds, payload, options) {
-    const notificationChannels = await this.usersNotificationChannels(userIds)
+    const platforms = await this.usersPlatforms(userIds)
 
     const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64')
 
@@ -40,8 +40,8 @@ class PushNotificationsRepository extends BaseRepository {
       message: base64Payload,
     }
 
-    for (const notificationChannelId of notificationChannels) {
-      pushEventParams.notification_channel_id = notificationChannelId
+    for (const platform of platforms) {
+      pushEventParams.platform = platform
      
       const pushEvent = new this.Model(pushEventParams)
       await pushEvent.save()
