@@ -27,8 +27,11 @@ export const up = async (db, client) => {
     .toArray();
 
   //   vv RENAME vv   //
-  await db.collection("users").drop();
+  await db.collection("users").rename("old_users", { dropTarget: true });
   await db.collection("users_copy").rename("users", { dropTarget: true });
 };
 
-export const down = async (db, client) => {};
+export const down = async (db, client) => {
+  await db.collection("users").rename("users_copy", { dropTarget: true });
+  await db.collection("old_users").rename("users", { dropTarget: true });
+};
