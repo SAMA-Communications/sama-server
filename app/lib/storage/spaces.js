@@ -7,7 +7,7 @@ export default class Spaces extends BaseStorage {
   constructor(params) {
     super(params);
     this.spacesClient = new S3({
-      endpoint: process.env.SPACES_ENPOINT,
+      endpoint: process.env.SPACES_ENDPOINT,
       region: process.env.SPACES_REGION,
       credentials: {
         accessKeyId: process.env.SPACES_ACCESS_KEY,

@@ -8,7 +8,10 @@ export const up = async (db, client) => {
     return { key, options };
   });
 
-  const newCollection = await db.createCollection("message_statuses");
+  const existCollection = db.collection("message_statuses");
+  const newCollection = existCollection
+    ? db.collection("message_statuses")
+    : await db.createCollection("message_statuses");
   for (const { key, options } of indexes) {
     await newCollection.createIndex(key, options);
   }
@@ -21,12 +24,10 @@ export const up = async (db, client) => {
 
   //   vv DROP MESSAGE STATUSES vv   //
   await db.collection("message_status").drop();
-
 };
 
 export const down = async (db, client) => {
   await db
     .collection("message_statuses")
     .rename("message_status", { dropTarget: true });
-  await db.collection("files").rename("file", { dropTarget: true });
 };
