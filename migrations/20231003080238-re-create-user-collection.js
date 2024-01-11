@@ -32,6 +32,5 @@ export const up = async (db, client) => {
 };
 
 export const down = async (db, client) => {
-  await db.collection("users").rename("users_copy", { dropTarget: true });
-  await db.collection("old_users").rename("users", { dropTarget: true });
+  await db.collection("old_users").drop();
 };
