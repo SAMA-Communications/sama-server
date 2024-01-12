@@ -13,8 +13,9 @@ export default class PushEvent extends BaseModel {
       '_id',
       'created_at',
       'updated_at',
+      'platform',
       'user_id',
-      'recipients_ids',
+      'user_ids',
       'message',
     ]
   }

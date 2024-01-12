@@ -502,21 +502,27 @@ describe('PushNotification functions', async () => {
 
       responseData = responseData.backMessages.at(0)
 
+      console.log('[responseData]', responseData.response.event)
+
+      const event = responseData.response.event.at(0)
+
+      const eventMessage = Buffer.from(event.message, 'base64').toString('utf8')
+
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.strictEqual(
-        responseData.response.event.message,
+        eventMessage,
         JSON.stringify(requestData.request.push_event_create.message)
       )
       assert.strictEqual(
-        responseData.response.event.user_id,
+        event.user_id,
         usersIds[0].toString()
       )
       assert.strictEqual(
-        responseData.response.event.recipients_ids[0],
+        event.user_ids[0],
         usersIds[0].toString()
       )
       assert.strictEqual(
-        responseData.response.event.recipients_ids[1],
+        event.user_ids[1],
         usersIds[1].toString()
       )
     })
@@ -578,7 +584,7 @@ describe('PushNotification functions', async () => {
       const requestData = {
         request: {
           push_event_create: {
-            recipients_ids: ['testId', usersIds[1].toString()],
+            recipients_ids: ['testId', usersIds[0].toString()],
             message: {
               title: 'Title',
               topic: 'topic',
@@ -597,10 +603,12 @@ describe('PushNotification functions', async () => {
 
       responseData = responseData.backMessages.at(0)
 
+      const event = responseData.response.event.at(0)
+
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.strictEqual(
-        responseData.response.event.recipients_ids[0],
-        usersIds[1].toString()
+        event.user_ids[1],
+        usersIds[0].toString()
       )
     })
 

@@ -26,6 +26,7 @@ import { ObjectId } from '@sama/lib/db.js'
 
 import DeliverMessage from '@sama/networking/models/DeliverMessage.js'
 import Response from '@sama/networking/models/Response.js'
+import CreateChatAlertEventOptions from '@sama/lib/push_queue/models/CreateChatAlertEventOptions.js'
 
 import groupBy from '../utils/groupBy.js'
 
@@ -118,7 +119,7 @@ class MessagesController extends BaseJSONController {
       ?.login
     const firstAttachmentUrl = !messageParams.attachments?.length
       ? null
-      : await RuntimeDefinedContext.STORAGE.getDownloadUrl(
+      : await RuntimeDefinedContext.STORAGE_DRIVER.getDownloadUrl(
           messageParams.attachments[0].file_id
         )
 
@@ -132,10 +133,16 @@ class MessagesController extends BaseJSONController {
       cid: messageParams.cid,
     })
 
-    const pushMessage = { message: message.visibleParams() }
+    const createdMessage = { message: message.visibleParams() }
     const recipients = await conversationParticipantsRepository.findParticipantsByConversation(messageParams.cid)
     
-    response.addDeliverMessage(new DeliverMessage(recipients, pushMessage).addPushMessage(pushPayload))
+    const createChatAlertEventOptions = new CreateChatAlertEventOptions({
+      conversationId: conversation._id,
+      messageId: messageId,
+      senderID: currentUserId,
+    }, pushPayload)
+
+    response.addDeliverMessage(new DeliverMessage(recipients, createdMessage).addPushQueueMessage(createChatAlertEventOptions))
 
     await conversationRepository.updateOne(messageParams.cid, {
       updated_at: message.params.created_at,

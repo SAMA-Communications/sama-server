@@ -3,7 +3,7 @@ class DeliverMessage {
   userIds = []
   packet = null
   notSaveInOfflineStorage = false
-  pushMessage = null
+  pushQueueMessage = null
 
   constructor(userIds, packet, notSaveInOfflineStorage, ws) {
     this.userIds = userIds
@@ -12,8 +12,8 @@ class DeliverMessage {
     this.ws = ws
   }
 
-  addPushMessage(pushMessage) {
-    this.pushMessage = pushMessage
+  addPushQueueMessage(pushQueueMessage) {
+    this.pushQueueMessage = pushQueueMessage
     return this
   }
 }

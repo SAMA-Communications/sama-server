@@ -26,6 +26,7 @@ import { ObjectId } from '@sama/lib/db.js'
 
 import DeliverMessage from '@sama/networking/models/DeliverMessage.js'
 import Response from '@sama/networking/models/Response.js'
+import CreatePushEventOptions from '@sama/lib/push_queue/models/CreatePushEventOptions.js'
 
 import getDisplayName from '../utils/get_display_name.js'
 
@@ -36,7 +37,7 @@ class ConversationsController extends BaseJSONController {
     currentUserParams,
     recipients
   ) {
-    const pushMessage = {
+    const pushPayload = {
       title: conversation.name,
       body: `${getDisplayName(currentUserParams)} ${CONSTANTS.EVENT_TYPE_PARAMS[eventType].push_message_body}`,
     }
@@ -45,7 +46,9 @@ class ConversationsController extends BaseJSONController {
       event: { conversation_created: conversation },
     }
   
-    return new DeliverMessage(recipients, eventMessage).addPushMessage(pushMessage)
+    const createPushEventOptions = new CreatePushEventOptions(currentUserParams._id, pushPayload, {})
+
+    return new DeliverMessage(recipients, eventMessage).addPushQueueMessage(createPushEventOptions)
   }
 
   async #storeAndNotifyAboutParticipantAction(
@@ -66,15 +69,17 @@ class ConversationsController extends BaseJSONController {
 
     await messageInHistory.save()
 
-    const pushMessage = {
+    const pushPayload = {
       title: `${getDisplayName(currentUserParams)} | ${conversation.name}`,
       body: messageInHistory.params.body,
       cid: messageInHistory.params.cid,
     }
 
     const messageForDelivery = { message: messageInHistory.visibleParams() }
+
+    const createPushEventOptions = new CreatePushEventOptions(currentUserParams._id, pushPayload, {})
   
-    const deliverMessage = new DeliverMessage(usersIdsForDelivery, messageForDelivery).addPushMessage(pushMessage)
+    const deliverMessage = new DeliverMessage(usersIdsForDelivery, messageForDelivery).addPushQueueMessage(createPushEventOptions)
     return new Response().addBackMessage(messageForDelivery).addDeliverMessage(deliverMessage)
   }
 

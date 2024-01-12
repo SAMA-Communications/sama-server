@@ -57,6 +57,7 @@ const onMessage = async (ws, message) => {
       await packetManager.deliverToUserOrUsers(
         deliverMessage.ws || ws,
         deliverMessage.packet,
+        deliverMessage.pushQueueMessage,
         deliverMessage.userIds,
         deliverMessage.notSaveInOfflineStorage
       )

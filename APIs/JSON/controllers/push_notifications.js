@@ -2,15 +2,17 @@ import BaseJSONController from './base.js'
 
 import { ERROR_STATUES } from '@sama/constants/errors.js'
 
+import RuntimeDefinedContext from '@sama/store/RuntimeDefinedContext.js'
+
 import User from '@sama/models/user.js'
 import PushSubscription from '@sama/models/push_subscription.js'
 
 import sessionRepository from '@sama/repositories/session_repository.js'
-import pushNotificationsRepository from '@sama/repositories/push_notifications_repository.js'
 
 import { ObjectId } from '@sama/lib/db.js'
 
 import Response from '@sama/networking/models/Response.js'
+import CreatePushEventOptions from '@sama/lib/push_queue/models/CreatePushEventOptions.js'
 
 class PushNotificationsController extends BaseJSONController {
   async push_subscription_create(ws, data) {
@@ -102,13 +104,16 @@ class PushNotificationsController extends BaseJSONController {
     }
 
     const userId = sessionRepository.getSessionUserId(ws)
-    const pushEvent = await pushNotificationsRepository.createPushEvent(
-      recipients,
-      userId,
-      message
-    )
 
-    return new Response().addBackMessage({ response: { id: requestId, event: pushEvent } })
+    const createPushEventOptions = new CreatePushEventOptions(userId, message, {
+      user_ids: recipients_ids,
+    })
+
+    const pushEvents = await RuntimeDefinedContext.PUSH_QUEUE_DRIVER.createPushEvents(createPushEventOptions)
+
+    const responsePushEvents = pushEvents.map(pushEvent => pushEvent.visibleParams())
+
+    return new Response().addBackMessage({ response: { id: requestId, event: responsePushEvents } })
   }
 }
 

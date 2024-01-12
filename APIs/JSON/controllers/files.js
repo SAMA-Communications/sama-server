@@ -16,9 +16,10 @@ class FilesController extends BaseJSONController {
 
     for (const reqFile of reqFiles) {
       //TODO: update from many to one request if it possible
-      const { objectId, url } = await RuntimeDefinedContext.STORAGE.getUploadUrl(
+      const { objectId, url } = await RuntimeDefinedContext.STORAGE_DRIVER.getUploadUrl(
         reqFile.name
       )
+      
       reqFile['object_id'] = objectId
 
       const file = new File(reqFile)
@@ -46,7 +47,7 @@ class FilesController extends BaseJSONController {
         continue
       }
 
-      const fileUrl = await RuntimeDefinedContext.STORAGE.getDownloadUrl(
+      const fileUrl = await RuntimeDefinedContext.STORAGE_DRIVER.getDownloadUrl(
         fileId
       )
 

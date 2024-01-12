@@ -87,6 +87,7 @@ describe('Cluster Message function', async () => {
       await packetManager.deliverToUserOrUsers(
         deliverMessage.ws || mockedWS,
         JSON.stringify(deliverMessage.packet),
+        null,
         deliverMessage.userIds,
         deliverMessage.notSaveInOfflineStorage
       )

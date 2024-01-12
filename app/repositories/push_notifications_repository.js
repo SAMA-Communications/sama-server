@@ -3,8 +3,6 @@ import BaseRepository from './base.js'
 import PushEvent from '../models/push_event.js'
 import PushSubscription from '../models/push_subscription.js'
 
-import pushNotificationQueue from '../lib/push_queue.js'
-
 class PushNotificationsRepository extends BaseRepository {
   constructor(PushEventModel, PushSubscriptionModel) {
     super(PushEventModel)
@@ -12,39 +10,46 @@ class PushNotificationsRepository extends BaseRepository {
     this.PushSubscriptionModel = PushSubscriptionModel
   }
 
-  async addPushNotificationToQueue(users_ids, message) {
-    let devices = {}
+  async usersPlatforms(users_ids) {
+    let notificationChannelIds = new Set()
 
-    for (const id of users_ids) {
-      const userDevices = await this.PushSubscriptionModel.findAll({ user_id: id })
-      if (!userDevices.length) {
-        continue
+    for (const user_id of users_ids) {
+      let userSubscriptions = await this.PushSubscriptionModel.findAll({ user_id: user_id })
+
+      userSubscriptions = userSubscriptions ?? []
+
+      for (const subscription of userSubscriptions) {
+        notificationChannelIds.add(subscription.platform)
       }
-      devices[id] = userDevices
     }
 
-    if (!Object.keys(devices).length) {
-      return
-    }
-
-    const data = { devices, message }
-    await pushNotificationQueue.add(data)
+    return [...notificationChannelIds]
   }
 
-  async createPushEvent(recipients_ids, user_id, message) {
-    const pushMessage = message
+  async createPushEvents(userId, userIds, payload, options) {
+    const platforms = await this.usersPlatforms(userIds)
+
+    const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64')
+
+    const pushEvents = []
+
     const pushEventParams = {
-      user_id,
-      recipients_ids,
-      message: JSON.stringify(pushMessage),
+      user_id: userId,
+      user_ids: userIds,
+
+      message: base64Payload,
     }
 
-    const pushEvent = new this.Model(pushEventParams)
-    await pushEvent.save()
+    for (const platform of platforms) {
+      pushEventParams.platform = platform
+     
+      const pushEvent = new this.Model(pushEventParams)
+      await pushEvent.save()
 
-    await this.addPushNotificationToQueue(recipients_ids, pushMessage)
+      pushEvents.push(pushEvent)
+    }
 
-    return pushEvent.visibleParams()
+    return pushEvents
   }
 }
 
