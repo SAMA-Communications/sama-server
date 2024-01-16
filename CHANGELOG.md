@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.20.0
+
+### Features
+
+- We have updated the server’s architecture to support multiple protocols, such as JSON and XMPP, thereby enhancing its versatility and compatibility.
+
 ## 0.12.0
 
 ### Features
