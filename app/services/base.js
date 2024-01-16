@@ -1,1 +1,3 @@
-export default function BaseServie() {}
+export default class BaseService {
+  
+}

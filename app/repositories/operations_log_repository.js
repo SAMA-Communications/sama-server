@@ -1,13 +1,12 @@
-import OpLog from "../models/operations_log.js";
-import BaseRepository from "./base.js";
+import BaseRepository from './base.js'
 
-export default class OperationsLogRepository extends BaseRepository {
-  constructor(model) {
-    super(model, null);
-  }
+import OpLog from '../models/operations_log.js'
 
-  savePacket(user_id, packet) {
-    const record = new OpLog({ user_id, packet });
-    record.save();
+class OperationsLogRepository extends BaseRepository {
+  async savePacket(user_id, packet) {
+    const record = new this.Model({ user_id, packet })
+    await record.save()
   }
 }
+
+export default new OperationsLogRepository(OpLog)

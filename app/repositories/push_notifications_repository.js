@@ -1,47 +1,56 @@
-import BaseRepository from "./base.js";
-import PushEvent from "../models/push_event.js";
-import PushSubscription from "../models/push_subscription.js";
-import SessionRepository from "./session_repository.js";
-import { ACTIVE } from "../store/session.js";
-import { pushNotificationQueue } from "../queues/notification_queue.js";
+import BaseRepository from './base.js'
 
-export default class PushNotificationsRepository extends BaseRepository {
-  constructor(model) {
-    super(model, null);
+import PushEvent from '../models/push_event.js'
+import PushSubscription from '../models/push_subscription.js'
 
-    this.sessionRepository = new SessionRepository(ACTIVE);
+class PushNotificationsRepository extends BaseRepository {
+  constructor(PushEventModel, PushSubscriptionModel) {
+    super(PushEventModel)
+
+    this.PushSubscriptionModel = PushSubscriptionModel
   }
 
-  async sendPushNotification(users_ids, message) {
-    let devices = {};
-    for (const id of users_ids) {
-      const userDevices = await PushSubscription.findAll({ user_id: id });
-      if (!userDevices.length) {
-        continue;
+  async usersPlatforms(users_ids) {
+    let notificationChannelIds = new Set()
+
+    for (const user_id of users_ids) {
+      let userSubscriptions = await this.PushSubscriptionModel.findAll({ user_id: user_id })
+
+      userSubscriptions = userSubscriptions ?? []
+
+      for (const subscription of userSubscriptions) {
+        notificationChannelIds.add(subscription.platform)
       }
-      devices[id] = userDevices;
     }
 
-    if (!Object.keys(devices).length) {
-      return;
-    }
-    const data = { devices, message };
-    pushNotificationQueue.add(data);
+    return [...notificationChannelIds]
   }
 
-  async createPushEvent(recipients_ids, user_id, message) {
-    const pushMessage = message;
+  async createPushEvents(userId, userIds, payload, options) {
+    const platforms = await this.usersPlatforms(userIds)
+
+    const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64')
+
+    const pushEvents = []
+
     const pushEventParams = {
-      user_id,
-      recipients_ids,
-      message: JSON.stringify(pushMessage),
-    };
+      user_id: userId,
+      user_ids: userIds,
 
-    const pushEvent = new PushEvent(pushEventParams);
-    await pushEvent.save();
+      message: base64Payload,
+    }
 
-    await this.sendPushNotification(recipients_ids, pushMessage);
+    for (const platform of platforms) {
+      pushEventParams.platform = platform
+     
+      const pushEvent = new this.Model(pushEventParams)
+      await pushEvent.save()
 
-    return pushEvent.visibleParams();
+      pushEvents.push(pushEvent)
+    }
+
+    return pushEvents
   }
 }
+
+export default new PushNotificationsRepository(PushEvent, PushSubscription)

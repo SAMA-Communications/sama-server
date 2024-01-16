@@ -1,15 +1,15 @@
-import BaseModel from "./base/base.js";
+import BaseModel from './base.js'
 
 export default class File extends BaseModel {
   constructor(params) {
-    super(params);
+    super(params)
   }
 
   static get collection() {
-    return "files";
+    return 'files'
   }
 
   static get visibleFields() {
-    return ["_id", "name", "size", "content_type", "object_id"];
+    return ['_id', 'name', 'size', 'content_type', 'object_id']
   }
 }

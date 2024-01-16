@@ -1,79 +1,108 @@
 /* Simplified stock exchange made with uWebSockets.js pub/sub */
-import uWS from "uWebSockets.js";
+import ip from 'ip'
+import os from 'os'
 
-import clientManager from "./app/routes/client_manager.js";
-import clusterManager from "./app/cluster/cluster_manager.js";
+import uWS from 'uWebSockets.js'
+
+import RuntimeDefinedContext from './app/store/RuntimeDefinedContext.js'
+
+import clusterManager from './app/cluster/cluster_manager.js'
+import clusterSyncer from './app/cluster/cluster_syncer.js'
+
+import clientManager from './app/networking/client_manager.js'
 
 // get MongoDB driver connection
-import Minio from "./app/lib/storage/minio.js";
-import S3 from "./app/lib/storage/s3.js";
-import Spaces from "./app/lib/storage/spaces.js";
-import { connectToDB } from "./app/lib/db.js";
+import Minio from './app/lib/storage/minio.js'
+import S3 from './app/lib/storage/s3.js'
+import Spaces from './app/lib/storage/spaces.js'
 
-//cache storage
-import BlockListRepository from "./app/repositories/blocklist_repository.js";
-import ClusterSyncer from "./app/cluster/cluster_syncer.js";
-import ConversationRepository from "./app/repositories/conversation_repository.js";
-import RedisClient from "./app/lib/redis.js";
+import RSMPushQueue from './app/lib/push_queue/rsm_queue.js'
+import SamaNativePushQueue from './app/lib/push_queue/sama_native_queue.js'
+
+import { connectToDBPromise } from './app/lib/db.js'
+import RedisClient from './app/lib/redis.js'
+
+import blockListRepository from './app/repositories/blocklist_repository.js'
+import conversationRepository from './app/repositories/conversation_repository.js'
+
+RuntimeDefinedContext.APP_HOSTNAME = process.env.HOSTNAME || os.hostname()
+RuntimeDefinedContext.APP_IP = ip.address()
 
 switch (process.env.STORAGE_DRIVER) {
-  case "minio":
-    globalThis.storageClient = new Minio();
-    break;
-  case "spaces":
-    globalThis.storageClient = new Spaces();
-    break;
+  case 'minio':
+    RuntimeDefinedContext.STORAGE_DRIVER = new Minio()
+    break
+  case 'spaces':
+    RuntimeDefinedContext.STORAGE_DRIVER = new Spaces()
+    break
   default:
-    globalThis.storageClient = new S3();
-    break;
+    RuntimeDefinedContext.STORAGE_DRIVER = new S3()
+    break
 }
 
-const APP_OPTIONS = {};
+switch (process.env.PUSH_QUEUE_DRIVER) {
+  case 'rsmq':
+    RuntimeDefinedContext.PUSH_QUEUE_DRIVER = new RSMPushQueue(RedisClient.client, {
+      chatAlertQueueName: process.env.RSM_CHAT_ALERT_QUEUE_NAME,
+      pushQueueName: process.env.RSM_PUSH_QUEUE_NAME
+    })
+    break
+  case 'sama_native':
+  default:
+    RuntimeDefinedContext.PUSH_QUEUE_DRIVER = new SamaNativePushQueue(
+      process.env.SAMA_NATIVE_PUSH_QUEUE_NAME,
+      process.env.REDIS_URL
+    )
+    break
+}
+
+const APP_OPTIONS = {}
 const SSL_APP_OPTIONS = {
   key_file_name: process.env.SSL_KEY_FILE_NAME,
   cert_file_name: process.env.SSL_CERT_FILE_NAME,
-};
+}
 const WS_OPTIONS = {
   compression: uWS.SHARED_COMPRESSOR,
   idleTimeout: 12,
   maxBackpressure: 1024,
   maxPayloadLength: 16 * 1024 * 1024,
-};
+}
 const WS_LISTEN_OPTIONS = {
   LIBUS_LISTEN_EXCLUSIVE_PORT: 1,
-};
+}
+const isSSL = !!SSL_APP_OPTIONS.key_file_name && !!SSL_APP_OPTIONS.cert_file_name
+const appPort = parseInt(process.env.APP_PORT || process.env.PORT)
 
-const isSSL =
-  !!SSL_APP_OPTIONS.key_file_name && !!SSL_APP_OPTIONS.cert_file_name;
-
-const appPort = parseInt(process.env.APP_PORT || process.env.PORT);
-clientManager.createLocalSocket(
+await clientManager.createLocalSocket(
   isSSL ? SSL_APP_OPTIONS : APP_OPTIONS,
   WS_OPTIONS,
   WS_LISTEN_OPTIONS,
   isSSL,
   appPort
-);
-//
-clusterManager.createLocalSocket(
+)
+
+RuntimeDefinedContext.CLUSTER_PORT = await clusterManager.createLocalSocket(
   isSSL ? SSL_APP_OPTIONS : APP_OPTIONS,
   WS_OPTIONS,
   WS_LISTEN_OPTIONS,
   isSSL
-);
+)
+
+console.log('[RuntimeDefinedContext]', RuntimeDefinedContext)
 
 // perform a database connection when the server starts
-connectToDB(async (err) => {
-  if (err) {
-    console.error("[connectToDB] Error", err);
-    process.exit();
-  } else {
-    console.log("[connectToDB] Ok");
-    await ClusterSyncer.startSyncingClusterNodes();
-    await RedisClient.connect();
-    await BlockListRepository.warmCache();
-    await ConversationRepository.warmCache();
-  }
-});
+await connectToDBPromise().then(() => {
+  console.log('[connectToDB] Ok')
+}).catch(err => {
+  console.error('[connectToDB] Error', err)
+  process.exit()
+})
+
+await RedisClient.connect()
+
+await clusterSyncer.startSyncingClusterNodes()
+
+await blockListRepository.warmCache()
+await conversationRepository.warmCache()
 
 // https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph

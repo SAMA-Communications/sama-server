@@ -1,15 +1,15 @@
-import BaseModel from "./base/base.js";
+import BaseModel from './base.js'
 
 export default class OpLog extends BaseModel {
   constructor(params) {
-    super(params);
+    super(params)
   }
 
   static get collection() {
-    return "operations_log";
+    return 'operations_log'
   }
 
   static get visibleFields() {
-    return ["_id", "created_at", "updated_at", "user_id", "packet"];
+    return ['_id', 'created_at', 'updated_at', 'user_id', 'packet']
   }
 }

@@ -1,63 +1,59 @@
-import ClusterNode from "../models/cluster_node.js";
-import ip from "ip";
-import os from "os";
-import clusterManager from "./cluster_manager.js";
-import SessionRepository from "../repositories/session_repository.js";
-import { ACTIVE } from "../store/session.js";
+import RuntimeDefinedContext from '../store/RuntimeDefinedContext.js'
+
+import clusterManager from './cluster_manager.js'
+
+import ClusterNode from '../models/cluster_node.js'
+
+import sessionRepository from '../repositories/session_repository.js'
 
 class ClusterSyncer {
   constructor() {
-    this.ip_address = ip.address();
-    this.hostname = process.env.HOSTNAME || os.hostname();
+    this.nodes = {}
 
-    this.nodes = {};
-
-    this.nodesSyncInterval = null;
-
-    this.sessionRepository = new SessionRepository(ACTIVE);
+    this.nodesSyncInterval = null
   }
 
   async startSyncingClusterNodes() {
     if (this.nodesSyncInterval) {
-      return;
+      return
     }
 
-    this.#syncCluster();
+    this.#syncCluster()
     
     this.nodesSyncInterval = setInterval(
       () => {
-        this.#syncCluster();
+        this.#syncCluster()
       },
       process.env.NODE_CLUSTER_DATA_EXPIRES_IN
-    );
+    )
   }
 
   async stopSyncingClusterNodes() {
-    clearInterval(this.nodesSyncInterval);
-    this.nodesSyncInterval = null;
+    clearInterval(this.nodesSyncInterval)
+    this.nodesSyncInterval = null
   }
 
   async #retrieveExistingClusterNodes() {
     const nodeList = await ClusterNode.findAll({}, [
-      "ip_address",
-      "hostname",
-      "port",
-    ]);
+      'ip_address',
+      'hostname',
+      'port',
+    ])
 
     // initiate connect to other node
     nodeList.forEach(async (n) => {
       if (
-        clusterManager.clusterPort !== n.port &&
-        `${this.hostname}${clusterManager.clusterPort}` < `${n.hostname}${n.port}`
+        RuntimeDefinedContext.CLUSTER_PORT !== n.port &&
+        `${RuntimeDefinedContext.APP_HOSTNAME}${RuntimeDefinedContext.CLUSTER_PORT}` < `${n.hostname}${n.port}`
       )
         try {
-          await clusterManager.createSocketWithNode(n.ip_address, n.port);
+          await clusterManager.createSocketWithNode(n.ip_address, n.port)
         } catch (err) {
-          console.log(err);
+          console.log(err)
         }
-    });
+    })
 
-    this.nodes = nodeList;
+    this.nodes = nodeList
 
     // TODO
     // if some node is gone, we may need to do some cleaning ?
@@ -75,29 +71,29 @@ class ClusterSyncer {
         {
           $set: { updated_at: new Date(), users_count },
         }
-      );
+      )
     } else {
       const newNode = new ClusterNode({
         ip_address,
         hostname,
         port,
         users_count,
-      });
-      await newNode.save();
+      })
+      await newNode.save()
     }
-  };
+  }
 
   async #syncCluster() {
     const clusterNodeParams = {
-      ip_address: this.ip_address,
-      hostname: this.hostname,
-      port: clusterManager.clusterPort,
-      users_count: this.sessionRepository.sessionsTotal,
-    };
-    await this.#storeCurrentNode(clusterNodeParams);
+      ip_address: RuntimeDefinedContext.APP_IP,
+      hostname: RuntimeDefinedContext.APP_HOSTNAME,
+      port: RuntimeDefinedContext.CLUSTER_PORT,
+      users_count: sessionRepository.sessionsTotal,
+    }
+    await this.#storeCurrentNode(clusterNodeParams)
 
-    await this.#retrieveExistingClusterNodes();
+    await this.#retrieveExistingClusterNodes()
   }
 }
 
-export default new ClusterSyncer();
+export default new ClusterSyncer()

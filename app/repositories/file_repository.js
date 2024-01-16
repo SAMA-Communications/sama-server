@@ -1,21 +1,21 @@
-import BaseRepository from "./base.js";
-import RedisClient from "../lib/redis.js";
+import BaseRepository from './base.js'
 
-export default class FileRepository extends BaseRepository {
-  constructor(inMemoryStorage) {
-    super(null, inMemoryStorage);
-  }
+import RedisClient from '../lib/redis.js'
 
+class FileRepository extends BaseRepository {
   #generateKey(fileId) {
-    return `file:${fileId}`;
+    return `file:${fileId}`
   }
 
   async getFileUrl(fileId) {
-    return (await RedisClient.client.sMembers(this.#generateKey(fileId)))[0];
+    const items = await RedisClient.client.sMembers(this.#generateKey(fileId))
+    return items.at(0)
   }
 
   async storeFileUrl(fileId, url) {
-    await RedisClient.client.sAdd(this.#generateKey(fileId), url);
-    await RedisClient.client.expire(this.#generateKey(fileId), 3600);
+    await RedisClient.client.sAdd(this.#generateKey(fileId), url)
+    await RedisClient.client.expire(this.#generateKey(fileId), 3600)
   }
 }
+
+export default new FileRepository(null)
