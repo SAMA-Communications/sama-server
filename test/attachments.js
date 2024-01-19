@@ -77,6 +77,7 @@ describe('Attachments', async () => {
 
   it('should work get download url for prev 2 files', async () => {
     const file_ids = files.map((obj) => obj.object_id)
+
     const requestData = {
       request: {
         get_file_urls: {

@@ -1,4 +1,6 @@
 export default class BaseAPI {
+  providers = [] // array of provider call { register, boot }
+
   detectMessage(ws, message) {
     // return true/false
   }

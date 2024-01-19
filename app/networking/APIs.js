@@ -7,7 +7,8 @@ const APIs = {
   [BASE_API]: new JsonAPI(),
 }
 
-if (XmppAPI) {
+const useXMPP = process.argv.some(arg => arg === '--xmpp')
+if (XmppAPI && useXMPP) {
   APIs['XMPP'] = new XmppAPI()
 }
 

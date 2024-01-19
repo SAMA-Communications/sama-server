@@ -5,6 +5,8 @@ import os from 'os'
 import uWS from 'uWebSockets.js'
 
 import RuntimeDefinedContext from './app/store/RuntimeDefinedContext.js'
+import ServiceLocatorContainer from './app/common/ServiceLocatorContainer.js'
+import providers from './app/providers/index.js'
 
 import clusterManager from './app/cluster/cluster_manager.js'
 import clusterSyncer from './app/cluster/cluster_syncer.js'
@@ -24,6 +26,8 @@ import RedisClient from './app/lib/redis.js'
 
 import blockListRepository from './app/repositories/blocklist_repository.js'
 import conversationRepository from './app/repositories/conversation_repository.js'
+
+import { APIs } from './app/networking/APIs.js'
 
 RuntimeDefinedContext.APP_HOSTNAME = process.env.HOSTNAME || os.hostname()
 RuntimeDefinedContext.APP_IP = ip.address()
@@ -104,5 +108,21 @@ await clusterSyncer.startSyncingClusterNodes()
 
 await blockListRepository.warmCache()
 await conversationRepository.warmCache()
+
+// Register providers
+ServiceLocatorContainer.register('RedisClient', () => RedisClient)
+ServiceLocatorContainer.register('StorageDriverClient', () => RuntimeDefinedContext.STORAGE_DRIVER)
+
+for (const provider of providers) {
+  provider.register(ServiceLocatorContainer)
+}
+
+for (const api of Object.values(APIs)) {
+  for (const provider of api.providers) {
+    provider.register(ServiceLocatorContainer)
+  }
+}
+
+// Boot providers
 
 // https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph
