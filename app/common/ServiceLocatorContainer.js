@@ -1,37 +1,75 @@
+import RegisterProvider from './RegisterProvider.js'
+
 class ServiceLocatorContainer {
-    #providers = {}
-    #registeredProviders = {}
+    #providersStore = {}
+    #providersInstances = {}
 
     use(name) {
-        const provider = this.#providers[name]
-
-        if (!provider) {
-            throw new Error(`No register provider ${name}`)
-        }
+        const provider = this.createProviderInstance(name)
 
         return provider
     }
 
-    register(name, cb){
-        Object.defineProperty(this.#providers, name, {
-            get: () => {
-                if(!this.#registeredProviders.hasOwnProperty(name)){
-                    this.#registeredProviders[name] = cb(this)
-                }
+    createProviderInstance(name) {
+        const registerProvider = this.#providersStore[name]
 
-                return this.#registeredProviders[name]
-            },
-            configurable: true,
-            enumerable: true
-        })
+        if (!registerProvider) {
+            throw new Error(`No register provider ${name}`)
+        }
 
-        console.log('[ServiceLocatorContainer] [register]', name)
+        if (registerProvider.scope === RegisterProvider.SCOPE.TRANSIENT) {
+            return registerProvider.register(this)
+        }
 
-        return this
+        if (!this.#providersInstances[name]) {
+            this.#providersInstances[name] = registerProvider.register(this)
+        }
+
+        return this.#providersInstances[name]
     }
 
-    async boot() {
+    createAllSingletonInstances() {
+        const registerProviders = Object.values(this.#providersStore)
+            .filter(registerProvider => registerProvider.scope === RegisterProvider.SCOPE.SINGLETON)
+        
+        for (const registerProvider of registerProviders) {
+            this.createProviderInstance(registerProvider.name)
+        }
+    }
 
+    register(registerProvider) {
+        const existed = this.#providersStore[registerProvider.name]
+
+        if (existed) {
+            console.warn(
+                '[ServiceLocatorContainer] [register]',
+                registerProvider.name,
+                '[replace implementation]',
+                existed.implementationName,
+                '->',
+                registerProvider.implementationName
+            )
+        } else {
+            console.log(
+                '[ServiceLocatorContainer] [register]',
+                registerProvider.name,
+                '[implementation]',
+                registerProvider.implementationName
+            )
+        }
+
+        this.#providersStore[registerProvider.name] = registerProvider
+    }
+
+    async boot(name) {
+        let registerProviderToBoot = name ? [this.#providersStore[name]] : Object.values(this.#providersStore)
+        registerProviderToBoot = registerProviderToBoot.filter(registerProvider => !registerProvider.booted)
+
+        for (const registerProvider of registerProviderToBoot) {
+            await registerProvider.boot(this)
+            registerProvider.booted = true 
+            console.log('[ServiceLocatorContainer] [boot]', registerProvider.name, '[implementation]', registerProvider.implementationName)
+        }
     }
 }
 

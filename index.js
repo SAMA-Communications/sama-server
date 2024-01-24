@@ -7,6 +7,7 @@ import uWS from 'uWebSockets.js'
 import RuntimeDefinedContext from './app/store/RuntimeDefinedContext.js'
 import ServiceLocatorContainer from './app/common/ServiceLocatorContainer.js'
 import providers from './app/providers/index.js'
+import RegisterProvider from './app/common/RegisterProvider.js'
 
 import clusterManager from './app/cluster/cluster_manager.js'
 import clusterSyncer from './app/cluster/cluster_syncer.js'
@@ -110,19 +111,33 @@ await blockListRepository.warmCache()
 await conversationRepository.warmCache()
 
 // Register providers
-ServiceLocatorContainer.register('RedisClient', () => RedisClient)
-ServiceLocatorContainer.register('StorageDriverClient', () => RuntimeDefinedContext.STORAGE_DRIVER)
+ServiceLocatorContainer.register(
+  new (class extends RegisterProvider {
+    register(slc) {
+      return RedisClient
+    }
+  })({ name: 'RedisClient', implementationName: RedisClient.constructor.name })
+)
+ServiceLocatorContainer.register(
+  new (class extends RegisterProvider {
+    register(slc) {
+      return RuntimeDefinedContext.STORAGE_DRIVER
+    }
+  })({ name: 'StorageDriverClient', implementationName: RuntimeDefinedContext.STORAGE_DRIVER.constructor.name })
+)
 
 for (const provider of providers) {
-  provider.register(ServiceLocatorContainer)
+  ServiceLocatorContainer.register(provider)
 }
 
 for (const api of Object.values(APIs)) {
   for (const provider of api.providers) {
-    provider.register(ServiceLocatorContainer)
+    ServiceLocatorContainer.register(provider)
   }
 }
 
 // Boot providers
+await ServiceLocatorContainer.createAllSingletonInstances()
+await ServiceLocatorContainer.boot()
 
 // https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph

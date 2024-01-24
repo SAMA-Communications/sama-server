@@ -1,15 +1,13 @@
 import FileRepository from './index.js'
-
+import RegisterProvider from '../../../common/RegisterProvider.js'
 import File from '../../../models/file.js'
 
-const register = (slc) => {
-  slc.register('FileRepository', (slc) => {
+const name = 'FileRepository'
+
+class FileRepositoryRegisterProvider extends RegisterProvider {
+  register(slc) {
     return new FileRepository(File)
-  })
+  }
 }
 
-const boot = async (slc) => {
-  console.log('[Boot] [FileRepository]')
-}
-
-export default { register, boot }
+export default new FileRepositoryRegisterProvider({ name, implementationName: FileRepository.name })

@@ -6,8 +6,6 @@ import packetJsonProcessor from './routes/packet_processor.js'
 import { detectJsonMessage } from './utils/detect_message.js'
 
 export default class JsonAPI extends BaseAPI {
-  providers = []
-
   detectMessage (ws, message) {
     return detectJsonMessage(message)
   }
