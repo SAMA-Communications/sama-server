@@ -1,16 +1,14 @@
-import { ObjectId } from '../../../lib/db.js'
-import BaseRepository from '../../../repositories/base.js'
+import BaseRepository from '../base.js'
 
 class FileRepository extends BaseRepository {
   async create(userId, fileObj) {
-    const file = new this.Model(fileObj)
-    await file.save()
+    const file = await super.create(fileObj)
 
     return file
   }
 
   async findUserFile(userId, objectId) {
-    const file = await this.Model.findOne({ object_id: objectId })
+    const file = await this.findOne({ object_id: objectId })
 
     return file
   }

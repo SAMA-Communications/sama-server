@@ -20,6 +20,8 @@ class FilesController extends BaseJSONController {
       resFiles.push({ ...file, upload_url })
     }
 
+    console.log('[resFiles]', resFiles)
+
     return new Response().addBackMessage({ response: { id: requestId, files: resFiles } })
   }
 

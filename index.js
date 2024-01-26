@@ -22,7 +22,7 @@ import Spaces from './app/lib/storage/spaces.js'
 import RSMPushQueue from './app/lib/push_queue/rsm_queue.js'
 import SamaNativePushQueue from './app/lib/push_queue/sama_native_queue.js'
 
-import { connectToDBPromise } from './app/lib/db.js'
+import { connectToDBPromise, getDb } from './app/lib/db.js'
 import RedisClient from './app/lib/redis.js'
 
 import blockListRepository from './app/repositories/blocklist_repository.js'
@@ -117,6 +117,13 @@ ServiceLocatorContainer.register(
       return RedisClient
     }
   })({ name: 'RedisClient', implementationName: RedisClient.constructor.name })
+)
+ServiceLocatorContainer.register(
+  new (class extends RegisterProvider {
+    register(slc) {
+      return getDb()
+    }
+  })({ name: 'MongoConnection', implementationName: 'MongoConnection' })
 )
 ServiceLocatorContainer.register(
   new (class extends RegisterProvider {
