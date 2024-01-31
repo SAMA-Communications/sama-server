@@ -10,7 +10,17 @@ class File extends BaseModel {
   }
 
   static get visibleFields() {
-    return ['_id', 'name', 'size', 'content_type', 'object_id']
+    return [
+      '_id',
+
+      'created_at',
+      'updated_at',
+
+      'name',
+      'size',
+      'content_type',
+      'object_id'
+    ]
   }
 }
 

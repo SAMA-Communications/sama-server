@@ -17,6 +17,28 @@ class SessionRepository extends BaseRepository {
     return this.activeSessions.SESSIONS.size
   }
 
+  addUserDeviceConnection(ws, userId, deviceId) {
+    const activeConnections = ACTIVE.DEVICES[userId]
+    const wsToClose = []
+
+    if (activeConnections) {
+      const devices = activeConnections.filter((connection) => {
+        if (connection.deviceId !== deviceId) {
+          return true
+        } else {
+          wsToClose.push(connection.ws)
+          return false
+        }
+      })
+      ACTIVE.DEVICES[userId] = [...devices, { ws, deviceId }]
+    } else {
+      ACTIVE.DEVICES[userId] = [{ ws, deviceId }]
+    }
+    ACTIVE.SESSIONS.set(ws, { user_id: userId })
+
+    return wsToClose
+  }
+
   async addUserToList(userId, deviceId, nodeIp, nodePort) {
     await RedisClient.client.sAdd(
       `node:${buildWsEndpoint(nodeIp, nodePort)}`,

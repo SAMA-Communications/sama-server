@@ -114,6 +114,13 @@ await conversationRepository.warmCache()
 ServiceLocatorContainer.register(
   new (class extends RegisterProvider {
     register(slc) {
+      return RuntimeDefinedContext
+    }
+  })({ name: 'RuntimeDefinedContext', implementationName: RuntimeDefinedContext.name })
+)
+ServiceLocatorContainer.register(
+  new (class extends RegisterProvider {
+    register(slc) {
       return RedisClient
     }
   })({ name: 'RedisClient', implementationName: RedisClient.constructor.name })

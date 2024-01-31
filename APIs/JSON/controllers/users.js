@@ -6,6 +6,7 @@ import { CONSTANTS as MAIN_CONSTANTS } from '@sama/constants/constants.js'
 import { ERROR_STATUES } from '@sama/constants/errors.js'
 
 import RuntimeDefinedContext from '@sama/store/RuntimeDefinedContext.js'
+import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
 import { ACTIVE } from '@sama/store/session.js'
 
 import User from '@sama/models/user.js'
@@ -52,100 +53,13 @@ class UsersController extends BaseJSONController {
 
   async login(ws, data) {
     const { id: requestId, user_login: userInfo } = data
-    const deviceId = userInfo.deviceId.toString()
-
-    let user, token
-    if (userInfo.token) {
-      token = await UserToken.findOne({
-        token: userInfo.token,
-        device_id: deviceId,
-      })
-      if (!token) {
-        throw new Error(ERROR_STATUES.TOKEN_EXPIRED.message, {
-          cause: ERROR_STATUES.TOKEN_EXPIRED,
-        })
-      }
-      user = await User.findOne({ _id: token.params.user_id })
-    } else {
-      user = await User.findOne({ login: userInfo.login })
-      if (!user) {
-        throw new Error(ERROR_STATUES.INCORRECT_LOGIN_OR_PASSWORD.message, {
-          cause: ERROR_STATUES.INCORRECT_LOGIN_OR_PASSWORD,
-        })
-      }
-
-      if (!(await user.isValidPassword(userInfo.password))) {
-        throw new Error(ERROR_STATUES.INCORRECT_LOGIN_OR_PASSWORD.message, {
-          cause: ERROR_STATUES.INCORRECT_LOGIN_OR_PASSWORD,
-        })
-      }
-      token = await UserToken.findOne({
-        user_id: user.params._id,
-        device_id: deviceId,
-      })
-    }
-    const userId = user.params._id
-
-    const activeConnections = ACTIVE.DEVICES[userId]
-    if (activeConnections) {
-      let wsToClose = []
-      const devices = activeConnections.filter((obj) => {
-        if (obj.deviceId !== deviceId) {
-          return true
-        } else {
-          wsToClose.push(obj.ws)
-          return false
-        }
-      })
-      wsToClose.forEach((ws) => {
-        try {
-          ws.send(JSON.stringify({ error: 'Device replacement' }))
-          ws.close()
-        } catch (e) {
-          console.log('[ClientManager] missing connection with ws client')
-        }
-      })
-      ACTIVE.DEVICES[userId] = [...devices, { ws, deviceId }]
-    } else {
-      ACTIVE.DEVICES[userId] = [{ ws, deviceId }]
-    }
-    ACTIVE.SESSIONS.set(ws, { user_id: userId })
-
-    const jwtToken = jwt.sign(
-      { _id: user.params._id, login: user.params.login },
-      process.env.JWT_ACCESS_SECRET,
-      {
-        expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES_IN,
-      }
-    )
-
-    if (!token) {
-      const userToken = new UserToken({
-        user_id: user.params._id,
-        device_id: deviceId,
-        token: jwtToken,
-      })
-      await userToken.save()
-    } else {
-      await UserToken.updateOne(
-        {
-          user_id: token.params.user_id,
-          device_id: deviceId,
-        },
-        { $set: { token: jwtToken } }
-      )
-    }
-
-    await sessionRepository.storeUserNodeData(
-      userId,
-      deviceId,
-      RuntimeDefinedContext.APP_IP,
-      RuntimeDefinedContext.CLUSTER_PORT
-    )
-
+  
+    const userAuthOperation = ServiceLocatorContainer.use('UserAuthOperation')
+    const { user, token } = await userAuthOperation.authorize(ws, userInfo)
+    
     return new Response()
-      .addBackMessage({ response: { id: requestId, user: user.visibleParams(), token: jwtToken } })
-      .updateLastActivityStatus(new LastActivityStatusResponse(userId, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE))
+      .addBackMessage({ response: { id: requestId, user: user.visibleParams(), token: token.params.token } })
+      .updateLastActivityStatus(new LastActivityStatusResponse(user.params._id, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE))
   }
 
   async edit(ws, data) {

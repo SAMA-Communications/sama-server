@@ -13,6 +13,10 @@ class BaseModel {
     throw new Error('Not implemented')
   }
 
+  static get hiddenFields() {
+    return []
+  }
+
   toJSON() {
     return JSON.stringify(this.visibleParams())
   }

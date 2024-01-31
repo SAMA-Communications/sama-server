@@ -33,8 +33,6 @@ export default class BaseRepository {
 
     const modelParams = { _id: result.insertedId, ...insertParams }
 
-    console.log('[modelParams]', modelParams, insertParams, createParams)
-
     const model = new this.Model(modelParams)
 
     return model
