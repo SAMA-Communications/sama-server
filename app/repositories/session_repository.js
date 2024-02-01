@@ -18,7 +18,7 @@ class SessionRepository extends BaseRepository {
   }
 
   addUserDeviceConnection(ws, userId, deviceId) {
-    const activeConnections = ACTIVE.DEVICES[userId]
+    const activeConnections = this.activeSessions.DEVICES[userId]
     const wsToClose = []
 
     if (activeConnections) {
@@ -30,11 +30,12 @@ class SessionRepository extends BaseRepository {
           return false
         }
       })
-      ACTIVE.DEVICES[userId] = [...devices, { ws, deviceId }]
+      this.activeSessions.DEVICES[userId] = [...devices, { ws, deviceId }]
     } else {
-      ACTIVE.DEVICES[userId] = [{ ws, deviceId }]
+      this.activeSessions.DEVICES[userId] = [{ ws, deviceId }]
     }
-    ACTIVE.SESSIONS.set(ws, { user_id: userId })
+
+    this.setSessionUserId(ws, userId)
 
     return wsToClose
   }
@@ -120,6 +121,10 @@ class SessionRepository extends BaseRepository {
 
   async removeMember(userId, member) {
     return await RedisClient.client.sRem(`user:${userId}`, member)
+  }
+
+  setSessionUserId(ws, userId) {
+    this.activeSessions.SESSIONS.set(ws, { user_id: userId })
   }
 
   getSessionUserId(ws) {

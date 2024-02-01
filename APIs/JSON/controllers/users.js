@@ -1,5 +1,3 @@
-import jwt from 'jsonwebtoken'
-
 import BaseJSONController from './base.js'
 
 import { CONSTANTS as MAIN_CONSTANTS } from '@sama/constants/constants.js'

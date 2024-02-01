@@ -26,15 +26,8 @@ class UserAuthOperation {
       token = tokenModel
     }
 
+    // TODO: close connections
     const wsToClose = this.sessionService.addUserDeviceConnection(ws, user.params._id, deviceId)
-    wsToClose.forEach((ws) => {
-      try {
-        ws.send(JSON.stringify({ error: 'Device replacement' }))
-        ws.close()
-      } catch (e) {
-        console.log('[ClientManager] missing connection with ws client')
-      }
-    })
 
     const jwtToken = jwt.sign(
       { _id: user.params._id, login: user.params.login },
