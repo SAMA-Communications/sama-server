@@ -97,6 +97,83 @@ Also, there is a set of detailed articles for each API:
 - [Address Book API](https://medium.com/sama-communications/sama-chat-server-api-address-book-f297ce25faa1)
 - [Push Notifications API](https://medium.com/sama-communications/sama-chat-server-api-push-notifications-7e904eb04a0c)
 
+## Custom DI container
+
+Example of creating and using provider
+
+Crate folder `app/providers/services/my_provider` with 2 files `index.js` and `Provider.js`
+
+`index.js` export clear js class
+```js
+export default class MyProvider {
+  constructor(redisConnection, userRepo) {
+    this.redisConnection = redisConnection
+    this.userRepo = userRepo
+  }
+
+  async updateAction(ws, fields) {
+    const id = await this.redisConnection.client ...
+    const updatedUser = await this.userRepo.update ....
+    ....
+    return updatedUser
+  }
+}
+```
+
+`Provider.js` export instance of RegisterProvider which contain instruction how to create instance of `index.js` class with dependencies
+```js
+import RegisterProvider from '@sama/common/RegisterProvider.js'
+import MyProvider from './index.js'
+
+const name = 'MyProvider'
+
+class MyProviderRegisterProvider extends RegisterProvider {
+  register(slc) {
+    const redisConnection = slc.use('RedisClient')
+    const userRepo = slc.use('UserRepository')
+
+    return new MyProvider(redisConnection, userRepo)
+  }
+}
+
+export default new MyProviderRegisterProvider({ name, implementationName: MyProvider.name })
+```
+
+add export of `Provider.js` to `app/providers/index.js`
+```js
+import UserRepoProvider from './repositories/user/Provider.js'
+...
+...
+import MyProviderRegistration from './services/my_provider/Provider.js'
+
+const providers = [
+  UserRepoProvider,
+
+  ...
+  ...
+
+  MyProviderRegistration
+]
+
+export default providers
+```
+
+for custom APIs providers use file `/APIs/[API_NAME]/providers/index.js`
+
+Using `MyProvider` class with dependencies
+```js
+import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
+
+class Controller {
+  async edit(ws, data) {
+    const myProvider = ServiceLocatorContainer.use('MyProvider')
+    const updatedUser = await myProvider.updateAction(ws, data)
+    ....
+  }
+}
+```
+
+
 ## Clustering
 
 [Clustering documentation](docs/CLUSTERING.md)
