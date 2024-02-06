@@ -143,7 +143,7 @@ describe('User activities', async () => {
     assert.strictEqual(responseData.response.id, requestData.request.id)
     assert.strictEqual(responseData.response.success, true)
     assert.equal(ACTIVITY.SUBSCRIBED_TO[usersIds[2]], undefined)
-    assert.equal(ACTIVITY.SUBSCRIBERS[usersIds[1]], undefined)
+    assert.deepEqual(ACTIVITY.SUBSCRIBERS[usersIds[1]], {})
 
     await sendLogout('line_2', currentUserToken1)
   })

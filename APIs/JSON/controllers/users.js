@@ -14,8 +14,6 @@ import blockListRepository from '@sama/repositories/blocklist_repository.js'
 import contactsMatchRepository from '@sama/repositories/contact_match_repository.js'
 import sessionRepository from '@sama/repositories/session_repository.js'
 
-import activityManager from '@sama/services/activity_manager.js'
-
 import Response from '@sama/networking/models/Response.js'
 import LastActivityStatusResponse from '@sama/networking/models/LastActivityStatusResponse.js'
 
@@ -184,7 +182,8 @@ class UsersController extends BaseJSONController {
       })
     }
 
-    await activityManager.statusUnsubscribe(ws)
+    const activityManagerService = ServiceLocatorContainer.use('ActivityManagerService')
+    await activityManagerService.unsubscribeObserver(userId)
 
     if (ACTIVE.SESSIONS.get(ws)) {
       delete ACTIVE.DEVICES[userId]

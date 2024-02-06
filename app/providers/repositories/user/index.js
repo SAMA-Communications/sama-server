@@ -7,6 +7,16 @@ class UserRepository extends BaseRepository {
     return user
   }
 
+  async updateActivity(userId, recentActivity) {
+    await this.updateOne({ _id: userId }, { $set: { recent_activity: recentActivity } })
+  }
+
+  async findAllByIds(userIds) {
+    const users = await this.findAll({ _id: { $in: userIds } })
+
+    return users
+  }
+
   async findByLogin(login) {
     const user = await this.findOne({ login })
 

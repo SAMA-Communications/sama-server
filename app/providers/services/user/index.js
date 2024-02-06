@@ -10,6 +10,10 @@ class UserService {
 
     return user
   }
+
+  async updateActivity(userId, reactActivity) {
+    await this.userRepo.updateActivity(userId, reactActivity)
+  }
  
   async validatePassword(user, plainPassword) {
     const passwordSalt = user.params.password_salt
