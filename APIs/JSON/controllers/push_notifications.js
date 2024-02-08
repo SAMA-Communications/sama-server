@@ -3,6 +3,7 @@ import BaseJSONController from './base.js'
 import { ERROR_STATUES } from '@sama/constants/errors.js'
 
 import RuntimeDefinedContext from '@sama/store/RuntimeDefinedContext.js'
+import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
 
 import User from '@sama/models/user.js'
 import PushSubscription from '@sama/models/push_subscription.js'
@@ -90,11 +91,15 @@ class PushNotificationsController extends BaseJSONController {
       push_event_create: { recipients_ids, message },
     } = data
 
+    const userService = ServiceLocatorContainer.use('UserService')
+
     const recipients = []
 
-    for (const id of recipients_ids) {
-      const u = await User.findOne({ _id: id })
-      !!u && recipients.push(id)
+    for (const userId of recipients_ids) {
+      const user = await userService.userRepo.findById(userId)
+      if (user) {
+        recipients.push(userId)
+      }
     }
 
     if (!recipients.length) {

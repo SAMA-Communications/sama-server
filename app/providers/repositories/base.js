@@ -13,6 +13,14 @@ export default class BaseRepository {
   get collectionCursor () {
     return this.dbConnection.collection(this.collectionName)
   }
+
+  safeWrapOId(val) {
+    try {
+      return new ObjectId(val)
+    } catch (error) {
+      return val
+    }
+  }
  
   async prepareParams(params) {
     const currentDate = new Date()
@@ -56,30 +64,30 @@ export default class BaseRepository {
 
   async findAll(query, projectionParams, limit, sortParams) {
     if (query.cid) {
-      query.cid = new ObjectId(query.cid)
+      query.cid = this.safeWrapOId(query.cid)
     }
     if (query._id) {
       query._id.$nin &&
-        (query._id.$nin = query._id.$nin.map((id) => new ObjectId(id)))
+        (query._id.$nin = query._id.$nin.map((id) => this.safeWrapOId(id)))
       query._id.$in &&
-        (query._id.$in = query._id.$in.map((id) => new ObjectId(id)))
+        (query._id.$in = query._id.$in.map((id) => this.safeWrapOId(id)))
     }
     if (query.user_id && !query.user_id.$ne) {
       query.user_id.$in
         ? (query.user_id.$in = query.user_id.$in.map(
-            (id) => new ObjectId(id)
+            (id) => this.safeWrapOId(id)
           ))
-        : (query.user_id = new ObjectId(query.user_id))
+        : (query.user_id = this.safeWrapOId(query.user_id))
     }
     if (query.conversation_id) {
       query.conversation_id.$in
         ? (query.conversation_id.$in = query.conversation_id.$in.map(
-            (id) => new ObjectId(id)
+            (id) => this.safeWrapOId(id)
           ))
-        : (query.conversation_id = new ObjectId(query.conversation_id))
+        : (query.conversation_id = this.safeWrapOId(query.conversation_id))
     }
     if (query.from?.$ne) {
-      query.from.$ne = new ObjectId(query.from.$ne)
+      query.from.$ne = this.safeWrapOId(query.from.$ne)
     }
 
     const projection = projectionParams?.reduce((acc, p) => {
@@ -96,13 +104,13 @@ export default class BaseRepository {
 
   async findOne(query) {
     if (query._id) {
-      query._id = new ObjectId(query._id)
+      query._id = this.safeWrapOId(query._id)
     }
     if (query.user_id) {
-      query.user_id = new ObjectId(query.user_id)
+      query.user_id = this.safeWrapOId(query.user_id)
     }
     if (query.conversation_id) {
-      query.conversation_id = new ObjectId(query.conversation_id)
+      query.conversation_id = this.safeWrapOId(query.conversation_id)
     }
 
     const record = await this.collectionCursor.findOne(query)
@@ -114,16 +122,16 @@ export default class BaseRepository {
 
   async count(query) {
     if (query.conversation_id) {
-      query.conversation_id = new ObjectId(query.conversation_id)
+      query.conversation_id = this.safeWrapOId(query.conversation_id)
     }
     if (query.user_id && !query.user_id.$ne) {
-      query.user_id = new ObjectId(query.user_id)
+      query.user_id = this.safeWrapOId(query.user_id)
     }
     if (query.user_id?.$ne) {
-      query.user_id.$ne = new ObjectId(query.user_id.$ne)
+      query.user_id.$ne = this.safeWrapOId(query.user_id.$ne)
     }
     if (query.from?.$ne) {
-      query.from.$ne = new ObjectId(query.from.$ne)
+      query.from.$ne = this.safeWrapOId(query.from.$ne)
     }
 
     const count = await this.collectionCursor.count(query)
@@ -133,7 +141,7 @@ export default class BaseRepository {
 
   async updateOne(query, update) {
     if (query._id) {
-      query._id = new ObjectId(query._id)
+      query._id = this.safeWrapOId(query._id)
     }
 
     await this.collectionCursor.updateOne(query, update)
@@ -141,10 +149,10 @@ export default class BaseRepository {
 
   async findOneAndUpdate(query, update) {
     if (query._id) {
-      query._id = new ObjectId(query._id)
+      query._id = this.safeWrapOId(query._id)
     }
     if (query.user_id) {
-      query.user_id = new ObjectId(query.user_id)
+      query.user_id = this.safeWrapOId(query.user_id)
     }
 
     const record = await this.collectionCursor.findOneAndUpdate(query, update, { returnDocument: 'after' })
@@ -160,7 +168,7 @@ export default class BaseRepository {
 
   async getAllIdsBy(query) {
     if (query) {
-      query._id.$in = query._id.$in.map((id) => new ObjectId(id))
+      query._id.$in = query._id.$in.map((id) => this.safeWrapOId(id))
     }
 
     const records = await this.collectionCursor.find(query).project({ _id: 1 }).toArray()

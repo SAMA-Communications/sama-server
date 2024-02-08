@@ -1,6 +1,7 @@
 import { ERROR_STATUES } from '../constants/errors.js'
 
-import User from '../models/user.js'
+import ServiceLocatorContainer from '../common/ServiceLocatorContainer.js'
+
 import Conversation from '../models/conversation.js'
 import ConversationParticipant from '../models/conversation_participant.js'
 
@@ -58,13 +59,20 @@ async function validateParticipantsInUType(vParams) {
       cause: ERROR_STATUES.TOO_MANY_USERS_IN_PRIVATE,
     })
   }
-  if (
-    !vParams.opponent_id &&
-    !(await User.findOne({ _id: vParams.opponent_id }))
-  ) {
-    throw new Error(ERROR_STATUES.OPPONENT_NOT_FOUND.message, {
-      cause: ERROR_STATUES.OPPONENT_NOT_FOUND,
-    })
+
+  const userService = ServiceLocatorContainer.use('UserService')
+
+  const opponentError = new Error(ERROR_STATUES.OPPONENT_NOT_FOUND.message, {
+    cause: ERROR_STATUES.OPPONENT_NOT_FOUND,
+  })
+
+  if (vParams.opponent_id) {
+    const opponentUser = await userService.userRepo.findById(vParams.opponent_id)
+    if (!opponentUser) {
+      throw opponentError
+    }
+  } else {
+    throw opponentError
   }
 }
 

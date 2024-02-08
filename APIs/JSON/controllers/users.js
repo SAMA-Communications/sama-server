@@ -20,6 +20,7 @@ import LastActivityStatusResponse from '@sama/networking/models/LastActivityStat
 class UsersController extends BaseJSONController {
   async create(ws, data) {
     const { id: requestId, user_create: reqData } = data
+    // const userService = ServiceLocatorContainer.use('UserService')
 
     reqData.login = reqData.login.toLowerCase()
 

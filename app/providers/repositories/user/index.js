@@ -7,10 +7,6 @@ class UserRepository extends BaseRepository {
     return user
   }
 
-  async updateActivity(userId, recentActivity) {
-    await this.updateOne({ _id: userId }, { $set: { recent_activity: recentActivity } })
-  }
-
   async findAllByIds(userIds) {
     const users = await this.findAll({ _id: { $in: userIds } })
 
@@ -21,6 +17,26 @@ class UserRepository extends BaseRepository {
     const user = await this.findOne({ login })
 
     return user
+  }
+
+  async updateActivity(userId, recentActivity) {
+    await this.updateOne({ _id: userId }, { $set: { recent_activity: recentActivity } })
+  }
+
+  async matchUserContact(emails, phones) {
+    const orQuery = []
+
+    if (emails?.length) {
+      orQuery.push({ email: { $in: emails } })
+    }
+
+    if (phones?.length) {
+      orQuery.push({ phone: { $in: phones } })
+    }
+
+    const users = await this.findAll({ $or: orQuery })
+
+    return users
   }
 }
 
