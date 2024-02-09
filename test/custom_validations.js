@@ -1,6 +1,6 @@
 import Conversation from '../app/models/conversation.js'
 import ConversationParticipant from '../app/models/conversation_participant.js'
-import User from '../app/models/user.js'
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
 import assert from 'assert'
 import {
   createConversation,
@@ -352,7 +352,8 @@ describe('Custom validate functions', async () => {
   })
 
   after(async () => {
-    await User.clearCollection()
+    const userRepo = ServiceLocatorContainer.use('UserRepository')
+    await userRepo.deleteMany({})
     await Conversation.clearCollection()
     await ConversationParticipant.clearCollection()
     await sessionRepository.dropUserNodeDataBase()

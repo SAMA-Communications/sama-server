@@ -5,7 +5,6 @@ import { ERROR_STATUES } from '@sama/constants/errors.js'
 import RuntimeDefinedContext from '@sama/store/RuntimeDefinedContext.js'
 import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
 
-import User from '@sama/models/user.js'
 import PushSubscription from '@sama/models/push_subscription.js'
 
 import sessionRepository from '@sama/repositories/session_repository.js'

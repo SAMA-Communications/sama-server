@@ -1,6 +1,6 @@
 import Conversation from './../app/models/conversation.js'
 import ConversationParticipant from './../app/models/conversation_participant.js'
-import User from './../app/models/user.js'
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
 import UserToken from '../app/models/user_token.js'
 import assert from 'assert'
 import { createUserArray, mockedWS, sendLogin, sendLogout } from './utils.js'
@@ -1177,7 +1177,8 @@ describe('Conversation functions', async () => {
   })
 
   after(async () => {
-    await User.clearCollection()
+    const userRepo = ServiceLocatorContainer.use('UserRepository')
+    await userRepo.deleteMany({})
     await UserToken.clearCollection()
     await Conversation.clearCollection()
     await ConversationParticipant.clearCollection()

@@ -155,9 +155,9 @@ export default class BaseRepository {
       query.user_id = this.safeWrapOId(query.user_id)
     }
 
-    const record = await this.collectionCursor.findOneAndUpdate(query, update, { returnDocument: 'after' })
+    const record = await this.collectionCursor.findOneAndUpdate(query, update, { returnDocument: 'after' }).catch(error => error)
 
-    const model = new this.Model(record)
+    const model = record.ok ? new this.Model(record.value) : null
 
     return model
   }
@@ -183,7 +183,7 @@ export default class BaseRepository {
   }
 
   async deleteById(_id) {
-    await this.dbConnection.collection(this.constructor.collection).deleteOne({ _id })
+    await this.collectionCursor.deleteOne({ _id: this.safeWrapOId(_id) })
   }
 
   async deleteMany(query) {

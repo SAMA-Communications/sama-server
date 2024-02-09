@@ -1,6 +1,6 @@
 import assert from 'assert'
 
-import User from './../app/models/user.js'
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
 
 import PushEvent from './../app/models/push_event.js'
 import PushSubscription from './../app/models/push_subscription.js'
@@ -644,7 +644,8 @@ describe('PushNotification functions', async () => {
   })
 
   after(async () => {
-    await User.clearCollection()
+    const userRepo = ServiceLocatorContainer.use('UserRepository')
+    await userRepo.deleteMany({})
     await PushSubscription.clearCollection()
     await PushEvent.clearCollection()
     usersIds = []

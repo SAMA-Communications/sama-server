@@ -1,4 +1,4 @@
-import User from './../app/models/user.js'
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
 import Contact from './../app/models/contact.js'
 import assert from 'assert'
 import { createUserArray, mockedWS, sendLogin, sendLogout } from './utils.js'
@@ -937,7 +937,8 @@ describe('Contacts functions', async () => {
   })
 
   after(async () => {
-    await User.clearCollection()
+    const userRepo = ServiceLocatorContainer.use('UserRepository')
+    await userRepo.deleteMany({})
     await Contact.clearCollection()
     usersIds = []
   })

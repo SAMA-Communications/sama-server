@@ -2,7 +2,7 @@ import Conversation from './../app/models/conversation.js'
 import ConversationParticipant from './../app/models/conversation_participant.js'
 import MessageStatus from './../app/models/message_status.js'
 import Message from './../app/models/message.js'
-import User from './../app/models/user.js'
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
 import assert from 'assert'
 import { ObjectId } from '../app/lib/db.js'
 import {
@@ -697,7 +697,8 @@ describe('Message function', async () => {
     })
 
     after(async () => {
-      await User.clearCollection()
+      const userRepo = ServiceLocatorContainer.use('UserRepository')
+    await userRepo.deleteMany({})
       await Message.clearCollection()
       await Conversation.clearCollection()
       await ConversationParticipant.clearCollection()
@@ -881,7 +882,8 @@ describe('Message function', async () => {
   })
 
   after(async () => {
-    await User.clearCollection()
+    const userRepo = ServiceLocatorContainer.use('UserRepository')
+    await userRepo.deleteMany({})
     await Message.clearCollection()
     await MessageStatus.clearCollection()
     await Conversation.clearCollection()

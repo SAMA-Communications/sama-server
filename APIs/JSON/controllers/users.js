@@ -7,7 +7,6 @@ import RuntimeDefinedContext from '@sama/store/RuntimeDefinedContext.js'
 import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
 import { ACTIVE } from '@sama/store/session.js'
 
-import User from '@sama/models/user.js'
 import UserToken from '@sama/models/user_token.js'
 
 import blockListRepository from '@sama/repositories/blocklist_repository.js'
@@ -19,25 +18,17 @@ import LastActivityStatusResponse from '@sama/networking/models/LastActivityStat
 
 class UsersController extends BaseJSONController {
   async create(ws, data) {
-    const { id: requestId, user_create: reqData } = data
-    // const userService = ServiceLocatorContainer.use('UserService')
+    const { id: requestId, user_create: createUserParams } = data
+    const userService = ServiceLocatorContainer.use('UserService')
 
-    reqData.login = reqData.login.toLowerCase()
-
-    const existingParam = [{ login: reqData.login }]
-    reqData.email && existingParam.push({ email: reqData.email })
-    reqData.phone && existingParam.push({ phone: reqData.phone })
-
-    const existingUser = await User.findOne({ $or: existingParam })
+    const existingUser = await userService.userRepo.findExisted(createUserParams.login, createUserParams.email, createUserParams.phone)
     if (existingUser) {
       throw new Error(ERROR_STATUES.USER_ALREADY_EXISTS.message, {
         cause: ERROR_STATUES.USER_ALREADY_EXISTS,
       })
     }
 
-    reqData['recent_activity'] = Math.round(Date.now() / 1000)
-    const user = new User(reqData)
-    await user.save()
+    const user = await userService.create(createUserParams)
 
     await contactsMatchRepository.matchUserWithContactOnCreate(
       user.visibleParams()._id.toString(),
@@ -60,70 +51,26 @@ class UsersController extends BaseJSONController {
   }
 
   async edit(ws, data) {
-    const {
-      id: requestId,
-      user_edit: {
-        login,
-        first_name,
-        last_name,
-        email,
-        phone,
-        current_password,
-        new_password,
-      },
-    } = data
+    const { id: requestId, user_edit } = data
+
+    const userService = ServiceLocatorContainer.use('UserService')
 
     const userId = sessionRepository.getSessionUserId(ws)
-    const currentUser = await User.findOne({ _id: userId })
+    const currentUser = await userService.userRepo.findById(userId)
     if (!currentUser) {
       throw new Error(ERROR_STATUES.USER_LOGIN_OR_PASS.message, {
         cause: ERROR_STATUES.USER_LOGIN_OR_PASS,
       })
     }
 
-    if (
-      new_password &&
-      !(await currentUser.isValidPassword(current_password))
-    ) {
-      throw new Error(ERROR_STATUES.INCORRECT_CURRENT_PASSWORD.message, {
-        cause: ERROR_STATUES.INCORRECT_CURRENT_PASSWORD,
-      })
-    }
-
-    let updateParam = { updated_at: new Date() }
-
-    if (new_password) {
-      const updateUser = new User({ password: new_password })
-      await updateUser.encryptAndSetPassword()
-
-      updateParam['password_salt'] = updateUser.params.password_salt
-      updateParam['encrypted_password'] = updateUser.params.encrypted_password
-    }
-
-    delete data.user_edit['new_password']
-    delete data.user_edit['current_password']
-
-    login && (updateParam['login'] = login)
-    email && (updateParam['email'] = email)
-    phone && (updateParam['phone'] = phone)
-    first_name && (updateParam['first_name'] = first_name)
-    last_name && (updateParam['last_name'] = last_name)
-
-    const updateResponse = await User.findOneAndUpdate(
-      { _id: userId },
-      { $set: updateParam }
-    )
-    if (!updateResponse.ok) {
-      throw new Error(ERROR_STATUES.USER_ALREADY_EXISTS.message, {
-        cause: ERROR_STATUES.USER_ALREADY_EXISTS,
-      })
-    }
-    const updatedUser = new User(updateResponse.value)
+    const updatedUser = await userService.update(currentUser, user_edit)
 
     await contactsMatchRepository.matchUserWithContactOnUpdate(
       updatedUser.visibleParams()._id.toString(),
-      phone,
-      email,
+
+      updatedUser.visibleParams().phone,
+      updatedUser.visibleParams().email,
+
       currentUser.visibleParams().phone,
       currentUser.visibleParams().email
     )
@@ -175,6 +122,7 @@ class UsersController extends BaseJSONController {
 
   async delete(ws, data) {
     const { id: requestId } = data
+    const userService = ServiceLocatorContainer.use('UserService')
 
     const userId = sessionRepository.getSessionUserId(ws)
     if (!userId) {
@@ -192,7 +140,7 @@ class UsersController extends BaseJSONController {
       ACTIVE.SESSIONS.delete(ws)
     }
 
-    const user = await User.findOne({ _id: userId })
+    const user = await userService.userRepo.findById(userId)
     if (!user) {
       throw new Error(ERROR_STATUES.FORBIDDEN.message, {
         cause: ERROR_STATUES.FORBIDDEN,
@@ -206,36 +154,25 @@ class UsersController extends BaseJSONController {
       user.params.email
     )
 
-    await user.delete()
+    await userService.userRepo.deleteById(userId)
 
     return new Response().addBackMessage({ response: { id: requestId, success: true } })
   }
 
   async search(ws, data) {
     const { id: requestId, user_search: requestParam } = data
+    const userService = ServiceLocatorContainer.use('UserService')
 
-    const limit =
-      requestParam.limit > MAIN_CONSTANTS.LIMIT_MAX
-        ? MAIN_CONSTANTS.LIMIT_MAX
-        : requestParam.limit || MAIN_CONSTANTS.LIMIT_MAX
+    const currentUserId = sessionRepository.getSessionUserId(ws)
+    const ignoreIds = [currentUserId, ...requestParam.ignore_ids]
 
-    const query = {
-      login: { $regex: `^${requestParam.login.toLowerCase()}.*` },
-      _id: {
-        $nin: [
-          sessionRepository.getSessionUserId(ws),
-          ...requestParam.ignore_ids,
-        ],
-      },
-    }
+    const limit = requestParam.limit > MAIN_CONSTANTS.LIMIT_MAX ? MAIN_CONSTANTS.LIMIT_MAX : requestParam.limit || MAIN_CONSTANTS.LIMIT_MAX
 
-    const timeFromUpdate = requestParam.updated_at
-    if (timeFromUpdate && timeFromUpdate.gt) {
-      query.updated_at = { $gt: new Date(timeFromUpdate.gt) }
-    }
-    const users = await User.findAll(query, ['_id', 'login'], limit)
+    const users = await userService.userRepo.search({ loginMatch: requestParam.login, ignoreIds, timeFromUpdate: requestParam.updated_at?.gt }, limit)
 
-    return new Response().addBackMessage({ response: { id: requestId, users: users } })
+    const usersSearchResult = users.map(user => ({ _id: user.params._id, login: user.params.login }))
+
+    return new Response().addBackMessage({ response: { id: requestId, users: usersSearchResult } })
   }
 }
 
