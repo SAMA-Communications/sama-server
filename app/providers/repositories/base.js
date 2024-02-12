@@ -41,7 +41,7 @@ export default class BaseRepository {
 
     const modelParams = { _id: result.insertedId, ...insertParams }
 
-    const model = new this.Model(modelParams)
+    const model = this.wrapRawRecordInModel(modelParams)
 
     return model
   }
@@ -57,7 +57,7 @@ export default class BaseRepository {
 
     const modelParams = insertParams.map((params, index) => ({ _id: result.insertedIds.at(index), ...params }))
 
-    const models = modelParams.map(params => new this.Model(params))
+    const models = modelParams.map(params => this.wrapRawRecordInModel(params))
 
     return models
   }
@@ -97,7 +97,7 @@ export default class BaseRepository {
     const records = await this.collectionCursor.find(query, { limit: limit || 100 })
       .project(projection).sort(sortParams || { $natural: -1 }).toArray()
 
-    const models = records.map(record => new this.Model(record))
+    const models = records.map(record => this.wrapRawRecordInModel(record))
 
     return models
   }
@@ -115,7 +115,7 @@ export default class BaseRepository {
 
     const record = await this.collectionCursor.findOne(query)
 
-    const model = record ? new this.Model(record) : null
+    const model = record ? this.wrapRawRecordInModel(record) : null
 
     return model
   }
@@ -157,7 +157,7 @@ export default class BaseRepository {
 
     const record = await this.collectionCursor.findOneAndUpdate(query, update, { returnDocument: 'after' }).catch(error => error)
 
-    const model = record.ok ? new this.Model(record.value) : null
+    const model = record.ok ? this.wrapRawRecordInModel(record.value) : null
 
     return model
   }
@@ -188,5 +188,9 @@ export default class BaseRepository {
 
   async deleteMany(query) {
     await this.collectionCursor.deleteMany(query)
+  }
+
+  wrapRawRecordInModel(rawRecord) {
+    return new this.Model(rawRecord)
   }
 }
