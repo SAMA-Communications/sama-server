@@ -1,3 +1,5 @@
+import UserMapperProvider from './utils/mappers/user/Provider.js'
+
 import UserRepoProvider from './repositories/user/Provider.js'
 import UserTokenRepoProvider from './repositories/user_token/Provider.js'
 import FileRepoProvider from './repositories/file/Provider.js'
@@ -13,6 +15,8 @@ import ActivityUserSubscribeOperationProvider from './operations/activity/subscr
 import ActivityUserUnsubscribeOperationProvider from './operations/activity/unsubscribe/Provider.js'
 
 const providers = [
+  UserMapperProvider,
+
   UserRepoProvider,
   UserTokenRepoProvider,
   FileRepoProvider,

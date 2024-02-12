@@ -3,11 +3,18 @@ import jwt from 'jsonwebtoken'
 import { ERROR_STATUES } from '../../../../constants/errors.js'
 
 class UserAuthOperation {
-  constructor(RuntimeDefinedContext, sessionService, userService, userTokenRepo) {
+  constructor(
+    RuntimeDefinedContext,
+    sessionService,
+    userService,
+    userTokenRepo,
+    userMapper
+  ) {
     this.RuntimeDefinedContext = RuntimeDefinedContext
     this.sessionService = sessionService
     this.userService = userService
     this.userTokenRepo = userTokenRepo
+    this.userMapper = userMapper
   }
 
   async authorize(ws, userInfo) {
@@ -46,7 +53,7 @@ class UserAuthOperation {
       this.RuntimeDefinedContext.CLUSTER_PORT
     )
 
-    return { user, token }
+    return { user: await this.userMapper(user), token }
   }
 
   async authByToken(tokenJwt, deviceId) {
