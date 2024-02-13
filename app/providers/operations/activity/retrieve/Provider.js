@@ -1,11 +1,11 @@
 import RegisterProvider from '../../../../common/RegisterProvider.js'
 import ActivityUserRetrieveOperation from './index.js'
-import sessionService from '../../../../repositories/session_repository.js'
 
 const name = 'ActivityUserRetrieveOperation'
 
 class ActivityUserRetrieveOperationRegisterProvider extends RegisterProvider {
   register(slc) {
+    const sessionService = slc.use('SessionService')
     const userService = slc.use('UserService')
 
     return new ActivityUserRetrieveOperation(sessionService, userService)

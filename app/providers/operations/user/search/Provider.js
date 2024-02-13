@@ -1,11 +1,11 @@
 import RegisterProvider from '../../../../common/RegisterProvider.js'
 import UserSearchOperation from './index.js'
-import sessionService from '../../../../repositories/session_repository.js'
 
 const name = 'UserSearchOperation'
 
 class UserSearchOperationRegisterProvider extends RegisterProvider {
   register(slc) {
+    const sessionService = slc.use('SessionService')
     const userService = slc.use('UserService')
 
     return new UserSearchOperation(

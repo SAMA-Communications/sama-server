@@ -4,6 +4,7 @@ import UserRepoProvider from './repositories/user/Provider.js'
 import UserTokenRepoProvider from './repositories/user_token/Provider.js'
 import FileRepoProvider from './repositories/file/Provider.js'
 
+import SessionService from './services/session/Provider.js'
 import UserService from './services/user/Provider.js'
 import StorageServiceProvider from './services/storage/Provider.js'
 import ActivityManagerServiceProvider from './services/activity_manager/Provider.js'
@@ -26,6 +27,7 @@ const providers = [
   UserTokenRepoProvider,
   FileRepoProvider,
 
+  SessionService,
   UserService,
   StorageServiceProvider,
   ActivityManagerServiceProvider,
