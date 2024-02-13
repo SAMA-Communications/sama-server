@@ -9,6 +9,11 @@ import StorageServiceProvider from './services/storage/Provider.js'
 import ActivityManagerServiceProvider from './services/activity_manager/Provider.js'
 
 import UserAuthOperationProvider from './operations/user/auth/Provider.js'
+import UserLogoutOperationProvider from './operations/user/logout/Provider.js'
+import UserCreateOperationProvider from './operations/user/create/Provider.js'
+import UserEditOperationProvider from './operations/user/edit/Provider.js'
+import UserDeleteOperationProvider from './operations/user/delete/Provider.js'
+import UserSearchOperationProvider from './operations/user/search/Provider.js'
 
 import ActivityUserRetrieveOperationProvider from './operations/activity/retrieve/Provider.js'
 import ActivityUserSubscribeOperationProvider from './operations/activity/subscribe/Provider.js'
@@ -26,6 +31,11 @@ const providers = [
   ActivityManagerServiceProvider,
 
   UserAuthOperationProvider,
+  UserLogoutOperationProvider,
+  UserCreateOperationProvider,
+  UserEditOperationProvider,
+  UserDeleteOperationProvider,
+  UserSearchOperationProvider,
 
   ActivityUserRetrieveOperationProvider,
   ActivityUserSubscribeOperationProvider,

@@ -34,6 +34,10 @@ class UserTokenRepository extends BaseRepository {
 
     return token
   }
+
+  async deleteByUserId(userId, deviceId) {
+    await this.deleteMany({ user_id: userId, device_id: deviceId })
+  }
 }
 
 export default UserTokenRepository

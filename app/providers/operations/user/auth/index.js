@@ -24,11 +24,11 @@ class UserAuthOperation {
     let token = null
 
     if (userInfo.token) {
-      const { user: userModel, token: tokenModel } = await this.authByToken(userInfo.token, deviceId)
+      const { user: userModel, token: tokenModel } = await this.#authByToken(userInfo.token, deviceId)
       user = userModel
       token = tokenModel
     } else {
-      const { user: userModel, token: tokenModel } = await this.authByLogin(userInfo, deviceId)
+      const { user: userModel, token: tokenModel } = await this.#authByLogin(userInfo, deviceId)
       user = userModel
       token = tokenModel
     }
@@ -56,7 +56,7 @@ class UserAuthOperation {
     return { user: await this.userMapper(user), token }
   }
 
-  async authByToken(tokenJwt, deviceId) {
+  async #authByToken(tokenJwt, deviceId) {
     const token = await this.userTokenRepo.findToken(tokenJwt, deviceId) 
 
     if (!token) {
@@ -70,7 +70,7 @@ class UserAuthOperation {
     return { user, token }
   }
 
-  async authByLogin(userInfo, deviceId) {
+  async #authByLogin(userInfo, deviceId) {
     const user = await this.userService.findByLogin(userInfo)
 
     if (!user) {
