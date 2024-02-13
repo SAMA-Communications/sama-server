@@ -17,7 +17,7 @@ class UserAuthOperation {
     this.userMapper = userMapper
   }
 
-  async authorize(ws, userInfo) {
+  async perform(ws, userInfo) {
     const deviceId = userInfo.deviceId.toString()
 
     let user = null

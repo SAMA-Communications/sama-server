@@ -9,7 +9,7 @@ class LastActivitiesController extends BaseJSONController {
     const { id: requestId, user_last_activity_subscribe: { id: targetUserId } } = data
 
     const activityUserSubscribeOperation = ServiceLocatorContainer.use('ActivityUserSubscribeOperation')
-    const targetUserActivity = await activityUserSubscribeOperation.subscribeToUserActivity(ws, targetUserId)
+    const targetUserActivity = await activityUserSubscribeOperation.perform(ws, targetUserId)
 
     return new Response().addBackMessage({ response: { id: requestId, last_activity: targetUserActivity } })
   }
@@ -18,7 +18,7 @@ class LastActivitiesController extends BaseJSONController {
     const { id: requestId } = data
     
     const activityUserUnsubscribeOperation = ServiceLocatorContainer.use('ActivityUserUnsubscribeOperation')
-    await activityUserUnsubscribeOperation.unsubscribeUserActivity(ws)
+    await activityUserUnsubscribeOperation.perform(ws)
 
     return new Response().addBackMessage({ response: { id: requestId, success: true } })
   }
@@ -27,7 +27,7 @@ class LastActivitiesController extends BaseJSONController {
     const { id: requestId, user_last_activity: { ids: targetUserIds } } = data
 
     const activityUserRetrieveOperation = ServiceLocatorContainer.use('ActivityUserRetrieveOperation')
-    const lastActivities = await activityUserRetrieveOperation.retrieveLastActivities(ws, targetUserIds)
+    const lastActivities = await activityUserRetrieveOperation.perform(ws, targetUserIds)
 
     return new Response().addBackMessage({ response: { id: requestId, last_activity: lastActivities } })
   }

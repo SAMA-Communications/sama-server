@@ -7,7 +7,7 @@ class ActivityUserSubscribeOperation {
     this.userService = userService
   }
 
-  async subscribeToUserActivity(ws, targetUserId) {
+  async perform(ws, targetUserId) {
     const currentUserId = this.sessionService.getSessionUserId(ws)
 
     await this.activityManagerService.subscribeObserverToTarget(currentUserId, targetUserId)

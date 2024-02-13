@@ -6,7 +6,7 @@ class ActivityUserRetrieveOperation {
     this.userService = userService
   }
 
-  async retrieveLastActivities(ws, targetUserId) {
+  async perform(ws, targetUserId) {
     const activities = {}
     const targetUsers = await this.userService.userRepo.findAllByIds(targetUserId)
 

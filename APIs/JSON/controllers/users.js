@@ -43,7 +43,7 @@ class UsersController extends BaseJSONController {
     const { id: requestId, user_login: userInfo } = data
   
     const userAuthOperation = ServiceLocatorContainer.use('UserAuthOperation')
-    const { user, token } = await userAuthOperation.authorize(ws, userInfo)
+    const { user, token } = await userAuthOperation.perform(ws, userInfo)
     
     return new Response()
       .addBackMessage({ response: { id: requestId, user: user.visibleParams(), token: token.params.token } })
