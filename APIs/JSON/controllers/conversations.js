@@ -93,8 +93,7 @@ class ConversationsController extends BaseJSONController {
     const user = await userService.userRepo.findById(currentUserId)
     const currentUserParams = user?.params
 
-    const users = await userService.userRepo.findAllByIds(conversationParams.participants)
-    const participants = users.map(user => user.params._id)
+    const participants = await userService.userRepo.retrieveExistedIds(conversationParams.participants)
     delete conversationParams.participants
     conversationParams.owner_id = ObjectId(currentUserId)
 

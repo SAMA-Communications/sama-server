@@ -19,7 +19,7 @@ class UserRepository extends BaseRepository {
     return user
   }
 
-  async findExisted(login, email, phone) {
+  async findRegistered(login, email, phone) {
     const query = [{ login }]
 
     if (email) {
@@ -33,6 +33,12 @@ class UserRepository extends BaseRepository {
     const user = await this.findOne({ $or: query })
 
     return user
+  }
+
+  async retrieveExistedIds(userIds) {
+    const existedUserIds = await this.getAllIdsBy({ _id: { $in: userIds } })
+
+    return existedUserIds
   }
 
   async search({ loginMatch, ignoreIds, timeFromUpdate }, limit) {

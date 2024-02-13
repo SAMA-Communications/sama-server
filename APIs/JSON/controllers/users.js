@@ -21,7 +21,7 @@ class UsersController extends BaseJSONController {
     const { id: requestId, user_create: createUserParams } = data
     const userService = ServiceLocatorContainer.use('UserService')
 
-    const existingUser = await userService.userRepo.findExisted(createUserParams.login, createUserParams.email, createUserParams.phone)
+    const existingUser = await userService.userRepo.findRegistered(createUserParams.login, createUserParams.email, createUserParams.phone)
     if (existingUser) {
       throw new Error(ERROR_STATUES.USER_ALREADY_EXISTS.message, {
         cause: ERROR_STATUES.USER_ALREADY_EXISTS,

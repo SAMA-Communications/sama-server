@@ -92,14 +92,7 @@ class PushNotificationsController extends BaseJSONController {
 
     const userService = ServiceLocatorContainer.use('UserService')
 
-    const recipients = []
-
-    for (const userId of recipients_ids) {
-      const user = await userService.userRepo.findById(userId)
-      if (user) {
-        recipients.push(userId)
-      }
-    }
+    const recipients = await userService.userRepo.retrieveExistedIds(recipients_ids)
 
     if (!recipients.length) {
       throw new Error(ERROR_STATUES.RECIPIENTS_NOT_FOUND.message, {
