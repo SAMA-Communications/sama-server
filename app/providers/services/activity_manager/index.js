@@ -61,17 +61,16 @@ class ActivityManagerService {
   }
 
   async updateUserActivity(userId, status) {
-    const activitySubscribers = Object.keys(this.subscribers(userId))
-
-    if (!activitySubscribers.length) {
-      return
-    }
-
     const currentTime = Math.round(new Date() / 1000)
 
     if (status !== MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE) {
       await this.userService.updateActivity(userId, currentTime)
-      await this.unsubscribeObserver(userId)
+    }
+
+    const activitySubscribers = Object.keys(this.subscribers(userId))
+
+    if (!activitySubscribers.length) {
+      return
     }
 
     return { subscriptions: activitySubscribers, last_activity: { userId: userId, timestamp: currentTime, status } }
