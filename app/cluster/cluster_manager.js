@@ -76,6 +76,7 @@ class ClusterManager {
           return
         }
 
+        console.log('[cluster m2]', json)
         await packetManager.deliverClusterMessageToUser(
           json.userId,
           json.message,
@@ -129,6 +130,7 @@ class ClusterManager {
             return
           }
 
+          console.log('[cluster m1]', json)
           await packetManager.deliverClusterMessageToUser(
             json.userId,
             json.message,
