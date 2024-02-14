@@ -7,8 +7,9 @@ class ActivityUserRetrieveOperationRegisterProvider extends RegisterProvider {
   register(slc) {
     const sessionService = slc.use('SessionService')
     const userService = slc.use('UserService')
+    const userMapper = slc.use('UserMapper')
 
-    return new ActivityUserRetrieveOperation(sessionService, userService)
+    return new ActivityUserRetrieveOperation(sessionService, userService, userMapper)
   }
 }
 

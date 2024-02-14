@@ -8,8 +8,9 @@ class ActivityUserSubscribeOperationRegisterProvider extends RegisterProvider {
     const sessionService = slc.use('SessionService')
     const activityManagerService = slc.use('ActivityManagerService')
     const userService = slc.use('UserService')
+    const userMapper = slc.use('UserMapper')
 
-    return new ActivityUserSubscribeOperation(sessionService, activityManagerService, userService)
+    return new ActivityUserSubscribeOperation(sessionService, activityManagerService, userService, userMapper)
   }
 }
 
