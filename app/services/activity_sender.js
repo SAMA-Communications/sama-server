@@ -15,6 +15,9 @@ class ActivitySender extends BaseService {
     const activityManagerService = ServiceLocatorContainer.use('ActivityManagerService')
 
     const deliver = await activityManagerService.updateUserActivity(userId, status)
+
+    console.log('[deliver]', deliver)
+
     if (!deliver) {
       return
     }
