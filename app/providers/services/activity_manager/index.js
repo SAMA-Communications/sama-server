@@ -63,8 +63,6 @@ class ActivityManagerService {
   async updateUserActivity(userId, status) {
     const activitySubscribers = Object.keys(this.subscribers(userId))
 
-    console.log('[updateUserActivity]', userId, status, activitySubscribers)
-
     if (!activitySubscribers.length) {
       return
     }

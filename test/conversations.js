@@ -579,8 +579,6 @@ describe('Conversation functions', async () => {
         JSON.stringify(requestData)
       )
 
-      console.log('[responseData]', responseData)
-
       responseData = responseData.backMessages.at(-1)
 
       assert.strictEqual(requestData.request.id, responseData.response.id)

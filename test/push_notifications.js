@@ -502,8 +502,6 @@ describe('PushNotification functions', async () => {
 
       responseData = responseData.backMessages.at(0)
 
-      console.log('[responseData]', responseData.response.event)
-
       const event = responseData.response.event.at(0)
 
       const eventMessage = Buffer.from(event.message, 'base64').toString('utf8')

@@ -16,8 +16,6 @@ class ActivitySender extends BaseService {
 
     const deliver = await activityManagerService.updateUserActivity(userId, status)
 
-    console.log('[deliver]', deliver)
-
     if (!deliver) {
       return
     }

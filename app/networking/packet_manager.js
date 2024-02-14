@@ -79,7 +79,6 @@ class PacketManager {
         }
 
         try {
-          console.log('[send to node]', userId, packet)
           recipientClusterNodeWS.send(
             JSON.stringify({ userId, message: packet })
           )
