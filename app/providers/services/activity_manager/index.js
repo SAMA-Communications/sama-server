@@ -65,6 +65,8 @@ class ActivityManagerService {
 
     if (status !== MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE) {
       await this.userService.updateActivity(userId, currentTime)
+      
+      this.unsubscribeObserver(userId)
     }
 
     const activitySubscribers = Object.keys(this.subscribers(userId))
