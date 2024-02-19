@@ -11,8 +11,8 @@ import validate, {
 import { CONSTANTS as MAIN_CONSTANTS } from '@sama/constants/constants.js'
 import { CONSTANTS } from '../constants/constants.js'
 import { ERROR_STATUES } from '@sama/constants/errors.js'
+import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
 
-import User from '@sama/models/user.js'
 import Message from '@sama/models/message.js'
 import Conversation from '@sama/models/conversation.js'
 import ConversationParticipant from '@sama/models/conversation_participant.js'
@@ -29,6 +29,7 @@ import Response from '@sama/networking/models/Response.js'
 import CreatePushEventOptions from '@sama/lib/push_queue/models/CreatePushEventOptions.js'
 
 import getDisplayName from '../utils/get_display_name.js'
+import { slice } from '@sama/utils/req_res_utils.js'
 
 class ConversationsController extends BaseJSONController {
   async #notifyAboutConversationEvent(
@@ -85,13 +86,14 @@ class ConversationsController extends BaseJSONController {
 
   async create(ws, data) {
     const { id: requestId, conversation_create: conversationParams } = data
-    const currentUserId = sessionRepository.getSessionUserId(ws)
-    const currentUserParams = (await User.findOne({ _id: currentUserId }))
-      ?.params
+    const userService = ServiceLocatorContainer.use('UserService')
 
-    const participants = await User.getAllIdsBy({
-      _id: { $in: conversationParams.participants },
-    })
+    const currentUserId = sessionRepository.getSessionUserId(ws)
+  
+    const user = await userService.userRepo.findById(currentUserId)
+    const currentUserParams = user?.params
+
+    const participants = await userService.userRepo.retrieveExistedIds(conversationParams.participants)
     delete conversationParams.participants
     conversationParams.owner_id = ObjectId(currentUserId)
 
@@ -202,6 +204,8 @@ class ConversationsController extends BaseJSONController {
 
   async update(ws, data) {
     const { id: requestId, conversation_update: requestData } = data
+    const userService = ServiceLocatorContainer.use('UserService')
+
     await validate(ws, requestData, [validateIsConversation])
 
     const currentUserId = sessionRepository.getSessionUserId(ws)
@@ -229,8 +233,8 @@ class ConversationsController extends BaseJSONController {
         conversation_id: conversationId,
       })
 
-      const currentUserParams = (await User.findOne({ _id: currentUserId }))
-        ?.params
+      const user = await userService.userRepo.findById(currentUserId)
+      const currentUserParams = user?.params
 
       let existingParticipantsIds = (
         await ConversationParticipant.findAll(
@@ -473,6 +477,8 @@ class ConversationsController extends BaseJSONController {
       get_participants_by_cids: { cids, includes },
     } = data
 
+    const userService = ServiceLocatorContainer.use('UserService')
+
     const response = new Response()
 
     const availableConversation = await ConversationParticipant.findAll({
@@ -511,15 +517,10 @@ class ConversationsController extends BaseJSONController {
       participants.forEach((u) => usersIds.push(u.user_id.toString()))
     }
 
-    const usersLogin = await User.findAll(
-      {
-        _id: { $in: usersIds.filter((el, i) => usersIds.indexOf(el) === i) },
-      },
-      includes
-        ? ['_id']
-        : ['_id', 'first_name', 'last_name', 'login', 'email', 'phone'],
-      null
-    )
+    const pluckFields = includes ? ['_id'] : ['_id', 'first_name', 'last_name', 'login', 'email', 'phone']
+    const retrieveUserIds = usersIds.filter((el, i) => usersIds.indexOf(el) === i)
+    const users = await userService.userRepo.findAllByIds(retrieveUserIds)
+    const usersLogin = users.map(user => slice(user.params, pluckFields, true))
 
     return response.addBackMessage({
       response: { id: requestId, users: usersLogin },

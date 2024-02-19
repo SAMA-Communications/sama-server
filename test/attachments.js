@@ -3,7 +3,7 @@ import ConversationParticipant from './../app/models/conversation_participant.js
 import File from '../app/models/file.js'
 import Message from './../app/models/message.js'
 import OpLog from './../app/models/operations_log.js'
-import User from './../app/models/user.js'
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
 import assert from 'assert'
 import {
   createConversation,
@@ -77,6 +77,7 @@ describe('Attachments', async () => {
 
   it('should work get download url for prev 2 files', async () => {
     const file_ids = files.map((obj) => obj.object_id)
+
     const requestData = {
       request: {
         get_file_urls: {
@@ -318,7 +319,8 @@ describe('Attachments', async () => {
     await File.clearCollection()
     await Message.clearCollection()
     await OpLog.clearCollection()
-    await User.clearCollection()
+    const userRepo = ServiceLocatorContainer.use('UserRepository')
+    await userRepo.deleteMany({})
     usersIds = []
   })
 })

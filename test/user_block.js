@@ -1,6 +1,5 @@
 import BlockedUser from './../app/models/blocked_user.js'
-import User from './../app/models/user.js'
-import UserToken from '../app/models/user_token.js'
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
 import assert from 'assert'
 import { createUserArray, mockedWS, sendLogin } from './utils.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
@@ -9,8 +8,12 @@ let usersIds = []
 
 describe('UserBlocked functions', async () => {
   before(async () => {
-    await User.clearCollection()
-    await UserToken.clearCollection()
+    const userRepo = ServiceLocatorContainer.use('UserRepository')
+    await userRepo.deleteMany({})
+
+    const userTokenRepo = ServiceLocatorContainer.use('UserTokenRepository')
+    await userTokenRepo.deleteMany({})
+
     usersIds = await createUserArray(5)
     await sendLogin(mockedWS, 'user_1')
   })
@@ -230,7 +233,8 @@ describe('UserBlocked functions', async () => {
   })
 
   after(async () => {
-    await User.clearCollection()
+    const userRepo = ServiceLocatorContainer.use('UserRepository')
+    await userRepo.deleteMany({})
     await BlockedUser.clearCollection()
     usersIds = []
   })

@@ -38,6 +38,7 @@ https://medium.com/sama-communications/introducing-sama-simple-but-advanced-mess
 There are also other components. Make sure to check [Deploying SAMA chat server stack: a comprehensive guide](https://medium.com/sama-communications/deploying-sama-chat-server-stack-a-comprehensive-guide-294ddb9a2d78)
 
 ### Docker one-command deployment
+
 To build and run the `SAMA` with all dependencies, you can use the following command:
 ```
 docker-compose -f docker-compose-full.yml up --build
@@ -72,6 +73,7 @@ Now you can access apps at the following addresses:
 - [Redis-commander](http://localhost:8081)
 
 ### Docker e2e tests
+
 Run migrations:
 ```
 docker-compose exec sama-server sh -c "MONGODB_URL=mongodb://172.25.0.4/samatests npm run migrate-mongo-up"
@@ -96,6 +98,86 @@ Also, there is a set of detailed articles for each API:
 - [Activities API](https://medium.com/sama-communications/sama-chat-server-api-activities-97b712b88671)
 - [Address Book API](https://medium.com/sama-communications/sama-chat-server-api-address-book-f297ce25faa1)
 - [Push Notifications API](https://medium.com/sama-communications/sama-chat-server-api-push-notifications-7e904eb04a0c)
+
+## Custom DI container
+
+An example how to create and use provider:
+
+1. Create folder `app/providers/services/my_provider` with 2 files `index.js` and `Provider.js`
+
+2. `index.js` should contain the implementation of the service itself:
+
+  ```js
+  export default class MyProvider {
+    constructor(redisConnection, userRepo) {
+      this.redisConnection = redisConnection
+      this.userRepo = userRepo
+    }
+
+    async updateAction(ws, fields) {
+      const id = await this.redisConnection.client ...
+      const updatedUser = await this.userRepo.update ....
+      ....
+      return updatedUser
+    }
+  }
+  ```
+
+3. `Provider.js` should export an instance of RegisterProvider which contains instructions how to create an instance of `index.js` class with dependencies:
+
+  ```js
+  import RegisterProvider from '@sama/common/RegisterProvider.js'
+  import MyProvider from './index.js'
+
+  const name = 'MyProvider'
+
+  class MyProviderRegistration extends RegisterProvider {
+    register(slc) {
+      const redisConnection = slc.use('RedisClient')
+      const userRepo = slc.use('UserRepository')
+
+      return new MyProvider(redisConnection, userRepo)
+    }
+  }
+
+  export default new MyProviderRegistration({ name, implementationName: MyProvider.name })
+  ```
+
+4. Then, add export of `Provider.js` to `app/providers/index.js`
+
+  ```js
+  import UserRepoProvider from './repositories/user/Provider.js'
+  ...
+  ...
+  import MyProviderRegistration from './services/my_provider/Provider.js'
+
+  const providers = [
+    UserRepoProvider,
+
+    ...
+    ...
+
+    MyProviderRegistration
+  ]
+
+  export default providers
+  ```
+
+5. For any custom APIs providers - use `/APIs/[API_NAME]/providers/index.js` file:
+
+6. And now yiou can use `MyProvider` class where needed, e.g. in controller:
+
+  ```js
+  import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
+
+  class Controller {
+    async edit(ws, data) {
+      const myProvider = ServiceLocatorContainer.use('MyProvider')
+      const updatedUser = await myProvider.updateAction(ws, data)
+      ....
+    }
+  }
+```
 
 ## Clustering
 

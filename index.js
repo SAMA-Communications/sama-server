@@ -5,6 +5,9 @@ import os from 'os'
 import uWS from 'uWebSockets.js'
 
 import RuntimeDefinedContext from './app/store/RuntimeDefinedContext.js'
+import ServiceLocatorContainer from './app/common/ServiceLocatorContainer.js'
+import providers from './app/providers/index.js'
+import RegisterProvider from './app/common/RegisterProvider.js'
 
 import clusterManager from './app/cluster/cluster_manager.js'
 import clusterSyncer from './app/cluster/cluster_syncer.js'
@@ -19,11 +22,13 @@ import Spaces from './app/lib/storage/spaces.js'
 import RSMPushQueue from './app/lib/push_queue/rsm_queue.js'
 import SamaNativePushQueue from './app/lib/push_queue/sama_native_queue.js'
 
-import { connectToDBPromise } from './app/lib/db.js'
+import { connectToDBPromise, getDb } from './app/lib/db.js'
 import RedisClient from './app/lib/redis.js'
 
 import blockListRepository from './app/repositories/blocklist_repository.js'
 import conversationRepository from './app/repositories/conversation_repository.js'
+
+import { APIs } from './app/networking/APIs.js'
 
 RuntimeDefinedContext.APP_HOSTNAME = process.env.HOSTNAME || os.hostname()
 RuntimeDefinedContext.APP_IP = ip.address()
@@ -104,5 +109,49 @@ await clusterSyncer.startSyncingClusterNodes()
 
 await blockListRepository.warmCache()
 await conversationRepository.warmCache()
+
+// Register providers
+ServiceLocatorContainer.register(
+  new (class extends RegisterProvider {
+    register(slc) {
+      return RuntimeDefinedContext
+    }
+  })({ name: 'RuntimeDefinedContext', implementationName: RuntimeDefinedContext.name })
+)
+ServiceLocatorContainer.register(
+  new (class extends RegisterProvider {
+    register(slc) {
+      return RedisClient
+    }
+  })({ name: 'RedisClient', implementationName: RedisClient.constructor.name })
+)
+ServiceLocatorContainer.register(
+  new (class extends RegisterProvider {
+    register(slc) {
+      return getDb()
+    }
+  })({ name: 'MongoConnection', implementationName: 'MongoConnection' })
+)
+ServiceLocatorContainer.register(
+  new (class extends RegisterProvider {
+    register(slc) {
+      return RuntimeDefinedContext.STORAGE_DRIVER
+    }
+  })({ name: 'StorageDriverClient', implementationName: RuntimeDefinedContext.STORAGE_DRIVER.constructor.name })
+)
+
+for (const provider of providers) {
+  ServiceLocatorContainer.register(provider)
+}
+
+for (const api of Object.values(APIs)) {
+  for (const provider of api.providers) {
+    ServiceLocatorContainer.register(provider)
+  }
+}
+
+// Boot providers
+await ServiceLocatorContainer.createAllSingletonInstances()
+await ServiceLocatorContainer.boot()
 
 // https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph

@@ -1,6 +1,6 @@
 import assert from 'assert'
 
-import User from './../app/models/user.js'
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
 import { ACTIVITY } from './../app/store/activity.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
 import { createUserArray, sendLogin, sendLogout } from './utils.js'
@@ -143,12 +143,13 @@ describe('User activities', async () => {
     assert.strictEqual(responseData.response.id, requestData.request.id)
     assert.strictEqual(responseData.response.success, true)
     assert.equal(ACTIVITY.SUBSCRIBED_TO[usersIds[2]], undefined)
-    assert.equal(ACTIVITY.SUBSCRIBERS[usersIds[1]], undefined)
+    assert.deepEqual(ACTIVITY.SUBSCRIBERS[usersIds[1]], {})
 
     await sendLogout('line_2', currentUserToken1)
   })
 
   after(async () => {
-    await User.clearCollection()
+    const userRepo = ServiceLocatorContainer.use('UserRepository')
+    await userRepo.deleteMany({})
   })
 })

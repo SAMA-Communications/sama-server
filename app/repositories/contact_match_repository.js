@@ -1,15 +1,10 @@
 import BaseRepository from './base.js'
 
-import User from '../models/user.js'
+import ServiceLocatorContainer from '../common/ServiceLocatorContainer.js'
+
 import Contact from '../models/contact.js'
 
 class ContactsMatchRepository extends BaseRepository {
-  constructor(ContactModel, UserModel) {
-    super(ContactModel)
-
-    this.UserModel = UserModel
-  }
-
   async #getRecords(query) {
     if (!query?.$or?.length) {
       return []
@@ -191,19 +186,16 @@ class ContactsMatchRepository extends BaseRepository {
       return
     }
 
-    const foundUsersList = await this.UserModel.findAll(
-      {
-        $or: fields.map((field) => {
-          return { [field]: { $in: contactData[field].map((el) => el.value) } }
-        }),
-      },
-      ['_id', ...fields]
-    )
+    const userService = ServiceLocatorContainer.use('UserService')
+
+    const emails = contactData.email?.map(email => email.value)
+    const phones = contactData.phone?.map(phone => phone.value)
+    const foundUsersList = await userService.userRepo.matchUserContact(emails, phones)
 
     for (const field of fields) {
       const foundUsersObj = {}
-      for (let obj of foundUsersList) {
-        foundUsersObj[obj[field]] = obj._id
+      for (const user of foundUsersList) {
+        foundUsersObj[user.params[field]] = user.params._id
       }
 
       contactData[field].forEach((obj) => {
@@ -215,4 +207,4 @@ class ContactsMatchRepository extends BaseRepository {
   }
 }
 
-export default new ContactsMatchRepository(Contact, User)
+export default new ContactsMatchRepository(Contact)

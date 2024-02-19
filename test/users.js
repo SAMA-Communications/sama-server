@@ -1,5 +1,5 @@
 import './utils.js'
-import User from '../app/models/user.js'
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
 import assert from 'assert'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
 
@@ -9,7 +9,8 @@ let userLogin = [...Array(30)]
 
 describe('User cycle', async () => {
   before(async () => {
-    await User.clearCollection()
+    const userRepo = ServiceLocatorContainer.use('UserRepository')
+    await userRepo.deleteMany({})
   })
 
   describe('Create User', async () => {
@@ -655,6 +656,7 @@ describe('User cycle', async () => {
   })
 
   after(async () => {
-    await User.clearCollection()
+    const userRepo = ServiceLocatorContainer.use('UserRepository')
+    await userRepo.deleteMany({})
   })
 })

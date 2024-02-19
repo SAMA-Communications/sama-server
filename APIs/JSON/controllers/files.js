@@ -1,59 +1,39 @@
 import BaseJSONController from './base.js'
 
-import RuntimeDefinedContext from '@sama/store/RuntimeDefinedContext.js'
+import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
 
-import File from '@sama/models/file.js'
-
-import fileRepository from '@sama/repositories/file_repository.js'
+import sessionRepository from '@sama/repositories/session_repository.js'
 
 import Response from '@sama/networking/models/Response.js'
 
 class FilesController extends BaseJSONController {
   async create_url(ws, data) {
     const { id: requestId, create_files: reqFiles } = data
+    const currentUserId = sessionRepository.getSessionUserId(ws)
+    const storageService = ServiceLocatorContainer.use('StorageService')
 
     const resFiles = []
 
     for (const reqFile of reqFiles) {
-      //TODO: update from many to one request if it possible
-      const { objectId, url } = await RuntimeDefinedContext.STORAGE_DRIVER.getUploadUrl(
-        reqFile.name
-      )
-      
-      reqFile['object_id'] = objectId
+      const { file, upload_url } = await storageService.createFile(currentUserId, reqFile)
 
-      const file = new File(reqFile)
-      await file.save()
-
-      resFiles.push({ ...file.visibleParams(), upload_url: url })
+      resFiles.push({ ...file, upload_url })
     }
 
     return new Response().addBackMessage({ response: { id: requestId, files: resFiles } })
   }
 
   async get_download_url(ws, data) {
-    const {
-      id: requestId,
-      get_file_urls: { file_ids: objectIds },
-    } = data
+    const { id: requestId, get_file_urls: { file_ids: objectIds } } = data
+    const currentUserId = sessionRepository.getSessionUserId(ws)
+    const storageService = ServiceLocatorContainer.use('StorageService')
 
-    let urls = {}
+    const urls = {}
 
-    for (const fileId of objectIds) {
-      const existUrl = await fileRepository.getFileUrl(fileId)
+    for (const fileObjectId of objectIds) {
+      const downloadUrl = await storageService.downloadFile(currentUserId, fileObjectId)
 
-      if (existUrl) {
-        urls[fileId] = existUrl;
-        continue
-      }
-
-      const fileUrl = await RuntimeDefinedContext.STORAGE_DRIVER.getDownloadUrl(
-        fileId
-      )
-
-      await fileRepository.storeFileUrl(fileId, fileUrl)
-
-      urls[fileId] = fileUrl
+      urls[fileObjectId] = downloadUrl
     }
 
     return new Response().addBackMessage({ response: { id: requestId, file_urls: urls } })

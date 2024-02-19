@@ -11,8 +11,8 @@ import { CONSTANTS as MAIN_CONSTANTS } from '@sama/constants/constants.js'
 import { ERROR_STATUES } from '@sama/constants/errors.js'
 
 import RuntimeDefinedContext from '@sama/store/RuntimeDefinedContext.js'
+import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
 
-import User from '@sama/models/user.js'
 import Message from '@sama/models/message.js'
 import MessageStatus from '@sama/models/message_status.js'
 import ConversationParticipant from '@sama/models/conversation_participant.js'
@@ -115,8 +115,11 @@ class MessagesController extends BaseJSONController {
       }
     }
 
-    const userLogin = (await User.findOne({ _id: currentUserId }))?.params
-      ?.login
+    const userService = ServiceLocatorContainer.use('UserService')
+
+    const user = await userService.userRepo.findById(currentUserId)
+    const userLogin = user?.params?.login
+
     const firstAttachmentUrl = !messageParams.attachments?.length
       ? null
       : await RuntimeDefinedContext.STORAGE_DRIVER.getDownloadUrl(

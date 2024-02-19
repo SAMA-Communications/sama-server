@@ -1,6 +1,6 @@
 import BaseService from '@sama/services/base.js'
 
-import User from '@sama/models/user.js'
+import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
 
 class ConversationService extends BaseService {
   async #validateAndReturnParticipantsIdsToAdd(
@@ -26,16 +26,13 @@ class ConversationService extends BaseService {
   }
 
   async #getParticipantsInfo(participantsIds) {
-    return participantsIds.length
-      ? await User.findAll({ _id: { $in: participantsIds } }, [
-          'login',
-          'first_name',
-          'last_name',
-          'email',
-          'phone',
-          'recent_activity',
-        ])
-      : []
+    if (participantsIds.length) {
+      const userService = ServiceLocatorContainer.use('UserService')
+      const users = await userService.userRepo.findAllByIds(participantsIds)
+      return users.map(user => user.params)
+    }
+
+    return []
   }
 
   async getNewParticipantsParams(existingParticipantsIds, newParticipants) {

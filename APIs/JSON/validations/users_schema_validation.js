@@ -45,8 +45,7 @@ export const usersSchemaValidation = {
     first_name: Joi.string().min(1).max(20),
     last_name: Joi.string().min(1).max(20),
   }).with('current_password', 'current_password'),
-  login: Joi.object()
-    .keys({
+  login: Joi.object({
       login: Joi.string().error(
         new Error(ERROR_STATUES.USER_LOGIN_OR_PASS.message, {
           cause: ERROR_STATUES.USER_LOGIN_OR_PASS,
@@ -64,7 +63,8 @@ export const usersSchemaValidation = {
         ),
     })
     .oxor('token', 'login')
-    .with('login', 'password'),
+    .with('login', 'password')
+    .unknown(),
   logout: Joi.object({}).required(),
   delete: Joi.object({}).required(),
   search: Joi.object({

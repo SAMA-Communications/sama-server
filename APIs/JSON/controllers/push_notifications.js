@@ -3,8 +3,8 @@ import BaseJSONController from './base.js'
 import { ERROR_STATUES } from '@sama/constants/errors.js'
 
 import RuntimeDefinedContext from '@sama/store/RuntimeDefinedContext.js'
+import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
 
-import User from '@sama/models/user.js'
 import PushSubscription from '@sama/models/push_subscription.js'
 
 import sessionRepository from '@sama/repositories/session_repository.js'
@@ -90,12 +90,9 @@ class PushNotificationsController extends BaseJSONController {
       push_event_create: { recipients_ids, message },
     } = data
 
-    const recipients = []
+    const userService = ServiceLocatorContainer.use('UserService')
 
-    for (const id of recipients_ids) {
-      const u = await User.findOne({ _id: id })
-      !!u && recipients.push(id)
-    }
+    const recipients = await userService.userRepo.retrieveExistedIds(recipients_ids)
 
     if (!recipients.length) {
       throw new Error(ERROR_STATUES.RECIPIENTS_NOT_FOUND.message, {

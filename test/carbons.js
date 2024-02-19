@@ -1,4 +1,4 @@
-import User from './../app/models/user.js'
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
 import assert from 'assert'
 import { ACTIVE } from './../app/store/session.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
@@ -48,6 +48,7 @@ describe('Carbons', async () => {
   })
 
   after(async () => {
-    await User.clearCollection()
+    const userRepo = ServiceLocatorContainer.use('UserRepository')
+    await userRepo.deleteMany({})
   })
 })

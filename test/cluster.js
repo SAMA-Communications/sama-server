@@ -3,7 +3,7 @@ import ConversationParticipant from './../app/models/conversation_participant.js
 import Message from './../app/models/message.js'
 import MessageStatus from './../app/models/message_status.js'
 import sessionRepository from './../app/repositories/session_repository.js'
-import User from './../app/models/user.js'
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
 import assert from 'assert'
 import clusterManager from './../app/cluster/cluster_manager.js'
 import ip from 'ip'
@@ -104,7 +104,8 @@ describe('Cluster Message function', async () => {
   })
 
   after(async () => {
-    await User.clearCollection()
+    const userRepo = ServiceLocatorContainer.use('UserRepository')
+    await userRepo.deleteMany({})
     await Message.clearCollection()
     await MessageStatus.clearCollection()
     await Conversation.clearCollection()

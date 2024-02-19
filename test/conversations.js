@@ -1,7 +1,6 @@
 import Conversation from './../app/models/conversation.js'
 import ConversationParticipant from './../app/models/conversation_participant.js'
-import User from './../app/models/user.js'
-import UserToken from '../app/models/user_token.js'
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
 import assert from 'assert'
 import { createUserArray, mockedWS, sendLogin, sendLogout } from './utils.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
@@ -579,8 +578,6 @@ describe('Conversation functions', async () => {
         'test',
         JSON.stringify(requestData)
       )
-
-      console.log('[responseData]', responseData)
 
       responseData = responseData.backMessages.at(-1)
 
@@ -1177,8 +1174,12 @@ describe('Conversation functions', async () => {
   })
 
   after(async () => {
-    await User.clearCollection()
-    await UserToken.clearCollection()
+    const userRepo = ServiceLocatorContainer.use('UserRepository')
+    await userRepo.deleteMany({})
+
+    const userTokenRepo = ServiceLocatorContainer.use('UserTokenRepository')
+    await userTokenRepo.deleteMany({})
+
     await Conversation.clearCollection()
     await ConversationParticipant.clearCollection()
     usersIds = []
