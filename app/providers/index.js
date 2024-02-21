@@ -1,13 +1,17 @@
 import UserMapperProvider from './utils/mappers/user/Provider.js'
+import ConversationMapperProvider from './utils/mappers/conversations/Provider.js'
 
 import UserRepoProvider from './repositories/user/Provider.js'
 import UserTokenRepoProvider from './repositories/user_token/Provider.js'
 import FileRepoProvider from './repositories/file/Provider.js'
+import ConversationRepoProvider from './repositories/conversation/Provider.js'
+import ConversationParticipantRepoProvider from './repositories/conversation_participants/Provider.js'
 
-import SessionService from './services/session/Provider.js'
-import UserService from './services/user/Provider.js'
+import SessionServiceProvider from './services/session/Provider.js'
+import UserServiceProvider from './services/user/Provider.js'
 import StorageServiceProvider from './services/storage/Provider.js'
 import ActivityManagerServiceProvider from './services/activity_manager/Provider.js'
+import ConversationServiceProvider from './services/conversation/Provider.js'
 
 import UserAuthOperationProvider from './operations/user/auth/Provider.js'
 import UserLogoutOperationProvider from './operations/user/logout/Provider.js'
@@ -20,17 +24,23 @@ import ActivityUserRetrieveOperationProvider from './operations/activity/retriev
 import ActivityUserSubscribeOperationProvider from './operations/activity/subscribe/Provider.js'
 import ActivityUserUnsubscribeOperationProvider from './operations/activity/unsubscribe/Provider.js'
 
+import ConversationCreateOperationProvider from './operations/conversation/create/Provider.js'
+
 const providers = [
   UserMapperProvider,
+  ConversationMapperProvider,
 
   UserRepoProvider,
   UserTokenRepoProvider,
   FileRepoProvider,
+  ConversationRepoProvider,
+  ConversationParticipantRepoProvider,
 
-  SessionService,
-  UserService,
+  SessionServiceProvider,
+  UserServiceProvider,
   StorageServiceProvider,
   ActivityManagerServiceProvider,
+  ConversationServiceProvider,
 
   UserAuthOperationProvider,
   UserLogoutOperationProvider,
@@ -41,7 +51,9 @@ const providers = [
 
   ActivityUserRetrieveOperationProvider,
   ActivityUserSubscribeOperationProvider,
-  ActivityUserUnsubscribeOperationProvider
+  ActivityUserUnsubscribeOperationProvider,
+
+  ConversationCreateOperationProvider
 ]
 
 export default providers

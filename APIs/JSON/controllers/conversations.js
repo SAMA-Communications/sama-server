@@ -86,120 +86,16 @@ class ConversationsController extends BaseJSONController {
 
   async create(ws, data) {
     const { id: requestId, conversation_create: conversationParams } = data
-    const userService = ServiceLocatorContainer.use('UserService')
 
-    const currentUserId = sessionRepository.getSessionUserId(ws)
-  
-    const user = await userService.userRepo.findById(currentUserId)
-    const currentUserParams = user?.params
+    const conversationCreateOperation = ServiceLocatorContainer.use('ConversationCreateOperation')
+    const { conversation, conversationCreatedMessageNotification } = await conversationCreateOperation.perform(ws, conversationParams)
 
-    const participants = await userService.userRepo.retrieveExistedIds(conversationParams.participants)
-    delete conversationParams.participants
-    conversationParams.owner_id = ObjectId(currentUserId)
-
-    const response = new Response()
-
-    if (conversationParams.type == 'u') {
-      const opponentId = (conversationParams.opponent_id = String(
-        participants[0]
-      ))
-      await validate(ws, { participants, opponent_id: opponentId }, [
-        validateParticipantsInUType,
-        validateIsUserSendHimSelf,
-      ])
-
-      const existingConversation = await conversationRepository.findOne({
-        $or: [
-          {
-            type: 'u',
-            owner_id: ObjectId(currentUserId),
-            opponent_id: opponentId,
-          },
-          {
-            type: 'u',
-            owner_id: ObjectId(opponentId),
-            opponent_id: currentUserId,
-          },
-        ],
-      })
-
-      if (existingConversation) {
-        const existingParticipants = await ConversationParticipant.findAll({
-          conversation_id: existingConversation._id,
-        })
-        if (existingParticipants.length !== 2) {
-          const requiredParticipantsIds = [currentUserId, opponentId]
-          const existingParticipantsIds = existingParticipants.map((u) =>
-            u.user_id.toString()
-          )
-
-          const missedParticipantId = requiredParticipantsIds.filter(
-            (uId) => !existingParticipantsIds.includes(uId)
-          )[0]
-
-          const participant = new ConversationParticipant({
-            user_id: ObjectId(missedParticipantId),
-            conversation_id: existingConversation._id,
-          })
-          await participant.save()
-
-          const deliverMessage = await this.#notifyAboutConversationEvent(
-            CONSTANTS.CONVERSATION_EVENT.CREATE,
-            existingConversation,
-            currentUserParams,
-            [missedParticipantId]
-          )
-
-          response.addDeliverMessage(deliverMessage)
-        }
-        return response.addBackMessage({
-          response: {
-            id: requestId,
-            conversation: existingConversation,
-          },
-        })
-      }
-    }
-
-    const isOwnerInArray = participants.some(
-      (el) => JSON.stringify(el) === JSON.stringify(conversationParams.owner_id)
-    )
-    if (!isOwnerInArray) {
-      participants.push(ObjectId(conversationParams.owner_id))
-    } else if (participants.length === 1) {
-      return response.addBackMessage({
-        response: {
-          id: requestId,
-          error: ERROR_STATUES.PARTICIPANTS_NOT_PROVIDED,
-        },
-      })
-    }
-
-    const conversationObj = new Conversation(conversationParams)
-    await conversationObj.save()
-
-    for (const userId of participants) {
-      const participant = new ConversationParticipant({
-        user_id: userId,
-        conversation_id: conversationObj.params._id,
-      })
-      await participant.save()
-    }
-
-    const convParams = conversationObj.visibleParams()
-    const deliverMessage = await this.#notifyAboutConversationEvent(
-      CONSTANTS.CONVERSATION_EVENT.CREATE,
-      convParams,
-      currentUserParams,
-      participants
-    )
-
-    return response.addBackMessage({
+    return new Response().addBackMessage({
       response: {
         id: requestId,
-        conversation: conversationObj.visibleParams(),
+        conversation: conversation.visibleParams(),
       },
-    }).addDeliverMessage(deliverMessage)
+    }).addDeliverMessage(conversationCreatedMessageNotification)
   }
 
   async update(ws, data) {
