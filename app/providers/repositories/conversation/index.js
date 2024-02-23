@@ -10,6 +10,12 @@ class ConversationRepository extends BaseRepository {
     return await super.create(createParams)
   }
 
+  async findById(conversationId) {
+    const conversation = await this.findOne({ _id: conversationId })
+
+    return conversation
+  }
+
   async findExistedPrivateDialog(ownerId, opponentId) {
     ownerId = this.safeWrapOId(ownerId)
     opponentId = this.safeWrapOId(opponentId)    
@@ -28,6 +34,19 @@ class ConversationRepository extends BaseRepository {
         },
       ],
     })
+
+    return conversation
+  }
+
+  async update(conversationId, updateParams) {
+    if (updateParams.owner_id) {
+      updateParams.owner_id = this.safeWrapOId(updateParams.owner_id)
+    }
+    if (updateParams.opponent_id) {
+      updateParams.opponent_id = this.safeWrapOId(updateParams.opponent_id)
+    }
+
+    const conversation = await this.findOneAndUpdate({ _id: conversationId }, { $set: updateParams })
 
     return conversation
   }

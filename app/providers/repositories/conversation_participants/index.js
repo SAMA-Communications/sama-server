@@ -13,6 +13,12 @@ class ConversationParticipantRepository extends BaseRepository {
 
     return participants
   }
+
+  async removeParticipants(conversationId, participantIds) {
+    participantIds = participantIds.map(pId => this.safeWrapOId(pId))
+
+    await this.deleteMany({ conversation_id: this.safeWrapOId(conversationId), user_id: { $in: participantIds } })
+  }
 }
 
 export default ConversationParticipantRepository
