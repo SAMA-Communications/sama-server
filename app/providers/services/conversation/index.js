@@ -107,6 +107,19 @@ class ConversationService {
 
     return { removedCount: participantIds.length, newOwnerId }
   }
+
+  async conversationsList(userId, limit, options) {
+    const conversationIds = await this.conversationParticipantRepo.findParticipantConversations(userId, limit)
+
+    const filterOptions = {}
+    if (options.updated_at?.gt) {
+      filterOptions.updatedAtFrom = new Date(options.updated_at.gt)
+    }
+
+    const conversations = await this.conversationRepo.list(conversationIds, limit, filterOptions)
+
+    return conversations
+  } 
 }
 
 export default ConversationService

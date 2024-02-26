@@ -38,6 +38,20 @@ class ConversationRepository extends BaseRepository {
     return conversation
   }
 
+  async list(conversationIds, limit, options) {
+    const query = {
+      _id: { $in: conversationIds }
+    }
+
+    if (options.updatedAtFrom) {
+      query.updated_at = { $gt: options.updatedAtFrom }
+    }
+
+    const conversations = await this.findAll(query, null, limit)
+
+    return conversations
+  }
+
   async update(conversationId, updateParams) {
     if (updateParams.owner_id) {
       updateParams.owner_id = this.safeWrapOId(updateParams.owner_id)

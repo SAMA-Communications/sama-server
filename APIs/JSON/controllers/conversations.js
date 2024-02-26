@@ -2,11 +2,9 @@ import BaseJSONController from './base.js'
 
 import validate, { validateIsConversation } from '@sama/lib/validation.js'
 
-import { CONSTANTS as MAIN_CONSTANTS } from '@sama/constants/constants.js'
 import { ERROR_STATUES } from '@sama/constants/errors.js'
 import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
 
-import Message from '@sama/models/message.js'
 import Conversation from '@sama/models/conversation.js'
 import ConversationParticipant from '@sama/models/conversation_participant.js'
 
@@ -48,59 +46,15 @@ class ConversationsController extends BaseJSONController {
   }
 
   async list(ws, data) {
-    const {
-      id: requestId,
-      conversation_list: { limit, updated_at },
-    } = data
+    const { id: requestId, conversation_list: conversationListOptions } = data
 
-    const currentUser = sessionRepository.getSessionUserId(ws)
-    const limitParam =
-      limit > MAIN_CONSTANTS.LIMIT_MAX
-        ? MAIN_CONSTANTS.LIMIT_MAX
-        : limit || MAIN_CONSTANTS.LIMIT_MAX
-    const userConversationsIds = await ConversationParticipant.findAll(
-      {
-        user_id: currentUser,
-      },
-      ['conversation_id']
-    )
-
-    const query = {
-      _id: {
-        $in: userConversationsIds.map((p) => p.conversation_id),
-      },
-    }
-    const timeFromUpdate = updated_at
-    if (timeFromUpdate && timeFromUpdate.gt) {
-      query.updated_at = { $gt: new Date(timeFromUpdate.gt) }
-    }
-
-    const userConversations = await conversationRepository.findAll(
-      query,
-      null,
-      limitParam
-    )
-    const lastMessagesListByCid = await Message.getLastMessageForConversation(
-      userConversationsIds.map((el) => el.conversation_id),
-      currentUser
-    )
-
-    const countOfUnreadMessagesByCid =
-      await Message.getCountOfUnredMessagesByCid(
-        userConversationsIds.map((el) => el.conversation_id),
-        currentUser
-      )
-
-    for (const conv of userConversations) {
-      const convId = conv._id.toString()
-      conv['last_message'] = lastMessagesListByCid[convId]
-      conv['unread_messages_count'] = countOfUnreadMessagesByCid[convId] || 0
-    }
+    const conversationListOperation = ServiceLocatorContainer.use('ConversationListOperation')
+    const conversations = await conversationListOperation.perform(ws, conversationListOptions)
 
     return new Response().addBackMessage({
       response: {
         id: requestId,
-        conversations: userConversations,
+        conversations: conversations,
       },
     })
   }

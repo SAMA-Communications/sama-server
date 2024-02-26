@@ -26,6 +26,7 @@ import ActivityUserUnsubscribeOperationProvider from './operations/activity/unsu
 
 import ConversationCreateOperationProvider from './operations/conversation/create/Provider.js'
 import ConversationUpdateOperationProvider from './operations/conversation/update/Provider.js'
+import ConversationListOperationProvider from './operations/conversation/list/Provider.js'
 
 const providers = [
   UserMapperProvider,
@@ -55,7 +56,8 @@ const providers = [
   ActivityUserUnsubscribeOperationProvider,
 
   ConversationCreateOperationProvider,
-  ConversationUpdateOperationProvider
+  ConversationUpdateOperationProvider,
+  ConversationListOperationProvider
 ]
 
 export default providers

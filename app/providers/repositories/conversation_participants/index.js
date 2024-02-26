@@ -14,6 +14,12 @@ class ConversationParticipantRepository extends BaseRepository {
     return participants
   }
 
+  async findParticipantConversations(userId, limit) {
+    const conversationParticipants = await this.findAll({ user_id: userId }, null, limit)
+
+    return conversationParticipants.map(conversationParticipant => conversationParticipant.params.conversation_id)
+  }
+
   async removeParticipants(conversationId, participantIds) {
     participantIds = participantIds.map(pId => this.safeWrapOId(pId))
 
