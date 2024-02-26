@@ -33,11 +33,22 @@ class ConversationsController extends BaseJSONController {
 
   async update(ws, data) {
     const { id: requestId, conversation_update: conversationParams } = data
+
+    const response = new Response()
   
     const conversationUpdateOperation = ServiceLocatorContainer.use('ConversationUpdateOperation')
     const updatedConversation = await conversationUpdateOperation.perform(ws, conversationParams)
 
-    return new Response().addBackMessage({
+    if (!updatedConversation) {
+      return response.addBackMessage({
+        response: {
+          id: requestId,
+          deleted: true,
+        },
+      })
+    }
+
+    return response.addBackMessage({
       response: {
         id: requestId,
         conversation: updatedConversation.visibleParams(),
@@ -60,48 +71,17 @@ class ConversationsController extends BaseJSONController {
   }
 
   async delete(ws, data) {
-    const {
-      id: requestId,
-      conversation_delete: { id: conversationId },
-    } = data
-    await validate(ws, { id: conversationId }, [validateIsConversation])
+    const { id: requestId, conversation_delete: { id: conversationId } } = data
 
-    const response = new Response()
+    const conversationDeleteOperation = ServiceLocatorContainer.use('ConversationDeleteOperation')
+    await conversationDeleteOperation.perform(ws, conversationId)
 
-    const conversation = await conversationRepository.findById(
-      conversationId
-    )
-
-    const conversationParticipant = await ConversationParticipant.findOne({
-      user_id: sessionRepository.getSessionUserId(ws),
-      conversation_id: conversationId,
+    return new Response().addBackMessage({
+      response: {
+        id: requestId,
+        success: true
+      },
     })
-
-    if (!conversationParticipant) {
-      return response.addBackMessage({
-        response: {
-          id: requestId,
-          error: ERROR_STATUES.PARTICIPANT_NOT_FOUND,
-        },
-      })
-    }
-    await conversationParticipant.delete()
-    const existingUserInConversation = await ConversationParticipant.findOne({
-      conversation_id: conversationId,
-    })
-    if (!existingUserInConversation) {
-      await conversationRepository.delete(conversation._id)
-    } else if (
-      conversation.owner_id.toString() ===
-        sessionRepository.getSessionUserId(ws) &&
-      conversation.type !== 'u'
-    ) {
-      await conversationRepository.updateOne(conversationId, {
-        owner_id: existingUserInConversation.params.user_id,
-      })
-    }
-
-    return response.addBackMessage({ response: { id: requestId, success: true } })
   }
 
   async get_participants_by_cids(ws, data) {
