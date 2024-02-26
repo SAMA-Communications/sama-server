@@ -20,6 +20,12 @@ class ConversationParticipantRepository extends BaseRepository {
     return conversationParticipants.map(conversationParticipant => conversationParticipant.params.conversation_id)
   }
 
+  async isConversationHasParticipants(conversationId) {
+    const participants = await this.findOne({ conversation_id: conversationId })
+    
+    return !!participants
+  }
+
   async removeParticipants(conversationId, participantIds) {
     participantIds = participantIds.map(pId => this.safeWrapOId(pId))
 

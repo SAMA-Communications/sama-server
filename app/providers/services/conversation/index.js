@@ -53,16 +53,15 @@ class ConversationService {
   }
 
   async updateParticipants(conversation, addParticipants, removeParticipants) {
-    const currentParticipantIds = await this.findDialogParticipants(conversation.params._id)
+    let currentParticipantIds = await this.findDialogParticipants(conversation.params._id)
 
-    const addParticipantsCount = await this.addParticipants(conversation, addParticipants, currentParticipantIds)
+    const addedParticipantIds = await this.addParticipants(conversation, addParticipants, currentParticipantIds)
 
-    const {
-      newOwnerId,
-      removedCount: removeParticipantsCount
-    } = await this.removeParticipants(conversation, removeParticipants, currentParticipantIds)
+    currentParticipantIds.concat(addedParticipantIds)
 
-    return { addParticipantsCount, removeParticipantsCount, newOwnerId }
+    const removeResult = await this.removeParticipants(conversation, removeParticipants, currentParticipantIds)
+
+    return { addedParticipantIds, ...removeResult }
   }
 
   async addParticipants(conversation, participantIds, currentParticipantIds) {
@@ -87,25 +86,36 @@ class ConversationService {
       })
     }
 
-    return participantIds.length
+    return participantIds
   }
 
   async removeParticipants(conversation, participantIds, currentParticipantIds) {
+    const result = { removedIds: null, newOwnerId: null, isEmptyAndDeleted: false }
+
     if (!currentParticipantIds) {
       currentParticipantIds = await this.findDialogParticipants(conversation.params._id)
     }
 
     participantIds = participantIds.filter(pId => currentParticipantIds.find(currentPId => currentPId.toString() === pId.toString()))
     await this.conversationParticipantRepo.removeParticipants(conversation.params._id, participantIds)
+    result.removedIds = participantIds
 
-    let newOwnerId = null
-    const isOwnerInRemove = participantIds.find(pId => pId.toString() === conversation.params.owner_id.toString())
-    if (isOwnerInRemove) {
-      newOwnerId = currentParticipantIds.at(0)
-      await this.conversationRepo.update(conversation.params._id, { owner_id: newOwnerId })
+    const isConversationHasParticipants = await this.conversationParticipantRepo.isConversationHasParticipants(conversation.params._id)
+
+    if (!isConversationHasParticipants) {
+      await this.conversationRepo.deleteById(conversation.params._id)
+      result.isEmptyAndDeleted = true
+      return result
     }
 
-    return { removedCount: participantIds.length, newOwnerId }
+    const isOwnerInRemove = participantIds.find(pId => pId.toString() === conversation.params.owner_id.toString())
+    if (isOwnerInRemove && conversation.params.type !== 'u') {
+      const newOwnerId = currentParticipantIds.at(0)
+      await this.conversationRepo.update(conversation.params._id, { owner_id: newOwnerId })
+      result.newOwnerId = newOwnerId
+    }
+
+    return result
   }
 
   async conversationsList(userId, limit, options) {

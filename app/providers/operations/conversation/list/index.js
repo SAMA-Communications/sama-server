@@ -3,13 +3,11 @@ import { CONSTANTS as MAIN_CONSTANTS } from '../../../../constants/constants.js'
 class ConversationListOperation {
   constructor(
     sessionService,
-    userService,
     messagesService,
     conversationService,
     conversationMapper
   ) {
     this.sessionService = sessionService
-    this.userService = userService
     this.messagesService = messagesService
     this.conversationService = conversationService
     this.conversationMapper = conversationMapper

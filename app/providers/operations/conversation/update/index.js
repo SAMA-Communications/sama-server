@@ -22,7 +22,10 @@ class ConversationUpdateOperation {
     const conversation = await this.#hasAccess(conversationId, currentUserId)
 
     if (conversationParams.participants) {
-      await this.#updateParticipants(conversation, conversationParams.participants)
+      const isEmptyAndDeleted = await this.#updateParticipants(conversation, conversationParams.participants)
+      if (isEmptyAndDeleted) {
+        return null
+      }
     }
     delete conversationParams.participants
 
@@ -62,7 +65,9 @@ class ConversationUpdateOperation {
     addUsers ??= []
     removeUsers ??= []
 
-    await this.conversationService.updateParticipants(conversation, addUsers, removeUsers)
+    const { isEmptyAndDeleted } = await this.conversationService.updateParticipants(conversation, addUsers, removeUsers)
+
+    return isEmptyAndDeleted
   }
 }
 
