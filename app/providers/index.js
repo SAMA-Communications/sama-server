@@ -27,6 +27,7 @@ import ActivityUserUnsubscribeOperationProvider from './operations/activity/unsu
 import ConversationCreateOperationProvider from './operations/conversation/create/Provider.js'
 import ConversationUpdateOperationProvider from './operations/conversation/update/Provider.js'
 import ConversationListOperationProvider from './operations/conversation/list/Provider.js'
+import ConversationListParticipantsOperationProvider from './operations/conversation/list_participants/Provider.js'
 import ConversationDeleteOperationProvider from './operations/conversation/delete/Provider.js'
 
 const providers = [
@@ -59,6 +60,7 @@ const providers = [
   ConversationCreateOperationProvider,
   ConversationUpdateOperationProvider,
   ConversationListOperationProvider,
+  ConversationListParticipantsOperationProvider,
   ConversationDeleteOperationProvider
 ]
 

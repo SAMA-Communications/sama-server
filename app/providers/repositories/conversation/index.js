@@ -16,7 +16,13 @@ class ConversationRepository extends BaseRepository {
     return conversation
   }
 
-  async findExistedPrivateDialog(ownerId, opponentId) {
+  async findAllByIds(conversationIds) {
+    const conversations = await this.findAll({ _id: { $in: conversationIds } })
+
+    return conversations
+  }
+
+  async findExistedPrivateConversation(ownerId, opponentId) {
     ownerId = this.safeWrapOId(ownerId)
     opponentId = this.safeWrapOId(opponentId)    
 

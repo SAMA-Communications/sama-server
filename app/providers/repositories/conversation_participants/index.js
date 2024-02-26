@@ -8,10 +8,19 @@ class ConversationParticipantRepository extends BaseRepository {
     return await super.create(createParams)
   }
 
-  async findDialogParticipants(conversationId) {
+  async findConversationParticipants(conversationId) {
     const participants = await this.findAll({ conversation_id: conversationId })
 
     return participants
+  }
+
+  async findConversationsParticipants(conversationIds, participantId) {
+    const availableConversationParticipants = await this.findAll({ conversation_id: { $in: conversationIds }, user_id: participantId })
+    const availableConversationIds = availableConversationParticipants.map(participant => participant.params.conversation_id)
+
+    const conversationsParticipants = await this.findAll({ conversation_id: { $in: availableConversationIds }, user_id: { $ne: participantId } })
+
+    return conversationsParticipants
   }
 
   async findParticipantConversations(userId, limit) {

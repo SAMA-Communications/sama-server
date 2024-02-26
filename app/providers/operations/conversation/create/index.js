@@ -39,7 +39,7 @@ class ConversationCreateOperation {
       participantIds
     )
 
-    let existedConversation = await this.conversationService.findExistedPrivateDialog(
+    let existedConversation = await this.conversationService.findExistedPrivateConversation(
       conversationParams.owner_id,
       conversationParams.opponent_id
     )
@@ -87,7 +87,7 @@ class ConversationCreateOperation {
 
   async #addMissedParticipantsToPrivateDialog(existedConversation) {
     const requiredParticipantIds = [existedConversation.params.owner_id, existedConversation.params.opponent_id].map(pId => pId.toString())
-    let existedParticipantIds = await this.conversationService.findDialogParticipants(existedConversation.params._id)
+    let existedParticipantIds = await this.conversationService.findConversationParticipants(existedConversation.params._id)
     existedParticipantIds = existedParticipantIds.map(pId => pId.toString())
 
     const missedParticipantId = requiredParticipantIds.find(requiredParticipantId => !existedParticipantIds.includes(requiredParticipantId))
