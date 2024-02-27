@@ -36,8 +36,8 @@ class ConversationListOperation {
   async #addMessagesInfo(conversations, userId) {
     const conversationIds = conversations.map(conversation => conversation._id)
 
-    const lastMessagesListByCid = await this.messagesService.getLastMessageForConversation(conversationIds, userId)
-    const countOfUnreadMessagesByCid = await this.messagesService.getCountOfUnredMessagesByCid(conversationIds, userId)
+    const lastMessagesListByCid = await this.messagesService.aggregateLastMessageForConversation(conversationIds, userId)
+    const countOfUnreadMessagesByCid = await this.messagesService.aggregateCountOfUnredMessagesByCid(conversationIds, userId)
 
     for (const conversation of conversations) {
       const conversationId = conversation._id.toString()

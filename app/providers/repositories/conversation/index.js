@@ -10,18 +10,6 @@ class ConversationRepository extends BaseRepository {
     return await super.create(createParams)
   }
 
-  async findById(conversationId) {
-    const conversation = await this.findOne({ _id: conversationId })
-
-    return conversation
-  }
-
-  async findAllByIds(conversationIds) {
-    const conversations = await this.findAll({ _id: { $in: conversationIds } })
-
-    return conversations
-  }
-
   async findExistedPrivateConversation(ownerId, opponentId) {
     ownerId = this.safeWrapOId(ownerId)
     opponentId = this.safeWrapOId(opponentId)    
@@ -56,6 +44,14 @@ class ConversationRepository extends BaseRepository {
     const conversations = await this.findAll(query, null, limit)
 
     return conversations
+  }
+
+  async updateOwner(conversationId, newOwnerId) {
+    await this.updateOne({ _id: conversationId }, { $set: { owner_id: this.safeWrapOId(newOwnerId) } })
+  }
+
+  async updateLastActivity(conversationId, updatedAt) {
+    await this.updateOne({ _id: conversationId }, { $set: { updated_at: updatedAt } })
   }
 
   async update(conversationId, updateParams) {

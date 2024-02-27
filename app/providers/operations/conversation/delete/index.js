@@ -12,13 +12,13 @@ class ConversationDeleteOperation {
   async perform(ws, conversationId) {
     const currentUserId = this.sessionService.getSessionUserId(ws)
 
-    const conversation = await this.#hasAccess(conversationId, currentUserId)
+    const { conversation, participantIds } = await this.#hasAccess(conversationId, currentUserId)
 
-    await this.conversationService.removeParticipants(conversation, [currentUserId])
+    await this.conversationService.removeParticipants(conversation, [currentUserId], participantIds)
   }
 
   async #hasAccess(conversationId, userId) {
-    const { conversation, asParticipant } = await this.conversationService.hashAccessToConversation(conversationId, userId)
+    const { conversation, asParticipant, participantIds } = await this.conversationService.hashAccessToConversation(conversationId, userId)
     if (!conversation) {
       throw new Error(ERROR_STATUES.BAD_REQUEST.message, {
         cause: ERROR_STATUES.BAD_REQUEST,
@@ -31,7 +31,7 @@ class ConversationDeleteOperation {
       })
     }
 
-    return conversation
+    return { conversation, participantIds }
   }
 }
 

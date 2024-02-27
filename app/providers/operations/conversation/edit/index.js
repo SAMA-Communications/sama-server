@@ -1,6 +1,6 @@
 import { ERROR_STATUES } from '../../../../constants/errors.js'
 
-class ConversationUpdateOperation {
+class ConversationEditOperation {
   constructor(
     sessionService,
     userService,
@@ -19,10 +19,10 @@ class ConversationUpdateOperation {
     
     const currentUserId = this.sessionService.getSessionUserId(ws)
     
-    const conversation = await this.#hasAccess(conversationId, currentUserId)
+    const { conversation, participantIds: currentParticipantIds } = await this.#hasAccess(conversationId, currentUserId)
 
     if (conversationParams.participants) {
-      const isEmptyAndDeleted = await this.#updateParticipants(conversation, conversationParams.participants)
+      const isEmptyAndDeleted = await this.#updateParticipants(conversation, conversationParams.participants, currentParticipantIds)
       if (isEmptyAndDeleted) {
         return null
       }
@@ -35,7 +35,7 @@ class ConversationUpdateOperation {
   }
 
   async #hasAccess(conversationId, userId) {
-    const { conversation, asOwner } = await this.conversationService.hashAccessToConversation(conversationId, userId)
+    const { conversation, asOwner, participantIds } = await this.conversationService.hashAccessToConversation(conversationId, userId)
     if (!conversation) {
       throw new Error(ERROR_STATUES.BAD_REQUEST.message, {
         cause: ERROR_STATUES.BAD_REQUEST,
@@ -48,10 +48,10 @@ class ConversationUpdateOperation {
       })
     }
 
-    return conversation
+    return { conversation, participantIds }
   }
 
-  async #updateParticipants(conversation, updateParticipants) {
+  async #updateParticipants(conversation, updateParticipants, currentParticipantIds) {
     let { add: addUsers, remove: removeUsers } = updateParticipants
 
     if (addUsers?.length) {
@@ -65,10 +65,10 @@ class ConversationUpdateOperation {
     addUsers ??= []
     removeUsers ??= []
 
-    const { isEmptyAndDeleted } = await this.conversationService.updateParticipants(conversation, addUsers, removeUsers)
+    const { isEmptyAndDeleted } = await this.conversationService.updateParticipants(conversation, addUsers, removeUsers, currentParticipantIds)
 
     return isEmptyAndDeleted
   }
 }
 
-export default ConversationUpdateOperation
+export default ConversationEditOperation

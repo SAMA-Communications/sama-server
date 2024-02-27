@@ -45,7 +45,7 @@ class ConversationCreateOperation {
     )
 
     if (existedConversation) {
-      await this.#addMissedParticipantsToPrivateDialog(existedConversation)
+      await this.conversationService.restorePrivateConversation(existedConversation)
     } else {
       existedConversation = await this.#createNewPrivateConversation(conversationParams)
     }
@@ -83,23 +83,6 @@ class ConversationCreateOperation {
     const createdConversation = await this.conversationService.create(conversationParams, participantIds)
 
     return createdConversation
-  }
-
-  async #addMissedParticipantsToPrivateDialog(existedConversation) {
-    const requiredParticipantIds = [existedConversation.params.owner_id, existedConversation.params.opponent_id].map(pId => pId.toString())
-    let existedParticipantIds = await this.conversationService.findConversationParticipants(existedConversation.params._id)
-    existedParticipantIds = existedParticipantIds.map(pId => pId.toString())
-
-    const missedParticipantId = requiredParticipantIds.find(requiredParticipantId => !existedParticipantIds.includes(requiredParticipantId))
-
-    if (missedParticipantId) {
-      await this.conversationService.conversationParticipantRepo.create({
-        conversation_id: existedConversation.params._id,
-        user_id: missedParticipantId
-      })
-    }
-
-    return missedParticipantId
   }
 
   async #createGroupConversation(conversationParams, participantIds) {

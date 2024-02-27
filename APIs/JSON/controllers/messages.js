@@ -34,126 +34,13 @@ import groupBy from '../utils/groupBy.js'
 class MessagesController extends BaseJSONController {
   async create(ws, data) {
     const { message: messageParams } = data
-    const messageId = messageParams.id
-    delete messageParams.id
 
-    const response = new Response()
+    const messageCreateOperation = ServiceLocatorContainer.use('MessageCreateOperation')
+    const { messageId, message, deliverMessages } = await messageCreateOperation.perform(ws, messageParams)
 
-    const currentUserId = sessionRepository.getSessionUserId(ws)
-    const conversation = await conversationRepository.findById(
-      messageParams.cid
-    )
-
-    let participants
-    if (!conversation) {
-      throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {
-        cause: ERROR_STATUES.CONVERSATION_NOT_FOUND,
-      })
-    }
-    participants = await ConversationParticipant.findAll({
-      conversation_id: conversation._id,
-    })
-    participants = participants?.map((u) => u.user_id.toString())
-    if (!participants.includes(currentUserId)) {
-      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
-        cause: ERROR_STATUES.FORBIDDEN,
-      })
-    }
-
-    const blockedUsersIds = await blockListRepository.getBlockingUsers(
-      currentUserId,
-      participants
-    )
-
-    if (conversation.type === 'u' && blockedUsersIds.length) {
-      throw new Error(ERROR_STATUES.USER_BLOCKED.message, {
-        cause: ERROR_STATUES.USER_BLOCKED,
-      })
-    }
-    if (
-      conversation.type === 'g' &&
-      blockedUsersIds.length === participants.length - 1
-    ) {
-      throw new Error(ERROR_STATUES.USER_BLOCKED_FOR_ALL_PARTICIPANTS.message, {
-        cause: ERROR_STATUES.USER_BLOCKED_FOR_ALL_PARTICIPANTS,
-      })
-    }
-
-    messageParams.deleted_for = blockedUsersIds
-    messageParams.from = ObjectId(currentUserId)
-
-    const message = new Message(messageParams)
-    message.params.cid = message.params.cid
-      ? ObjectId(message.params.cid)
-      : message.params.cid
-    const currentTs = Math.round(Date.now() / 1000)
-    message.params.t = parseInt(currentTs)
-
-    await message.save()
-
-    if (conversation.type === 'u') {
-      const recipientsThatChatNotVisible = [
-        conversation.opponent_id,
-        conversation.owner_id.toString(),
-      ].filter((u) => !participants.includes(u))
-
-      if (recipientsThatChatNotVisible.length) {
-        for (let userId of recipientsThatChatNotVisible) {
-          const participant = new ConversationParticipant({
-            user_id: ObjectId(userId),
-            conversation_id: conversation._id,
-          })
-          await participant.save()
-        }
-
-        const eventMessage = {
-          event: { conversation_created: conversation },
-          id: messageId,
-        }
-
-        response.addDeliverMessage(new DeliverMessage(recipientsThatChatNotVisible, eventMessage))
-      }
-    }
-
-    const userService = ServiceLocatorContainer.use('UserService')
-
-    const user = await userService.userRepo.findById(currentUserId)
-    const userLogin = user?.params?.login
-
-    const firstAttachmentUrl = !messageParams.attachments?.length
-      ? null
-      : await RuntimeDefinedContext.STORAGE_DRIVER.getDownloadUrl(
-          messageParams.attachments[0].file_id
-        )
-
-    const pushPayload = Object.assign({
-      title:
-        conversation.type === 'u'
-          ? userLogin
-          : `${userLogin} | ${conversation.name}`,
-      body: messageParams.body,
-      firstAttachmentUrl,
-      cid: messageParams.cid,
-    })
-
-    const createdMessage = { message: message.visibleParams() }
-    const recipients = await conversationParticipantsRepository.findParticipantsByConversation(messageParams.cid)
-    
-    const createChatAlertEventOptions = new CreateChatAlertEventOptions({
-      conversationId: conversation._id,
-      messageId: messageId,
-      senderID: currentUserId,
-    }, pushPayload)
-
-    response.addDeliverMessage(new DeliverMessage(recipients, createdMessage).addPushQueueMessage(createChatAlertEventOptions))
-
-    await conversationRepository.updateOne(messageParams.cid, {
-      updated_at: message.params.created_at,
-    })
-
-    return response.addBackMessage({
-      ask: { mid: messageId, server_mid: message.params._id, t: currentTs },
-    })
+    return new Response().addBackMessage({
+      ask: { mid: messageId, server_mid: message.params._id, t: message.params.t },
+    }).addDeliverMessage(...deliverMessages)
   }
 
   async edit(ws, data) {

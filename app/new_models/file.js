@@ -1,10 +1,6 @@
 import BaseModel from './base.js'
 
 class File extends BaseModel {
-  constructor(params) {
-    super(params)
-  }
-
   static get collection() {
     return 'files'
   }

@@ -62,6 +62,18 @@ export default class BaseRepository {
     return models
   }
 
+  async findById(id) {
+    const model = await this.findOne({ _id: id })
+
+    return model
+  }
+
+  async findAllByIds(ids) {
+    const models = await this.findAll({ _id: { $in: ids } })
+
+    return models
+  }
+
   async findAll(query, projectionParams, limit, sortParams) {
     if (query.cid) {
       query.cid = this.safeWrapOId(query.cid)

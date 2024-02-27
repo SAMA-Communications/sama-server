@@ -25,8 +25,8 @@ class ConversationsController extends BaseJSONController {
 
     const response = new Response()
   
-    const conversationUpdateOperation = ServiceLocatorContainer.use('ConversationUpdateOperation')
-    const updatedConversation = await conversationUpdateOperation.perform(ws, conversationParams)
+    const conversationEditOperation = ServiceLocatorContainer.use('ConversationEditOperation')
+    const updatedConversation = await conversationEditOperation.perform(ws, conversationParams)
 
     if (!updatedConversation) {
       return response.addBackMessage({
