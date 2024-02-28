@@ -3,30 +3,23 @@ import BaseJSONController from './base.js'
 import validate, {
   validateIsConversation,
   validateIsConversationByCID,
-  validateIsUserAccess,
   validateIsUserHasPermission,
 } from '@sama/lib/validation.js'
 
 import { CONSTANTS as MAIN_CONSTANTS } from '@sama/constants/constants.js'
-import { ERROR_STATUES } from '@sama/constants/errors.js'
 
-import RuntimeDefinedContext from '@sama/store/RuntimeDefinedContext.js'
 import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
 
 import Message from '@sama/models/message.js'
 import MessageStatus from '@sama/models/message_status.js'
-import ConversationParticipant from '@sama/models/conversation_participant.js'
 
-import conversationRepository from '@sama/repositories/conversation_repository.js'
 import conversationParticipantsRepository from '@sama/repositories/conversation_participants_repository.js'
-import blockListRepository from '@sama/repositories/blocklist_repository.js'
 import sessionRepository from '@sama/repositories/session_repository.js'
 
 import { ObjectId } from '@sama/lib/db.js'
 
 import DeliverMessage from '@sama/networking/models/DeliverMessage.js'
 import Response from '@sama/networking/models/Response.js'
-import CreateChatAlertEventOptions from '@sama/lib/push_queue/models/CreateChatAlertEventOptions.js'
 
 import groupBy from '../utils/groupBy.js'
 
@@ -45,34 +38,20 @@ class MessagesController extends BaseJSONController {
 
   async edit(ws, data) {
     const { id: requestId, message_edit: messageParams } = data
-    const messageId = messageParams.id
 
-    let message = await Message.findOne({ _id: messageId })
-
-    if (!message) {
-      throw new Error(ERROR_STATUES.MESSAGE_ID_NOT_FOUND.message, {
-        cause: ERROR_STATUES.MESSAGE_ID_NOT_FOUND,
-      })
-    }
-  
-    await validate(ws, message.params, [validateIsUserAccess])
-
-    await Message.updateOne(
-      { _id: messageId },
-      { $set: { body: messageParams.body } }
-    )
-    const request = {
-      message_edit: {
-        id: messageId,
-        body: messageParams.body,
-        from: ObjectId(sessionRepository.getSessionUserId(ws)),
-      },
-    }
-    const recipients = await conversationParticipantsRepository.findParticipantsByConversation(messageParams.cid)
+    const messageEditOperation = ServiceLocatorContainer.use('MessageEditOperation')
+    const { messageId, body, from, participantId } = await messageEditOperation.perform(ws, messageParams)
 
     return new Response()
       .addBackMessage({ response: { id: requestId, success: true } })
-      .addDeliverMessage(new DeliverMessage(recipients, request, true))
+      .addDeliverMessage(new DeliverMessage( participantId, {
+          message_edit: {
+            id: messageId,
+            body: body,
+            from: from,
+          }
+        }, true)
+      )
   }
 
   async list(ws, data) {

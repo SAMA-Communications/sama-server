@@ -72,6 +72,10 @@ class MessageRepository extends BaseRepository {
 
     return result
   }
+
+  async updateBody(messageId, newBody) {
+    await this.updateOne({ _id: messageId }, { $set: { body: newBody } })
+  }
 }
 
 export default MessageRepository

@@ -19,6 +19,22 @@ class MessageService {
     return message
   }
 
+  async hasAccessToMessage(messageId, userId) {
+    const result = { message: null, asOwner: false }
+
+    const message = await this.messageRepo.findById(messageId)
+
+    if (!message) {
+      return result
+    }
+
+    result.message = message
+
+    result.asOwner = message.params.from.toString() === userId.toString()
+
+    return result
+  }
+
   async aggregateLastMessageForConversation(cids, userId) {
     const aggregateLastMessage = await this.messageRepo.findLastMessageForConversations(cids, userId)
 
