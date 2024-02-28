@@ -21,8 +21,6 @@ import { ObjectId } from '@sama/lib/db.js'
 import DeliverMessage from '@sama/networking/models/DeliverMessage.js'
 import Response from '@sama/networking/models/Response.js'
 
-import groupBy from '../utils/groupBy.js'
-
 
 class MessagesController extends BaseJSONController {
   async create(ws, data) {
@@ -89,6 +87,7 @@ class MessagesController extends BaseJSONController {
       Message.visibleFields,
       limitParam
     )
+
     const messagesStatus = await MessageStatus.getReadStatusForMids(
       messages.map((msg) => msg._id)
     )
@@ -107,55 +106,27 @@ class MessagesController extends BaseJSONController {
   }
 
   async read(ws, data) {
-    const {
-      id: requestId,
-      message_read: { cid, ids: mids },
-    } = data
-    
+    const { id: requestId, message_read: messagesReadOptions } = data
+  
+
+    const messageReadOperation = ServiceLocatorContainer.use('MessageReadOperation')
+    const unreadMessagesGroupedByFrom = await messageReadOperation.perform(ws, messagesReadOptions)
+
     const response = new Response()
 
-    const uId = sessionRepository.getSessionUserId(ws)
-
-    const query = { cid, user_id: uId }
-    const filters = { cid, from: { $ne: uId } }
-    if (mids) {
-      filters._id = { $in: mids }
-    } else {
-      const lastReadMessage = (
-        await MessageStatus.findAll(query, ['mid'], 1)
-      )[0]
-      if (lastReadMessage) {
-        filters._id = { $gt: lastReadMessage.mid }
+    for (const uId in unreadMessagesGroupedByFrom) {
+      const firstMessage = unreadMessagesGroupedByFrom[uId].at(0)
+      const cid = firstMessage.cid
+      const mids = unreadMessagesGroupedByFrom[uId].map(message => message._id)
+      const message = {
+        message_read: {
+          cid: cid,
+          ids: mids,
+          from: uId,
+        },
       }
-    }
 
-    const unreadMessages = await Message.findAll(filters)
-
-    if (unreadMessages.length) {
-      const insertMessages = unreadMessages.map((msg) => {
-        return {
-          cid: ObjectId(cid),
-          mid: ObjectId(msg._id),
-          user_id: ObjectId(uId),
-          status: 'read',
-        }
-      })
-    
-      await MessageStatus.insertMany(insertMessages.reverse())
-      const unreadMessagesGroupedByFrom = groupBy(unreadMessages, 'from')
-
-      for (const uId in unreadMessagesGroupedByFrom) {
-        const mids = unreadMessagesGroupedByFrom[uId].map((el) => el._id)
-        const message = {
-          message_read: {
-            cid: ObjectId(cid),
-            ids: mids,
-            from: ObjectId(uId),
-          },
-        }
-
-        response.addDeliverMessage(new DeliverMessage(Object.keys(unreadMessagesGroupedByFrom), message))
-      }
+      response.addDeliverMessage(new DeliverMessage(Object.keys(unreadMessagesGroupedByFrom), message))
     }
 
     return response.addBackMessage({

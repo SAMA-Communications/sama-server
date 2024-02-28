@@ -1,14 +1,26 @@
 import BaseRepository from '../base.js'
 
 class MessageRepository extends BaseRepository {
-  async create(createParams) {
-    if (createParams.deleted_for?.length) {
-      createParams.deleted_for = createParams.deleted_for.map(userId => this.safeWrapOId(userId))
+  async prepareParams(params) {
+    if (params.deleted_for?.length) {
+      params.deleted_for = params.deleted_for.map(userId => this.safeWrapOId(userId))
     }
-    createParams.from = this.safeWrapOId(createParams.from)
-    createParams.cid = this.safeWrapOId(createParams.cid)
+    params.from = this.safeWrapOId(params.from)
+    params.cid = this.safeWrapOId(params.cid)
 
-    return await super.create(createParams)
+    return await super.prepareParams(params)
+  }
+
+  async findAllOpponentsMessagesFromConversation(cid, readerUserId, { mids, lastReadMessageId }) {
+    const query = {
+      cid: this.safeWrapOId(cid),
+      from: { $ne: this.safeWrapOId(readerUserId) },
+      _id: lastReadMessageId ?  { $gt: this.safeWrapOId(lastReadMessageId) } : { $in: mids }
+    }
+
+    const messages = await this.findAll(query)
+
+    return messages
   }
 
   async findLastMessageForConversations(cids, userId) {

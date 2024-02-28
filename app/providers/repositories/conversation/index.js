@@ -1,13 +1,13 @@
 import BaseRepository from '../base.js'
 
 class ConversationRepository extends BaseRepository {
-  async create(createParams) {
-    createParams.owner_id = this.safeWrapOId(createParams.owner_id)
-    if (createParams.opponent_id) {
-      createParams.opponent_id = this.safeWrapOId(createParams.opponent_id)
+  async prepareParams(params) {
+    params.owner_id = this.safeWrapOId(params.owner_id)
+    if (params.opponent_id) {
+      params.opponent_id = this.safeWrapOId(params.opponent_id)
     }
 
-    return await super.create(createParams)
+    return await super.prepareParams(params)
   }
 
   async findExistedPrivateConversation(ownerId, opponentId) {

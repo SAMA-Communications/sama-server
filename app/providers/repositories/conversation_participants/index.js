@@ -1,11 +1,11 @@
 import BaseRepository from '../base.js'
 
 class ConversationParticipantRepository extends BaseRepository {
-  async create(createParams) {
-    createParams.conversation_id = this.safeWrapOId(createParams.conversation_id)
-    createParams.user_id = this.safeWrapOId(createParams.user_id)
+  async prepareParams(params) {
+    params.conversation_id = this.safeWrapOId(params.conversation_id)
+    params.user_id = this.safeWrapOId(params.user_id)
 
-    return await super.create(createParams)
+    return await super.prepareParams(params)
   }
 
   async findConversationParticipants(conversationId) {

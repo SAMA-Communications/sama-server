@@ -55,7 +55,7 @@ export default class BaseRepository {
 
     const result = await this.collectionCursor.insertMany(insertParams)
 
-    const modelParams = insertParams.map((params, index) => ({ _id: result.insertedIds.at(index), ...params }))
+    const modelParams = insertParams.map((params, index) => ({ _id: result.insertedIds[index], ...params }))
 
     const models = modelParams.map(params => this.wrapRawRecordInModel(params))
 

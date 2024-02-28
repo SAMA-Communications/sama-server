@@ -35,6 +35,31 @@ class MessageService {
     return result
   }
 
+  async readMessagesInConversation(cid, userId, mids) {
+    const findMessagesOptions = { mids }
+    if (!mids) {
+      const lastReadMessagesByConvIds = await this.messageStatusRepo.findLastReadMessageByUserForCid([cid], userId)
+      findMessagesOptions.lastReadMessageId = lastReadMessagesByConvIds[cid]?.mid || null
+    }
+
+    const unreadMessages = await this.messageRepo.findAllOpponentsMessagesFromConversation(cid, userId, findMessagesOptions)
+
+    if (unreadMessages.length) {
+      const insertMessagesStatuses = unreadMessages.map((message) => {
+        return {
+          cid: cid,
+          mid: message.params._id,
+          user_id: userId,
+          status: 'read',
+        }
+      })
+
+      await this.messageStatusRepo.createMany(insertMessagesStatuses.reverse())
+    }
+
+    return unreadMessages
+  }
+
   async aggregateLastMessageForConversation(cids, userId) {
     const aggregateLastMessage = await this.messageRepo.findLastMessageForConversations(cids, userId)
 

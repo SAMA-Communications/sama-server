@@ -1,7 +1,5 @@
 import Conversation from './../app/models/conversation.js'
 import ConversationParticipant from './../app/models/conversation_participant.js'
-import MessageStatus from './../app/models/message_status.js'
-import Message from './../app/models/message.js'
 import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
 import assert from 'assert'
 import { ObjectId } from '../app/lib/db.js'
@@ -13,6 +11,11 @@ import {
   sendLogout,
 } from './utils.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
+
+const userRepo = ServiceLocatorContainer.use('UserRepository')
+const messageRepo = ServiceLocatorContainer.use('MessageRepository')
+const messageStatusRepo = ServiceLocatorContainer.use('MessageStatusRepository')
+const messageService = ServiceLocatorContainer.use('MessageService')
 
 let filterUpdatedAt = ''
 let currentUserToken = ''
@@ -181,16 +184,14 @@ describe('Message function', async () => {
 
         responseData = responseData.backMessages.at(0)
 
-        if (i == 3) {
-          const findMessage = await Message.findOne({
-            _id: responseData.ask.server_mid,
-          })
-          filterUpdatedAt = findMessage.updated_at
+        if (i === 3) {
+          const findMessage = await messageRepo.findById(responseData.ask.server_mid)
+          filterUpdatedAt = findMessage.params.updated_at
         }
       }
     })
 
-    it('should work with limit parametr', async () => {
+    it('should work with limit param', async () => {
       const numberOf = 5
       const requestData = {
         request: {
@@ -217,8 +218,8 @@ describe('Message function', async () => {
       assert.equal(responseData.response.error, undefined)
     })
 
-    it('should work with date parametr', async () => {
-      const numberOf = 9
+    it('should work with date param', async () => {
+      const numberOf = 4
       const requestData = {
         request: {
           message_list: {
@@ -246,7 +247,7 @@ describe('Message function', async () => {
       assert.equal(responseData.response.error, undefined)
     })
 
-    it('should work with date and limit parametrs', async () => {
+    it('should work with date and limit params', async () => {
       const numberOf = 3
       const requestData = {
         request: {
@@ -341,7 +342,8 @@ describe('Message function', async () => {
 
   describe('Delete Message', async () => {
     before(async () => {
-      await Message.clearCollection()
+      await messageRepo.deleteMany({})
+
       for (let i = 0; i < 4; i++) {
         const requestData = {
           message: {
@@ -697,11 +699,12 @@ describe('Message function', async () => {
     })
 
     after(async () => {
-      const userRepo = ServiceLocatorContainer.use('UserRepository')
-    await userRepo.deleteMany({})
-      await Message.clearCollection()
+      await userRepo.deleteMany({})
+      await messageRepo.deleteMany({})
+
       await Conversation.clearCollection()
       await ConversationParticipant.clearCollection()
+
       usersIds = []
     })
   })
@@ -754,7 +757,7 @@ describe('Message function', async () => {
       responseData = responseData.backMessages.at(0)
       currentConversationId = responseData.response.conversation._id.toString()
 
-      //create 3 messages
+      // create 6 messages by u1
       for (let i = 0; i < 6; i++) {
         requestData = {
           message: {
@@ -774,7 +777,7 @@ describe('Message function', async () => {
         messagesIds.push(responseData.ask.server_mid)
       }
 
-      //red 3/6 messages by u2
+      // read 3/6 messages by u2
       currentUserToken = (await sendLogin(mockedWS, 'user_2')).response.user
         ._id
 
@@ -798,7 +801,7 @@ describe('Message function', async () => {
 
     describe('--> getLastReadMessageByUserForCid', () => {
       it('should work for u1', async () => {
-        const responseData = await MessageStatus.getLastReadMessageByUserForCid(
+        const responseData = await messageStatusRepo.findLastReadMessageByUserForCid(
           [ObjectId(currentConversationId)],
           usersIds[0]
         )
@@ -806,10 +809,11 @@ describe('Message function', async () => {
       })
 
       it('should work for u2', async () => {
-        const responseData = await MessageStatus.getLastReadMessageByUserForCid(
+        const responseData = await messageStatusRepo.findLastReadMessageByUserForCid(
           [ObjectId(currentConversationId)],
           usersIds[1]
         )
+
         assert.strictEqual(
           responseData[currentConversationId]?.toString(),
           messagesIds[2].toString()
@@ -817,7 +821,7 @@ describe('Message function', async () => {
       })
 
       it('should work for u3', async () => {
-        const responseData = await MessageStatus.getLastReadMessageByUserForCid(
+        const responseData = await messageStatusRepo.findLastReadMessageByUserForCid(
           [ObjectId(currentConversationId)],
           usersIds[2]
         )
@@ -827,33 +831,36 @@ describe('Message function', async () => {
 
     describe('--> getCountOfUnredMessagesByCid', () => {
       it('should work for sender user (u1)', async () => {
-        const responseData = await Message.getCountOfUnredMessagesByCid(
+        const responseData = await messageService.aggregateCountOfUnredMessagesByCid(
           [ObjectId(currentConversationId)],
           usersIds[0]
         )
+
         assert.strictEqual(responseData[currentConversationId], undefined)
       })
 
       it('should work for u2 (read 3/6 messages)', async () => {
-        const responseData = await Message.getCountOfUnredMessagesByCid(
+        const responseData = await messageService.aggregateCountOfUnredMessagesByCid(
           [ObjectId(currentConversationId)],
           usersIds[1]
         )
+
         assert.strictEqual(responseData[currentConversationId], 3)
       })
 
       it('should work for u3 (read 0/6 messages)', async () => {
-        const responseData = await Message.getCountOfUnredMessagesByCid(
+        const responseData = await messageService.aggregateCountOfUnredMessagesByCid(
           [ObjectId(currentConversationId)],
           usersIds[2]
         )
+
         assert.strictEqual(responseData[currentConversationId], 6)
       })
     })
 
     describe('--> getReadStatusForMids', () => {
       it('should work for sender user (u1)', async () => {
-        const responseData = await MessageStatus.getReadStatusForMids(
+        const responseData = await messageStatusRepo.getReadStatusForMids(
           messagesIds
         )
         let isDone = false
@@ -870,7 +877,7 @@ describe('Message function', async () => {
 
     describe('--> getLastMessageForConversation', () => {
       it('should work', async () => {
-        const responseData = await Message.getLastMessageForConversation([
+        const responseData = await messageService.aggregateLastMessageForConversation([
           ObjectId(currentConversationId),
         ])
         assert.strictEqual(
@@ -882,12 +889,13 @@ describe('Message function', async () => {
   })
 
   after(async () => {
-    const userRepo = ServiceLocatorContainer.use('UserRepository')
     await userRepo.deleteMany({})
-    await Message.clearCollection()
-    await MessageStatus.clearCollection()
+    await messageRepo.deleteMany({})
+    await messageStatusRepo.deleteMany({})
+
     await Conversation.clearCollection()
     await ConversationParticipant.clearCollection()
+
     usersIds = []
   })
 })

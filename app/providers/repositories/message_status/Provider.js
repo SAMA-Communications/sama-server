@@ -1,5 +1,5 @@
 import RegisterProvider from '../../../common/RegisterProvider.js'
-import MessageStatus from '../../../new_models/message.js'
+import MessageStatus from '../../../new_models/message_status.js'
 import MessageStatusRepository from './index.js'
 
 const name = 'MessageStatusRepository'

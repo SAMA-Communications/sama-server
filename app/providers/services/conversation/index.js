@@ -91,11 +91,13 @@ class ConversationService {
       })
     }
 
-    for (const participantId of participantIds) {
-      await this.conversationParticipantRepo.create({
+    if (participantIds.length) {
+      const createParticipantsParams = participantIds.map(participantId => ({
         conversation_id: conversation.params._id,
         user_id: participantId,
-      })
+      }))
+
+      await this.conversationParticipantRepo.createMany(createParticipantsParams)
     }
 
     return participantIds

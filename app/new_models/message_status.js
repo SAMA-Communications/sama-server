@@ -8,20 +8,19 @@ export default class MessageStatus extends BaseModel {
   static get visibleFields() {
     return [
       '_id',
+  
       'cid',
       'mid',
-
-      'created_at',
+      'user_id',
 
       'status',
-
-      'user_id',
     ]
   }
 
   static get hiddenFields() {
     return [
       'updated_at',
+      'created_at',
     ]
   }
 }

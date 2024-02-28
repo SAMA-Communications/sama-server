@@ -46,6 +46,7 @@ export default class MessageStatus extends BaseModel {
       { $sort },
       { $group },
     ])
+
     const result = {}
     aggregatedResult.forEach((obj) => {
       result[obj._id] = obj.last_message.mid
