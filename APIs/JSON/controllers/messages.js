@@ -38,11 +38,11 @@ class MessagesController extends BaseJSONController {
     const { id: requestId, message_edit: messageParams } = data
 
     const messageEditOperation = ServiceLocatorContainer.use('MessageEditOperation')
-    const { messageId, body, from, participantId } = await messageEditOperation.perform(ws, messageParams)
+    const { messageId, body, from, participantIds } = await messageEditOperation.perform(ws, messageParams)
 
     return new Response()
       .addBackMessage({ response: { id: requestId, success: true } })
-      .addDeliverMessage(new DeliverMessage( participantId, {
+      .addDeliverMessage(new DeliverMessage( participantIds, {
           message_edit: {
             id: messageId,
             body: body,
@@ -107,7 +107,6 @@ class MessagesController extends BaseJSONController {
 
   async read(ws, data) {
     const { id: requestId, message_read: messagesReadOptions } = data
-  
 
     const messageReadOperation = ServiceLocatorContainer.use('MessageReadOperation')
     const unreadMessagesGroupedByFrom = await messageReadOperation.perform(ws, messagesReadOptions)
@@ -126,7 +125,7 @@ class MessagesController extends BaseJSONController {
         },
       }
 
-      response.addDeliverMessage(new DeliverMessage(Object.keys(unreadMessagesGroupedByFrom), message))
+      response.addDeliverMessage(new DeliverMessage([uId], message))
     }
 
     return response.addBackMessage({
@@ -140,34 +139,25 @@ class MessagesController extends BaseJSONController {
   async delete(ws, data) {
     const {
       id: requestId,
-      message_delete: { type, cid, ids },
+      message_delete: messageDeleteParams,
     } = data
-    await validate(ws, { cid }, [validateIsConversationByCID])
+
+    const messageDeleteOperation = ServiceLocatorContainer.use('MessageDeleteOperation')
+    const { isDeleteAll, participantIds, info: { userId, cId, mIds } } = await messageDeleteOperation.perform(ws, messageDeleteParams)
 
     const response = new Response()
 
-    if (type == 'all') {
+    if (isDeleteAll) {
       const request = {
         message_delete: {
-          cid,
-          ids,
+          cid: cId,
+          ids: mIds,
           type: 'all',
-          from: ObjectId(sessionRepository.getSessionUserId(ws)),
+          from: userId,
         },
       }
 
-      const recipients = await conversationParticipantsRepository.findParticipantsByConversation(cid)
-      response.addDeliverMessage(new DeliverMessage(recipients, request, true))
-      await Message.deleteMany({ _id: { $in: ids } })
-    } else {
-      await Message.updateMany(
-        { id: { $in: ids } },
-        {
-          $addToSet: {
-            deleted_for: ObjectId(sessionRepository.getSessionUserId(ws)),
-          },
-        }
-      )
+      response.addDeliverMessage(new DeliverMessage(participantIds, request, true))
     }
 
     return response.addBackMessage({

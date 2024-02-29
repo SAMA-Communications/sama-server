@@ -20,9 +20,9 @@ class MessageEditOperation {
 
     await this.messageService.messageRepo.updateBody(messageId, newBody)
 
-    const participantId = await this.conversationService.findConversationParticipants(message.params.cid)
+    const participantIds = await this.conversationService.findConversationParticipants(message.params.cid)
 
-    return { messageId, body: newBody, from: currentUserId, participantId }
+    return { messageId, body: newBody, from: currentUserId, participantIds }
   }
 
   async #hashAccess(messageId, currentUserId) {

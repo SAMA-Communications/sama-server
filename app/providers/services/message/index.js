@@ -81,6 +81,14 @@ class MessageService {
 
     return unreadMessageCountByCids
   }
+
+  async deleteMessages(userId, mIds, deleteAll) {
+    if (deleteAll) {
+      await this.messageRepo.deleteByIds(mIds)
+    } else {
+      await this.messageRepo.updateDeleteForUser(mIds, userId)
+    }
+  }
 }
 
 export default MessageService

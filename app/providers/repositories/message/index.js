@@ -88,6 +88,12 @@ class MessageRepository extends BaseRepository {
   async updateBody(messageId, newBody) {
     await this.updateOne({ _id: messageId }, { $set: { body: newBody } })
   }
+
+  async updateDeleteForUser(messageIds, userId) {
+    messageIds.map(mId => this.safeWrapOId(mId))
+
+    await this.updateMany({ _id: { $in: messageIds } }, { $addToSet: { deleted_for: userId } })
+  }
 }
 
 export default MessageRepository

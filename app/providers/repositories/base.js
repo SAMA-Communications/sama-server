@@ -198,6 +198,12 @@ export default class BaseRepository {
     await this.collectionCursor.deleteOne({ _id: this.safeWrapOId(_id) })
   }
 
+  async deleteByIds(ids) {
+    ids = ids.map(id => this.safeWrapOId(id))
+
+    await this.deleteMany({ _id: { $in: ids } })
+  }
+
   async deleteMany(query) {
     await this.collectionCursor.deleteMany(query)
   }
