@@ -57,6 +57,24 @@ class MessageRepository extends BaseRepository {
     return result
   }
 
+  async list(conversationId, userId, options, limit) {
+    const query = {
+      cid: this.safeWrapOId(conversationId),
+      deleted_for: { $nin: [this.safeWrapOId(userId)] },
+    }
+
+    if (options.updatedAtFrom) {
+      query.updated_at = this.mergeOperators(query.updated_at, { $gt: options.updatedAtFrom })
+    }
+    if (options.updatedAtBefore) {
+      query.updated_at = this.mergeOperators(query.updated_at, { $lt: options.updatedAtBefore })
+    }
+
+    const messages = await this.findAll(query, null, limit)
+
+    return messages
+  }
+
   async countUnreadMessagesByCids(cids, userId, lastReadMessageByUserForCids) {
     const arrayParams = cids.map((cid) => {
       const query = { cid: this.safeWrapOId(cid), from: { $ne: this.safeWrapOId(userId) } }

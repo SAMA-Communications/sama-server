@@ -38,6 +38,7 @@ import MessageCreateOperationProvider from './operations/message/create/Provider
 import MessageEditOperationProvider from './operations/message/edit/Provider.js'
 import MessageReadOperationProvider from './operations/message/read/Provider.js'
 import MessageDeleteOperationProvider from './operations/message/delete/Provider.js'
+import MessageListOperationProvider from './operations/message/list/Provider.js'
 
 const providers = [
   UserMapperProvider,
@@ -79,7 +80,8 @@ const providers = [
   MessageCreateOperationProvider,
   MessageEditOperationProvider,
   MessageReadOperationProvider,
-  MessageDeleteOperationProvider
+  MessageDeleteOperationProvider,
+  MessageListOperationProvider
 ]
 
 export default providers

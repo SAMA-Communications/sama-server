@@ -19,6 +19,19 @@ class ConversationService {
     return conversation
   }
 
+  async conversationsList(userId, options, limit) {
+    const conversationIds = await this.conversationParticipantRepo.findParticipantConversations(userId, limit)
+
+    const filterOptions = {}
+    if (options.updatedAt?.gt) {
+      filterOptions.updatedAtFrom = new Date(options.updatedAt.gt)
+    }
+
+    const conversations = await this.conversationRepo.list(conversationIds, filterOptions, limit)
+
+    return conversations
+  }
+
   async restorePrivateConversation(conversation, currentParticipantIds) {
     const requiredParticipantIds = [conversation.params.owner_id, conversation.params.opponent_id].map(pId => pId.toString())
 
@@ -131,19 +144,6 @@ class ConversationService {
 
     return result
   }
-
-  async conversationsList(userId, limit, options) {
-    const conversationIds = await this.conversationParticipantRepo.findParticipantConversations(userId, limit)
-
-    const filterOptions = {}
-    if (options.updated_at?.gt) {
-      filterOptions.updatedAtFrom = new Date(options.updated_at.gt)
-    }
-
-    const conversations = await this.conversationRepo.list(conversationIds, limit, filterOptions)
-
-    return conversations
-  } 
 }
 
 export default ConversationService

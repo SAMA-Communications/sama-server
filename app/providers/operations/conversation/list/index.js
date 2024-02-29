@@ -14,12 +14,12 @@ class ConversationListOperation {
   }
 
   async perform(ws, options) {
-    let { limit, updated_at } = options
-    limit = limit > MAIN_CONSTANTS.LIMIT_MAX ? MAIN_CONSTANTS.LIMIT_MAX : limit ?? MAIN_CONSTANTS.LIMIT_MAX
+    const { limit, updated_at } = options
+    const normalizedLimit = this.#normalizeLimitParam(limit)
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
 
-    const conversations = await this.conversationService.conversationsList(currentUserId, limit, { updated_at })
+    const conversations = await this.conversationService.conversationsList(currentUserId, { updatedAt: updated_at }, normalizedLimit)
     
     let mappedConversations = []
 
@@ -37,7 +37,7 @@ class ConversationListOperation {
     const conversationIds = conversations.map(conversation => conversation._id)
 
     const lastMessagesListByCid = await this.messagesService.aggregateLastMessageForConversation(conversationIds, userId)
-    const countOfUnreadMessagesByCid = await this.messagesService.aggregateCountOfUnredMessagesByCid(conversationIds, userId)
+    const countOfUnreadMessagesByCid = await this.messagesService.aggregateCountOfUnreadMessagesByCid(conversationIds, userId)
 
     for (const conversation of conversations) {
       const conversationId = conversation._id.toString()
@@ -46,6 +46,14 @@ class ConversationListOperation {
     }
 
     return conversations
+  }
+
+  #normalizeLimitParam(limit) {
+    if (limit > MAIN_CONSTANTS.LIMIT_MAX) {
+      return MAIN_CONSTANTS.LIMIT_MAX
+    }
+
+    return limit || MAIN_CONSTANTS.LIMIT_MAX
   }
 }
 

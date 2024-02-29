@@ -32,13 +32,13 @@ class ConversationRepository extends BaseRepository {
     return conversation
   }
 
-  async list(conversationIds, limit, options) {
+  async list(conversationIds, options, limit) {
     const query = {
       _id: { $in: conversationIds }
     }
 
     if (options.updatedAtFrom) {
-      query.updated_at = { $gt: options.updatedAtFrom }
+      query.updated_at = this.mergeOperators(query.updated_at, { $gt: options.updatedAtFrom })
     }
 
     const conversations = await this.findAll(query, null, limit)

@@ -20,7 +20,7 @@ class MessageReadOperation {
 
     const unreadMessagesGroupedByFrom = groupBy(unreadMessages.map(msg => msg.params), 'from')
 
-    return unreadMessagesGroupedByFrom
+    return { unreadMessagesGroupedByFrom, currentUserId } 
   }
 }
 

@@ -18,6 +18,24 @@ class MessageService {
 
     return message
   }
+  
+  async messagesList(cId, userId, options, limit) {
+    const filterOptions = {}
+    if (options.updatedAt?.gt) {
+      filterOptions.updatedAtFrom = new Date(options.updatedAt.gt)
+    }
+    if (options.updatedAt?.lt) {
+      filterOptions.updatedAtBefore = new Date(options.updatedAt.lt)
+    }
+
+    const messages = await this.messageRepo.list(cId, userId, filterOptions, limit)
+
+    const messageIds = messages.map(message => message.params._id)
+
+    const messagesStatuses = await this.messageStatusRepo.findReadStatusForMids(messageIds)
+
+    return { messages ,messagesStatuses }
+  }
 
   async hasAccessToMessage(messageId, userId) {
     const result = { message: null, asOwner: false }
@@ -74,7 +92,7 @@ class MessageService {
     return aggregateLastMessage
   }
 
-  async aggregateCountOfUnredMessagesByCid(cids, userId) {
+  async aggregateCountOfUnreadMessagesByCid(cids, userId) {
     const lastReadMessageByUserForCids = await this.messageStatusRepo.findLastReadMessageByUserForCid(cids, userId)
 
     const unreadMessageCountByCids = await this.messageRepo.countUnreadMessagesByCids(cids, userId, lastReadMessageByUserForCids)

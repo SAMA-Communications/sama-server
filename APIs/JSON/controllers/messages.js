@@ -1,22 +1,6 @@
 import BaseJSONController from './base.js'
 
-import validate, {
-  validateIsConversation,
-  validateIsConversationByCID,
-  validateIsUserHasPermission,
-} from '@sama/lib/validation.js'
-
-import { CONSTANTS as MAIN_CONSTANTS } from '@sama/constants/constants.js'
-
 import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
-
-import Message from '@sama/models/message.js'
-import MessageStatus from '@sama/models/message_status.js'
-
-import conversationParticipantsRepository from '@sama/repositories/conversation_participants_repository.js'
-import sessionRepository from '@sama/repositories/session_repository.js'
-
-import { ObjectId } from '@sama/lib/db.js'
 
 import DeliverMessage from '@sama/networking/models/DeliverMessage.js'
 import Response from '@sama/networking/models/Response.js'
@@ -53,54 +37,15 @@ class MessagesController extends BaseJSONController {
   }
 
   async list(ws, data) {
-    const {
-      id: requestId,
-      message_list: { cid, limit, updated_at },
-    } = data
+    const { id: requestId, message_list: messagesListParams } = data
 
-    const currentUserId = sessionRepository.getSessionUserId(ws)
-
-    await validate(ws, { id: cid, cid, uId: currentUserId }, [
-      validateIsConversation,
-      validateIsUserHasPermission,
-    ])
-
-    const limitParam =
-      limit > MAIN_CONSTANTS.LIMIT_MAX
-        ? MAIN_CONSTANTS.LIMIT_MAX
-        : limit || MAIN_CONSTANTS.LIMIT_MAX
-
-    const query = {
-      cid,
-      deleted_for: { $nin: [currentUserId] },
-    }
-    const timeFromUpdate = updated_at
-    if (timeFromUpdate) {
-      timeFromUpdate.gt &&
-        (query.updated_at = { $gt: new Date(timeFromUpdate.gt) })
-      timeFromUpdate.lt &&
-        (query.updated_at = { $lt: new Date(timeFromUpdate.lt) })
-    }
-
-    const messages = await Message.findAll(
-      query,
-      Message.visibleFields,
-      limitParam
-    )
-
-    const messagesStatus = await MessageStatus.getReadStatusForMids(
-      messages.map((msg) => msg._id)
-    )
+    const messageListOperation = ServiceLocatorContainer.use('MessageListOperation')
+    const messages = await messageListOperation.perform(ws, messagesListParams)
 
     return new Response().addBackMessage({
       response: {
         id: requestId,
-        messages: messages.map((msg) => {
-          if (msg.from.toString() === currentUserId) {
-            msg['status'] = messagesStatus[msg._id]?.length ? 'read' : 'sent'
-          }
-          return msg
-        }),
+        messages: messages,
       },
     })
   }
@@ -109,19 +54,19 @@ class MessagesController extends BaseJSONController {
     const { id: requestId, message_read: messagesReadOptions } = data
 
     const messageReadOperation = ServiceLocatorContainer.use('MessageReadOperation')
-    const unreadMessagesGroupedByFrom = await messageReadOperation.perform(ws, messagesReadOptions)
+    const { unreadMessagesGroupedByFrom, currentUserId }  = await messageReadOperation.perform(ws, messagesReadOptions)
 
     const response = new Response()
 
     for (const uId in unreadMessagesGroupedByFrom) {
       const firstMessage = unreadMessagesGroupedByFrom[uId].at(0)
-      const cid = firstMessage.cid
-      const mids = unreadMessagesGroupedByFrom[uId].map(message => message._id)
+      const cId = firstMessage.cid
+      const mIds = unreadMessagesGroupedByFrom[uId].map(message => message._id)
       const message = {
         message_read: {
-          cid: cid,
-          ids: mids,
-          from: uId,
+          cid: cId,
+          ids: mIds,
+          from: currentUserId,
         },
       }
 
@@ -137,10 +82,7 @@ class MessagesController extends BaseJSONController {
   }
 
   async delete(ws, data) {
-    const {
-      id: requestId,
-      message_delete: messageDeleteParams,
-    } = data
+    const { id: requestId, message_delete: messageDeleteParams } = data
 
     const messageDeleteOperation = ServiceLocatorContainer.use('MessageDeleteOperation')
     const { isDeleteAll, participantIds, info: { userId, cId, mIds } } = await messageDeleteOperation.perform(ws, messageDeleteParams)

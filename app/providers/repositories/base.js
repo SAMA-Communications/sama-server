@@ -211,4 +211,8 @@ export default class BaseRepository {
   wrapRawRecordInModel(rawRecord) {
     return new this.Model(rawRecord)
   }
+
+  mergeOperators(existedOperators = {}, operatorsToAdd) {
+    return Object.assign(existedOperators, operatorsToAdd)
+  }
 }

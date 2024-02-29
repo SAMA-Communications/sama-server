@@ -62,28 +62,6 @@ class MessageStatusRepository extends BaseRepository {
 
     return result
   }
-
-  async getReadStatusForMids(mids) {
-    mids = mids.map(mid => this.safeWrapOId(mid))
-
-    const $match = {
-      mid: { $in: mids },
-    }
-    const $group = {
-      _id: '$mid',
-      users: { $push: '$user_id' },
-    }
-
-    const aggregatedResult = await this.aggregate([{ $match }, { $group }])
-
-    const result = {}
-
-    aggregatedResult.forEach((obj) => {
-      result[obj._id] = [...new Set(obj.users)]
-    })
-
-    return result
-  }
 }
 
 export default MessageStatusRepository
