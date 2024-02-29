@@ -26,7 +26,6 @@ import { connectToDBPromise, getDb } from './app/lib/db.js'
 import RedisClient from './app/lib/redis.js'
 
 import blockListRepository from './app/repositories/blocklist_repository.js'
-import conversationRepository from './app/repositories/conversation_repository.js'
 
 import { APIs } from './app/networking/APIs.js'
 
@@ -108,7 +107,6 @@ await RedisClient.connect()
 await clusterSyncer.startSyncingClusterNodes()
 
 await blockListRepository.warmCache()
-await conversationRepository.warmCache()
 
 // Register providers
 ServiceLocatorContainer.register(

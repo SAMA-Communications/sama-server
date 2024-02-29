@@ -1,13 +1,10 @@
-import Conversation from './../app/models/conversation.js'
-import ConversationParticipant from './../app/models/conversation_participant.js'
-import Message from './../app/models/message.js'
-import MessageStatus from './../app/models/message_status.js'
-import sessionRepository from './../app/repositories/session_repository.js'
-import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
-import assert from 'assert'
-import clusterManager from './../app/cluster/cluster_manager.js'
 import ip from 'ip'
 import uWS from 'uWebSockets.js'
+import assert from 'assert'
+
+import sessionRepository from './../app/repositories/session_repository.js'
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
+import clusterManager from './../app/cluster/cluster_manager.js'
 import {
   createConversation,
   createUserArray,
@@ -17,6 +14,12 @@ import {
 import { ACTIVE } from './../app/store/session.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
 import packetManager from './../app/networking/packet_manager.js'
+
+const userRepo = ServiceLocatorContainer.use('UserRepository')
+const conversationRepo = ServiceLocatorContainer.use('ConversationRepository')
+const conversationParticipantRepo = ServiceLocatorContainer.use('ConversationParticipantRepository')
+const messageRepo = ServiceLocatorContainer.use('MessageRepository')
+const messageStatusRepo = ServiceLocatorContainer.use('MessageStatusRepository')
 
 let currentConversationId = ''
 let usersIds = []
@@ -104,12 +107,12 @@ describe('Cluster Message function', async () => {
   })
 
   after(async () => {
-    const userRepo = ServiceLocatorContainer.use('UserRepository')
     await userRepo.deleteMany({})
-    await Message.clearCollection()
-    await MessageStatus.clearCollection()
-    await Conversation.clearCollection()
-    await ConversationParticipant.clearCollection()
+    await messageRepo.deleteMany({})
+    await messageStatusRepo.deleteMany({})
+    await conversationRepo.deleteMany({})
+    await conversationParticipantRepo.deleteMany({})
+
     usersIds = []
   })
 })

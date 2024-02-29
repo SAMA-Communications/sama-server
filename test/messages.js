@@ -1,7 +1,7 @@
-import Conversation from './../app/models/conversation.js'
-import ConversationParticipant from './../app/models/conversation_participant.js'
-import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
 import assert from 'assert'
+
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
+
 import { ObjectId } from '../app/lib/db.js'
 import {
   createConversation,
@@ -10,9 +10,12 @@ import {
   sendLogin,
   sendLogout,
 } from './utils.js'
+
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
 
 const userRepo = ServiceLocatorContainer.use('UserRepository')
+const conversationRepo = ServiceLocatorContainer.use('ConversationRepository')
+const conversationParticipantRepo = ServiceLocatorContainer.use('ConversationParticipantRepository')
 const messageRepo = ServiceLocatorContainer.use('MessageRepository')
 const messageStatusRepo = ServiceLocatorContainer.use('MessageStatusRepository')
 const messageService = ServiceLocatorContainer.use('MessageService')
@@ -701,9 +704,8 @@ describe('Message function', async () => {
     after(async () => {
       await userRepo.deleteMany({})
       await messageRepo.deleteMany({})
-
-      await Conversation.clearCollection()
-      await ConversationParticipant.clearCollection()
+      await conversationRepo.deleteMany({})
+      await conversationParticipantRepo.deleteMany({})
 
       usersIds = []
     })
@@ -892,9 +894,8 @@ describe('Message function', async () => {
     await userRepo.deleteMany({})
     await messageRepo.deleteMany({})
     await messageStatusRepo.deleteMany({})
-
-    await Conversation.clearCollection()
-    await ConversationParticipant.clearCollection()
+    await conversationRepo.deleteMany({})
+    await conversationParticipantRepo.deleteMany({})
 
     usersIds = []
   })

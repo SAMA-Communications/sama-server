@@ -1,6 +1,5 @@
 import RegisterProvider from '../../../../common/RegisterProvider.js'
 import ConversationListOperation from './index.js'
-import Message from '../../../../models/message.js'
 
 const name = 'ConversationListOperation'
 

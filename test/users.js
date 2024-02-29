@@ -1,7 +1,12 @@
-import './utils.js'
-import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
 import assert from 'assert'
+
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
+
+import './utils.js'
+
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
+
+const userRepo = ServiceLocatorContainer.use('UserRepository')
 
 let userLogin = [...Array(30)]
   .map(() => Math.random().toString(36)[2])
@@ -9,7 +14,6 @@ let userLogin = [...Array(30)]
 
 describe('User cycle', async () => {
   before(async () => {
-    const userRepo = ServiceLocatorContainer.use('UserRepository')
     await userRepo.deleteMany({})
   })
 
@@ -656,7 +660,6 @@ describe('User cycle', async () => {
   })
 
   after(async () => {
-    const userRepo = ServiceLocatorContainer.use('UserRepository')
     await userRepo.deleteMany({})
   })
 })

@@ -1,8 +1,12 @@
-import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
-import Contact from './../app/models/contact.js'
 import assert from 'assert'
+
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
+
+import Contact from './../app/models/contact.js'
 import { createUserArray, mockedWS, sendLogin, sendLogout } from './utils.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
+
+const userRepo = ServiceLocatorContainer.use('UserRepository')
 
 let usersIds = []
 let contactIdToUpdate = ''
@@ -937,9 +941,9 @@ describe('Contacts functions', async () => {
   })
 
   after(async () => {
-    const userRepo = ServiceLocatorContainer.use('UserRepository')
     await userRepo.deleteMany({})
     await Contact.clearCollection()
+
     usersIds = []
   })
 })
