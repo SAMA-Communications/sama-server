@@ -26,7 +26,7 @@ class MessagesController extends BaseJSONController {
 
     return new Response()
       .addBackMessage({ response: { id: requestId, success: true } })
-      .addDeliverMessage(new DeliverMessage( participantIds, {
+      .addDeliverMessage(new DeliverMessage(participantIds, {
           message_edit: {
             id: messageId,
             body: body,

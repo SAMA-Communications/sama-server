@@ -36,10 +36,10 @@ class MessageCreateOperation {
 
     const message = await this.messageService.create(currentUserId, blockedUserIds, createMessageParams)
 
-    if (conversation.type === 'u') {
+    if (conversation.params.type === 'u') {
       const missedParticipantIds = await this.conversationService.restorePrivateConversation(conversation, participantIds)
-      await this.#restorePrivateConversationNotification(conversation, messageId, missedParticipantIds, deliverMessages)
       participantIds.push(...missedParticipantIds)
+      await this.#restorePrivateConversationNotification(conversation, messageId, missedParticipantIds, deliverMessages)
     }
 
     await this.#createMessageNotification(conversation, message, messageId, participantIds, deliverMessages)

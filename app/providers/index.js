@@ -1,3 +1,5 @@
+import HelpersProvider from './utils/helpers/Provider.js'
+
 import UserMapperProvider from './utils/mappers/user/Provider.js'
 import ConversationMapperProvider from './utils/mappers/conversation/Provider.js'
 import MessageMapperProvider from './utils/mappers/message/Provider.js'
@@ -16,6 +18,7 @@ import StorageServiceProvider from './services/storage/Provider.js'
 import ActivityManagerServiceProvider from './services/activity_manager/Provider.js'
 import ConversationServiceProvider from './services/conversation/Provider.js'
 import MessageServiceProvider from './services/message/Provider.js'
+import ConversationNotificationProvider from './services/conversation_notification/Provider.js'
 
 import UserAuthOperationProvider from './operations/user/auth/Provider.js'
 import UserLogoutOperationProvider from './operations/user/logout/Provider.js'
@@ -43,6 +46,8 @@ import MessageListOperationProvider from './operations/message/list/Provider.js'
 import StatusTypingOperationProvider from './operations/status/typing/Provider.js'
 
 const providers = [
+  HelpersProvider,
+
   UserMapperProvider,
   ConversationMapperProvider,
   MessageMapperProvider,
@@ -61,6 +66,7 @@ const providers = [
   ActivityManagerServiceProvider,
   ConversationServiceProvider,
   MessageServiceProvider,
+  ConversationNotificationProvider,
 
   UserAuthOperationProvider,
   UserLogoutOperationProvider,

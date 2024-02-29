@@ -1,35 +1,48 @@
 import { ERROR_STATUES } from '../../../../constants/errors.js'
+import { CONVERSATION_EVENTS } from '../../../../constants/conversation.js'
 
 class ConversationCreateOperation {
   constructor(
     sessionService,
     userService,
     conversationService,
-    conversationMapper
+    conversationNotificationService,
+    conversationMapper,
+    userMapper
   ) {
     this.sessionService = sessionService
     this.userService = userService
     this.conversationService = conversationService
+    this.conversationNotificationService = conversationNotificationService
     this.conversationMapper = conversationMapper
+    this.userMapper = userMapper
   }
 
   async perform(ws, conversationParams) {
     const currentUserId = this.sessionService.getSessionUserId(ws)
 
-    const participantIds = await this.userService.userRepo.retrieveExistedIds(conversationParams.participants)
+    const paramsParticipantIds = await this.userService.userRepo.retrieveExistedIds(conversationParams.participants)
     delete conversationParams.participants
     conversationParams.owner_id = currentUserId
 
     let conversation = null
+    let normalizedParticipants = null
+
     if (conversationParams.type === 'u') {
-      conversation = await this.#createPrivateConversation(conversationParams, participantIds)
+      const { conversation: createdConversation, participantIds } = await this.#createPrivateConversation(conversationParams, paramsParticipantIds)
+      conversation = createdConversation
+      normalizedParticipants = participantIds
     } else {
-      conversation = await this.#createGroupConversation(conversationParams, participantIds)
+      const { conversation: createdConversation, participantIds } = await this.#createGroupConversation(conversationParams, paramsParticipantIds)
+      conversation = createdConversation
+      normalizedParticipants = participantIds
     }
 
-    const conversationCreatedMessageNotification = await this.#conversationCreatedNotification()
+    const mappedConversation = await this.conversationMapper(conversation)
+
+    const conversationEvent = await this.#createActionEvent(mappedConversation, currentUserId)
   
-    return { conversation: await this.conversationMapper(conversation), conversationCreatedMessageNotification }
+    return { conversation: mappedConversation, participantIds: normalizedParticipants, conversationEvent }
   }
 
   async #createPrivateConversation(conversationParams, participantIds) {
@@ -39,18 +52,20 @@ class ConversationCreateOperation {
       participantIds
     )
 
+    let normalizedParticipants = participantIds
     let existedConversation = await this.conversationService.findExistedPrivateConversation(
       conversationParams.owner_id,
       conversationParams.opponent_id
     )
 
     if (existedConversation) {
-      await this.conversationService.restorePrivateConversation(existedConversation)
+      normalizedParticipants = await this.conversationService.restorePrivateConversation(existedConversation)
     } else {
       existedConversation = await this.#createNewPrivateConversation(conversationParams)
+      normalizedParticipants = [conversationParams.owner_id, conversationParams.opponent_id]
     }
 
-    return existedConversation
+    return { conversation: existedConversation, participantIds }
   }
 
   async #validatePrivateConversationParticipant(ownerId, paramsOpponentId, participantIds) {
@@ -99,11 +114,19 @@ class ConversationCreateOperation {
 
     const createdConversation = await this.conversationService.create(conversationParams, participantIds)
 
-    return createdConversation
+    return { conversation: createdConversation, participantIds }
   }
 
-  async #conversationCreatedNotification() {
-    return null
+  async #createActionEvent(conversation, currentUserId) {
+    const user = await this.userService.userRepo.findById(currentUserId)
+
+    const conversationCreatedMessageNotification = await this.conversationNotificationService.actionEvent(
+      CONVERSATION_EVENTS.CONVERSATION_EVENT.CREATE,
+      conversation,
+      await this.userMapper(user)
+    )
+
+    return conversationCreatedMessageNotification
   }
 }
 

@@ -10,14 +10,16 @@ class ConversationsController extends BaseJSONController {
     const { id: requestId, conversation_create: conversationParams } = data
 
     const conversationCreateOperation = ServiceLocatorContainer.use('ConversationCreateOperation')
-    const { conversation, conversationCreatedMessageNotification } = await conversationCreateOperation.perform(ws, conversationParams)
+    const { conversation, participantIds, conversationEvent } = await conversationCreateOperation.perform(ws, conversationParams)
+
+    const deliverMessage = new DeliverMessage(participantIds, conversationEvent.message).addPushQueueMessage(conversationEvent.notification)
 
     return new Response().addBackMessage({
       response: {
         id: requestId,
         conversation: conversation.visibleParams(),
       },
-    }).addDeliverMessage(conversationCreatedMessageNotification)
+    }).addDeliverMessage(deliverMessage)
   }
 
   async update(ws, data) {
