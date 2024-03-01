@@ -1,37 +1,52 @@
 import { ERROR_STATUES } from '../../../../constants/errors.js'
+import { CONVERSATION_EVENTS } from '../../../../constants/conversation.js'
 
 class ConversationEditOperation {
   constructor(
     sessionService,
     userService,
     conversationService,
-    conversationMapper
+    conversationNotificationService,
+    conversationMapper,
+    userMapper
   ) {
     this.sessionService = sessionService
     this.userService = userService
     this.conversationService = conversationService
+    this.conversationNotificationService = conversationNotificationService
     this.conversationMapper = conversationMapper
+    this.userMapper = userMapper
   }
 
   async perform(ws, conversationParams) {
     const conversationId = conversationParams.id
     delete conversationParams.id
+
+    let conversationEvents = []
     
     const currentUserId = this.sessionService.getSessionUserId(ws)
     
     const { conversation, participantIds: currentParticipantIds } = await this.#hasAccess(conversationId, currentUserId)
 
     if (conversationParams.participants) {
-      const isEmptyAndDeleted = await this.#updateParticipants(conversation, conversationParams.participants, currentParticipantIds)
+      const { isEmptyAndDeleted, addedIds, removedIds, currentIds }  = await this.#updateParticipants(
+        conversation,
+        conversationParams.participants,
+        currentParticipantIds
+      )
+
       if (isEmptyAndDeleted) {
         return null
       }
+
+      const createdEvents = await this.#createActionEvents(conversation, currentUserId, addedIds, removedIds, currentIds)
+      conversationEvents = createdEvents
     }
     delete conversationParams.participants
 
     const updatedConversation = await this.conversationService.conversationRepo.update(conversationId, conversationParams)
 
-    return await this.conversationMapper(updatedConversation)
+    return { conversation: await this.conversationMapper(updatedConversation), conversationEvents }
   }
 
   async #hasAccess(conversationId, userId) {
@@ -65,9 +80,77 @@ class ConversationEditOperation {
     addUsers ??= []
     removeUsers ??= []
 
-    const { isEmptyAndDeleted } = await this.conversationService.updateParticipants(conversation, addUsers, removeUsers, currentParticipantIds)
+    const result = await this.conversationService.updateParticipants(conversation, addUsers, removeUsers, currentParticipantIds)
 
-    return isEmptyAndDeleted
+    return result
+  }
+
+  async #createActionEvents(conversation, currentUserId, addedParticipantIds, removedParticipantIds, currentParticipantIds) {
+    const currentUser = await this.userService.userRepo.findById(currentUserId)
+
+    const mappedConversation = await this.conversationMapper(conversation)
+    const mappedCurrentUser = await this.userMapper(currentUser)
+
+    const conversationEvent = []
+
+    if (addedParticipantIds.length) {
+      for (const addedParticipantId of addedParticipantIds) {
+        const addParticipantEvent = await this.#participantsActionEvent(mappedConversation, mappedCurrentUser, addedParticipantId, false)
+  
+        addParticipantEvent.participantIds = currentParticipantIds
+  
+        conversationEvent.push(addParticipantEvent)
+      }
+
+      const updateEvent = await this.#actionEvent(mappedConversation, mappedCurrentUser, false)
+      updateEvent.participantIds = addedParticipantIds
+  
+      conversationEvent.push(updateEvent)
+    }
+
+    if (removedParticipantIds.length) {
+      for (const removedParticipantId of removedParticipantIds) {
+        const removedParticipantEvent = await this.#participantsActionEvent(mappedConversation, mappedCurrentUser, removedParticipantId, true)
+  
+        removedParticipantEvent.participantIds = currentParticipantIds
+  
+        conversationEvent.push(removedParticipantEvent)
+      }
+
+      const deleteEvent = await this.#actionEvent(mappedConversation, mappedCurrentUser, true)
+      deleteEvent.participantIds = removedParticipantIds
+
+      conversationEvent.push(deleteEvent)
+    }
+
+    return conversationEvent
+  }
+
+  async #actionEvent(conversation, currentUser, isDelete) {
+    const eventType = isDelete ? CONVERSATION_EVENTS.CONVERSATION_EVENT.DELETE : CONVERSATION_EVENTS.CONVERSATION_EVENT.UPDATE
+
+    const actionMessageNotification = await this.conversationNotificationService.actionEvent(
+      eventType,
+      conversation,
+      currentUser
+    )
+
+    return actionMessageNotification
+  }
+
+  async #participantsActionEvent(conversation, currentUser, actionedUserId, isRemove) {
+    const eventType = isRemove ? CONVERSATION_EVENTS.CONVERSATION_PARTICIPANT_EVENT.REMOVED : CONVERSATION_EVENTS.CONVERSATION_PARTICIPANT_EVENT.ADDED
+
+    const actionedUser = await this.userService.userRepo.findById(actionedUserId)
+
+    const actionMessageNotification = await this.conversationNotificationService.participantActionEvent(
+      eventType,
+      conversation,
+      currentUser,
+      await this.userMapper(actionedUser)
+    )
+
+    return actionMessageNotification
   }
 }
 

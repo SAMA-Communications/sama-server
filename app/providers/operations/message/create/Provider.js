@@ -10,6 +10,7 @@ class MessageCreateOperationRegisterProvider extends RegisterProvider {
     const storageService = slc.use('StorageDriverClient')
     const userService = slc.use('UserService')
     const conversationService = slc.use('ConversationService')
+    const conversationNotificationService = slc.use('ConversationNotificationService')
     const messageService = slc.use('MessageService')
     const conversationMapper = slc.use('ConversationMapper')
     const messageMapper = slc.use('MessageMapper')
@@ -20,6 +21,7 @@ class MessageCreateOperationRegisterProvider extends RegisterProvider {
       blockListRepository,
       userService,
       conversationService,
+      conversationNotificationService,
       messageService,
       conversationMapper,
       messageMapper

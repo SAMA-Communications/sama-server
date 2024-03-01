@@ -41,8 +41,9 @@ class ConversationCreateOperation {
     const mappedConversation = await this.conversationMapper(conversation)
 
     const conversationEvent = await this.#createActionEvent(mappedConversation, currentUserId)
+    conversationEvent.participantIds = normalizedParticipants
   
-    return { conversation: mappedConversation, participantIds: normalizedParticipants, conversationEvent }
+    return { conversation: mappedConversation, event: conversationEvent }
   }
 
   async #createPrivateConversation(conversationParams, participantIds) {
@@ -120,13 +121,13 @@ class ConversationCreateOperation {
   async #createActionEvent(conversation, currentUserId) {
     const user = await this.userService.userRepo.findById(currentUserId)
 
-    const conversationCreatedMessageNotification = await this.conversationNotificationService.actionEvent(
+    const actionMessageNotification = await this.conversationNotificationService.actionEvent(
       CONVERSATION_EVENTS.CONVERSATION_EVENT.CREATE,
       conversation,
       await this.userMapper(user)
     )
 
-    return conversationCreatedMessageNotification
+    return actionMessageNotification
   }
 }
 

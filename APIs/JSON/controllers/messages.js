@@ -10,10 +10,18 @@ class MessagesController extends BaseJSONController {
   async create(ws, data) {
     const { message: messageParams } = data
 
-    const messageCreateOperation = ServiceLocatorContainer.use('MessageCreateOperation')
-    const { messageId, message, deliverMessages } = await messageCreateOperation.perform(ws, messageParams)
+    const response = new Response()
 
-    return new Response().addBackMessage({
+    const messageCreateOperation = ServiceLocatorContainer.use('MessageCreateOperation')
+    const { messageId, message, deliverMessages, participantIds } = await messageCreateOperation.perform(ws, messageParams)
+
+    deliverMessages.forEach(event => {
+      console.log(event)
+      const deliverMessage = new DeliverMessage(event.participantIds || participantIds, event.message).addPushQueueMessage(event.notification)
+      response.addDeliverMessage(deliverMessage)
+    })
+
+    return response.addBackMessage({
       ask: { mid: messageId, server_mid: message.params._id, t: message.params.t },
     }).addDeliverMessage(...deliverMessages)
   }

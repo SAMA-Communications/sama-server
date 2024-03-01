@@ -1,7 +1,7 @@
 import { ERROR_STATUES } from '../../../../constants/errors.js'
-
+import { CONVERSATION_EVENTS } from '../../../../constants/conversation.js'
 import CreateChatAlertEventOptions from '@sama/lib/push_queue/models/CreateChatAlertEventOptions.js'
-import DeliverMessage from '@sama/networking/models/DeliverMessage.js'
+
 
 class MessageCreateOperation {
   constructor(
@@ -10,6 +10,7 @@ class MessageCreateOperation {
     blockListRepo,
     userService,
     conversationService,
+    conversationNotificationService,
     messageService,
     conversationMapper,
     messageMapper
@@ -19,16 +20,17 @@ class MessageCreateOperation {
     this.blockListRepo = blockListRepo
     this.userService = userService
     this.conversationService = conversationService
+    this.conversationNotificationService = conversationNotificationService
     this.messageService = messageService
     this.conversationMapper = conversationMapper
     this.messageMapper = messageMapper
   }
 
   async perform(ws, createMessageParams) {
+    const deliverMessages = []
+
     const messageId = createMessageParams.id
     delete createMessageParams.id
-
-    const deliverMessages = []
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
 
@@ -38,15 +40,21 @@ class MessageCreateOperation {
 
     if (conversation.params.type === 'u') {
       const missedParticipantIds = await this.conversationService.restorePrivateConversation(conversation, participantIds)
-      participantIds.push(...missedParticipantIds)
-      await this.#restorePrivateConversationNotification(conversation, messageId, missedParticipantIds, deliverMessages)
+      if (missedParticipantIds.length) {
+        participantIds.push(...missedParticipantIds)
+
+        const restoreConversationEvent = await this.#restorePrivateConversationNotification(conversation, currentUserId)
+        restoreConversationEvent.participantIds = missedParticipantIds
+        deliverMessages.push(restoreConversationEvent)
+      }
     }
 
-    await this.#createMessageNotification(conversation, message, messageId, participantIds, deliverMessages)
+    const deliverCreatedMessage = await this.#createMessageNotification(conversation, message)
+    deliverMessages.push(deliverCreatedMessage)
     
     await this.conversationService.conversationRepo.updateLastActivity(conversation.params._id, message.params.created_at)
 
-    return { messageId, message: await this.messageMapper(message), deliverMessages }
+    return { messageId, message: await this.messageMapper(message), deliverMessages, participantIds }
   }
 
   async #hashAccess(conversationId, currentUserId) {
@@ -96,44 +104,42 @@ class MessageCreateOperation {
     return userIdsWhoBlockedCurrentUser
   }
 
-  async #createMessageNotification(conversation, message, messageId, participantIds, deliverMessages) {
+  async #createMessageNotification(conversation, message) {
     const user = await this.userService.userRepo.findById(message.params.from)
     const userLogin = user.params.login
 
-    const firstAttachmentUrl = !message.params.attachments?.length
-      ? null
-      : await this.storageService.getDownloadUrl(
-        message.params.attachments[0].file_id
-        )
+    const firstAttachmentUrl = !message.params.attachments?.length ? null : await this.storageService.getDownloadUrl(message.params.attachments[0].file_id)
 
     const pushPayload = Object.assign({
-      title:
-        conversation.params.type === 'u'
-          ? userLogin
-          : `${userLogin} | ${conversation.params.name}`,
+      title: conversation.params.type === 'u' ? userLogin : `${userLogin} | ${conversation.params.name}`,
       body: message.params.body,
       firstAttachmentUrl,
       cid: message.params.cid,
     })
-
-    const createdMessage = { message: message.visibleParams() }
     
     const createChatAlertEventOptions = new CreateChatAlertEventOptions({
       conversationId: conversation.params._id,
-      messageId: messageId,
+      messageId: message.params._id,
       senderID: message.params.from,
     }, pushPayload)
 
-    deliverMessages.push(new DeliverMessage(participantIds, createdMessage).addPushQueueMessage(createChatAlertEventOptions))
+    const createdMessage = { message: message.visibleParams() }
+
+    const createMessageEvent = { message: createdMessage, notification: createChatAlertEventOptions }
+
+    return createMessageEvent
   }
 
-  async #restorePrivateConversationNotification(conversation, messageId, participantIds, deliverMessages) {
-    const eventMessage = {
-      event: { conversation_created: conversation },
-      id: messageId,
-    }
+  async #restorePrivateConversationNotification(conversation, currentUserId) {
+    const user = await this.userService.userRepo.findById(currentUserId)
+  
+    const event = await this.conversationNotificationService.actionEvent(
+      CONVERSATION_EVENTS.CONVERSATION_EVENT.CREATE,
+      conversation,
+      await this.userMapper(user)
+    )
 
-    deliverMessages.push(new DeliverMessage(participantIds, eventMessage))
+    return event
   }
 }
 

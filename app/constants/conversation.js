@@ -18,6 +18,10 @@ export const CONVERSATION_EVENTS = {
       event_request_name: 'conversation_kicked',
     },
   },
+  CONVERSATION_PARTICIPANT_EVENT: {
+    ADDED: 'added_participant',
+    REMOVED: 'removed_participant',
+  },
   ACTION_PARTICIPANT_MESSAGE: {
     added_participant: 'has been added to the group',
     removed_participant: 'has been removed from the group',

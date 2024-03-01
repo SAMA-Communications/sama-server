@@ -10,9 +10,9 @@ class ConversationsController extends BaseJSONController {
     const { id: requestId, conversation_create: conversationParams } = data
 
     const conversationCreateOperation = ServiceLocatorContainer.use('ConversationCreateOperation')
-    const { conversation, participantIds, conversationEvent } = await conversationCreateOperation.perform(ws, conversationParams)
+    const { conversation, event } = await conversationCreateOperation.perform(ws, conversationParams)
 
-    const deliverMessage = new DeliverMessage(participantIds, conversationEvent.message).addPushQueueMessage(conversationEvent.notification)
+    const deliverMessage = new DeliverMessage(event.participantIds, event.message).addPushQueueMessage(event.notification)
 
     return new Response().addBackMessage({
       response: {
@@ -28,9 +28,9 @@ class ConversationsController extends BaseJSONController {
     const response = new Response()
   
     const conversationEditOperation = ServiceLocatorContainer.use('ConversationEditOperation')
-    const updatedConversation = await conversationEditOperation.perform(ws, conversationParams)
+    const updatedConversationResult = await conversationEditOperation.perform(ws, conversationParams)
 
-    if (!updatedConversation) {
+    if (!updatedConversationResult) {
       return response.addBackMessage({
         response: {
           id: requestId,
@@ -39,10 +39,17 @@ class ConversationsController extends BaseJSONController {
       })
     }
 
+    const { conversation, conversationEvents } = updatedConversationResult
+
+    conversationEvents.forEach(event => {
+      const deliverMessage = new DeliverMessage(event.participantIds, event.message).addPushQueueMessage(event.notification)
+      response.addDeliverMessage(deliverMessage)
+    })
+
     return response.addBackMessage({
       response: {
         id: requestId,
-        conversation: updatedConversation.visibleParams(),
+        conversation: conversation.visibleParams(),
       },
     })
   }

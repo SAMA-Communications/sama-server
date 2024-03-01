@@ -80,13 +80,17 @@ class ConversationService {
       currentParticipantIds = await this.findConversationParticipants(conversation.params._id)
     }
 
-    const addedParticipantIds = await this.addParticipants(conversation, addParticipants, currentParticipantIds)
+    const addedIds = await this.addParticipants(conversation, addParticipants, currentParticipantIds)
 
-    currentParticipantIds.concat(addedParticipantIds)
+    currentParticipantIds.concat(addedIds)
 
     const removeResult = await this.removeParticipants(conversation, removeParticipants, currentParticipantIds)
 
-    return { addedParticipantIds, ...removeResult }
+    if (!removeResult.isEmptyAndDeleted && removeResult.removedIds?.length) {
+      currentParticipantIds = currentParticipantIds.filter(currentPId => !removeResult.removedIds.find(removedId => removedId.toString() === currentPId.toString()))
+    }
+
+    return { addedIds, ...removeResult, currentIds: currentParticipantIds }
   }
 
   async addParticipants(conversation, participantIds, currentParticipantIds) {
