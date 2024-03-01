@@ -106,7 +106,7 @@ class MessageCreateOperation {
 
   async #createMessageNotification(conversation, message) {
     const user = await this.userService.userRepo.findById(message.params.from)
-    const userLogin = user.params.login
+    const userLogin = user.login
 
     const firstAttachmentUrl = !message.params.attachments?.length ? null : await this.storageService.getDownloadUrl(message.params.attachments[0].file_id)
 
@@ -136,7 +136,7 @@ class MessageCreateOperation {
     const event = await this.conversationNotificationService.actionEvent(
       CONVERSATION_EVENTS.CONVERSATION_EVENT.CREATE,
       conversation,
-      await this.userMapper(user)
+      user
     )
 
     return event

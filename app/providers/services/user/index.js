@@ -47,7 +47,7 @@ class UserService {
 
     updateFieldsParams['updated_at'] = new Date()
 
-    const updatedUser = await this.userRepo.update(user.params._id, updateFieldsParams)
+    const updatedUser = await this.userRepo.update(user._id, updateFieldsParams)
 
     if (!updatedUser) {
       throw new Error(ERROR_STATUES.USER_ALREADY_EXISTS.message, {

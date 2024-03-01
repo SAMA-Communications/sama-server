@@ -1,5 +1,6 @@
 import HelpersProvider from './utils/helpers/Provider.js'
 
+import BaseMapperProvider from './utils/mappers/base/Provider.js'
 import UserMapperProvider from './utils/mappers/user/Provider.js'
 import ConversationMapperProvider from './utils/mappers/conversation/Provider.js'
 import MessageMapperProvider from './utils/mappers/message/Provider.js'
@@ -48,6 +49,7 @@ import StatusTypingOperationProvider from './operations/status/typing/Provider.j
 const providers = [
   HelpersProvider,
 
+  BaseMapperProvider,
   UserMapperProvider,
   ConversationMapperProvider,
   MessageMapperProvider,

@@ -39,11 +39,11 @@ class UserDeleteOperation {
       })
     }
 
-    await this.blockListRepository.delete(user.params._id)
+    await this.blockListRepository.delete(user._id)
     await this.contactsMatchRepository.matchUserWithContactOnDelete(
-      user.params._id.toString(),
-      user.params.phone,
-      user.params.email
+      user._id.toString(),
+      user.phone,
+      user.email
     )
 
     await this.userService.userRepo.deleteById(userId)

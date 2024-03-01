@@ -5,12 +5,10 @@ class ConversationListParticipantsOperation {
     sessionService,
     userService,
     conversationService,
-    userMapper
   ) {
     this.sessionService = sessionService
     this.userService = userService
     this.conversationService = conversationService
-    this.userMapper = userMapper
   }
 
   async perform(ws, options) {
@@ -27,14 +25,8 @@ class ConversationListParticipantsOperation {
     const pluckFields = includes ? ['_id'] : ['_id', 'first_name', 'last_name', 'login', 'email', 'phone']
 
     const users = await this.userService.userRepo.findAllByIds(participantIds)
-    const mappedUsers = []
 
-    for (const user of users) {
-      const mappedUser = await this.userMapper(user)
-      mappedUsers.push(mappedUser)
-    }
-
-    const userFields = mappedUsers.map(user => slice(user.params, pluckFields, true))
+    const userFields = users.map(user => slice(user, pluckFields, true))
 
     return userFields
   }

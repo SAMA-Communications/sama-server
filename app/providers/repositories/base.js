@@ -1,9 +1,10 @@
 import { ObjectId } from 'mongodb'
  
 export default class BaseRepository {
-  constructor(dbConnection, Model) {
+  constructor(dbConnection, Model, mapper) {
     this.dbConnection = dbConnection
     this.Model = Model
+    this.mapper = mapper
   }
 
   get collectionName () {
@@ -209,6 +210,12 @@ export default class BaseRepository {
   }
 
   wrapRawRecordInModel(rawRecord) {
+    if (this.mapper) {
+      const { params, mappedParams } = this.mapper.createModelParams(rawRecord)
+
+      return this.Model.createInstance(params, mappedParams)
+    }
+
     return new this.Model(rawRecord)
   }
 

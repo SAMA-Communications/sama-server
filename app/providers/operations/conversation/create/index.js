@@ -7,15 +7,13 @@ class ConversationCreateOperation {
     userService,
     conversationService,
     conversationNotificationService,
-    conversationMapper,
-    userMapper
+    conversationMapper
   ) {
     this.sessionService = sessionService
     this.userService = userService
     this.conversationService = conversationService
     this.conversationNotificationService = conversationNotificationService
     this.conversationMapper = conversationMapper
-    this.userMapper = userMapper
   }
 
   async perform(ws, conversationParams) {
@@ -124,7 +122,7 @@ class ConversationCreateOperation {
     const actionMessageNotification = await this.conversationNotificationService.actionEvent(
       CONVERSATION_EVENTS.CONVERSATION_EVENT.CREATE,
       conversation,
-      await this.userMapper(user)
+      user
     )
 
     return actionMessageNotification

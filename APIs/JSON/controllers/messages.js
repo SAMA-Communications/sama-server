@@ -16,7 +16,6 @@ class MessagesController extends BaseJSONController {
     const { messageId, message, deliverMessages, participantIds } = await messageCreateOperation.perform(ws, messageParams)
 
     deliverMessages.forEach(event => {
-      console.log(event)
       const deliverMessage = new DeliverMessage(event.participantIds || participantIds, event.message).addPushQueueMessage(event.notification)
       response.addDeliverMessage(deliverMessage)
     })

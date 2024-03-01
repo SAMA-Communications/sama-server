@@ -19,13 +19,13 @@ class UserEditOperation {
     const updatedUser = await this.userService.update(currentUser, updateUserParams)
 
     await this.contactsMatchRepository.matchUserWithContactOnUpdate(
-      updatedUser.params._id.toString(),
+      updatedUser._id.toString(),
 
-      updatedUser.params.phone,
-      updatedUser.params.email,
+      updatedUser.phone,
+      updatedUser.email,
 
-      currentUser.params.phone,
-      currentUser.params.email
+      currentUser.phone,
+      currentUser.email
     )
 
     return updatedUser

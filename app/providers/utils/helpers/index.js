@@ -1,10 +1,8 @@
 class Helpers {
   getDisplayName(user) {
-    const userParams = user.params
-
-    return userParams.first_name || userParams.last_name
-      ? `${userParams.first_name || ''} ${userParams.last_name || ''}`.trim()
-      : userParams.login
+    return user.first_name || user.last_name
+      ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
+      : user.login
   }
 }
 

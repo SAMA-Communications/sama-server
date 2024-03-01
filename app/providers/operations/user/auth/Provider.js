@@ -9,14 +9,13 @@ class UserAuthOperationRegisterProvider extends RegisterProvider {
     const sessionService = slc.use('SessionService')
     const userService = slc.use('UserService')
     const userTokenRepo = slc.use('UserTokenRepository')
-    const userMapper = slc.use('UserMapper')
 
     return new UserAuthOperation(
       RuntimeDefinedContext,
       sessionService,
       userService,
       userTokenRepo,
-      userMapper
+    
     )
   }
 }
