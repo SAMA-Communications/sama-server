@@ -38,7 +38,7 @@ class MessageCreateOperation {
 
     const message = await this.messageService.create(currentUserId, blockedUserIds, createMessageParams)
 
-    if (conversation.params.type === 'u') {
+    if (conversation.type === 'u') {
       const missedParticipantIds = await this.conversationService.restorePrivateConversation(conversation, participantIds)
       if (missedParticipantIds.length) {
         participantIds.push(...missedParticipantIds)
@@ -52,9 +52,9 @@ class MessageCreateOperation {
     const deliverCreatedMessage = await this.#createMessageNotification(conversation, message)
     deliverMessages.push(deliverCreatedMessage)
     
-    await this.conversationService.conversationRepo.updateLastActivity(conversation.params._id, message.params.created_at)
+    await this.conversationService.conversationRepo.updateLastActivity(conversation._id, message.created_at)
 
-    return { messageId, message: await this.messageMapper(message), deliverMessages, participantIds }
+    return { messageId, message: message, deliverMessages, participantIds }
   }
 
   async #hashAccess(conversationId, currentUserId) {
@@ -80,7 +80,7 @@ class MessageCreateOperation {
       })
     }
 
-    return { conversation: await this.conversationMapper(conversation), participantIds }
+    return { conversation, participantIds }
   }
 
   async #checkBlocked(conversation, currentUserId, participantIds) {
@@ -88,14 +88,14 @@ class MessageCreateOperation {
 
     const userIdsWhoBlockedCurrentUser = await this.blockListRepo.getBlockingUsers(currentUserId, stringParticipantIds)
 
-    if (conversation.params.type === 'u' && userIdsWhoBlockedCurrentUser.length) {
+    if (conversation.type === 'u' && userIdsWhoBlockedCurrentUser.length) {
       throw new Error(ERROR_STATUES.USER_BLOCKED.message, {
         cause: ERROR_STATUES.USER_BLOCKED,
       })
     }
 
     const isAllBlocked = userIdsWhoBlockedCurrentUser.length === participantIds.length - 1
-    if (conversation.params.type === 'g' && isAllBlocked) {
+    if (conversation.type === 'g' && isAllBlocked) {
       throw new Error(ERROR_STATUES.USER_BLOCKED_FOR_ALL_PARTICIPANTS.message, {
         cause: ERROR_STATUES.USER_BLOCKED_FOR_ALL_PARTICIPANTS,
       })
@@ -105,22 +105,22 @@ class MessageCreateOperation {
   }
 
   async #createMessageNotification(conversation, message) {
-    const user = await this.userService.userRepo.findById(message.params.from)
+    const user = await this.userService.userRepo.findById(message.from)
     const userLogin = user.login
 
-    const firstAttachmentUrl = !message.params.attachments?.length ? null : await this.storageService.getDownloadUrl(message.params.attachments[0].file_id)
+    const firstAttachmentUrl = !message.attachments?.length ? null : await this.storageService.getDownloadUrl(message.attachments[0].file_id)
 
     const pushPayload = Object.assign({
-      title: conversation.params.type === 'u' ? userLogin : `${userLogin} | ${conversation.params.name}`,
-      body: message.params.body,
+      title: conversation.type === 'u' ? userLogin : `${userLogin} | ${conversation.name}`,
+      body: message.body,
       firstAttachmentUrl,
-      cid: message.params.cid,
+      cid: message.cid,
     })
     
     const createChatAlertEventOptions = new CreateChatAlertEventOptions({
-      conversationId: conversation.params._id,
-      messageId: message.params._id,
-      senderID: message.params.from,
+      conversationId: conversation._id,
+      messageId: message._id,
+      senderID: message.from,
     }, pushPayload)
 
     const createdMessage = { message: message.visibleParams() }

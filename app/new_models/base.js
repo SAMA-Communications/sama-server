@@ -18,14 +18,45 @@ class BaseModel {
     throw new Error('Not implemented')
   }
 
-  visibleParams() {
-    return slice(this.params, this.constructor.visibleFields)
+  visibleParams(proxyModel) {
+    return slice(proxyModel, this.constructor.visibleFields)
   }
 
   static createInstance(...params) {
     const origModel = new this(...params)
 
-    return origModel
+    const proxyModel = new Proxy(origModel, {
+      get(model, propName) {
+        if (propName in model.mappedParams) {
+          return model.mappedParams[propName]
+        }
+
+        if (propName in model.params) {
+          return model.params[propName]
+        }
+
+        const prop = model[propName]
+
+        if (typeof prop === 'function') {
+          return prop.bind(model, proxyModel)
+        }
+
+        return prop
+      },
+
+      ownKeys(model) {
+        return Object.keys(model.mappedParams).concat(Object.keys(model.params))
+      },
+
+      getOwnPropertyDescriptor(model) {
+        return {
+          enumerable: true,
+          configurable: true,
+        }
+      }
+    })
+
+    return proxyModel
   }
 }
 

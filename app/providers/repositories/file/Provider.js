@@ -7,8 +7,9 @@ const name = 'FileRepository'
 class FileRepositoryRegisterProvider extends RegisterProvider {
   register(slc) {
     const mongoConnection = slc.use('MongoConnection')
+    const baseMapper = slc.use('BaseMapper')
 
-    return new FileRepository(mongoConnection, File)
+    return new FileRepository(mongoConnection, File, baseMapper)
   }
 }
 

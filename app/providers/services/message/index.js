@@ -30,7 +30,7 @@ class MessageService {
 
     const messages = await this.messageRepo.list(cId, userId, filterOptions, limit)
 
-    const messageIds = messages.map(message => message.params._id)
+    const messageIds = messages.map(message => message._id)
 
     const messagesStatuses = await this.messageStatusRepo.findReadStatusForMids(messageIds)
 
@@ -48,7 +48,7 @@ class MessageService {
 
     result.message = message
 
-    result.asOwner = message.params.from.toString() === userId.toString()
+    result.asOwner = message.from.toString() === userId.toString()
 
     return result
   }
@@ -66,7 +66,7 @@ class MessageService {
       const insertMessagesStatuses = unreadMessages.map((message) => {
         return {
           cid: cid,
-          mid: message.params._id,
+          mid: message._id,
           user_id: userId,
           status: 'read',
         }

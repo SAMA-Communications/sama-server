@@ -17,13 +17,13 @@ class UserTokenRepository extends BaseRepository {
     if (token) {
       await this.updateOne(
         {
-          user_id: token.params.user_id,
+          user_id: token.user_id,
           device_id: deviceId,
         },
         { $set: { token: jwtToken } }
       )
 
-      token.params.token = jwtToken
+      token.token = jwtToken
     } else {
       token = await this.create({
         user_id: userId,

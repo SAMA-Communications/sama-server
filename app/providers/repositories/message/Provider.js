@@ -7,8 +7,9 @@ const name = 'MessageRepository'
 class MessageRepositoryRegisterProvider extends RegisterProvider {
   register(slc) {
     const mongoConnection = slc.use('MongoConnection')
+    const messageMapper = slc.use('MessageMapper')
 
-    return new MessageRepository(mongoConnection, Message)
+    return new MessageRepository(mongoConnection, Message, messageMapper)
   }
 }
 

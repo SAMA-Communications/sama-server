@@ -210,13 +210,9 @@ export default class BaseRepository {
   }
 
   wrapRawRecordInModel(rawRecord) {
-    if (this.mapper) {
-      const { params, mappedParams } = this.mapper.createModelParams(rawRecord)
+    const { params, mappedParams } = this.mapper.createModelParams(rawRecord)
 
-      return this.Model.createInstance(params, mappedParams)
-    }
-
-    return new this.Model(rawRecord)
+    return this.Model.createInstance(params, mappedParams)
   }
 
   mergeOperators(existedOperators = {}, operatorsToAdd) {

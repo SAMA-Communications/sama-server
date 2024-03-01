@@ -1,12 +1,12 @@
 import RegisterProvider from '../../../../common/RegisterProvider.js'
-import conversationMapper from './index.js'
+import ConversationMapper from './index.js'
 
 const name = 'ConversationMapper'
 
 class ConversationMapperRegisterProvider extends RegisterProvider {
   register(slc) {
-    return conversationMapper
+    return new ConversationMapper()
   }
 }
 
-export default new ConversationMapperRegisterProvider({ name, implementationName: conversationMapper.name })
+export default new ConversationMapperRegisterProvider({ name, implementationName: ConversationMapper.name })

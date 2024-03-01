@@ -44,7 +44,7 @@ class ConversationEditOperation {
 
     const updatedConversation = await this.conversationService.conversationRepo.update(conversationId, conversationParams)
 
-    return { conversation: await this.conversationMapper(updatedConversation), conversationEvents }
+    return { conversation: updatedConversation, conversationEvents }
   }
 
   async #hasAccess(conversationId, userId) {
@@ -86,20 +86,18 @@ class ConversationEditOperation {
   async #createActionEvents(conversation, currentUserId, addedParticipantIds, removedParticipantIds, currentParticipantIds) {
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
-    const mappedConversation = await this.conversationMapper(conversation)
-
     const conversationEvent = []
 
     if (addedParticipantIds.length) {
       for (const addedParticipantId of addedParticipantIds) {
-        const addParticipantEvent = await this.#participantsActionEvent(mappedConversation, currentUser, addedParticipantId, false)
+        const addParticipantEvent = await this.#participantsActionEvent(conversation, currentUser, addedParticipantId, false)
   
         addParticipantEvent.participantIds = currentParticipantIds
   
         conversationEvent.push(addParticipantEvent)
       }
 
-      const updateEvent = await this.#actionEvent(mappedConversation, currentUser, false)
+      const updateEvent = await this.#actionEvent(conversation, currentUser, false)
       updateEvent.participantIds = addedParticipantIds
   
       conversationEvent.push(updateEvent)
@@ -107,14 +105,14 @@ class ConversationEditOperation {
 
     if (removedParticipantIds.length) {
       for (const removedParticipantId of removedParticipantIds) {
-        const removedParticipantEvent = await this.#participantsActionEvent(mappedConversation, currentUser, removedParticipantId, true)
+        const removedParticipantEvent = await this.#participantsActionEvent(conversation, currentUser, removedParticipantId, true)
   
         removedParticipantEvent.participantIds = currentParticipantIds
   
         conversationEvent.push(removedParticipantEvent)
       }
 
-      const deleteEvent = await this.#actionEvent(mappedConversation, currentUser, true)
+      const deleteEvent = await this.#actionEvent(conversation, currentUser, true)
       deleteEvent.participantIds = removedParticipantIds
 
       conversationEvent.push(deleteEvent)

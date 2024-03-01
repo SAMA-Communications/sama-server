@@ -21,7 +21,7 @@ class MessagesController extends BaseJSONController {
     })
 
     return response.addBackMessage({
-      ask: { mid: messageId, server_mid: message.params._id, t: message.params.t },
+      ask: { mid: messageId, server_mid: message._id, t: message.t },
     }).addDeliverMessage(...deliverMessages)
   }
 

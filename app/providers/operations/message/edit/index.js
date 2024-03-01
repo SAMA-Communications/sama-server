@@ -20,7 +20,7 @@ class MessageEditOperation {
 
     await this.messageService.messageRepo.updateBody(messageId, newBody)
 
-    const participantIds = await this.conversationService.findConversationParticipants(message.params.cid)
+    const participantIds = await this.conversationService.findConversationParticipants(message.cid)
 
     return { messageId, body: newBody, from: currentUserId, participantIds }
   }

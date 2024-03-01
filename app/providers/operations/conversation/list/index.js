@@ -21,14 +21,9 @@ class ConversationListOperation {
 
     const conversations = await this.conversationService.conversationsList(currentUserId, { updatedAt: updated_at }, normalizedLimit)
     
-    let mappedConversations = []
+    const mappedConversations = conversations.map(conversion => conversion.visibleParams())
 
-    for (const conversation of conversations) {
-      const mappedConversation = await this.conversationMapper(conversation)
-      mappedConversations.push(mappedConversation.params)
-    }
-
-    mappedConversations = await this.#addMessagesInfo(mappedConversations, currentUserId)
+    await this.#addMessagesInfo(mappedConversations, currentUserId)
 
     return mappedConversations
   }
@@ -44,8 +39,6 @@ class ConversationListOperation {
       conversation['last_message'] = lastMessagesListByCid[conversationId]
       conversation['unread_messages_count'] = countOfUnreadMessagesByCid[conversationId] || 0
     }
-
-    return conversations
   }
 
   #normalizeLimitParam(limit) {

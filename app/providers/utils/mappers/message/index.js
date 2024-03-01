@@ -1,3 +1,7 @@
-import passThroughMapper from '../../../../utils/pass_through_mapper.js'
+import BaseMapper from '../base/index.js'
 
-export default passThroughMapper
+class MessageMapper extends BaseMapper {
+
+}
+
+export default MessageMapper

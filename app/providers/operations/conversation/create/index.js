@@ -36,12 +36,10 @@ class ConversationCreateOperation {
       normalizedParticipants = participantIds
     }
 
-    const mappedConversation = await this.conversationMapper(conversation)
-
-    const conversationEvent = await this.#createActionEvent(mappedConversation, currentUserId)
+    const conversationEvent = await this.#createActionEvent(conversation, currentUserId)
     conversationEvent.participantIds = normalizedParticipants
   
-    return { conversation: mappedConversation, event: conversationEvent }
+    return { conversation, event: conversationEvent }
   }
 
   async #createPrivateConversation(conversationParams, participantIds) {

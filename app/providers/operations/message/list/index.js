@@ -30,9 +30,9 @@ class MessageListOperation {
       normalizedLimit
     )
 
-    const mappedMessages = await this.#assignMessageStatus(messages, messagesStatuses, currentUserId)
+    const messagesWithStatus = await this.#assignMessageStatus(messages, messagesStatuses, currentUserId)
 
-    return mappedMessages
+    return messagesWithStatus
   }
 
   async #hashAccess(conversationId, currentUserId) {
@@ -52,12 +52,7 @@ class MessageListOperation {
   }
 
   async #assignMessageStatus(messages, messagesStatuses, currentUserId) {
-    const mappedMessages = []
-
-    for (const message of messages) {
-      const mappedMessage = await this.messageMapper(message)
-      mappedMessages.push(mappedMessage.params)
-    }
+    const mappedMessages = messages.map(message => message.visibleParams())
 
     for (const message of mappedMessages) {
       if (message.from == currentUserId) {

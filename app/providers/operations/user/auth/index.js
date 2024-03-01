@@ -63,7 +63,7 @@ class UserAuthOperation {
       })
     }
 
-    const user = await this.userService.userRepo.findById(token.params.user_id)
+    const user = await this.userService.userRepo.findById(token.user_id)
 
     return { user, token }
   }

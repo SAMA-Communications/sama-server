@@ -7,12 +7,10 @@ class ConversationNotificationServiceRegisterProvider extends RegisterProvider {
   register(slc) {
     const helpers = slc.use('Helpers')
     const messageService = slc.use('MessageService')
-    const messageMapper = slc.use('MessageMapper')
 
     return new ConversationNotificationService(
       helpers,
-      messageService,
-      messageMapper
+      messageService
     )
   }
 }

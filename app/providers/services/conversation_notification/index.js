@@ -5,11 +5,9 @@ class ConversationNotificationService {
   constructor(
     helpers,
     messageService,
-    messageMapper,
   ) {
     this.helpers = helpers
     this.messageService = messageService
-    this.messageMapper = messageMapper
   }
 
   async actionEvent(eventType, conversation, user) {
@@ -17,7 +15,7 @@ class ConversationNotificationService {
     const text = CONVERSATION_EVENTS.EVENT_TYPE_PARAMS[eventType].push_message_body
 
     const pushPayload = {
-      title: conversation.params.name,
+      title: conversation.name,
       body: `${userDisplayName} ${text}`,
     }
 
@@ -34,7 +32,7 @@ class ConversationNotificationService {
     const userActionedDisplayName = this.helpers.getDisplayName(userActioned)
     const text = CONVERSATION_EVENTS.ACTION_PARTICIPANT_MESSAGE[eventType]
     const createMessageParams = {
-      cid: conversation.params._id,
+      cid: conversation._id,
       body: `${userActionedDisplayName} ${text}`,
       x: { type: eventType, user: userActioned.visibleParams() },
     }
@@ -43,14 +41,12 @@ class ConversationNotificationService {
 
     const userActionCreatorDisplayName = this.helpers.getDisplayName(userActionCreator)
     const pushPayload = {
-      title: `${userActionCreatorDisplayName} | ${conversation.params.name}`,
-      body: createdMessage.params.body,
-      cid: createdMessage.params.cid,
+      title: `${userActionCreatorDisplayName} | ${conversation.name}`,
+      body: createdMessage.body,
+      cid: createdMessage.cid,
     }
 
-    const mappedMessage = await this.messageMapper(createdMessage)
-
-    const eventMessage = { message: mappedMessage.visibleParams() }
+    const eventMessage = { message: createdMessage.visibleParams() }
 
     const eventNotification = new CreatePushEventOptions(userActionCreator._id, pushPayload, {})
 

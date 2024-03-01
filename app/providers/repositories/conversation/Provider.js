@@ -7,8 +7,9 @@ const name = 'ConversationRepository'
 class ConversationRepositoryRegisterProvider extends RegisterProvider {
   register(slc) {
     const mongoConnection = slc.use('MongoConnection')
+    const conversationMapper = slc.use('ConversationMapper')
 
-    return new ConversationRepository(mongoConnection, Conversation)
+    return new ConversationRepository(mongoConnection, Conversation, conversationMapper)
   }
 }
 
