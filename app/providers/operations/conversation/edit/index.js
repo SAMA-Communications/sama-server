@@ -6,14 +6,12 @@ class ConversationEditOperation {
     sessionService,
     userService,
     conversationService,
-    conversationNotificationService,
-    conversationMapper
+    conversationNotificationService
   ) {
     this.sessionService = sessionService
     this.userService = userService
     this.conversationService = conversationService
     this.conversationNotificationService = conversationNotificationService
-    this.conversationMapper = conversationMapper
   }
 
   async perform(ws, conversationParams) {

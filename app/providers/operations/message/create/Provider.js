@@ -12,8 +12,6 @@ class MessageCreateOperationRegisterProvider extends RegisterProvider {
     const conversationService = slc.use('ConversationService')
     const conversationNotificationService = slc.use('ConversationNotificationService')
     const messageService = slc.use('MessageService')
-    const conversationMapper = slc.use('ConversationMapper')
-    const messageMapper = slc.use('MessageMapper')
 
     return new MessageCreateOperation(
       sessionService,
@@ -22,9 +20,7 @@ class MessageCreateOperationRegisterProvider extends RegisterProvider {
       userService,
       conversationService,
       conversationNotificationService,
-      messageService,
-      conversationMapper,
-      messageMapper
+      messageService
     )
   }
 }

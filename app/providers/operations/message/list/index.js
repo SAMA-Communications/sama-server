@@ -5,13 +5,11 @@ class MessageListOperation {
   constructor(
     sessionService,
     messageService,
-    conversationService,
-    messageMapper
+    conversationService
   ) {
     this.sessionService = sessionService
     this.messageService = messageService
-    this.conversationService = conversationService,
-    this.messageMapper = messageMapper
+    this.conversationService = conversationService
   }
 
   async perform (ws, messageListParams) {

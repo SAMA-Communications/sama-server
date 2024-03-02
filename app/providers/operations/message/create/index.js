@@ -11,9 +11,7 @@ class MessageCreateOperation {
     userService,
     conversationService,
     conversationNotificationService,
-    messageService,
-    conversationMapper,
-    messageMapper
+    messageService
   ) {
     this.sessionService = sessionService
     this.storageService = storageService
@@ -22,8 +20,6 @@ class MessageCreateOperation {
     this.conversationService = conversationService
     this.conversationNotificationService = conversationNotificationService
     this.messageService = messageService
-    this.conversationMapper = conversationMapper
-    this.messageMapper = messageMapper
   }
 
   async perform(ws, createMessageParams) {

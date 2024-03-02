@@ -8,13 +8,11 @@ class ConversationListOperationRegisterProvider extends RegisterProvider {
     const sessionService = slc.use('SessionService')
     const conversationService = slc.use('ConversationService')
     const messageService = slc.use('MessageService')
-    const conversationMapper = slc.use('ConversationMapper')
 
     return new ConversationListOperation(
       sessionService,
       messageService,
-      conversationService,
-      conversationMapper
+      conversationService
     )
   }
 }
