@@ -130,6 +130,7 @@ class ConversationService {
     participantIds = participantIds.filter(pId => currentParticipantIds.find(currentPId => currentPId.toString() === pId.toString()))
     await this.conversationParticipantRepo.removeParticipants(conversation._id, participantIds)
     result.removedIds = participantIds
+    currentParticipantIds = currentParticipantIds.filter(currentPId => !participantIds.find(removedId => removedId.toString() === currentPId.toString()))
 
     const isConversationHasParticipants = await this.conversationParticipantRepo.isConversationHasParticipants(conversation._id)
 

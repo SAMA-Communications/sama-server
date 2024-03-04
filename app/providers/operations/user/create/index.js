@@ -18,7 +18,7 @@ class UserCreateOperation {
     const createdUser = await this.userService.create(createUserParams)
 
     await this.contactsMatchRepository.matchUserWithContactOnCreate(
-      createdUser._id.toString(),
+      createdUser.native_id,
       createdUser.phone,
       createdUser.email
     )

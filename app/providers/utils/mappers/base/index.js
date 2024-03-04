@@ -15,7 +15,9 @@ class BaseMapper {
   }
 
   mappedParams(record) {
-    return {}
+    const mappedParams = {}
+
+    return mappedParams
   }
 }
 

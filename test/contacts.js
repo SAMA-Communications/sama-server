@@ -792,15 +792,15 @@ describe('Contacts functions', async () => {
         'testmatched7@email.com'
       )
       assert.strictEqual(
-        responseData.response.contacts[0].email[0].matched_user_id,
+        responseData.response.contacts[0].email[0].matched_user_id.toString(),
         usersIds[3].toString()
       )
       assert.strictEqual(
-        responseData.response.contacts[1].email[0].matched_user_id,
+        responseData.response.contacts[1].email[0].matched_user_id.toString(),
         usersIds[3].toString()
       )
       assert.strictEqual(
-        responseData.response.contacts[2].email[0].matched_user_id,
+        responseData.response.contacts[2].email[0].matched_user_id.toString(),
         usersIds[3].toString()
       )
       assert.strictEqual(
@@ -867,15 +867,15 @@ describe('Contacts functions', async () => {
         '123ax'
       )
       assert.strictEqual(
-        responseData.response.contacts[0].phone[0].matched_user_id,
+        responseData.response.contacts[0].phone[0].matched_user_id.toString(),
         usersIds[3].toString()
       )
       assert.strictEqual(
-        responseData.response.contacts[1].phone[0].matched_user_id,
+        responseData.response.contacts[1].phone[0].matched_user_id.toString(),
         usersIds[3].toString()
       )
       assert.strictEqual(
-        responseData.response.contacts[2].phone[0].matched_user_id,
+        responseData.response.contacts[2].phone[0].matched_user_id.toString(),
         usersIds[3].toString()
       )
     })

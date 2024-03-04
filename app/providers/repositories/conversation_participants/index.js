@@ -2,8 +2,8 @@ import BaseRepository from '../base.js'
 
 class ConversationParticipantRepository extends BaseRepository {
   async prepareParams(params) {
-    params.conversation_id = this.safeWrapOId(params.conversation_id)
-    params.user_id = this.safeWrapOId(params.user_id)
+    params.conversation_id = this.castObjectId(params.conversation_id)
+    params.user_id = this.castObjectId(params.user_id)
 
     return await super.prepareParams(params)
   }
@@ -18,7 +18,7 @@ class ConversationParticipantRepository extends BaseRepository {
     const availableConversationParticipants = await this.findAll({ conversation_id: { $in: conversationIds }, user_id: participantId })
     const availableConversationIds = availableConversationParticipants.map(participant => participant.conversation_id)
 
-    const conversationsParticipants = await this.findAll({ conversation_id: { $in: availableConversationIds }, user_id: { $ne: participantId } })
+    const conversationsParticipants = await this.findAll({ conversation_id: { $in: availableConversationIds }, user_id: { $ne: this.castObjectId(participantId) } })
 
     return conversationsParticipants
   }
@@ -36,9 +36,9 @@ class ConversationParticipantRepository extends BaseRepository {
   }
 
   async removeParticipants(conversationId, participantIds) {
-    participantIds = participantIds.map(pId => this.safeWrapOId(pId))
+    participantIds = participantIds.map(pId => this.castObjectId(pId))
 
-    await this.deleteMany({ conversation_id: this.safeWrapOId(conversationId), user_id: { $in: participantIds } })
+    await this.deleteMany({ conversation_id: this.castObjectId(conversationId), user_id: { $in: participantIds } })
   }
 }
 

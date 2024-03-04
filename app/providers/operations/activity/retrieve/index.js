@@ -11,7 +11,7 @@ class ActivityUserRetrieveOperation {
     const targetUsers = await this.userService.userRepo.findAllByIds(targetUserId)
 
     for (const targetUser of targetUsers) {
-      const userId = targetUser._id.toString()
+      const userId = targetUser.native_id
       const isUserOnline = await this.sessionService.getUserNodeData(userId)
 
       const targetUserActivityStatus = isUserOnline ? MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE : targetUser.recent_activity

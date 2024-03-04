@@ -2,15 +2,15 @@ import BaseRepository from '../base.js'
 
 class MessageStatusRepository extends BaseRepository {
   async prepareParams(params) {
-    params.cid = this.safeWrapOId(params.cid)
-    params.mid = this.safeWrapOId(params.mid)
-    params.user_id = this.safeWrapOId(params.user_id)
+    params.cid = this.castObjectId(params.cid)
+    params.mid = this.castObjectId(params.mid)
+    params.user_id = this.castObjectId(params.user_id)
 
     return await super.prepareParams(params)
   }
   
   async findReadStatusForMids(mids) {
-    mids = mids.map(mid => this.safeWrapOId(mid))
+    mids = mids.map(mid => this.castObjectId(mid))
 
     const $match = {
       mid: { $in: mids },
@@ -33,8 +33,8 @@ class MessageStatusRepository extends BaseRepository {
   }
 
   async findLastReadMessageByUserForCid(cids, userId) {
-    cids = cids.map(cid => this.safeWrapOId(cid))
-    userId = this.safeWrapOId(userId)
+    cids = cids.map(cid => this.castObjectId(cid))
+    userId = this.castObjectId(userId)
 
     const $match = {
       cid: { $in: cids },

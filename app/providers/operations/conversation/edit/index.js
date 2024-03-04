@@ -24,7 +24,7 @@ class ConversationEditOperation {
     
     const { conversation, participantIds: currentParticipantIds } = await this.#hasAccess(conversationId, currentUserId)
 
-    if (conversationParams.participants) {
+    if (conversationParams.participants && conversation.type !== 'u') {
       const { isEmptyAndDeleted, addedIds, removedIds, currentIds }  = await this.#updateParticipants(
         conversation,
         conversationParams.participants,

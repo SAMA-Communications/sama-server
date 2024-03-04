@@ -109,10 +109,6 @@ class SessionService {
     return await this.redisConnection.client.sMembers(`user:${userId}`)
   }
 
-  async dropUserNodeDataBase() {
-    await this.redisConnection.client.flushDb()
-  }
-
   async removeMember(userId, member) {
     return await this.redisConnection.client.sRem(`user:${userId}`, member)
   }
@@ -123,7 +119,7 @@ class SessionService {
 
   getSessionUserId(ws) {
     if (this.activeSessions.SESSIONS.get(ws)) {
-      return this.activeSessions.SESSIONS.get(ws).user_id.toString()
+      return this.activeSessions.SESSIONS.get(ws).user_id
     }
     return null
   }
