@@ -15,8 +15,9 @@ class ConversationListParticipantsOperation {
     const { cids, includes } = options
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
+    const currentUser = await this.userService.userRepo.findById(currentUserId)
     
-    const participantIds = await this.conversationService.findConversationsParticipantIds(cids, currentUserId)
+    const participantIds = await this.conversationService.findConversationsParticipantIds(cids, currentUser)
 
     if (!participantIds.length) {
       return []

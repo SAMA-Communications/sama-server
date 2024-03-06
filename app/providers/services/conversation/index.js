@@ -11,7 +11,8 @@ class ConversationService {
     this.conversationParticipantRepo = conversationParticipantRepo
   }
 
-  async create(conversationParams, participantIds) {
+  async create(user, conversationParams, participantIds) {
+    conversationParams.owner_id = user.native_id
     const conversation = await this.conversationRepo.create(conversationParams)
 
     await this.addParticipants(conversation, participantIds, [])
@@ -19,8 +20,8 @@ class ConversationService {
     return conversation
   }
 
-  async conversationsList(userId, options, limit) {
-    const conversationIds = await this.conversationParticipantRepo.findParticipantConversations(userId, limit)
+  async conversationsList(user, options, limit) {
+    const conversationIds = await this.conversationParticipantRepo.findParticipantConversations(user.native_id, limit)
 
     const filterOptions = {}
     if (options.updatedAt?.gt) {
@@ -52,8 +53,8 @@ class ConversationService {
     return participants.map(participant => participant.user_id)
   }
 
-  async findConversationsParticipantIds(conversationIds, participantId) {
-    const conversationsParticipants = await this.conversationParticipantRepo.findConversationsParticipants(conversationIds, participantId)
+  async findConversationsParticipantIds(conversationIds, user) {
+    const conversationsParticipants = await this.conversationParticipantRepo.findConversationsParticipants(conversationIds, user.native_id)
 
     return conversationsParticipants.map(participant => participant.user_id)
   }

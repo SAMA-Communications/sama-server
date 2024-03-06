@@ -4,10 +4,12 @@ import { CONSTANTS as MAIN_CONSTANTS } from '../../../../constants/constants.js'
 class MessageListOperation {
   constructor(
     sessionService,
+    userService,
     messageService,
     conversationService
   ) {
     this.sessionService = sessionService
+    this.userService = userService
     this.messageService = messageService
     this.conversationService = conversationService
   }
@@ -16,6 +18,7 @@ class MessageListOperation {
     const { cid: cId, limit, updated_at } = messageListParams
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
+    const currentUser = await this.userService.userRepo.findById(currentUserId)
 
     await this.#hashAccess(cId, currentUserId)
 
@@ -23,7 +26,7 @@ class MessageListOperation {
 
     const { messages, messagesStatuses } = await this.messageService.messagesList(
       cId,
-      currentUserId,
+      currentUser,
       { updatedAt: updated_at },
       normalizedLimit
     )

@@ -16,6 +16,7 @@ class ConversationCreateOperation {
 
   async perform(ws, conversationParams) {
     const currentUserId = this.sessionService.getSessionUserId(ws)
+    const currentUser = await this.userService.userRepo.findById(currentUserId)
 
     const paramsParticipantIds = await this.userService.userRepo.retrieveExistedIds(conversationParams.participants)
     delete conversationParams.participants
@@ -25,11 +26,11 @@ class ConversationCreateOperation {
     let normalizedParticipants = null
 
     if (conversationParams.type === 'u') {
-      const { conversation: createdConversation, participantIds } = await this.#createPrivateConversation(conversationParams, paramsParticipantIds)
+      const { conversation: createdConversation, participantIds } = await this.#createPrivateConversation(currentUser, conversationParams, paramsParticipantIds)
       conversation = createdConversation
       normalizedParticipants = participantIds
     } else {
-      const { conversation: createdConversation, participantIds } = await this.#createGroupConversation(conversationParams, paramsParticipantIds)
+      const { conversation: createdConversation, participantIds } = await this.#createGroupConversation(currentUser, conversationParams, paramsParticipantIds)
       conversation = createdConversation
       normalizedParticipants = participantIds
     }
@@ -40,7 +41,7 @@ class ConversationCreateOperation {
     return { conversation, event: conversationEvent }
   }
 
-  async #createPrivateConversation(conversationParams, participantIds) {
+  async #createPrivateConversation(user, conversationParams, participantIds) {
     conversationParams.opponent_id = await this.#validatePrivateConversationParticipant(
       conversationParams.owner_id,
       conversationParams.opponent_id,
@@ -56,7 +57,7 @@ class ConversationCreateOperation {
     if (existedConversation) {
       normalizedParticipants = await this.conversationService.restorePrivateConversation(existedConversation)
     } else {
-      existedConversation = await this.#createNewPrivateConversation(conversationParams)
+      existedConversation = await this.#createNewPrivateConversation(user, conversationParams)
       normalizedParticipants = [conversationParams.owner_id, conversationParams.opponent_id]
     }
 
@@ -88,14 +89,14 @@ class ConversationCreateOperation {
     return opponentId
   }
 
-  async #createNewPrivateConversation(conversationParams) {
+  async #createNewPrivateConversation(user, conversationParams) {
     const participantIds = [conversationParams.owner_id, conversationParams.opponent_id]
-    const createdConversation = await this.conversationService.create(conversationParams, participantIds)
+    const createdConversation = await this.conversationService.create(user, conversationParams, participantIds)
 
     return createdConversation
   }
 
-  async #createGroupConversation(conversationParams, participantIds) {
+  async #createGroupConversation(user, conversationParams, participantIds) {
     const isOwnerInParticipants = participantIds.find(pId => pId.toString() === conversationParams.owner_id.toString())
     if (!isOwnerInParticipants) {
       participantIds.push(conversationParams.owner_id)
@@ -107,7 +108,7 @@ class ConversationCreateOperation {
       })
     }
 
-    const createdConversation = await this.conversationService.create(conversationParams, participantIds)
+    const createdConversation = await this.conversationService.create(user, conversationParams, participantIds)
 
     return { conversation: createdConversation, participantIds }
   }

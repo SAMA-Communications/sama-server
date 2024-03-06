@@ -3,10 +3,12 @@ import { CONSTANTS as MAIN_CONSTANTS } from '../../../../constants/constants.js'
 class ConversationListOperation {
   constructor(
     sessionService,
+    userService,
     messagesService,
     conversationService,
   ) {
     this.sessionService = sessionService
+    this.userService = userService
     this.messagesService = messagesService
     this.conversationService = conversationService
   }
@@ -16,21 +18,22 @@ class ConversationListOperation {
     const normalizedLimit = this.#normalizeLimitParam(limit)
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
+    const currentUser = await this.userService.userRepo.findById(currentUserId)
 
-    const conversations = await this.conversationService.conversationsList(currentUserId, { updatedAt: updated_at }, normalizedLimit)
+    const conversations = await this.conversationService.conversationsList(currentUser, { updatedAt: updated_at }, normalizedLimit)
 
-    await this.#addMessagesInfo(conversations, currentUserId)
+    await this.#addMessagesInfo(conversations, currentUser)
     
     const mappedConversations = conversations.map(conversion => conversion.visibleParams())
 
     return mappedConversations
   }
 
-  async #addMessagesInfo(conversations, userId) {
+  async #addMessagesInfo(conversations, currentUser) {
     const conversationIds = conversations.map(conversation => conversation._id)
 
-    const lastMessagesListByCid = await this.messagesService.aggregateLastMessageForConversation(conversationIds, userId)
-    const countOfUnreadMessagesByCid = await this.messagesService.aggregateCountOfUnreadMessagesByCid(conversationIds, userId)
+    const lastMessagesListByCid = await this.messagesService.aggregateLastMessageForConversation(conversationIds, currentUser)
+    const countOfUnreadMessagesByCid = await this.messagesService.aggregateCountOfUnreadMessagesByCid(conversationIds, currentUser)
 
     for (const conversation of conversations) {
       const conversationId = conversation._id.toString()

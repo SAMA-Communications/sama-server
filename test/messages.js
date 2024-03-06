@@ -835,7 +835,7 @@ describe('Message function', async () => {
       it('should work for sender user (u1)', async () => {
         const responseData = await messageService.aggregateCountOfUnreadMessagesByCid(
           [ObjectId(currentConversationId)],
-          usersIds[0]
+          { native_id: usersIds[0] }
         )
 
         assert.strictEqual(responseData[currentConversationId], undefined)
@@ -844,7 +844,7 @@ describe('Message function', async () => {
       it('should work for u2 (read 3/6 messages)', async () => {
         const responseData = await messageService.aggregateCountOfUnreadMessagesByCid(
           [ObjectId(currentConversationId)],
-          usersIds[1]
+          { native_id: usersIds[1] }
         )
 
         assert.strictEqual(responseData[currentConversationId], 3)
@@ -853,7 +853,7 @@ describe('Message function', async () => {
       it('should work for u3 (read 0/6 messages)', async () => {
         const responseData = await messageService.aggregateCountOfUnreadMessagesByCid(
           [ObjectId(currentConversationId)],
-          usersIds[2]
+          { native_id: usersIds[2] }
         )
 
         assert.strictEqual(responseData[currentConversationId], 6)
