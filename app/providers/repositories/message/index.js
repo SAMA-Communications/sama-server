@@ -3,7 +3,7 @@ import BaseRepository from '../base.js'
 class MessageRepository extends BaseRepository {
   async prepareParams(params) {
     if (params.deleted_for?.length) {
-      params.deleted_for = params.deleted_for.map(userId => this.castObjectId(userId))
+      params.deleted_for = this.castObjectIds(params.deleted_for)
     }
     params.from = this.castObjectId(params.from)
     params.cid = this.castObjectId(params.cid)
@@ -24,7 +24,7 @@ class MessageRepository extends BaseRepository {
   }
 
   async findLastMessageForConversations(cids, userId) {
-    cids = cids.map(cid => this.castObjectId(cid))
+    cids = this.castObjectIds(cids)
     userId = this.castObjectId(userId)
 
     const $match = {
@@ -51,7 +51,7 @@ class MessageRepository extends BaseRepository {
     aggregatedResult.forEach((obj) => {
       const msg = obj.last_message
       delete msg['cid']
-      result[obj._id] = msg
+      result[obj._id] = this.Model.createInstance(msg)
     })
 
     return result
@@ -86,7 +86,7 @@ class MessageRepository extends BaseRepository {
 
     const $group = {
       _id: '$cid',
-      unread_messages: { $push: '$_id' },
+      count: { $sum: 1 },
     }
 
     const aggregatedResult = await this.aggregate([
@@ -97,7 +97,7 @@ class MessageRepository extends BaseRepository {
     const result = {}
 
     aggregatedResult?.forEach((obj) => {
-      result[obj._id] = [...new Set(obj.unread_messages)].length
+      result[obj._id] = obj.count || 0
     })
 
     return result
@@ -108,7 +108,7 @@ class MessageRepository extends BaseRepository {
   }
 
   async updateDeleteForUser(messageIds, userId) {
-    messageIds.map(mId => this.castObjectId(mId))
+    messageIds = this.castObjectIds(messageIds)
 
     await this.updateMany({ _id: { $in: messageIds } }, { $addToSet: { deleted_for: userId } })
   }

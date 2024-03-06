@@ -7,9 +7,10 @@ class MessageService {
     this.messageStatusRepo = messageStatusRepo
   }
 
-  async create(currentUserId, blockedUserIds, messageParams) {
+  async create(user, conversation, blockedUserIds, messageParams) {
+    messageParams.cid = conversation._id
     messageParams.deleted_for = blockedUserIds
-    messageParams.from = currentUserId
+    messageParams.from = user.native_id
 
     const currentTs = Math.round(Date.now() / 1000).toFixed(0)
     messageParams.t = parseInt(currentTs)
@@ -34,7 +35,7 @@ class MessageService {
 
     const messagesStatuses = await this.messageStatusRepo.findReadStatusForMids(messageIds)
 
-    return { messages ,messagesStatuses }
+    return { messages, messagesStatuses }
   }
 
   async hasAccessToMessage(messageId, userId) {
@@ -43,6 +44,12 @@ class MessageService {
     const message = await this.messageRepo.findById(messageId)
 
     if (!message) {
+      return result
+    }
+
+    const deletedIds = message.deleted_for
+
+    if (deletedIds.includes(userId)) {
       return result
     }
 
@@ -85,8 +92,9 @@ class MessageService {
 
     const aggregateLastMessageStatus = await this.messageStatusRepo.findReadStatusForMids(lastMessagesIds)
 
-    Object.values(aggregateLastMessage).forEach(msg => {
-      msg['status'] = aggregateLastMessageStatus[msg._id.toString()] ? 'read' : 'sent'
+    Object.values(aggregateLastMessage).forEach(message => {
+      const status = aggregateLastMessageStatus[message._id.toString()] ? 'read' : 'sent'
+      message.set('status', status)
     })
 
     return aggregateLastMessage

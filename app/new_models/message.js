@@ -17,6 +17,8 @@ export default class Message extends BaseModel {
       'attachments',
 
       'created_at',
+
+      'status' // virtual
     ]
   }
 

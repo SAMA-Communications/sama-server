@@ -29,10 +29,10 @@ class MessageCreateOperation {
     delete createMessageParams.id
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
-
+    const currentUser = await this.userService.userRepo.findById(currentUserId)
     const { conversation, blockedUserIds, participantIds } = await this.#hashAccess(createMessageParams.cid, currentUserId)
 
-    const message = await this.messageService.create(currentUserId, blockedUserIds, createMessageParams)
+    const message = await this.messageService.create(currentUser, conversation, blockedUserIds, createMessageParams)
 
     if (conversation.type === 'u') {
       const missedParticipantIds = await this.conversationService.restorePrivateConversation(conversation, participantIds)
@@ -45,7 +45,7 @@ class MessageCreateOperation {
       }
     }
 
-    const deliverCreatedMessage = await this.#createMessageNotification(conversation, message)
+    const deliverCreatedMessage = await this.#createMessageNotification(conversation, currentUser, message)
     deliverMessages.push(deliverCreatedMessage)
     
     await this.conversationService.conversationRepo.updateLastActivity(conversation._id, message.created_at)
@@ -100,8 +100,7 @@ class MessageCreateOperation {
     return userIdsWhoBlockedCurrentUser
   }
 
-  async #createMessageNotification(conversation, message) {
-    const user = await this.userService.userRepo.findById(message.from)
+  async #createMessageNotification(conversation, user, message) {
     const userLogin = user.login
 
     const firstAttachmentUrl = !message.attachments?.length ? null : await this.storageService.getDownloadUrl(message.attachments[0].file_id)

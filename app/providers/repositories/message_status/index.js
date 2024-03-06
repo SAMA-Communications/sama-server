@@ -10,7 +10,7 @@ class MessageStatusRepository extends BaseRepository {
   }
   
   async findReadStatusForMids(mids) {
-    mids = mids.map(mid => this.castObjectId(mid))
+    mids = this.castObjectIds(mids)
 
     const $match = {
       mid: { $in: mids },
@@ -18,7 +18,7 @@ class MessageStatusRepository extends BaseRepository {
 
     const $group = {
       _id: '$mid',
-      users: { $push: '$user_id' },
+      users: { $addToSet: '$user_id' },
     }
 
     const aggregatedResult = await this.aggregate([{ $match }, { $group }])
@@ -26,14 +26,14 @@ class MessageStatusRepository extends BaseRepository {
     const result = {}
 
     aggregatedResult.forEach((obj) => {
-      result[obj._id] = [...new Set(obj.users)]
+      result[obj._id] = obj.users
     })
 
     return result
   }
 
   async findLastReadMessageByUserForCid(cids, userId) {
-    cids = cids.map(cid => this.castObjectId(cid))
+    cids = this.castObjectIds(cids)
     userId = this.castObjectId(userId)
 
     const $match = {

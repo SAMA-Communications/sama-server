@@ -18,10 +18,10 @@ class ConversationListOperation {
     const currentUserId = this.sessionService.getSessionUserId(ws)
 
     const conversations = await this.conversationService.conversationsList(currentUserId, { updatedAt: updated_at }, normalizedLimit)
+
+    await this.#addMessagesInfo(conversations, currentUserId)
     
     const mappedConversations = conversations.map(conversion => conversion.visibleParams())
-
-    await this.#addMessagesInfo(mappedConversations, currentUserId)
 
     return mappedConversations
   }
@@ -34,8 +34,12 @@ class ConversationListOperation {
 
     for (const conversation of conversations) {
       const conversationId = conversation._id.toString()
-      conversation['last_message'] = lastMessagesListByCid[conversationId]
-      conversation['unread_messages_count'] = countOfUnreadMessagesByCid[conversationId] || 0
+      const lastMessage = lastMessagesListByCid[conversationId]
+      const lastMessageVal = lastMessage ? lastMessage.visibleParams() : void 0
+      const unreadMessageCount = countOfUnreadMessagesByCid[conversationId] || 0
+
+      conversation.set('last_message', lastMessageVal)
+      conversation.set('unread_messages_count', unreadMessageCount)
     }
   }
 

@@ -36,7 +36,7 @@ class ConversationParticipantRepository extends BaseRepository {
   }
 
   async removeParticipants(conversationId, participantIds) {
-    participantIds = participantIds.map(pId => this.castObjectId(pId))
+    participantIds = this.castObjectIds(participantIds)
 
     await this.deleteMany({ conversation_id: this.castObjectId(conversationId), user_id: { $in: participantIds } })
   }

@@ -18,6 +18,9 @@ export default class Conversation extends BaseModel {
 
       'created_at',
       'updated_at',
+
+      'last_message', // virtual
+      'unread_messages_count' // virtual
     ]
   }
 }

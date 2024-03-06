@@ -23,7 +23,7 @@ class ConversationNotificationService {
       event: { conversation_created: conversation.visibleParams() },
     }
   
-    const eventNotification = new CreatePushEventOptions(user._id, pushPayload, {})
+    const eventNotification = new CreatePushEventOptions(user.native_id, pushPayload, {})
 
     return { message: eventMessage, notification: eventNotification }
   }
@@ -37,7 +37,7 @@ class ConversationNotificationService {
       x: { type: eventType, user: userActioned.visibleParams() },
     }
 
-    const createdMessage = await this.messageService.create(userActionCreator._id, [], createMessageParams)
+    const createdMessage = await this.messageService.create(userActionCreator, conversation, [], createMessageParams)
 
     const userActionCreatorDisplayName = this.helpers.getDisplayName(userActionCreator)
     const pushPayload = {
@@ -48,7 +48,7 @@ class ConversationNotificationService {
 
     const eventMessage = { message: createdMessage.visibleParams() }
 
-    const eventNotification = new CreatePushEventOptions(userActionCreator._id, pushPayload, {})
+    const eventNotification = new CreatePushEventOptions(userActionCreator, conversation, pushPayload, {})
 
     return { message: eventMessage, notification: eventNotification }
   }

@@ -18,8 +18,12 @@ class BaseModel {
     throw new Error('Not implemented')
   }
 
-  visibleParams(proxyModel) {
-    return slice(proxyModel, this.constructor.visibleFields)
+  visibleParams() {
+    return slice(this, this.constructor.visibleFields)
+  }
+
+  set(propName, value) {
+    return this.mappedParams[propName] = value
   }
 
   static createInstance(...params) {
@@ -27,6 +31,11 @@ class BaseModel {
 
     const proxyModel = new Proxy(origModel, {
       get(model, propName) {
+        const origVal = model[propName]
+        if (origVal !== void 0) {
+          return origVal
+        }
+        
         if (propName in model.mappedParams) {
           return model.mappedParams[propName]
         }
@@ -35,13 +44,7 @@ class BaseModel {
           return model.params[propName]
         }
 
-        const prop = model[propName]
-
-        if (typeof prop === 'function') {
-          return prop.bind(model, proxyModel)
-        }
-
-        return prop
+        return model[propName]
       },
 
       ownKeys(model) {
