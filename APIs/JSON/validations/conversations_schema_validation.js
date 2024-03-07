@@ -35,12 +35,12 @@ export const conversationsSchemaValidation = {
     description: Joi.string().max(255),
     opponent_id: Joi.alternatives().conditional('type', {
       is: 'u',
-      then: Joi.alternatives().try(Joi.object(), Joi.string()),
+      then: Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()),
     }),
     //not needed field in validation
-    owner_id: Joi.alternatives().try(Joi.object(), Joi.string()),
+    owner_id: Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()),
     participants: Joi.array()
-      .items(Joi.alternatives().try(Joi.object(), Joi.string()).required())
+      .items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required())
       .min(1)
       .max(parseInt(process.env.CONVERSATION_MAX_PARTICIPANTS))
       .required()
@@ -65,10 +65,10 @@ export const conversationsSchemaValidation = {
     description: Joi.string().max(255),
     participants: Joi.object({
       add: Joi.array().items(
-        Joi.alternatives().try(Joi.object(), Joi.string())
+        Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number())
       ),
       remove: Joi.array().items(
-        Joi.alternatives().try(Joi.object(), Joi.string())
+        Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number())
       ),
     }),
   }),

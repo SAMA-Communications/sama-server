@@ -12,15 +12,15 @@ class ConversationNotificationService {
 
   async actionEvent(eventType, conversation, user) {
     const userDisplayName = this.helpers.getDisplayName(user)
-    const text = CONVERSATION_EVENTS.EVENT_TYPE_PARAMS[eventType].push_message_body
+    const eventParams = CONVERSATION_EVENTS.EVENT_TYPE_PARAMS[eventType]
 
     const pushPayload = {
       title: conversation.name,
-      body: `${userDisplayName} ${text}`,
+      body: `${userDisplayName} ${eventParams.push_message_body}`,
     }
 
     const eventMessage = {
-      event: { conversation_created: conversation.visibleParams() },
+      event: { [eventParams.event_request_name]: conversation.visibleParams() },
     }
   
     const eventNotification = new CreatePushEventOptions(user.native_id, pushPayload, {})

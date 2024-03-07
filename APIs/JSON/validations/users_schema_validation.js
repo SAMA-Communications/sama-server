@@ -74,7 +74,7 @@ export const usersSchemaValidation = {
       gt: Joi.date(),
     }),
     ignore_ids: Joi.array().items(
-      Joi.alternatives().try(Joi.object(), Joi.string())
+      Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number())
     ),
   }).required(),
 }

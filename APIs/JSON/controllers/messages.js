@@ -22,7 +22,7 @@ class MessagesController extends BaseJSONController {
 
     return response.addBackMessage({
       ask: { mid: messageId, server_mid: message._id, t: message.t },
-    }).addDeliverMessage(...deliverMessages)
+    })
   }
 
   async edit(ws, data) {

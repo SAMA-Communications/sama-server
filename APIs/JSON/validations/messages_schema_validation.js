@@ -42,7 +42,7 @@ export const messagesSchemaValidation = {
           })
         ),
       deleted_for: Joi.array().items(
-        Joi.alternatives().try(Joi.object(), Joi.string()).required()
+        Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required()
       ),
     })
     .or('body', 'attachments'),
@@ -119,7 +119,7 @@ export const messagesSchemaValidation = {
         })
       ),
     deleted_for: Joi.array().items(
-      Joi.alternatives().try(Joi.object(), Joi.string()).required()
+      Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required()
     ),
   }).required(),
 }

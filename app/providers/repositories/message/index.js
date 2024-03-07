@@ -51,7 +51,7 @@ class MessageRepository extends BaseRepository {
     aggregatedResult.forEach((obj) => {
       const msg = obj.last_message
       delete msg['cid']
-      result[obj._id] = this.Model.createInstance(msg)
+      result[obj._id] = this.wrapRawRecordInModel(msg)
     })
 
     return result

@@ -11,7 +11,7 @@ export const CONVERSATION_EVENTS = {
     },
     update: {
       push_message_body: 'added you to conversation',
-      event_request_name: 'conversation_created',
+      event_request_name: 'conversation_updated',
     },
     delete: {
       push_message_body: 'removed you from conversation',

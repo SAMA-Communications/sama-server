@@ -35,7 +35,7 @@ class UserAuthOperation {
     const wsToClose = this.sessionService.addUserDeviceConnection(ws, user.native_id, deviceId)
 
     const jwtToken = jwt.sign(
-      { _id: user.native_id, login: user.login },
+      { _id: user._id, native_id: user.native_id,  login: user.login },
       process.env.JWT_ACCESS_SECRET,
       {
         expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES_IN,

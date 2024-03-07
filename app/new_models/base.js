@@ -48,7 +48,8 @@ class BaseModel {
       },
 
       ownKeys(model) {
-        return Object.keys(model.mappedParams).concat(Object.keys(model.params))
+        const keys = Object.keys(model.mappedParams).concat(Object.keys(model.params))
+        return [...new Set(keys)]
       },
 
       getOwnPropertyDescriptor(model) {
