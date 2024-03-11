@@ -18,7 +18,7 @@ class ConversationParticipantRepository extends BaseRepository {
     const availableConversationParticipants = await this.findAll({ conversation_id: { $in: conversationIds }, user_id: participantId })
     const availableConversationIds = availableConversationParticipants.map(participant => participant.conversation_id)
 
-    const conversationsParticipants = await this.findAll({ conversation_id: { $in: availableConversationIds }, user_id: { $ne: this.castObjectId(participantId) } })
+    const conversationsParticipants = await this.findAll({ conversation_id: { $in: availableConversationIds } })
 
     return conversationsParticipants
   }

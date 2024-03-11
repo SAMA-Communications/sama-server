@@ -42,7 +42,7 @@ class ConversationEditOperation {
 
     const updatedConversation = await this.conversationService.conversationRepo.update(conversationId, conversationParams)
 
-    return { conversation: updatedConversation, conversationEvents }
+    return { currentUserId, conversation: updatedConversation, conversationEvents }
   }
 
   async #hasAccess(conversationId, userId) {

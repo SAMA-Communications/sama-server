@@ -877,10 +877,14 @@ describe('Conversation functions', async () => {
       responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id)
-      assert.equal(responseData.response.users.length, 1)
+      assert.equal(responseData.response.users.length, 2)
       assert.equal(
         responseData.response.users[0]._id.toString(),
         usersIds[1].toString()
+      )
+      assert.equal(
+        responseData.response.users[1]._id.toString(),
+        usersIds[0].toString()
       )
       assert.equal(responseData.response.error, undefined)
     })
@@ -904,10 +908,14 @@ describe('Conversation functions', async () => {
       responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id)
-      assert.equal(responseData.response.users.length, 1)
+      assert.equal(responseData.response.users.length, 2)
       assert.equal(
         responseData.response.users[0]._id.toString(),
         usersIds[1].toString()
+      )
+      assert.equal(
+        responseData.response.users[1]._id.toString(),
+        usersIds[0].toString()
       )
       assert.equal(responseData.response.users[0].login, undefined)
       assert.equal(responseData.response.error, undefined)

@@ -39,11 +39,16 @@ class ConversationsController extends BaseJSONController {
       })
     }
 
-    const { conversation, conversationEvents } = updatedConversationResult
+    const { currentUserId, conversation, conversationEvents } = updatedConversationResult
 
     conversationEvents.forEach(event => {
       const deliverMessage = new DeliverMessage(event.participantIds, event.message).addPushQueueMessage(event.notification)
       response.addDeliverMessage(deliverMessage)
+
+      const isCurrentUser = event.participantIds.find(pId => pId.toString() === currentUserId.toString())
+      if (isCurrentUser) {
+        response.addBackMessage(event.message)
+      }
     })
 
     return response.addBackMessage({
