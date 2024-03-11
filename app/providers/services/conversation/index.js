@@ -83,7 +83,7 @@ class ConversationService {
 
     const addedIds = await this.addParticipants(conversation, addParticipants, currentParticipantIds)
 
-    currentParticipantIds.concat(addedIds)
+    currentParticipantIds = currentParticipantIds.concat(addedIds)
 
     const removeResult = await this.removeParticipants(conversation, removeParticipants, currentParticipantIds)
 
