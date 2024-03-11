@@ -6,28 +6,31 @@ class ConversationEditOperation {
     sessionService,
     userService,
     conversationService,
-    conversationNotificationService
+    conversationNotificationService,
+    messagesService
   ) {
     this.sessionService = sessionService
     this.userService = userService
     this.conversationService = conversationService
-    this.conversationNotificationService = conversationNotificationService
+    this.conversationNotificationService = conversationNotificationService,
+    this.messagesService = messagesService
   }
 
   async perform(ws, conversationParams) {
-    const conversationId = conversationParams.id
-    delete conversationParams.id
+    const { id: conversationId, participants: updateParticipants, ...updateFields } = conversationParams
 
     let conversationEvents = []
     
     const currentUserId = this.sessionService.getSessionUserId(ws)
     
-    const { conversation, participantIds: currentParticipantIds } = await this.#hasAccess(conversationId, currentUserId)
+    const { participantIds: currentParticipantIds } = await this.#hasAccess(conversationId, currentUserId)
 
-    if (conversationParams.participants && conversation.type !== 'u') {
+    const updatedConversation = await this.conversationService.conversationRepo.update(conversationId, updateFields)
+
+    if (updateParticipants && updatedConversation.type !== 'u') {
       const { isEmptyAndDeleted, addedIds, removedIds, currentIds }  = await this.#updateParticipants(
-        conversation,
-        conversationParams.participants,
+        updatedConversation,
+        updateParticipants,
         currentParticipantIds
       )
 
@@ -35,12 +38,9 @@ class ConversationEditOperation {
         return null
       }
 
-      const createdEvents = await this.#createActionEvents(conversation, currentUserId, addedIds, removedIds, currentIds)
+      const createdEvents = await this.#createActionEvents(updatedConversation, currentUserId, addedIds, removedIds, currentIds)
       conversationEvents = createdEvents
     }
-    delete conversationParams.participants
-
-    const updatedConversation = await this.conversationService.conversationRepo.update(conversationId, conversationParams)
 
     return { currentUserId, conversation: updatedConversation, conversationEvents }
   }
@@ -81,6 +81,19 @@ class ConversationEditOperation {
     return result
   }
 
+  async #addMessagesInfo(conversation, user) {
+    const lastMessagesListByCid = await this.messagesService.aggregateLastMessageForConversation([conversation._id], user)
+
+    const conversationId = conversation._id.toString()
+    const lastMessage = lastMessagesListByCid[conversationId]
+    const lastMessageVal = lastMessage ? lastMessage.visibleParams() : void 0
+
+    conversation.set('last_message', lastMessageVal)
+    conversation.set('unread_messages_count', 1)
+
+    return conversation
+  }
+
   async #createActionEvents(conversation, currentUserId, addedParticipantIds, removedParticipantIds, currentParticipantIds) {
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
@@ -95,6 +108,7 @@ class ConversationEditOperation {
         conversationEvent.push(addParticipantEvent)
       }
 
+      await this.#addMessagesInfo(conversation, currentUser)
       const updateEvent = await this.#actionEvent(conversation, currentUser, false)
       updateEvent.participantIds = addedParticipantIds
   
