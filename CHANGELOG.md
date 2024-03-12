@@ -2,12 +2,15 @@
 
 ## 0.21.0
 
-### Update
+### Added
 
-- Move ConversationController methods logic to DI conversation operations
-- Implement DI providers ConversationService/ConversationRepository/ConversationParticipantRepository
-- Move MessageController methods logic to DI message operations
-- Implement DI providers MessageService/MessageRepository/MessageStatusRepository
+- Implemented Dependency Injection(DI) providers ConversationService/ConversationRepository/ConversationParticipantRepository
+- Implemented DI providers MessageService/MessageRepository/MessageStatusRepository
+
+### Updated
+
+- Moved ConversationController methods logic to DI conversation operations
+- Moved MessageController methods logic to DI message operations
 
 ## 0.20.0
 
