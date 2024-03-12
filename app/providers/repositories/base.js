@@ -67,6 +67,20 @@ export default class BaseRepository {
     return models
   }
 
+  async bulkUpsert(operations) {
+    const updateOneOperations = operations.map(([filter, update]) => ({
+      updateOne: { filter, update, upsert: true }
+    }))
+
+    console.log('[updateOneOperations]', updateOneOperations)
+
+    const result = await this.collectionCursor.bulkWrite(updateOneOperations)
+
+    console.log('[result]', result.result.upserted)
+
+    return result
+  }
+
   async findById(id) {
     const model = await this.findOne({ _id: id })
 

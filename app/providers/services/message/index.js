@@ -72,16 +72,9 @@ class MessageService {
     const unreadMessages = await this.messageRepo.findAllOpponentsMessagesFromConversation(cid, user.native_id, findMessagesOptions)
 
     if (unreadMessages.length) {
-      const insertMessagesStatuses = unreadMessages.map((message) => {
-        return {
-          cid: cid,
-          mid: message._id,
-          user_id: user.native_id,
-          status: 'read',
-        }
-      })
+      const mids = unreadMessages.map((message) => message._id).reverse()
 
-      await this.messageStatusRepo.createMany(insertMessagesStatuses.reverse())
+      await this.messageStatusRepo.upsertMessageReadStatuses(cid, mids, user.native_id, 'read')
     }
 
     return unreadMessages
