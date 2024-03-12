@@ -12,10 +12,15 @@ class MessageRepository extends BaseRepository {
   }
 
   async findAllOpponentsMessagesFromConversation(cid, readerUserId, { mids, lastReadMessageId }) {
+    const idQuery = lastReadMessageId ? { $gt: this.castObjectId(lastReadMessageId) } : mids ? { $in: mids } : null
+
     const query = {
       cid: this.castObjectId(cid),
-      from: { $ne: this.castObjectId(readerUserId) },
-      _id: lastReadMessageId ?  { $gt: this.castObjectId(lastReadMessageId) } : { $in: mids }
+      from: { $ne: this.castObjectId(readerUserId) }
+    }
+
+    if (idQuery) {
+      query._id = idQuery
     }
 
     const messages = await this.findAll(query)
