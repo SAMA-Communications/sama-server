@@ -54,7 +54,7 @@ class MessageListOperation {
 
   async #assignMessageStatus(messages, messagesStatuses, currentUserId) {
     for (const message of messages) {
-      if (message.from === currentUserId) {
+      if (message.from.toString() === currentUserId.toString()) {
         const status = messagesStatuses[message._id]
         const statusName = status?.length ? 'read' : 'sent'
         message.set('status', statusName)
