@@ -24,8 +24,8 @@ class UsersController extends BaseJSONController {
     const { user, token } = await userAuthOperation.perform(ws, userInfo)
     
     return new Response()
-      .addBackMessage({ response: { id: requestId, user: user.visibleParams(), token: token.params.token } })
-      .updateLastActivityStatus(new LastActivityStatusResponse(user.params._id, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE))
+      .addBackMessage({ response: { id: requestId, user: user.visibleParams(), token: token.token } })
+      .updateLastActivityStatus(new LastActivityStatusResponse(user.native_id, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE))
   }
 
   async edit(ws, data) {

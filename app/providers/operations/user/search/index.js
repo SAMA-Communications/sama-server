@@ -14,7 +14,7 @@ class UserSearchOperation {
 
     const users = await this.userService.userRepo.search({ loginMatch: searchParams.login, ignoreIds, timeFromUpdate: searchParams.updated_at?.gt }, limit)
 
-    const usersSearchResult = users.map(user => ({ _id: user.params._id.toString(), login: user.params.login }))
+    const usersSearchResult = users.map(user => ({ _id: user._id, native_id: user.native_id, login: user.login }))
 
     return usersSearchResult
   }

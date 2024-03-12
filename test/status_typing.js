@@ -1,5 +1,7 @@
-import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
 import assert from 'assert'
+
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
+
 import {
   createConversation,
   createUserArray,
@@ -8,6 +10,8 @@ import {
   sendLogout,
 } from './utils.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
+
+const userRepo = ServiceLocatorContainer.use('UserRepository')
 
 let currentConversationId = ''
 let currentUserToken = ''
@@ -190,7 +194,6 @@ describe(`Sending 'typing' status`, async () => {
   })
 
   after(async () => {
-    const userRepo = ServiceLocatorContainer.use('UserRepository')
     await userRepo.deleteMany({})
   })
 })

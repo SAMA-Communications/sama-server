@@ -1,8 +1,12 @@
-import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
-import Contact from './../app/models/contact.js'
 import assert from 'assert'
+
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
+
+import Contact from './../app/models/contact.js'
 import { createUserArray, mockedWS, sendLogin, sendLogout } from './utils.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
+
+const userRepo = ServiceLocatorContainer.use('UserRepository')
 
 let usersIds = []
 let contactIdToUpdate = ''
@@ -788,15 +792,15 @@ describe('Contacts functions', async () => {
         'testmatched7@email.com'
       )
       assert.strictEqual(
-        responseData.response.contacts[0].email[0].matched_user_id,
+        responseData.response.contacts[0].email[0].matched_user_id.toString(),
         usersIds[3].toString()
       )
       assert.strictEqual(
-        responseData.response.contacts[1].email[0].matched_user_id,
+        responseData.response.contacts[1].email[0].matched_user_id.toString(),
         usersIds[3].toString()
       )
       assert.strictEqual(
-        responseData.response.contacts[2].email[0].matched_user_id,
+        responseData.response.contacts[2].email[0].matched_user_id.toString(),
         usersIds[3].toString()
       )
       assert.strictEqual(
@@ -863,15 +867,15 @@ describe('Contacts functions', async () => {
         '123ax'
       )
       assert.strictEqual(
-        responseData.response.contacts[0].phone[0].matched_user_id,
+        responseData.response.contacts[0].phone[0].matched_user_id.toString(),
         usersIds[3].toString()
       )
       assert.strictEqual(
-        responseData.response.contacts[1].phone[0].matched_user_id,
+        responseData.response.contacts[1].phone[0].matched_user_id.toString(),
         usersIds[3].toString()
       )
       assert.strictEqual(
-        responseData.response.contacts[2].phone[0].matched_user_id,
+        responseData.response.contacts[2].phone[0].matched_user_id.toString(),
         usersIds[3].toString()
       )
     })
@@ -937,9 +941,9 @@ describe('Contacts functions', async () => {
   })
 
   after(async () => {
-    const userRepo = ServiceLocatorContainer.use('UserRepository')
     await userRepo.deleteMany({})
     await Contact.clearCollection()
+
     usersIds = []
   })
 })

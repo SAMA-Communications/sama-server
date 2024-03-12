@@ -9,6 +9,7 @@ class UserEditOperation {
 
   async perform (ws, updateUserParams) {
     const userId = this.sessionService.getSessionUserId(ws)
+
     const currentUser = await this.userService.userRepo.findById(userId)
     if (!currentUser) {
       throw new Error(ERROR_STATUES.USER_LOGIN_OR_PASS.message, {
@@ -19,13 +20,13 @@ class UserEditOperation {
     const updatedUser = await this.userService.update(currentUser, updateUserParams)
 
     await this.contactsMatchRepository.matchUserWithContactOnUpdate(
-      updatedUser.params._id.toString(),
+      updatedUser.native_id,
 
-      updatedUser.params.phone,
-      updatedUser.params.email,
+      updatedUser.phone,
+      updatedUser.email,
 
-      currentUser.params.phone,
-      currentUser.params.email
+      currentUser.phone,
+      currentUser.email
     )
 
     return updatedUser

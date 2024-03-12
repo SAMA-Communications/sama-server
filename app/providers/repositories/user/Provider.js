@@ -7,8 +7,9 @@ const name = 'UserRepository'
 class UserRepositoryRegisterProvider extends RegisterProvider {
   register(slc) {
     const mongoConnection = slc.use('MongoConnection')
+    const userMapper = slc.use('UserMapper')
 
-    return new UserRepository(mongoConnection, User)
+    return new UserRepository(mongoConnection, User, userMapper)
   }
 }
 

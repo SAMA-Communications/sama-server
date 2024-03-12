@@ -1,9 +1,14 @@
+import assert from 'assert'
+
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
+
 import OpLog from './../app/models/operations_log.js'
 import operationsLogRepository from './../app/repositories/operations_log_repository.js'
-import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
-import assert from 'assert'
+
 import { createUserArray, mockedWS, sendLogin } from './utils.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
+
+const userRepo = ServiceLocatorContainer.use('UserRepository')
 
 let timeWhenUserOff = null
 let usersIds = []
@@ -119,9 +124,9 @@ describe('Operations Log functions', async () => {
   })
 
   after(async () => {
-    const userRepo = ServiceLocatorContainer.use('UserRepository')
     await userRepo.deleteMany({})
     await OpLog.clearCollection()
+
     usersIds = []
   })
 })

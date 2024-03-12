@@ -41,7 +41,7 @@ export const pushNotificationsSchemaValidation = {
       ),
   }).required(),
   push_subscription_list: Joi.object({
-    user_id: Joi.string()
+    user_id: Joi.alternatives().try(Joi.object(), Joi.string(),  Joi.number())
       .required()
       .error(
         new Error(ERROR_STATUES.USER_ID_MISSED.message, {
@@ -60,7 +60,7 @@ export const pushNotificationsSchemaValidation = {
   }).required(),
   push_event_create: Joi.object({
     recipients_ids: Joi.array()
-      .items(Joi.string().required())
+      .items(Joi.alternatives().try(Joi.object(), Joi.string(),  Joi.number()))
       .min(1)
       .required()
       .error(

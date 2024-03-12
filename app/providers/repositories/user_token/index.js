@@ -13,26 +13,28 @@ class UserTokenRepository extends BaseRepository {
     return token
   }
 
-  async updateToken(token, userId, deviceId, jwtToken) {
-    if (token) {
+  async updateToken(existedToken, userId, deviceId, jwtToken) {
+    if (existedToken) {
       await this.updateOne(
         {
-          user_id: token.params.user_id,
+          user_id: existedToken.user_id,
           device_id: deviceId,
         },
         { $set: { token: jwtToken } }
       )
 
-      token.params.token = jwtToken
+      existedToken.set('token', jwtToken)
+
+      return existedToken
     } else {
-      token = await this.create({
+      const newToken = await this.create({
         user_id: userId,
         device_id: deviceId,
         token: jwtToken,
       })
-    }
 
-    return token
+      return newToken
+    }
   }
 
   async deleteByUserId(userId, deviceId) {

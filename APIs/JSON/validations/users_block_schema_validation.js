@@ -3,7 +3,7 @@ import { ERROR_STATUES } from '@sama/constants/errors.js'
 
 export const usersBlockSchemaValidation = {
   block: Joi.object({
-    id: Joi.alternatives().try(Joi.object(), Joi.string()).required(),
+    id: Joi.alternatives().try(Joi.object(), Joi.string(),  Joi.number()).required(),
   })
     .required()
     .error(
@@ -12,7 +12,7 @@ export const usersBlockSchemaValidation = {
       })
     ),
   unblock: Joi.object({
-    id: Joi.alternatives().try(Joi.object(), Joi.string()).required(),
+    id: Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required(),
   })
     .required()
     .error(

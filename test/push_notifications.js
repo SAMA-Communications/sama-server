@@ -8,6 +8,8 @@ import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
 
 import { createUserArray, mockedWS, sendLogin } from './utils.js'
 
+const userRepo = ServiceLocatorContainer.use('UserRepository')
+
 let usersIds = []
 
 describe('PushNotification functions', async () => {
@@ -642,10 +644,10 @@ describe('PushNotification functions', async () => {
   })
 
   after(async () => {
-    const userRepo = ServiceLocatorContainer.use('UserRepository')
     await userRepo.deleteMany({})
     await PushSubscription.clearCollection()
     await PushEvent.clearCollection()
+
     usersIds = []
   })
 })

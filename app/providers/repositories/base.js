@@ -1,9 +1,10 @@
 import { ObjectId } from 'mongodb'
  
 export default class BaseRepository {
-  constructor(dbConnection, Model) {
+  constructor(dbConnection, Model, mapper) {
     this.dbConnection = dbConnection
     this.Model = Model
+    this.mapper = mapper
   }
 
   get collectionName () {
@@ -14,12 +15,16 @@ export default class BaseRepository {
     return this.dbConnection.collection(this.collectionName)
   }
 
-  safeWrapOId(val) {
+  castObjectId(id) {
     try {
-      return new ObjectId(val)
+      return new ObjectId(id)
     } catch (error) {
-      return val
+      return id
     }
+  }
+
+  castObjectIds(ids) {
+    return ids.map(id => this.castObjectId(id))
   }
  
   async prepareParams(params) {
@@ -55,39 +60,47 @@ export default class BaseRepository {
 
     const result = await this.collectionCursor.insertMany(insertParams)
 
-    const modelParams = insertParams.map((params, index) => ({ _id: result.insertedIds.at(index), ...params }))
+    const modelParams = insertParams.map((params, index) => ({ _id: result.insertedIds[index], ...params }))
 
     const models = modelParams.map(params => this.wrapRawRecordInModel(params))
 
     return models
   }
 
+  async findById(id) {
+    const model = await this.findOne({ _id: id })
+
+    return model
+  }
+
+  async findAllByIds(ids) {
+    const models = await this.findAll({ _id: { $in: ids } })
+
+    return models
+  }
+
   async findAll(query, projectionParams, limit, sortParams) {
     if (query.cid) {
-      query.cid = this.safeWrapOId(query.cid)
+      query.cid = this.castObjectId(query.cid)
     }
     if (query._id) {
       query._id.$nin &&
-        (query._id.$nin = query._id.$nin.map((id) => this.safeWrapOId(id)))
+        (query._id.$nin = this.castObjectIds(query._id.$nin))
       query._id.$in &&
-        (query._id.$in = query._id.$in.map((id) => this.safeWrapOId(id)))
+        (query._id.$in = this.castObjectIds(query._id.$in))
     }
     if (query.user_id && !query.user_id.$ne) {
       query.user_id.$in
-        ? (query.user_id.$in = query.user_id.$in.map(
-            (id) => this.safeWrapOId(id)
-          ))
-        : (query.user_id = this.safeWrapOId(query.user_id))
+        ? (query.user_id.$in = this.castObjectIds(query.user_id.$in))
+        : (query.user_id = this.castObjectId(query.user_id))
     }
     if (query.conversation_id) {
       query.conversation_id.$in
-        ? (query.conversation_id.$in = query.conversation_id.$in.map(
-            (id) => this.safeWrapOId(id)
-          ))
-        : (query.conversation_id = this.safeWrapOId(query.conversation_id))
+        ? (query.conversation_id.$in = this.castObjectIds(query.conversation_id.$in))
+        : (query.conversation_id = this.castObjectId(query.conversation_id))
     }
     if (query.from?.$ne) {
-      query.from.$ne = this.safeWrapOId(query.from.$ne)
+      query.from.$ne = this.castObjectId(query.from.$ne)
     }
 
     const projection = projectionParams?.reduce((acc, p) => {
@@ -104,13 +117,13 @@ export default class BaseRepository {
 
   async findOne(query) {
     if (query._id) {
-      query._id = this.safeWrapOId(query._id)
+      query._id = this.castObjectId(query._id)
     }
     if (query.user_id) {
-      query.user_id = this.safeWrapOId(query.user_id)
+      query.user_id = this.castObjectId(query.user_id)
     }
     if (query.conversation_id) {
-      query.conversation_id = this.safeWrapOId(query.conversation_id)
+      query.conversation_id = this.castObjectId(query.conversation_id)
     }
 
     const record = await this.collectionCursor.findOne(query)
@@ -122,16 +135,16 @@ export default class BaseRepository {
 
   async count(query) {
     if (query.conversation_id) {
-      query.conversation_id = this.safeWrapOId(query.conversation_id)
+      query.conversation_id = this.castObjectId(query.conversation_id)
     }
     if (query.user_id && !query.user_id.$ne) {
-      query.user_id = this.safeWrapOId(query.user_id)
+      query.user_id = this.castObjectId(query.user_id)
     }
     if (query.user_id?.$ne) {
-      query.user_id.$ne = this.safeWrapOId(query.user_id.$ne)
+      query.user_id.$ne = this.castObjectId(query.user_id.$ne)
     }
     if (query.from?.$ne) {
-      query.from.$ne = this.safeWrapOId(query.from.$ne)
+      query.from.$ne = this.castObjectId(query.from.$ne)
     }
 
     const count = await this.collectionCursor.count(query)
@@ -141,7 +154,7 @@ export default class BaseRepository {
 
   async updateOne(query, update) {
     if (query._id) {
-      query._id = this.safeWrapOId(query._id)
+      query._id = this.castObjectId(query._id)
     }
 
     await this.collectionCursor.updateOne(query, update)
@@ -149,10 +162,10 @@ export default class BaseRepository {
 
   async findOneAndUpdate(query, update) {
     if (query._id) {
-      query._id = this.safeWrapOId(query._id)
+      query._id = this.castObjectId(query._id)
     }
     if (query.user_id) {
-      query.user_id = this.safeWrapOId(query.user_id)
+      query.user_id = this.castObjectId(query.user_id)
     }
 
     const record = await this.collectionCursor.findOneAndUpdate(query, update, { returnDocument: 'after' }).catch(error => error)
@@ -168,7 +181,7 @@ export default class BaseRepository {
 
   async getAllIdsBy(query) {
     if (query) {
-      query._id.$in = query._id.$in.map((id) => this.safeWrapOId(id))
+      query._id.$in = this.castObjectIds(query._id.$in)
     }
 
     const records = await this.collectionCursor.find(query).project({ _id: 1 }).toArray()
@@ -183,7 +196,13 @@ export default class BaseRepository {
   }
 
   async deleteById(_id) {
-    await this.collectionCursor.deleteOne({ _id: this.safeWrapOId(_id) })
+    await this.collectionCursor.deleteOne({ _id: this.castObjectId(_id) })
+  }
+
+  async deleteByIds(ids) {
+    ids = this.castObjectIds(ids)
+
+    await this.deleteMany({ _id: { $in: ids } })
   }
 
   async deleteMany(query) {
@@ -191,6 +210,12 @@ export default class BaseRepository {
   }
 
   wrapRawRecordInModel(rawRecord) {
-    return new this.Model(rawRecord)
+    const { params, mappedParams } = this.mapper.createModelParams(rawRecord)
+
+    return this.Model.createInstance(params, mappedParams)
+  }
+
+  mergeOperators(existedOperators = {}, operatorsToAdd) {
+    return Object.assign(existedOperators, operatorsToAdd)
   }
 }

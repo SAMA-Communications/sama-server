@@ -5,12 +5,10 @@ class ActivityUserSubscribeOperation {
     sessionService,
     activityManagerService,
     userService,
-    userMapper
   ) {
     this.sessionService = sessionService
     this.activityManagerService = activityManagerService
     this.userService = userService
-    this.userMapper = userMapper
   }
 
   async perform(ws, targetUserId) {
@@ -25,8 +23,7 @@ class ActivityUserSubscribeOperation {
       targetUserActivityStatus = MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE
     } else {
       const targetUser = await this.userService.userRepo.findById(targetUserId)
-      const mappedUser = await this.userMapper(targetUser)
-      targetUserActivityStatus = mappedUser.params.recent_activity
+      targetUserActivityStatus = targetUser.recent_activity
     }
 
     return { [targetUserId]: targetUserActivityStatus }

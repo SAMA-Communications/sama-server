@@ -1,3 +1,13 @@
-import passThroughMapper from '../../../../utils/pass_through_mapper.js'
+import BaseMapper from '../base/index.js'
 
-export default passThroughMapper
+class UserMapper extends BaseMapper {
+  mappedParams(record) {
+    const mappedParams = {
+      native_id: record._id
+    }
+
+    return mappedParams
+  }
+}
+
+export default UserMapper

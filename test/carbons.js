@@ -1,8 +1,12 @@
-import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
 import assert from 'assert'
+
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
+
 import { ACTIVE } from './../app/store/session.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
 import { createUserArray, sendLogin, sendLogout } from './utils.js'
+
+const userRepo = ServiceLocatorContainer.use('UserRepository')
 
 let currentUserToken = []
 
@@ -48,7 +52,6 @@ describe('Carbons', async () => {
   })
 
   after(async () => {
-    const userRepo = ServiceLocatorContainer.use('UserRepository')
     await userRepo.deleteMany({})
   })
 })

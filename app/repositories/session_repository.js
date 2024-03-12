@@ -115,10 +115,6 @@ class SessionRepository extends BaseRepository {
     return await RedisClient.client.sMembers(`user:${userId}`)
   }
 
-  async dropUserNodeDataBase() {
-    await RedisClient.client.flushDb()
-  }
-
   async removeMember(userId, member) {
     return await RedisClient.client.sRem(`user:${userId}`, member)
   }

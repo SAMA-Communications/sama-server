@@ -1,10 +1,6 @@
 import BaseModel from './base.js'
 
 export default class UserToken extends BaseModel {
-  constructor(params) {
-    super(params)
-  }
-
   static get collection() {
     return 'user_tokens'
   }

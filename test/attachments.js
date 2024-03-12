@@ -1,10 +1,9 @@
-import Conversation from './../app/models/conversation.js'
-import ConversationParticipant from './../app/models/conversation_participant.js'
-import File from '../app/models/file.js'
-import Message from './../app/models/message.js'
-import OpLog from './../app/models/operations_log.js'
-import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
 import assert from 'assert'
+
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
+
+import File from '../app/models/file.js'
+import OpLog from './../app/models/operations_log.js'
 import {
   createConversation,
   createUserArray,
@@ -13,6 +12,12 @@ import {
   sendLogout,
 } from './utils.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
+
+const userRepo = ServiceLocatorContainer.use('UserRepository')
+const conversationRepo = ServiceLocatorContainer.use('ConversationRepository')
+const conversationParticipantRepo = ServiceLocatorContainer.use('ConversationParticipantRepository')
+const messageRepo = ServiceLocatorContainer.use('MessageRepository')
+const messageStatusRepo = ServiceLocatorContainer.use('MessageStatusRepository')
 
 let currentUserToken = ''
 let usersIds = []
@@ -314,13 +319,15 @@ describe('Attachments', async () => {
   })
 
   after(async () => {
-    await Conversation.clearCollection()
-    await ConversationParticipant.clearCollection()
-    await File.clearCollection()
-    await Message.clearCollection()
-    await OpLog.clearCollection()
-    const userRepo = ServiceLocatorContainer.use('UserRepository')
     await userRepo.deleteMany({})
+    await messageRepo.deleteMany({})
+    await messageStatusRepo.deleteMany({})
+    await conversationRepo.deleteMany({})
+    await conversationParticipantRepo.deleteMany({})
+
+    await File.clearCollection()
+    await OpLog.clearCollection()
+
     usersIds = []
   })
 })

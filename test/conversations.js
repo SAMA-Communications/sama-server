@@ -1,9 +1,14 @@
-import Conversation from './../app/models/conversation.js'
-import ConversationParticipant from './../app/models/conversation_participant.js'
-import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
 import assert from 'assert'
+
+import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
+
 import { createUserArray, mockedWS, sendLogin, sendLogout } from './utils.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
+
+const userRepo = ServiceLocatorContainer.use('UserRepository')
+const userTokenRepo = ServiceLocatorContainer.use('UserTokenRepository')
+const conversationRepo = ServiceLocatorContainer.use('ConversationRepository')
+const conversationParticipantRepo = ServiceLocatorContainer.use('ConversationParticipantRepository')
 
 let currentUserToken = ''
 let usersIds = []
@@ -256,7 +261,7 @@ describe('Conversation functions', async () => {
 
       responseData = responseData.backMessages.at(0)
 
-      const countRecordsFirst = await Conversation.findAll(
+      const countRecordsFirst = await conversationRepo.findAll(
         {
           name: 'chat123',
         },
@@ -272,7 +277,7 @@ describe('Conversation functions', async () => {
 
       responseData = responseData.backMessages.at(0)
 
-      const countRecordsSecond = await Conversation.findAll(
+      const countRecordsSecond = await conversationRepo.findAll(
         {
           name: 'chat123',
         },
@@ -874,12 +879,12 @@ describe('Conversation functions', async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.equal(responseData.response.users.length, 2)
       assert.equal(
-        responseData.response.users[1]._id.toString(),
-        usersIds[0].toString()
-      )
-      assert.equal(
         responseData.response.users[0]._id.toString(),
         usersIds[1].toString()
+      )
+      assert.equal(
+        responseData.response.users[1]._id.toString(),
+        usersIds[0].toString()
       )
       assert.equal(responseData.response.error, undefined)
     })
@@ -905,14 +910,13 @@ describe('Conversation functions', async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.equal(responseData.response.users.length, 2)
       assert.equal(
-        responseData.response.users[1]._id.toString(),
-        usersIds[0].toString()
-      )
-      assert.equal(
         responseData.response.users[0]._id.toString(),
         usersIds[1].toString()
       )
-      assert.equal(responseData.response.users[1].login, undefined)
+      assert.equal(
+        responseData.response.users[1]._id.toString(),
+        usersIds[0].toString()
+      )
       assert.equal(responseData.response.users[0].login, undefined)
       assert.equal(responseData.response.error, undefined)
     })
@@ -1069,7 +1073,7 @@ describe('Conversation functions', async () => {
 
       responseData = responseData.backMessages.at(0)
 
-      let participantsCount = await ConversationParticipant.count({
+      let participantsCount = await conversationParticipantRepo.count({
         conversation_id: currentConversationId,
       })
       assert.equal(participantsCount, 1)
@@ -1090,7 +1094,7 @@ describe('Conversation functions', async () => {
       )
 
       responseData = responseData.backMessages.at(0)
-      participantsCount = await ConversationParticipant.findAll({
+      participantsCount = await conversationParticipantRepo.findAll({
         conversation_id: currentConversationId,
       })
 
@@ -1111,7 +1115,7 @@ describe('Conversation functions', async () => {
     it('should work create conversation, I deleted, opponent restored', async () => {
       currentUserToken = (await sendLogin(mockedWS, 'user_1')).response.user
         ._id
-      let participantsCount = await ConversationParticipant.count({
+      let participantsCount = await conversationParticipantRepo.count({
         conversation_id: currentConversationId,
       })
       assert.equal(participantsCount, 2)
@@ -1131,7 +1135,7 @@ describe('Conversation functions', async () => {
       )
 
       responseData = responseData.backMessages.at(0)
-      participantsCount = await ConversationParticipant.findAll({
+      participantsCount = await conversationParticipantRepo.findAll({
         conversation_id: currentConversationId,
       })
 
@@ -1157,7 +1161,7 @@ describe('Conversation functions', async () => {
       )
 
       responseData = responseData.backMessages.at(0)
-      participantsCount = await ConversationParticipant.findAll({
+      participantsCount = await conversationParticipantRepo.findAll({
         conversation_id: currentConversationId,
       })
 
@@ -1174,14 +1178,11 @@ describe('Conversation functions', async () => {
   })
 
   after(async () => {
-    const userRepo = ServiceLocatorContainer.use('UserRepository')
     await userRepo.deleteMany({})
-
-    const userTokenRepo = ServiceLocatorContainer.use('UserTokenRepository')
     await userTokenRepo.deleteMany({})
+    await conversationRepo.deleteMany({})
+    await conversationParticipantRepo.deleteMany({})
 
-    await Conversation.clearCollection()
-    await ConversationParticipant.clearCollection()
     usersIds = []
   })
 })

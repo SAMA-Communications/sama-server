@@ -1,10 +1,6 @@
 import BaseModel from './base.js'
 
 export default class Conversation extends BaseModel {
-  constructor(params) {
-    super(params)
-  }
-
   static get collection() {
     return 'conversations'
   }
@@ -12,13 +8,19 @@ export default class Conversation extends BaseModel {
   static get visibleFields() {
     return [
       '_id',
-      'created_at',
-      'updated_at',
+  
       'name',
       'type',
       'description',
+
       'owner_id',
       'opponent_id',
+
+      'created_at',
+      'updated_at',
+
+      'last_message', // virtual
+      'unread_messages_count' // virtual
     ]
   }
 }

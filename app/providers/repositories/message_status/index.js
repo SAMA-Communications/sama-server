@@ -1,55 +1,67 @@
-import BaseModel from './base.js'
-import { ObjectId } from '../lib/db.js'
+import BaseRepository from '../base.js'
 
-export default class MessageStatus extends BaseModel {
-  constructor(params) {
-    super(params)
+class MessageStatusRepository extends BaseRepository {
+  async prepareParams(params) {
+    params.cid = this.castObjectId(params.cid)
+    params.mid = this.castObjectId(params.mid)
+    params.user_id = this.castObjectId(params.user_id)
+
+    return await super.prepareParams(params)
   }
+  
+  async findReadStatusForMids(mids) {
+    mids = this.castObjectIds(mids)
 
-  static get collection() {
-    return 'message_statuses'
-  }
-
-  static get visibleFields() {
-    return ['_id', 'cid', 'mid', 'user_id', 'created_at', 'status']
-  }
-
-  static async getReadStatusForMids(mids) {
     const $match = {
       mid: { $in: mids },
     }
+
     const $group = {
       _id: '$mid',
-      users: { $push: '$user_id' },
+      users: { $addToSet: '$user_id' },
     }
+
     const aggregatedResult = await this.aggregate([{ $match }, { $group }])
+
     const result = {}
+
     aggregatedResult.forEach((obj) => {
-      result[obj._id] = [...new Set(obj.users)]
+      result[obj._id] = obj.users
     })
+
     return result
   }
 
-  static async getLastReadMessageByUserForCid(cids, uId) {
+  async findLastReadMessageByUserForCid(cids, userId) {
+    cids = this.castObjectIds(cids)
+    userId = this.castObjectId(userId)
+
     const $match = {
       cid: { $in: cids },
-      user_id: ObjectId(uId),
+      user_id: userId,
     }
 
     const $sort = { _id: -1 }
+
     const $group = {
       _id: '$cid',
       last_message: { $first: '$$ROOT' },
     }
+
     const aggregatedResult = await this.aggregate([
       { $match },
       { $sort },
       { $group },
     ])
+
     const result = {}
+
     aggregatedResult.forEach((obj) => {
       result[obj._id] = obj.last_message.mid
     })
+
     return result
   }
 }
+
+export default MessageStatusRepository

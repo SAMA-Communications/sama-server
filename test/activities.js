@@ -5,6 +5,8 @@ import { ACTIVITY } from './../app/store/activity.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
 import { createUserArray, sendLogin, sendLogout } from './utils.js'
 
+const userRepo = ServiceLocatorContainer.use('UserRepository')
+
 let currentUserToken1 = ''
 let currentUserToken = ''
 let usersIds = []
@@ -149,7 +151,6 @@ describe('User activities', async () => {
   })
 
   after(async () => {
-    const userRepo = ServiceLocatorContainer.use('UserRepository')
     await userRepo.deleteMany({})
   })
 })

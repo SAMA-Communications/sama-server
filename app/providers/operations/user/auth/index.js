@@ -8,13 +8,11 @@ class UserAuthOperation {
     sessionService,
     userService,
     userTokenRepo,
-    userMapper
   ) {
     this.RuntimeDefinedContext = RuntimeDefinedContext
     this.sessionService = sessionService
     this.userService = userService
     this.userTokenRepo = userTokenRepo
-    this.userMapper = userMapper
   }
 
   async perform(ws, userInfo) {
@@ -34,26 +32,26 @@ class UserAuthOperation {
     }
 
     // TODO: close connections
-    const wsToClose = this.sessionService.addUserDeviceConnection(ws, user.params._id, deviceId)
+    const wsToClose = this.sessionService.addUserDeviceConnection(ws, user.native_id, deviceId)
 
     const jwtToken = jwt.sign(
-      { _id: user.params._id, login: user.params.login },
+      { _id: user._id, native_id: user.native_id,  login: user.login },
       process.env.JWT_ACCESS_SECRET,
       {
         expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES_IN,
       }
     )
 
-    token = await this.userTokenRepo.updateToken(token, user.params._id, deviceId, jwtToken)
+    token = await this.userTokenRepo.updateToken(token, user.native_id, deviceId, jwtToken)
 
     await this.sessionService.storeUserNodeData(
-      user.params._id,
+      user.native_id,
       deviceId,
       this.RuntimeDefinedContext.APP_IP,
       this.RuntimeDefinedContext.CLUSTER_PORT
     )
 
-    return { user: await this.userMapper(user), token }
+    return { user, token }
   }
 
   async #authByToken(tokenJwt, deviceId) {
@@ -65,7 +63,7 @@ class UserAuthOperation {
       })
     }
 
-    const user = await this.userService.userRepo.findById(token.params.user_id)
+    const user = await this.userService.userRepo.findById(token.user_id)
 
     return { user, token }
   }
@@ -87,7 +85,7 @@ class UserAuthOperation {
       })
     }
 
-    const token = await this.userTokenRepo.findTokenByUserId(user._id, deviceId)
+    const token = await this.userTokenRepo.findTokenByUserId(user.native_id, deviceId)
 
     return { user, token }
   }
