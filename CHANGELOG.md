@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.21.0
+
+### Update
+
+- Move ConversationController methods logic to DI conversation operations
+- Implement DI providers ConversationService/ConversationRepository/ConversationParticipantRepository
+- Move MessageController methods logic to DI message operations
+- Implement DI providers MessageService/MessageRepository/MessageStatusRepository
+
 ## 0.20.0
 
 ### Features
