@@ -1,5 +1,6 @@
 import BaseRepository from '../base.js'
 
+
 class MessageStatusRepository extends BaseRepository {
   async prepareParams(params) {
     params.cid = this.castObjectId(params.cid)
@@ -7,6 +8,20 @@ class MessageStatusRepository extends BaseRepository {
     params.user_id = this.castObjectId(params.user_id)
 
     return await super.prepareParams(params)
+  }
+
+  async upsertMessageReadStatuses(cid, mids, user_id, status) {
+    const operations = []
+
+    for (const mid of mids) {
+      const params = await this.prepareParams({ cid, mid, user_id, status })
+      const { cid: preparedCid, mid: preparedMid, user_id: preparedUserId, ...upsertParams } = params
+      const operation = [{ cid: preparedCid, mid: preparedMid, user_id: preparedUserId }, { $set: upsertParams }]
+      console.log(operation.at(0), operation.at(1))
+      operations.push(operation)
+    }
+
+    await this.bulkUpsert(operations)
   }
   
   async findReadStatusForMids(mids) {
