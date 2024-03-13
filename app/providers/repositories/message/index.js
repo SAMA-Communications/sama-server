@@ -19,8 +19,6 @@ class MessageRepository extends BaseRepository {
       from: { $ne: this.castObjectId(readerUserId) }
     }
 
-    console.log('[findAllOpponentsMessagesFromConversation]', idQuery)
-
     if (idQuery) {
       query._id = idQuery
     }

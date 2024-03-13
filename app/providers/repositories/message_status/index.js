@@ -21,8 +21,6 @@ class MessageStatusRepository extends BaseRepository {
       operations.push(operation)
     }
 
-    console.log('[operations]', operations)
-
     await this.bulkUpsert(operations)
   }
   

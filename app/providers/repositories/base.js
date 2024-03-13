@@ -72,11 +72,7 @@ export default class BaseRepository {
       updateOne: { filter, update, upsert: true }
     }))
 
-    console.log('[updateOneOperations]', updateOneOperations)
-
     const result = await this.collectionCursor.bulkWrite(updateOneOperations)
-
-    console.log('[result]', result.result.upserted)
 
     return result
   }

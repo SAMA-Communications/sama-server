@@ -67,8 +67,6 @@ class MessageService {
       findMessagesOptions.lastReadMessageId = lastReadMessagesByConvIds[cid]?.mid || null
     }
 
-    console.log('[readMessagesInConversation]', findMessagesOptions)
-
     const unreadMessages = await this.messageRepo.findAllOpponentsMessagesFromConversation(cid, user.native_id, findMessagesOptions)
 
     if (unreadMessages.length) {
