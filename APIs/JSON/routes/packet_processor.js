@@ -43,7 +43,7 @@ class PacketJsonProcessor extends BasePacketProcessor {
         errorBackMessage = {
           response: {
             id: json.request.id,
-            error: e.cause,
+            error: e.cause || e.message,
           },
         }
       } else {
@@ -51,7 +51,7 @@ class PacketJsonProcessor extends BasePacketProcessor {
         errorBackMessage = {
           [topLevelElement]: {
             id: json[topLevelElement].id,
-            error: e.cause,
+            error: e.cause || e.message,
           },
         }
       }

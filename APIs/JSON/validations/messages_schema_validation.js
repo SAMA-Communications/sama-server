@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { ERROR_STATUES } from '@sama/constants/errors.js'
+import { ERROR_STATUES, requiredError } from '@sama/constants/errors.js'
 
 export const messagesSchemaValidation = {
   create: Joi.object()
@@ -122,4 +122,35 @@ export const messagesSchemaValidation = {
       Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required()
     ),
   }).required(),
+  system: Joi.object({
+      id: Joi.string()
+          .min(1)
+          .required()
+          .error(
+            new Error(ERROR_STATUES.INCORRECT_MESSAGE_ID.message, {
+              cause: ERROR_STATUES.INCORRECT_MESSAGE_ID,
+            })
+      ),
+      cid: Joi.string(),
+      uids: Joi.array().items(
+          Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required()
+        ),
+      x: Joi.object({}).unknown().required().error(requiredError(`'x'`))
+    })
+    .or('cid', 'uids').error((errors) => {
+      console.log('[errors]', errors)
+      return errors.map(error => {
+        if (error instanceof Error) {
+          return error
+        }
+
+        if (error.local.peers.toString() === 'cid,uids') {
+          return requiredError(`'cid' or 'uids'`)
+        }
+
+        return error
+      })
+    })
+    .oxor('cid', 'uids')
+    .required()
 }

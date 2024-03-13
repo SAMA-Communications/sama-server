@@ -154,3 +154,9 @@ export const ERROR_STATUES = {
     message: 'Incorrect includes field.',
   },
 }
+
+export const requiredError = (field) => {
+  const text = `${field} field is required.`
+
+  return new Error(text, { cause: { status: 422, message: text } })
+}

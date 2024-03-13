@@ -28,7 +28,7 @@ class PacketMapper {
     }
 
     if (destinationAPIType === BASE_API) {
-      return await APIs[destinationAPIType].mapPacketToAnotherAPI(destinationAPIType, packet)
+      return await APIs[sourceAPIType].mapPacketToAnotherAPI(destinationAPIType, packet)
     }
   }
 }

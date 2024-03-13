@@ -17,7 +17,6 @@ class MessageStatusRepository extends BaseRepository {
       const params = await this.prepareParams({ cid, mid, user_id, status })
       const { cid: preparedCid, mid: preparedMid, user_id: preparedUserId, ...upsertParams } = params
       const operation = [{ cid: preparedCid, mid: preparedMid, user_id: preparedUserId }, { $set: upsertParams }]
-      console.log(operation.at(0), operation.at(1))
       operations.push(operation)
     }
 
