@@ -17,6 +17,8 @@ import MappableMessage from './models/MappableMessage.js'
 
 const decoder = new StringDecoder('utf8')
 
+const mapBackMessageFunc = async (ws, packet) => packetMapper.mapPacket(null, ws.apiType, packet, {})
+
 const onMessage = async (ws, message) => {
   const stringMessage = decoder.write(Buffer.from(message))
   console.log('[RECV]', stringMessage)
@@ -32,12 +34,10 @@ const onMessage = async (ws, message) => {
   const api = APIs[ws.apiType]
   const response = await api.onMessage(ws, stringMessage)
 
-  const mapBackMessageFunc = async (packet) => packetMapper.mapPacket(null, ws.apiType, packet)
-
   for (let backMessage of response.backMessages) {
     try {
       if (backMessage instanceof MappableMessage) {
-        backMessage = await backMessage.mapMessage(mapBackMessageFunc)
+        backMessage = await backMessage.mapMessage(mapBackMessageFunc.bind(ws))
       }
       console.log('[SENT]', backMessage)
       ws.send(backMessage)

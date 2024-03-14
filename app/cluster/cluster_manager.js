@@ -31,6 +31,20 @@ class ClusterManager {
     )
   }
 
+  async senderClusterDeliverPacket(nodeUrl, deliverPacket) {
+    const ip = getIpFromWsUrl(nodeUrl)
+    const port = nodeUrl.split(':').at(2)
+
+    let recipientClusterNodeWS = this.clusterNodesWS[getIpFromWsUrl(nodeUrl)]
+
+    if (!recipientClusterNodeWS) {
+      recipientClusterNodeWS = await this.createSocketWithNode(ip, port)
+    }
+
+    const clusterPacket = { deliverPacket }
+    recipientClusterNodeWS.send(JSON.stringify(clusterPacket))
+  }
+
   async createSocketWithNode(ip, port) {
     return new Promise((resolve, reject) => {
       const existingWS = this.clusterNodesWS[ip]
@@ -67,6 +81,7 @@ class ClusterManager {
 
       ws.on('message', async (data) => {
         const json = JSON.parse(decoder.write(Buffer.from(data)))
+
         console.log('[ClusterManager] ws on Message', json)
 
         if (json.node_info) {
@@ -76,11 +91,7 @@ class ClusterManager {
           return
         }
 
-        await packetManager.deliverClusterMessageToUser(
-          json.userId,
-          json.message,
-          json.notSaveInOfflineStorage
-        )
+        await packetManager.deliverClusterMessageToUser(json.deliverPacket)
       })
 
       ws.on('close', async () => {
@@ -121,6 +132,9 @@ class ClusterManager {
 
         message: async (ws, message, isBinary) => {
           const json = JSON.parse(decoder.write(Buffer.from(message)))
+  
+          console.log('[ClusterManager] ws on Message', json)
+
           if (json.node_info) {
             const nodeInfo = json.node_info
             this.clusterNodesWS[nodeInfo.ip] = ws
@@ -129,11 +143,7 @@ class ClusterManager {
             return
           }
 
-          await packetManager.deliverClusterMessageToUser(
-            json.userId,
-            json.message,
-            json.notSaveInOfflineStorage
-          )
+          await packetManager.deliverClusterMessageToUser(json.deliverPacket)
         },
       })
 

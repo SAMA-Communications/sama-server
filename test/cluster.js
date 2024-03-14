@@ -94,14 +94,19 @@ describe('Cluster Message function', async () => {
         deliverMessage.notSaveInOfflineStorage
       )
 
-      const response = JSON.parse(secondSocketResponse)
-      response.message = JSON.parse(response.message)
+      const response = JSON.parse(secondSocketResponse).deliverPacket
+      response.packet = JSON.parse(response.packet)
 
       assert.notEqual(response, undefined)
+
       assert.strictEqual(response.userId, usersIds[1].toString())
-      assert.notEqual(response.message, undefined)
-      assert.strictEqual(response.message.message.from, usersIds[0].toString())
-      assert.strictEqual(response.message.message.body, 'hey how is going?')
+      assert.strictEqual(response.senderInfo.session.userId, usersIds[0].toString())
+
+      assert.notEqual(response.packet, undefined)
+      assert.strictEqual(response.packet.message.from, usersIds[0].toString())
+      assert.strictEqual(response.packet.message.body, 'hey how is going?')
+
+
     })
   })
 
