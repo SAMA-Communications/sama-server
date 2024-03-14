@@ -2,9 +2,10 @@ import { buildWsEndpoint } from '../../../utils/build_ws_endpoint.js'
 import { splitWsEndpoint } from '../../../utils/split_ws_endpoint.js'
 
 class SessionService {
-  constructor(activeSessions, redisConnection) {
+  constructor(activeSessions, redisConnection, RuntimeDefinedContext) {
     this.activeSessions = activeSessions
     this.redisConnection = redisConnection
+    this.RuntimeDefinedContext = RuntimeDefinedContext
   }
   
   totalSessions() {
@@ -83,7 +84,7 @@ class SessionService {
     await this.redisConnection.client.sAdd(
       `user:${userId}`,
       JSON.stringify({
-        [deviceId]: buildWsEndpoint(nodeIp, nodePort),
+        [deviceId]: buildWsEndpoint(nodeIp, nodePort)
       })
     )
 
@@ -114,14 +115,27 @@ class SessionService {
   }
 
   setSessionUserId(ws, userId) {
-    this.activeSessions.SESSIONS.set(ws, { user_id: userId })
+    const session = this.getSession(ws)
+
+    if (!session) {
+      this.setSession(ws, userId)
+      return
+    }
+
+    session.userId = userId
+  }
+
+  setSession(ws, userId, extraParams = {}) {
+    this.activeSessions.SESSIONS.set(ws, { userId, extraParams })
   }
 
   getSessionUserId(ws) {
-    if (this.activeSessions.SESSIONS.get(ws)) {
-      return this.activeSessions.SESSIONS.get(ws).user_id
-    }
-    return null
+    const session = this.getSession(ws)
+    return session ? session.userId : null
+  }
+
+  getSession(ws) {
+    return this.activeSessions.SESSIONS.has(ws) ? this.activeSessions.SESSIONS.get(ws) : null
   }
 
   getDeviceId(ws, userId) {
@@ -129,7 +143,41 @@ class SessionService {
       return this.activeSessions.DEVICES[userId].find((el) => el.ws === ws)
         ?.deviceId
     }
+
     return null
+  }
+
+  getUserDevices(userId) {
+    return this.activeSessions.DEVICES[userId] ?? []
+  }
+
+  async removeAllUserSessions(ws) {
+    const userId = this.getSessionUserId(ws)
+    delete this.activeSessions.DEVICES[userId]
+    await this.clearUserNodeData(userId)
+    this.activeSessions.SESSIONS.delete(ws)
+  }
+
+  async removeUserSession(ws, userId, deviceId) {
+    userId = userId ?? this.getSessionUserId(ws)
+    deviceId = deviceId ?? this.getDeviceId(ws, userId)
+
+    const leftActiveConnections = this.getUserDevices(userId).filter(({ deviceId: activeDeviceId }) => activeDeviceId !== deviceId)
+
+    if (!leftActiveConnections.length) {
+      this.removeAllUserSessions(ws)
+      return
+    }
+
+    await this.removeUserNodeData(
+      userId,
+      deviceId,
+      this.RuntimeDefinedContext.APP_IP,
+      this.RuntimeDefinedContext.CLUSTER_PORT
+    )
+
+    this.activeSessions.DEVICES[userId] = leftActiveConnections
+    this.activeSessions.SESSIONS.delete(ws)
   }
 }
 

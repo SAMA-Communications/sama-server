@@ -2,10 +2,11 @@ import BaseJSONController from './base.js'
 
 import { ERROR_STATUES } from '@sama/constants/errors.js'
 
+import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
+
 import Contact from '@sama/models/contact.js'
 
 import contactsMatchRepository from '@sama/repositories/contact_match_repository.js'
-import sessionRepository from '@sama/repositories/session_repository.js'
 
 import { ObjectId } from '@sama/lib/db.js'
 
@@ -14,7 +15,10 @@ import Response from '@sama/networking/models/Response.js'
 class ContactsController extends BaseJSONController {
   async contact_add(ws, data) {
     const { id: requestId, contact_add: contactData } = data
-    const currentUser = sessionRepository.getSessionUserId(ws)
+
+    const sessionService = ServiceLocatorContainer.use('SessionService')
+
+    const currentUser = sessionService.getSessionUserId(ws)
 
     await contactsMatchRepository.matchContactWithUser(contactData)
     contactData.user_id = ObjectId(currentUser)
@@ -69,7 +73,10 @@ class ContactsController extends BaseJSONController {
 
   async contact_list(ws, data) {
     const { id: requestId, contact_list: query } = data
-    const currentUser = sessionRepository.getSessionUserId(ws).toString()
+
+    const sessionService = ServiceLocatorContainer.use('SessionService')
+
+    const currentUser = sessionService.getSessionUserId(ws).toString()
 
     const queryParams = { user_id: currentUser.toString() }
     if (query.updated_at) {
@@ -82,12 +89,11 @@ class ContactsController extends BaseJSONController {
   }
 
   async contact_delete(ws, data) {
-    const {
-      id: requestId,
-      contact_delete: { id },
-    } = data
+    const { id: requestId, contact_delete: { id } } = data
 
-    const userId = sessionRepository.getSessionUserId(ws)
+    const sessionService = ServiceLocatorContainer.use('SessionService')
+
+    const userId = sessionService.getSessionUserId(ws)
     const contact = await Contact.findOne({ _id: id, user_id: userId })
     contact && (await contact.delete())
 

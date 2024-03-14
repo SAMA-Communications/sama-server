@@ -6,6 +6,7 @@ import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
 import { createUserArray, sendLogin, sendLogout } from './utils.js'
 
 const userRepo = ServiceLocatorContainer.use('UserRepository')
+const activityManagerService = ServiceLocatorContainer.use('ActivityManagerService')
 
 let currentUserToken1 = ''
 let currentUserToken = ''
@@ -38,8 +39,8 @@ describe('User activities', async () => {
     responseData = responseData.backMessages.at(0)
 
     assert.strictEqual(responseData.response.id, requestData.request.id)
-    assert.equal(ACTIVITY.SUBSCRIBED_TO[usersIds[0]], usersIds[1])
-    assert.notEqual(ACTIVITY.SUBSCRIBERS[usersIds[1]][usersIds[0]], undefined)
+    assert.equal(activityManagerService.subscribeTarget(usersIds[0]), usersIds[1])
+    assert.notEqual(activityManagerService.subscribers(usersIds[1])[usersIds[0]], undefined)
     assert.notEqual(responseData.response.last_activity, undefined)
   })
 

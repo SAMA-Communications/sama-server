@@ -2,7 +2,7 @@ import BaseJSONController from './base.js'
 
 import OpLog from '@sama/models/operations_log.js'
 
-import sessionRepository from '@sama/repositories/session_repository.js'
+import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
 
 import MappableMessage from '@sama/networking/models/MappableMessage.js'
 import Response from '@sama/networking/models/Response.js'
@@ -29,8 +29,12 @@ class OperationsLogController extends BaseJSONController {
       },
     } = data
 
+    const sessionService = ServiceLocatorContainer.use('SessionService')
+
+    const currentUserId = sessionService.getSessionUserId(ws)
+
     const query = {
-      user_id: sessionRepository.getSessionUserId(ws),
+      user_id: currentUserId,
       created_at: gt ? { $gt: new Date(gt) } : { $lt: new Date(lt) },
     }
 

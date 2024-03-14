@@ -1,7 +1,7 @@
 import RuntimeDefinedContext from '../store/RuntimeDefinedContext.js'
-import { ACTIVE } from '../store/session.js'
 
-import sessionRepository from '../repositories/session_repository.js'
+import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
+
 import operationsLogRepository from '../repositories/operations_log_repository.js'
 
 import clusterManager from '../cluster/cluster_manager.js'
@@ -12,7 +12,8 @@ import { getIpFromWsUrl } from '../utils/get_ip_from_ws_url.js'
 
 class PacketManager {
   async deliverToUserOnThisNode(ws, userId, packet, deviceId, notSaveInOfflineStorage) {
-    const activeDevices = ACTIVE.DEVICES[userId] 
+    const sessionService = ServiceLocatorContainer.use('SessionService')
+    const activeDevices = sessionService.getUserDevices(userId)
 
     if (!activeDevices && !notSaveInOfflineStorage) {
       operationsLogRepository.savePacket(userId, packet)
@@ -34,11 +35,13 @@ class PacketManager {
   }
 
   #deliverToUserDevices(ws, nodeConnections, userId, packet, notSaveInOfflineStorage) {
+    const sessionService = ServiceLocatorContainer.use('SessionService')
+
     nodeConnections.forEach(async (data) => {
       const nodeInfo = JSON.parse(data)
       const nodeUrl = nodeInfo[Object.keys(nodeInfo)[0]]
       const nodeDeviceId = Object.keys(nodeInfo)[0]
-      const currentDeviceId = sessionRepository.getDeviceId(ws, userId)
+      const currentDeviceId = sessionService.getDeviceId(ws, userId)
 
       this.currentNodeUrl = buildWsEndpoint(
         RuntimeDefinedContext.APP_IP,
@@ -70,7 +73,7 @@ class PacketManager {
               err.slice(39)
             )
 
-            await sessionRepository.clearNodeUsersSession(nodeUrl)
+            await sessionService.clearNodeUsersSession(nodeUrl)
             if (!notSaveInOfflineStorage) {
               operationsLogRepository.savePacket(userId, packet)
             }
@@ -83,7 +86,7 @@ class PacketManager {
             JSON.stringify({ userId, message: packet })
           )
         } catch (err) {
-          await sessionRepository.clearNodeUsersSession(nodeUrl)
+          await sessionService.clearNodeUsersSession(nodeUrl)
           if (!notSaveInOfflineStorage) {
             operationsLogRepository.savePacket(userId, packet)
           }
@@ -93,6 +96,8 @@ class PacketManager {
   }
 
   async deliverToUserOrUsers(ws, packet, pushQueueMessage, usersIds, notSaveInOfflineStorage) {
+    const sessionService = ServiceLocatorContainer.use('SessionService')
+
     if (!usersIds?.length) {
       return
     }
@@ -100,7 +105,7 @@ class PacketManager {
     const offlineUsersByPackets = []
 
     for (const userId of usersIds) {
-      const userNodeData = await sessionRepository.getUserNodeData(userId)
+      const userNodeData = await sessionService.getUserNodeData(userId)
 
       if (!userNodeData?.length) {
         if (!notSaveInOfflineStorage) {

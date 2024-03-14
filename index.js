@@ -104,8 +104,6 @@ await connectToDBPromise().then(() => {
 
 await RedisClient.connect()
 
-await clusterSyncer.startSyncingClusterNodes()
-
 await blockListRepository.warmCache()
 
 // Register providers
@@ -151,5 +149,9 @@ for (const api of Object.values(APIs)) {
 // Boot providers
 await ServiceLocatorContainer.createAllSingletonInstances()
 await ServiceLocatorContainer.boot()
+
+// Start Cluster Sync
+
+await clusterSyncer.startSyncingClusterNodes()
 
 // https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph
