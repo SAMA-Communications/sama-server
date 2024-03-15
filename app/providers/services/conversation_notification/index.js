@@ -19,9 +19,15 @@ class ConversationNotificationService {
       body: `${userDisplayName} ${eventParams.push_message_body}`,
     }
 
-    const eventMessage = {
-      event: { [eventParams.event_request_name]: conversation.visibleParams() },
+    const createSystemMessageParams = {
+      id: conversation._id.toString(),
+      from: user.native_id.toString(),
+      x: { [eventParams.event_request_name]: conversation.visibleParams() }
     }
+
+    const systemMessage = await this.messageService.createSystemMessage(createSystemMessageParams, conversation._id.toString())
+
+    const eventMessage = { system_message: systemMessage.serialize() }
   
     const eventNotification = new CreatePushEventOptions(user.native_id, pushPayload, {})
 
