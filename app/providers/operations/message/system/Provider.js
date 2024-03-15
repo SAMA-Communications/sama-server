@@ -8,11 +8,13 @@ class MessageSendSystemOperationRegisterProvider extends RegisterProvider {
     const sessionService = slc.use('SessionService')
     const userService = slc.use('UserService')
     const conversationService = slc.use('ConversationService')
+    const messageService = slc.use('MessageService')
 
     return new MessageSendSystemOperation(
       sessionService,
       userService,
-      conversationService
+      conversationService,
+      messageService
     )
   }
 }

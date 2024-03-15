@@ -5,14 +5,16 @@ class MessageSendSystemOperation {
     sessionService,
     userService,
     conversationService,
+    messageService
   ) {
     this.sessionService = sessionService
     this.userService = userService
     this.conversationService = conversationService
+    this.messageService = messageService
   }
 
-  async perform (ws, messageParams) {
-    const { id, cid, uids, x } = messageParams
+  async perform (ws, systemMessageParams) {
+    const { id, cid, uids, x } = systemMessageParams
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
 
@@ -24,20 +26,11 @@ class MessageSendSystemOperation {
       recipientsIds = await this.userService.userRepo.retrieveExistedIds(uids)
     }
 
-    const currentTs = Math.floor(new Date().getTime() / 1000)
+    const createSystemMessage = { id: id, x, from: currentUserId }
 
-    const systemMessage = {
-      _id: id,
-      t: currentTs,
-      from: currentUserId,
-      x
-    }
+    const systemMessage = await this.messageService.createSystemMessage(createSystemMessage, cid)
 
-    if (cid) {
-      systemMessage.cid = cid
-    }
-
-    return { recipientsIds, systemMessage }
+    return { recipientsIds, systemMessage: systemMessage.serialize() }
   }
 
   async #hashAccessToConversation(conversationId, currentUserId) {
