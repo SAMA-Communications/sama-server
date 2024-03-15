@@ -134,17 +134,21 @@ export const messagesSchemaValidation = {
       cid: Joi.string(),
       uids: Joi.array().items(
           Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required()
-        ),
+        ).max(20),
       x: Joi.object({}).unknown().required().error(requiredError(`'x'`))
     })
     .or('cid', 'uids').error((errors) => {
-      console.log('[errors]', errors)
       return errors.map(error => {
         if (error instanceof Error) {
           return error
         }
 
-        if (error.local.peers.toString() === 'cid,uids') {
+        if (error.local.limit) {
+          const text = `'${error.local.key}' max length ${error.local.limit}`
+          return new Error(text, { cause: { status: 422, message: text } })
+        }
+
+        if (error.local.peers?.toString() === 'cid,uids') {
           return requiredError(`'cid' or 'uids'`)
         }
 

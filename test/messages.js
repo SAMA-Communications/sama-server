@@ -284,6 +284,29 @@ describe('Message function', async () => {
       })
     })
 
+    it(`should fail 'uids' max size 20`, async () => {
+      const bigUids = new Array(21).fill(0).map((_, index) => `${usersIds[1]}_${index + 1}`)
+
+      const requestData = {
+        system_message: {
+          id: 'xyz',
+          uids: bigUids
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
+        mockedWS,
+        JSON.stringify(requestData)
+      )
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.equal(responseData.ask, undefined)
+      assert.deepEqual(responseData.system_message.error, {
+        status: 422,
+        message: `'uids' max length 20`,
+      })
+    })
 
     it(`should fail 'id' is missed`, async () => {
       const requestData = {
