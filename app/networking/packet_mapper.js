@@ -10,7 +10,7 @@ class PacketMapper {
     return apiType.at(0)
   }
 
-  async mapPacket(sourceAPIType, destinationAPIType, packet, senderInfo) {
+  async mapPacket(sourceAPIType, destinationAPIType, packet, senderInfo, recipientInfo) {
     if (!sourceAPIType) {
       sourceAPIType = this.detectAPIType(packet)
     }
@@ -24,11 +24,11 @@ class PacketMapper {
     }
 
     if (sourceAPIType === BASE_API) {
-      return await APIs[destinationAPIType].mapPacketFromAnotherAPI(sourceAPIType, packet, senderInfo)
+      return await APIs[destinationAPIType].mapPacketFromAnotherAPI(sourceAPIType, packet, senderInfo, recipientInfo)
     }
 
     if (destinationAPIType === BASE_API) {
-      return await APIs[destinationAPIType].mapPacketToAnotherAPI(destinationAPIType, packet, senderInfo)
+      return await APIs[destinationAPIType].mapPacketToAnotherAPI(destinationAPIType, packet, senderInfo, recipientInfo)
     }
   }
 }

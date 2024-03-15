@@ -17,7 +17,7 @@ import MappableMessage from './models/MappableMessage.js'
 
 const decoder = new StringDecoder('utf8')
 
-const mapBackMessageFunc = async (ws, packet) => packetMapper.mapPacket(null, ws.apiType, packet, {})
+const mapBackMessageFunc = async (ws, packet) => packetMapper.mapPacket(null, ws.apiType, packet, {}, {})
 
 const onMessage = async (ws, message) => {
   const stringMessage = decoder.write(Buffer.from(message))
