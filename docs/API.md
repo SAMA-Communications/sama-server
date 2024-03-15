@@ -698,6 +698,69 @@ Additionally, all conversation's participants who is offline will receive the fo
 
 All offline participants can retrieve the messages via below `List messages` API.
 
+## Send/Receive system messages
+
+```
+{
+  system_message: {
+    id: "5а34p21m0xj23",
+    uids: ["63480e68f4794709f802a2fc", "63480e68f4794709f802a2fb"],
+    x: {
+      param1: "value",
+      param2: "value"
+    },
+  }
+}
+```
+
+'uids' should contain recipients user id, who is online will receive the following message in real-time:
+
+```
+{
+  system_message: {
+    _id: "5а34p21m0xj23",
+    t: 15673838833,
+    from: "634ec51c0b65918393dca5bf",
+    x: {
+      param1: "value",
+      param2: "value"
+    },
+  }
+}
+```
+
+with 'cid'
+
+```
+{
+  system_message: {
+    id: "5а34p21m0xj24",
+    cid: "63077ad836b78c3d82af0812",
+    x: {
+      param1: "value",
+      param2: "value"
+    },
+  }
+}
+```
+
+All conversation's participants who is online will receive the following message in real-time:
+
+```
+{
+  system_message: {
+    _id: "5а34p21m0xj24",
+    t: 15673838833,
+    cid: "63077ad836b78c3d82af0812"
+    from: "634ec51c0b65918393dca5bf",
+    x: {
+      param1: "value",
+      param2: "value"
+    },
+  }
+}
+```
+
 ## Sent status
 
 On each message sent to server - a server will deliver back to client a simple packet with message id and timestamp at which the message was stored in DB so both sender & recipient will have same date sent time stored:
