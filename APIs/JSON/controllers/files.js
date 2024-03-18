@@ -2,15 +2,16 @@ import BaseJSONController from './base.js'
 
 import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
 
-import sessionRepository from '@sama/repositories/session_repository.js'
-
 import Response from '@sama/networking/models/Response.js'
 
 class FilesController extends BaseJSONController {
   async create_url(ws, data) {
     const { id: requestId, create_files: reqFiles } = data
-    const currentUserId = sessionRepository.getSessionUserId(ws)
+
+    const sessionService = ServiceLocatorContainer.use('SessionService')
     const storageService = ServiceLocatorContainer.use('StorageService')
+
+    const currentUserId = sessionService.getSessionUserId(ws)
 
     const resFiles = []
 
@@ -25,8 +26,11 @@ class FilesController extends BaseJSONController {
 
   async get_download_url(ws, data) {
     const { id: requestId, get_file_urls: { file_ids: objectIds } } = data
-    const currentUserId = sessionRepository.getSessionUserId(ws)
+
+    const sessionService = ServiceLocatorContainer.use('SessionService')
     const storageService = ServiceLocatorContainer.use('StorageService')
+
+    const currentUserId = sessionService.getSessionUserId(ws)
 
     const urls = {}
 

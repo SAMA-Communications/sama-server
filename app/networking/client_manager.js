@@ -4,12 +4,9 @@ import { StringDecoder } from 'string_decoder'
 import { CONSTANTS as MAIN_CONSTANTS } from '../constants/constants.js'
 import { ERROR_STATUES } from '../constants/errors.js'
 
-import RuntimeDefinedContext from '../store/RuntimeDefinedContext.js'
-import { ACTIVE } from '../store/session.js'
-
 import { APIs, detectAPIType } from './APIs.js'
 
-import sessionRepository from '../repositories/session_repository.js'
+import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
 
 import packetManager from './packet_manager.js'
 import packetMapper from './packet_mapper.js'
@@ -19,6 +16,8 @@ import activitySender from '../services/activity_sender.js'
 import MappableMessage from './models/MappableMessage.js'
 
 const decoder = new StringDecoder('utf8')
+
+const mapBackMessageFunc = async (ws, packet) => packetMapper.mapPacket(null, ws.apiType, packet, {}, {})
 
 const onMessage = async (ws, message) => {
   const stringMessage = decoder.write(Buffer.from(message))
@@ -35,12 +34,10 @@ const onMessage = async (ws, message) => {
   const api = APIs[ws.apiType]
   const response = await api.onMessage(ws, stringMessage)
 
-  const mapBackMessageFunc = async (packet) => packetMapper.mapPacket(null, ws.apiType, packet)
-
   for (let backMessage of response.backMessages) {
     try {
       if (backMessage instanceof MappableMessage) {
-        backMessage = await backMessage.mapMessage(mapBackMessageFunc)
+        backMessage = await backMessage.mapMessage(mapBackMessageFunc.bind(ws))
       }
       console.log('[SENT]', backMessage)
       ws.send(backMessage)
@@ -69,7 +66,9 @@ const onMessage = async (ws, message) => {
   }
 
   if (response.lastActivityStatusResponse) {
-    const userId = response.lastActivityStatusResponse.userId || sessionRepository.getSessionUserId(ws)
+    const sessionService = ServiceLocatorContainer.use('SessionService')
+
+    const userId = response.lastActivityStatusResponse.userId || sessionService.getSessionUserId(ws)
     console.log('[UPDATE_LAST_ACTIVITY]', userId, response.lastActivityStatusResponse)
     await activitySender.updateAndSendUserActivity(ws, userId, response.lastActivityStatusResponse.status)
   }
@@ -93,27 +92,20 @@ class ClientManager {
       },
 
       close: async (ws, code, message) => {
-        console.log('[ClientManager] ws on Close')
+        const sessionService = ServiceLocatorContainer.use('SessionService')
 
-        const userId = sessionRepository.getSessionUserId(ws)
-        const arrDevices = ACTIVE.DEVICES[userId]
+        const userId = sessionService.getSessionUserId(ws)
 
-        if (arrDevices) {
-          ACTIVE.DEVICES[userId] = arrDevices.filter((obj) => {
-            if (obj.ws === ws) {
-              sessionRepository.removeUserNodeData(
-                userId,
-                obj.deviceId,
-                RuntimeDefinedContext.APP_IP,
-                RuntimeDefinedContext.CLUSTER_PORT
-              )
-              return false
-            }
-            return true
-          })
-          await activitySender.updateAndSendUserActivity(ws, userId, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE)
+        if (!userId) {
+          console.log('[ClientManager] ws on Close')
+          return
+        } else {
+          console.log('[ClientManager] ws on Close', userId)
         }
-        ACTIVE.SESSIONS.delete(ws)
+
+        await sessionService.removeUserSession(ws, userId)
+
+        await activitySender.updateAndSendUserActivity(ws, userId, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE)
       },
 
       message: async (ws, message, isBinary) => {

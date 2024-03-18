@@ -1,11 +1,14 @@
 import BaseMiddleware from '@sama/common/middleware.js'
-import { ACTIVE } from '@sama/store/session.js'
 import { ERROR_STATUES } from '@sama/constants/errors.js'
+
+import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
 
 class AuthGuardMiddleware extends BaseMiddleware {
   handle (ws, json) {
+    const sessionService = ServiceLocatorContainer.use('SessionService')
+
     if (
-      !ACTIVE.SESSIONS.get(ws) &&
+      !sessionService.getSession(ws) &&
       !json?.user_create &&
       !json?.user_login
     ) {

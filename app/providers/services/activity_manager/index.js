@@ -1,49 +1,49 @@
 import { CONSTANTS as MAIN_CONSTANTS } from '../../../constants/constants.js'
-import { ACTIVITY } from '../../../store/activity.js'
 
 class ActivityManagerService {
-  constructor(userService) {
+  constructor(ACTIVITY, userService) {
+    this.ACTIVITY = ACTIVITY
     this.userService = userService
   }
 
   // observer - targets relations
   subscribeTarget(observerId) {
-    return ACTIVITY.SUBSCRIBED_TO[observerId]
+    return this.ACTIVITY.SUBSCRIBED_TO[observerId]
   }
 
   addSubscribeTarget(observerId, targetId) {
-    ACTIVITY.SUBSCRIBED_TO[observerId] = targetId
+    this.ACTIVITY.SUBSCRIBED_TO[observerId] = targetId
   }
 
   deleteSubscribeTarget(observerId, targetId) {
-    delete ACTIVITY.SUBSCRIBED_TO[observerId]
+    delete this.ACTIVITY.SUBSCRIBED_TO[observerId]
   }
 
   clearAllSubscriptionTargets(observerId) {
-    delete ACTIVITY.SUBSCRIBED_TO[observerId]
+    delete this.ACTIVITY.SUBSCRIBED_TO[observerId]
   }
 
   // target - observer relations
   subscribers(targetId) {
-    return ACTIVITY.SUBSCRIBERS[targetId] || {}
+    return this.ACTIVITY.SUBSCRIBERS[targetId] || {}
   }
 
   addSubscriber(targetId, observerId) {
-    if (!ACTIVITY.SUBSCRIBERS[targetId]) {
-      ACTIVITY.SUBSCRIBERS[targetId] = {}
+    if (!this.ACTIVITY.SUBSCRIBERS[targetId]) {
+      this.ACTIVITY.SUBSCRIBERS[targetId] = {}
     }
 
-    ACTIVITY.SUBSCRIBERS[targetId][observerId] = true
+    this.ACTIVITY.SUBSCRIBERS[targetId][observerId] = true
   }
 
   deleteSubscriber(targetId, observerId) {
-    if (ACTIVITY.SUBSCRIBERS[targetId]) {
-      delete ACTIVITY.SUBSCRIBERS[targetId][observerId]
+    if (this.ACTIVITY.SUBSCRIBERS[targetId]) {
+      delete this.ACTIVITY.SUBSCRIBERS[targetId][observerId]
     }
   }
 
   clearSubscribed(targetId) {
-    ACTIVITY.SUBSCRIBERS[targetId] = {}
+    this.ACTIVITY.SUBSCRIBERS[targetId] = {}
   }
 
   async subscribeObserverToTarget(observerId, targetId) {

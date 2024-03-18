@@ -5,12 +5,10 @@ const name = 'UserLogoutOperation'
 
 class UserLogoutOperationRegisterProvider extends RegisterProvider {
   register(slc) {
-    const RuntimeDefinedContext = slc.use('RuntimeDefinedContext')
     const sessionService = slc.use('SessionService')
     const userTokenRepo = slc.use('UserTokenRepository')
 
     return new UserLogoutOperation(
-      RuntimeDefinedContext,
       sessionService,
       userTokenRepo,
     )

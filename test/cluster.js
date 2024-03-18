@@ -2,7 +2,6 @@ import ip from 'ip'
 import uWS from 'uWebSockets.js'
 import assert from 'assert'
 
-import sessionRepository from './../app/repositories/session_repository.js'
 import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
 import clusterManager from './../app/cluster/cluster_manager.js'
 import {
@@ -11,10 +10,10 @@ import {
   mockedWS,
   sendLogin,
 } from './utils.js'
-import { ACTIVE } from './../app/store/session.js'
 import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
 import packetManager from './../app/networking/packet_manager.js'
 
+const sessionService = ServiceLocatorContainer.use('SessionService')
 const userRepo = ServiceLocatorContainer.use('UserRepository')
 const conversationRepo = ServiceLocatorContainer.use('ConversationRepository')
 const conversationParticipantRepo = ServiceLocatorContainer.use('ConversationParticipantRepository')
@@ -42,7 +41,7 @@ describe('Cluster Message function', async () => {
     )
 
     //emulate user2 connect in other node
-    deviceId = ACTIVE.DEVICES[usersIds[0]][0].deviceId
+    deviceId = sessionService.activeSessions.DEVICES[usersIds[0]][0].deviceId
 
     const SSL_APP_OPTIONS = {
       key_file_name: process.env.SSL_KEY_FILE_NAME,
@@ -64,7 +63,7 @@ describe('Cluster Message function', async () => {
         secondSocketResponse = data
       },
     }
-    await sessionRepository.storeUserNodeData(
+    await sessionService.storeUserNodeData(
       usersIds[1],
       deviceId,
       ip.address(),
@@ -95,14 +94,19 @@ describe('Cluster Message function', async () => {
         deliverMessage.notSaveInOfflineStorage
       )
 
-      const response = JSON.parse(secondSocketResponse)
-      response.message = JSON.parse(response.message)
+      const response = JSON.parse(secondSocketResponse).deliverPacket
+      response.packet = JSON.parse(response.packet)
 
       assert.notEqual(response, undefined)
+
       assert.strictEqual(response.userId, usersIds[1].toString())
-      assert.notEqual(response.message, undefined)
-      assert.strictEqual(response.message.message.from, usersIds[0].toString())
-      assert.strictEqual(response.message.message.body, 'hey how is going?')
+      assert.strictEqual(response.senderInfo.session.userId, usersIds[0].toString())
+
+      assert.notEqual(response.packet, undefined)
+      assert.strictEqual(response.packet.message.from, usersIds[0].toString())
+      assert.strictEqual(response.packet.message.body, 'hey how is going?')
+
+
     })
   })
 

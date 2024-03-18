@@ -1,5 +1,4 @@
 import { ERROR_STATUES } from '../../../../constants/errors.js'
-import { ACTIVE } from '../../../../store/session.js'
 
 class UserDeleteOperation {
   constructor(
@@ -26,11 +25,7 @@ class UserDeleteOperation {
 
     await this.activityManagerService.unsubscribeObserver(userId)
 
-    if (ACTIVE.SESSIONS.get(ws)) {
-      delete ACTIVE.DEVICES[userId]
-      await this.sessionService.clearUserNodeData(userId)
-      ACTIVE.SESSIONS.delete(ws)
-    }
+    await this.sessionService.removeAllUserSessions(ws)
 
     const user = await this.userService.userRepo.findById(userId)
     if (!user) {

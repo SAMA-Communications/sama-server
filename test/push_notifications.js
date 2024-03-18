@@ -514,15 +514,15 @@ describe('PushNotification functions', async () => {
         JSON.stringify(requestData.request.push_event_create.message)
       )
       assert.strictEqual(
-        event.user_id,
+        event.user_id.toString(),
         usersIds[0].toString()
       )
       assert.strictEqual(
-        event.user_ids[0],
+        event.user_ids[0].toString(),
         usersIds[0].toString()
       )
       assert.strictEqual(
-        event.user_ids[1],
+        event.user_ids[1].toString(),
         usersIds[1].toString()
       )
     })

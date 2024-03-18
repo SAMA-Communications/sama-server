@@ -4,7 +4,7 @@ import clusterManager from './cluster_manager.js'
 
 import ClusterNode from '../models/cluster_node.js'
 
-import sessionRepository from '../repositories/session_repository.js'
+import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
 
 class ClusterSyncer {
   constructor() {
@@ -84,12 +84,15 @@ class ClusterSyncer {
   }
 
   async #syncCluster() {
+    const sessionService = ServiceLocatorContainer.use('SessionService')
+
     const clusterNodeParams = {
       ip_address: RuntimeDefinedContext.APP_IP,
       hostname: RuntimeDefinedContext.APP_HOSTNAME,
       port: RuntimeDefinedContext.CLUSTER_PORT,
-      users_count: sessionRepository.sessionsTotal,
+      users_count: sessionService.sessionsTotal,
     }
+
     await this.#storeCurrentNode(clusterNodeParams)
 
     await this.#retrieveExistingClusterNodes()
