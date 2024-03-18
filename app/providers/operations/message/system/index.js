@@ -1,29 +1,39 @@
 import { ERROR_STATUES } from '../../../../constants/errors.js'
 
-class MessageDeleteOperation {
+class MessageSendSystemOperation {
   constructor(
     sessionService,
+    userService,
     conversationService,
     messageService
   ) {
     this.sessionService = sessionService
+    this.userService = userService
     this.conversationService = conversationService
     this.messageService = messageService
   }
 
-  async perform (ws, deleteMessageParams) {
-    const { cid: cId, ids: mIds, type } = deleteMessageParams
+  async perform (ws, systemMessageParams) {
+    const { id, cid, uids, x } = systemMessageParams
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
-    const participantIds = await this.#hasAccess(cId, currentUserId)
 
-    const isDeleteAll = type === 'all'
-    await this.messageService.deleteMessages(currentUserId, mIds, isDeleteAll)
+    let recipientsIds = []
 
-    return { isDeleteAll, participantIds, info: { userId: currentUserId, cId, mIds: mIds } }
+    if (cid) {
+      recipientsIds = await this.#conversationParticipants(cid, currentUserId)
+    } else {
+      recipientsIds = await this.userService.userRepo.retrieveExistedIds(uids)
+    }
+
+    const createSystemMessage = { id: id, x, from: currentUserId }
+
+    const systemMessage = await this.messageService.createSystemMessage(createSystemMessage, cid)
+
+    return { recipientsIds, systemMessage: systemMessage.serialize() }
   }
 
-  async #hasAccess(conversationId, currentUserId) {
+  async #conversationParticipants(conversationId, currentUserId) {
     const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(conversationId, currentUserId)
 
     if (!conversation) {
@@ -42,4 +52,4 @@ class MessageDeleteOperation {
   }
 }
 
-export default MessageDeleteOperation
+export default MessageSendSystemOperation

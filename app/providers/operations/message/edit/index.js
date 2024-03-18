@@ -16,7 +16,7 @@ class MessageEditOperation {
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
 
-    const message = await this.#hashAccess(messageId, currentUserId)
+    const message = await this.#hasAccess(messageId, currentUserId)
 
     await this.messageService.messageRepo.updateBody(messageId, newBody)
 
@@ -25,7 +25,7 @@ class MessageEditOperation {
     return { messageId, body: newBody, from: currentUserId, participantIds }
   }
 
-  async #hashAccess(messageId, currentUserId) {
+  async #hasAccess(messageId, currentUserId) {
     const { message, asOwner } = await this.messageService.hasAccessToMessage(messageId, currentUserId)
 
     if (!message) {

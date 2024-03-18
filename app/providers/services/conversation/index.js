@@ -59,7 +59,7 @@ class ConversationService {
     return conversationsParticipants.map(participant => participant.user_id)
   }
 
-  async hashAccessToConversation(conversationId, userId) {
+  async hasAccessToConversation(conversationId, userId) {
     const result = { conversation: null, asParticipant: false, asOwner: false, participantIds: null }
 
     result.conversation = await this.conversationRepo.findById(conversationId)

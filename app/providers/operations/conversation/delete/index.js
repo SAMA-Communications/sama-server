@@ -18,7 +18,7 @@ class ConversationDeleteOperation {
   }
 
   async #hasAccess(conversationId, userId) {
-    const { conversation, asParticipant, participantIds } = await this.conversationService.hashAccessToConversation(conversationId, userId)
+    const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(conversationId, userId)
     if (!conversation) {
       throw new Error(ERROR_STATUES.BAD_REQUEST.message, {
         cause: ERROR_STATUES.BAD_REQUEST,
