@@ -15,7 +15,7 @@ class MessageDeleteOperation {
     const { cid: cId, ids: mIds, type } = deleteMessageParams
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
-    const participantIds = await this.#hashAccess(cId, currentUserId)
+    const participantIds = await this.#hasAccess(cId, currentUserId)
 
     const isDeleteAll = type === 'all'
     await this.messageService.deleteMessages(currentUserId, mIds, isDeleteAll)
@@ -23,8 +23,8 @@ class MessageDeleteOperation {
     return { isDeleteAll, participantIds, info: { userId: currentUserId, cId, mIds: mIds } }
   }
 
-  async #hashAccess(conversationId, currentUserId) {
-    const { conversation, asParticipant, participantIds } = await this.conversationService.hashAccessToConversation(conversationId, currentUserId)
+  async #hasAccess(conversationId, currentUserId) {
+    const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(conversationId, currentUserId)
 
     if (!conversation) {
       throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {

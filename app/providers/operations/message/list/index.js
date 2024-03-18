@@ -20,7 +20,7 @@ class MessageListOperation {
     const currentUserId = this.sessionService.getSessionUserId(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
-    await this.#hashAccess(cId, currentUserId)
+    await this.#hasAccess(cId, currentUserId)
 
     const normalizedLimit = this.#normalizeLimitParam(limit)
 
@@ -36,8 +36,8 @@ class MessageListOperation {
     return messagesWithStatus.map(message => message.visibleParams())
   }
 
-  async #hashAccess(conversationId, currentUserId) {
-    const { conversation, asParticipant } = await this.conversationService.hashAccessToConversation(conversationId, currentUserId)
+  async #hasAccess(conversationId, currentUserId) {
+    const { conversation, asParticipant } = await this.conversationService.hasAccessToConversation(conversationId, currentUserId)
 
     if (!conversation) {
       throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {

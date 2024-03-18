@@ -21,7 +21,7 @@ class MessageSendSystemOperation {
     let recipientsIds = []
 
     if (cid) {
-      recipientsIds = await this.#hashAccessToConversation(cid, currentUserId)
+      recipientsIds = await this.#conversationParticipants(cid, currentUserId)
     } else {
       recipientsIds = await this.userService.userRepo.retrieveExistedIds(uids)
     }
@@ -33,8 +33,8 @@ class MessageSendSystemOperation {
     return { recipientsIds, systemMessage: systemMessage.serialize() }
   }
 
-  async #hashAccessToConversation(conversationId, currentUserId) {
-    const { conversation, asParticipant, participantIds } = await this.conversationService.hashAccessToConversation(conversationId, currentUserId)
+  async #conversationParticipants(conversationId, currentUserId) {
+    const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(conversationId, currentUserId)
 
     if (!conversation) {
       throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {
