@@ -165,6 +165,172 @@ describe('Message function', async () => {
     })
   })
 
+  describe('Send System Message', async () => {
+    it('should work with cid', async () => {
+      const requestData = {
+        system_message: {
+          id: 'xyz',
+          x: {
+            param1: 'value1',
+            param2: 'value2',
+          },
+          cid: currentConversationId
+        }
+      }
+  
+      let responseData = await packetJsonProcessor.processMessageOrError(
+        mockedWS,
+        JSON.stringify(requestData)
+      )
+
+      const deliverMessage = responseData.deliverMessages.at(0)
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(responseData.ask.mid, requestData.system_message.id)
+      assert.notEqual(responseData.ask.t, void 0)
+
+      const expectedSystemMessage = {
+        _id: requestData.system_message.id,
+        t: responseData.ask.t,
+        from: usersIds[0],
+        cid: currentConversationId,
+        x: requestData.system_message.x
+      }
+
+      assert.deepEqual(deliverMessage.packet.system_message, expectedSystemMessage)
+      assert.deepEqual(deliverMessage.userIds.map(id => `${id}`), [usersIds[1], usersIds[0]].map(id => `${id}`))
+      assert.strictEqual(deliverMessage.notSaveInOfflineStorage, true)
+    })
+
+    it('should work with uids', async () => {
+      const requestData = {
+        system_message: {
+          id: 'xyz',
+          x: {
+            param1: 'value1',
+            param2: 'value2',
+          },
+          uids: [usersIds[1], usersIds[2]]
+        }
+      }
+  
+      let responseData = await packetJsonProcessor.processMessageOrError(
+        mockedWS,
+        JSON.stringify(requestData)
+      )
+
+      const deliverMessage = responseData.deliverMessages.at(0)
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(responseData.ask.mid, requestData.system_message.id)
+      assert.notEqual(responseData.ask.t, void 0)
+
+      const expectedSystemMessage = {
+        _id: requestData.system_message.id,
+        t: responseData.ask.t,
+        from: usersIds[0],
+        x: requestData.system_message.x
+      }
+
+      assert.deepEqual(deliverMessage.packet.system_message, expectedSystemMessage)
+      assert.deepEqual(deliverMessage.userIds.map(id => `${id}`), [usersIds[1], usersIds[2]].map(id => `${id}`))
+      assert.strictEqual(deliverMessage.notSaveInOfflineStorage, true)
+    })
+
+    it(`should fail 'cid' or 'uids' field is required.`, async () => {
+      const requestData = {
+        system_message: {
+          id: 'xyz',
+          x: {
+            param1: 'value',
+            param2: 'value',
+          },
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
+        mockedWS,
+        JSON.stringify(requestData)
+      )
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.equal(responseData.ask, undefined)
+      assert.deepEqual(responseData.system_message.error, {
+        status: 422,
+        message: `'cid' or 'uids' field is required.`,
+      })
+    })
+
+    it(`should fail 'x' is required`, async () => {
+      const requestData = {
+        system_message: {
+          id: 'xyz',
+          uids: [usersIds[1]]
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
+        mockedWS,
+        JSON.stringify(requestData)
+      )
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.equal(responseData.ask, undefined)
+      assert.deepEqual(responseData.system_message.error, {
+        status: 422,
+        message: `'x' field is required.`,
+      })
+    })
+
+    it(`should fail 'uids' max size 20`, async () => {
+      const bigUids = new Array(21).fill(0).map((_, index) => `${usersIds[1]}_${index + 1}`)
+
+      const requestData = {
+        system_message: {
+          id: 'xyz',
+          uids: bigUids
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
+        mockedWS,
+        JSON.stringify(requestData)
+      )
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.equal(responseData.ask, undefined)
+      assert.deepEqual(responseData.system_message.error, {
+        status: 422,
+        message: `'uids' max length 20`,
+      })
+    })
+
+    it(`should fail 'id' is missed`, async () => {
+      const requestData = {
+        system_message: {
+          uids: [usersIds[1]],
+          x: { val1: 'one' }
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
+        mockedWS,
+        JSON.stringify(requestData)
+      )
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.equal(responseData.ask, undefined)
+      assert.deepEqual(responseData.system_message.error, {
+        status: 422,
+        message: `Incorrect message ID.`,
+      })
+    })
+  })
+
   describe('List of Messages', async () => {
     before(async () => {
       for (let i = 0; i < 8; i++) {

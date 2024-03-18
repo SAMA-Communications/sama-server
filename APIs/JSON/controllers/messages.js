@@ -25,6 +25,17 @@ class MessagesController extends BaseJSONController {
     })
   }
 
+  async sendSystem(ws, data) {
+    const { system_message: systemMessageParams } = data
+
+    const messageSendSystemOperation = ServiceLocatorContainer.use('MessageSendSystemOperation')
+    const { recipientsIds, systemMessage } = await messageSendSystemOperation.perform(ws, systemMessageParams)
+
+    return new Response()
+      .addBackMessage({ ask: { mid: systemMessage._id, t: systemMessage.t } })
+      .addDeliverMessage(new DeliverMessage(recipientsIds, { system_message: systemMessage }, true))
+  }
+
   async edit(ws, data) {
     const { id: requestId, message_edit: messageParams } = data
 

@@ -390,15 +390,21 @@ After conversation created, all the online participants will receive the followi
 
 ```
 {
-  event: {
-    conversation_created: {
-      _id: "646e2092d80fe5c4e688dfa0",
-      type: "u",
-      opponent_id: "646c823bf989c57fe910d289",
-      participants: [ "646c823bf989c57fe910d289" ],
-      owner_id: "646c82947b3aceab988c0073",
-      created_at: "2023-05-24T14:34:58.066Z",
-      updated_at: "2023-05-24T14:52:24.953Z"
+  system_message: {
+    _id: "646e2092d80fe5c4e688dfa0",
+    t: 15673838833,
+    cid: "646e2092d80fe5c4e688dfa0",
+    from: "63077ad836b78c3d82af0812",
+    x: {
+      conversation_created: {
+        _id: "646e2092d80fe5c4e688dfa0",
+        type: "u",
+        opponent_id: "646c823bf989c57fe910d289",
+        participants: [ "646c823bf989c57fe910d289" ],
+        owner_id: "646c82947b3aceab988c0073",
+        created_at: "2023-05-24T14:34:58.066Z",
+        updated_at: "2023-05-24T14:52:24.953Z"
+      }
     }
   }
 }
@@ -429,27 +435,24 @@ After adding users to a conversation, if they are online, they will receive the 
 
 ```
 {
-  event: {
-    conversation_created: {
-      _id: "646e2092d80fe5c4e688dfa0",
-      name: "Group without Lane",
-      type: "g",
-      owner_id: "646c82947b3aceab988c0073",
-      last_message: {
-        _id: "655f205fc52f990d27d58226",
-        body: "Lane Stark has been added to the group",
-        from: "64cb6b1eef440b9c5bf18d6a",
-        t: 1700733023,
-        status: "sent"
-      },
-      unread_messages_count: 1,
-      created_at: "2023-05-24T14:34:58.066Z",
-      updated_at: "2023-05-24T14:52:24.953Z"
+  system_message: {
+    _id: "646e2092d80fe5c4e688dfa0",
+    t: 15673838833,
+    cid: "646e2092d80fe5c4e688dfa0",
+    from: "63077ad836b78c3d82af0812",
+    x: {
+      conversation_updated: {
+        _id: "646e2092d80fe5c4e688dfa0",
+        type: "u",
+        opponent_id: "646c823bf989c57fe910d289",
+        participants: [ "646c823bf989c57fe910d289" ],
+        owner_id: "646c82947b3aceab988c0073",
+        created_at: "2023-05-24T14:34:58.066Z",
+        updated_at: "2023-05-24T14:52:24.953Z"
+      }
     }
   }
 }
-
-```
 
 The following message will also be sent to all users who are online and saved in the `Message` collection:
 
@@ -478,28 +481,25 @@ The following message will also be sent to all users who are online and saved in
 
 After kicking users out of the conversation, if they are online, they will receive the following event:
 
-```
 {
-  event: {
-    conversation_kicked: {
-      _id: "646e2092d80fe5c4e688dfa0",
-      name: "Group without Lane",
-      type: "g",
-      owner_id: "646c82947b3aceab988c0073",
-        last_message: {
-        _id: "655f205fc52f990d27d58226",
-        body: "Lane Stark has been added to the group",
-        from: "64cb6b1eef440b9c5bf18d6a",
-        t: 1700733023,
-        status: "sent"
-      },
-      unread_messages_count: 1,
-      created_at: "2023-05-24T14:34:58.066Z",
-      updated_at: "2023-05-24T14:52:24.953Z"
+  system_message: {
+    _id: "646e2092d80fe5c4e688dfa0",
+    t: 15673838833,
+    cid: "646e2092d80fe5c4e688dfa0",
+    from: "63077ad836b78c3d82af0812",
+    x: {
+      conversation_kicked: {
+        _id: "646e2092d80fe5c4e688dfa0",
+        type: "u",
+        opponent_id: "646c823bf989c57fe910d289",
+        participants: [ "646c823bf989c57fe910d289" ],
+        owner_id: "646c82947b3aceab988c0073",
+        created_at: "2023-05-24T14:34:58.066Z",
+        updated_at: "2023-05-24T14:52:24.953Z"
+      }
     }
   }
 }
-
 ```
 
 The following message will also be sent to all users who are online and saved in the `Message` collection:
@@ -697,6 +697,69 @@ Additionally, all conversation's participants who is offline will receive the fo
 ```
 
 All offline participants can retrieve the messages via below `List messages` API.
+
+## Send/Receive system messages
+
+```
+{
+  system_message: {
+    id: "5а34p21m0xj23",
+    uids: ["63480e68f4794709f802a2fc", "63480e68f4794709f802a2fb"],
+    x: {
+      param1: "value",
+      param2: "value"
+    },
+  }
+}
+```
+
+'uids' should contain recipients user id, who is online will receive the following message in real-time:
+
+```
+{
+  system_message: {
+    _id: "5а34p21m0xj23",
+    t: 15673838833,
+    from: "634ec51c0b65918393dca5bf",
+    x: {
+      param1: "value",
+      param2: "value"
+    },
+  }
+}
+```
+
+with 'cid'
+
+```
+{
+  system_message: {
+    id: "5а34p21m0xj24",
+    cid: "63077ad836b78c3d82af0812",
+    x: {
+      param1: "value",
+      param2: "value"
+    },
+  }
+}
+```
+
+All conversation's participants who is online will receive the following message in real-time:
+
+```
+{
+  system_message: {
+    _id: "5а34p21m0xj24",
+    t: 15673838833,
+    cid: "63077ad836b78c3d82af0812"
+    from: "634ec51c0b65918393dca5bf",
+    x: {
+      param1: "value",
+      param2: "value"
+    },
+  }
+}
+```
 
 ## Sent status
 

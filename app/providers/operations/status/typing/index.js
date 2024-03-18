@@ -13,7 +13,7 @@ class StatusTypingOperation {
     const { cid: conversationId, type } = statusTypingParams
     const currentUserId = this.sessionService.getSessionUserId(ws)
 
-    const participantIds = await this.#hashAccess(conversationId, currentUserId)
+    const participantIds = await this.#hasAccess(conversationId, currentUserId)
 
     const currentTs = parseInt(Math.round(Date.now() / 1000))
 
@@ -27,8 +27,8 @@ class StatusTypingOperation {
     return { status, participantIds }
   }
 
-  async #hashAccess(conversationId, currentUserId) {
-    const { conversation, asParticipant, participantIds } = await this.conversationService.hashAccessToConversation(conversationId, currentUserId)
+  async #hasAccess(conversationId, currentUserId) {
+    const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(conversationId, currentUserId)
 
     if (!conversation) {
       throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {

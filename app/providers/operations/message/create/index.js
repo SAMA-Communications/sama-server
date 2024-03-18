@@ -30,7 +30,7 @@ class MessageCreateOperation {
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
-    const { conversation, blockedUserIds, participantIds } = await this.#hashAccess(createMessageParams.cid, currentUserId)
+    const { conversation, blockedUserIds, participantIds } = await this.#hasAccess(createMessageParams.cid, currentUserId)
 
     const message = await this.messageService.create(currentUser, conversation, blockedUserIds, createMessageParams)
 
@@ -53,16 +53,16 @@ class MessageCreateOperation {
     return { messageId, message: message, deliverMessages, participantIds }
   }
 
-  async #hashAccess(conversationId, currentUserId) {
-    const { conversation, participantIds } = await this.#hashAccessToConversation(conversationId, currentUserId)
+  async #hasAccess(conversationId, currentUserId) {
+    const { conversation, participantIds } = await this.#hasAccessToConversation(conversationId, currentUserId)
 
     const blockedUserIds = await this.#checkBlocked(conversation, currentUserId, participantIds)
 
     return { conversation, blockedUserIds, participantIds }
   }
 
-  async #hashAccessToConversation(conversationId, currentUserId) {
-    const { conversation, asParticipant, participantIds } = await this.conversationService.hashAccessToConversation(conversationId, currentUserId)
+  async #hasAccessToConversation(conversationId, currentUserId) {
+    const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(conversationId, currentUserId)
 
     if (!conversation) {
       throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {

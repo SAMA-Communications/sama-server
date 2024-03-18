@@ -68,6 +68,13 @@ export const routes = {
       messagesSchemaValidation.delete
     )
     .delete(ws, json),
+  system_message: (ws, json) =>
+    MessagesController.middleware(authGuardMiddleware, ws, json)
+    .validate(
+      json.system_message,
+      messagesSchemaValidation.system
+    )
+    .sendSystem(ws, json),
   user_create: (ws, json) =>
     UsersController.middleware(authGuardMiddleware, ws, json)
     .validate(
