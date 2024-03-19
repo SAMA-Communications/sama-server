@@ -5,7 +5,7 @@
 ### Features
 
 - Implemented System Message API
-- Session extra params
+- Added Session extra params
 
 ### Updated
 
