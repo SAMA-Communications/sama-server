@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.22.0
+
+### Features
+
+- Implemented System Message API
+- Session extra params
+
+### Updated
+
+- Use System Message API for conversation event messages
+
 ## 0.21.0
 
 ### Added
