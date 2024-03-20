@@ -1,6 +1,7 @@
 import { ERROR_STATUES } from '../../../../constants/errors.js'
 import { CONVERSATION_EVENTS } from '../../../../constants/conversation.js'
 import CreateChatAlertEventOptions from '@sama/lib/push_queue/models/CreateChatAlertEventOptions.js'
+import MessagePublicFields from '@sama/DTO/Response/message/create/public_fields.js'
 
 
 class MessageCreateOperation {
@@ -118,7 +119,7 @@ class MessageCreateOperation {
       senderID: message.from,
     }, pushPayload)
 
-    const createdMessage = { message: message.visibleParams() }
+    const createdMessage = new MessagePublicFields(message)
 
     const createMessageEvent = { message: createdMessage, notification: createChatAlertEventOptions }
 

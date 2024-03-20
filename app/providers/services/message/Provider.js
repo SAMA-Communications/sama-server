@@ -5,10 +5,12 @@ const name = 'MessageService'
 
 class MessageServiceRegisterProvider extends RegisterProvider {
   register(slc) {
+    const helpers = slc.use('Helpers')
     const messageRepo = slc.use('MessageRepository')
     const messageStatusRepo = slc.use('MessageStatusRepository')
 
     return new MessageService(
+      helpers,
       messageRepo,
       messageStatusRepo
     )

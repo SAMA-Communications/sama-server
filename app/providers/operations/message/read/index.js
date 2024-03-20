@@ -1,4 +1,5 @@
 import groupBy from '@sama/utils/groupBy.js'
+import ReadMessagesPublicFields from '@sama/DTO/Response/message/read/public_fields.js'
 
 class MessageReadOperation {
   constructor(
@@ -23,7 +24,16 @@ class MessageReadOperation {
 
     const unreadMessagesGroupedByFrom = groupBy(unreadMessages, 'from')
 
-    return { unreadMessagesGroupedByFrom, currentUserId } 
+    const readMessagesGroups = Object.entries(unreadMessagesGroupedByFrom).map(([userId, messages]) => {
+      const firstMessage = messages.at(0)
+      const cId = firstMessage.cid
+      const messageIds = messages.map(message => message._id)
+      const readMessages = new ReadMessagesPublicFields({ cid: cId, messageIds, from: currentUserId })
+
+      return { userId, readMessages }
+    })
+
+    return { readMessagesGroups } 
   }
 }
 

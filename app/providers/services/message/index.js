@@ -1,10 +1,10 @@
-import SystemMessage from '@sama/providers/utils/DTO/system_message.js'
-
 class MessageService {
   constructor(
+    helpers,
     messageRepo,
     messageStatusRepo
   ) {
+    this.helpers = helpers
     this.messageRepo = messageRepo
     this.messageStatusRepo = messageStatusRepo
   }
@@ -14,26 +14,11 @@ class MessageService {
     messageParams.deleted_for = blockedUserIds
     messageParams.from = user.native_id
 
-    messageParams.t = this.#timestamp()
+    messageParams.t = this.helpers.currentTimeStamp()
 
     const message = await this.messageRepo.create(messageParams)
 
     return message
-  }
-
-  async createSystemMessage(systemMessageParams, cid) {
-    const t = this.#timestamp()
-
-    const params = {
-      id: systemMessageParams.id,
-      sender: systemMessageParams.from,
-      params: systemMessageParams.x,
-      time: t,
-    }
-
-    const systemMessage = new SystemMessage(params, cid)
-
-    return systemMessage
   }
   
   async messagesList(cId, user, options, limit) {
@@ -123,11 +108,6 @@ class MessageService {
     } else {
       await this.messageRepo.updateDeleteForUser(mIds, userId)
     }
-  }
-
-  #timestamp() {
-    const currentTs = Math.round(Date.now() / 1000).toFixed(0)
-    return parseInt(currentTs)
   }
 }
 

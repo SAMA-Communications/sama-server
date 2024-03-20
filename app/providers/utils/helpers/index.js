@@ -4,6 +4,11 @@ class Helpers {
       ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
       : user.login
   }
+
+  currentTimeStamp() {
+    const currentTs = Math.ceil(new Date() / 1000)
+    return currentTs
+  }
 }
 
 export default Helpers
