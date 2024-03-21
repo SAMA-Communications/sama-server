@@ -41,8 +41,8 @@ class ConversationService {
     return missedParticipantIds
   }
 
-  async findExistedPrivateConversation(ownerId, participantId) {
-    const conversation = await this.conversationRepo.findExistedPrivateConversation(ownerId, participantId)
+  async findExistedPrivateConversation(userOwner, participantId) {
+    const conversation = await this.conversationRepo.findExistedPrivateConversation(userOwner.native_id, participantId)
 
     return conversation
   }
