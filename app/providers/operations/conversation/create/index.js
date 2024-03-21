@@ -50,7 +50,7 @@ class ConversationCreateOperation {
 
     let normalizedParticipants = participantIds
     let existedConversation = await this.conversationService.findExistedPrivateConversation(
-      user.native_id,
+      user,
       conversationParams.opponent_id
     )
 

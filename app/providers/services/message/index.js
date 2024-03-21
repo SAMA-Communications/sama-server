@@ -40,7 +40,7 @@ class MessageService {
   }
 
   async hasAccessToMessage(messageId, userId) {
-    const result = { message: null, asOwner: false }
+    const result = { message: null, asOwner: false, selfDeleted: false }
 
     const message = await this.messageRepo.findById(messageId)
 
@@ -48,9 +48,10 @@ class MessageService {
       return result
     }
 
-    const deletedIds = message.deleted_for
+    const deletedIds = message.deleted_for || []
+    result.selfDeleted = deletedIds.includes(userId)
 
-    if (deletedIds.includes(userId)) {
+    if (result.selfDeleted) {
       return result
     }
 

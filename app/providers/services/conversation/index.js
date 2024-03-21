@@ -43,7 +43,7 @@ class ConversationService {
 
   async findExistedPrivateConversation(userOwner, participantId) {
     const conversation = await this.conversationRepo.findExistedPrivateConversation(userOwner.native_id, participantId)
-
+  
     return conversation
   }
 
