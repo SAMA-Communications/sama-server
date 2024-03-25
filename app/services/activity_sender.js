@@ -1,11 +1,11 @@
-import BaseService from './base.js'
-
 import { APIs } from '../networking/APIs.js'
 
-import packetManager from '../networking/packet_manager.js'
 import ServiceLocatorContainer from '../common/ServiceLocatorContainer.js'
 
-class ActivitySender extends BaseService {
+import DeliverMessage from '@sama/networking/models/DeliverMessage.js'
+import Response from '@sama/networking/models/Response.js'
+
+class ActivitySender {
   detectSocketAPI(ws) {
     const api = APIs[ws.apiType]
     return api
@@ -21,15 +21,25 @@ class ActivitySender extends BaseService {
     }
 
     const api = this.detectSocketAPI(ws)
-    const message = api.buildLastActivityPackage(
-      deliver.last_activity.userId,
-      deliver.last_activity.timestamp,
-      deliver.last_activity.status
-    )
 
-    for (const userId of deliver.subscriptions) {
-      await packetManager.deliverToUserOnThisNode(ws, userId, message)
+    const responses = []
+
+    for (const subscriberUserId of deliver.subscribers) {
+      const lastActivityMessage = await api.buildLastActivityPackage(
+        subscriberUserId,
+        deliver.targetUserId,
+        {
+          timestamp: deliver.activityStatus.timestamp,
+          status: deliver.activityStatus.status,
+        }
+      )
+
+      const response = new Response().addDeliverMessage(new DeliverMessage(subscriberUserId, lastActivityMessage, true))
+
+      responses.push(response)
     }
+
+    return responses
   }
 }
 

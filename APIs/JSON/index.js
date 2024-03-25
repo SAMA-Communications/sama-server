@@ -25,10 +25,10 @@ export default class JsonAPI extends BaseAPI {
     return this.stringifyResponse(responseData)
   }
 
-  buildLastActivityPackage(userId, timestamp, status) {
+  buildLastActivityPackage(recipientUserId, targetUserId, activityStatus) {
     const message = {
       last_activity: {
-        [userId]: status === MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE ? status : timestamp
+        [targetUserId]: activityStatus.status === MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE ? activityStatus.status : activityStatus.timestamp
       }
     }
     return this.stringifyMessage(message)

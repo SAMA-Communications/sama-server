@@ -34,6 +34,15 @@ const onMessage = async (ws, message) => {
   const api = APIs[ws.apiType]
   const response = await api.onMessage(ws, stringMessage)
 
+  if (response.lastActivityStatusResponse) {
+    const sessionService = ServiceLocatorContainer.use('SessionService')
+
+    const userId = response.lastActivityStatusResponse.userId || sessionService.getSessionUserId(ws)
+    console.log('[UPDATE_LAST_ACTIVITY]', userId, response.lastActivityStatusResponse)
+    const responses = await activitySender.updateAndSendUserActivity(ws, userId, response.lastActivityStatusResponse.status)
+    response.merge(responses)
+  }
+
   for (let backMessage of response.backMessages) {
     try {
       if (backMessage instanceof MappableMessage) {
@@ -63,14 +72,6 @@ const onMessage = async (ws, message) => {
         '[ClientManager] connection with client ws is lost'
       )
     }
-  }
-
-  if (response.lastActivityStatusResponse) {
-    const sessionService = ServiceLocatorContainer.use('SessionService')
-
-    const userId = response.lastActivityStatusResponse.userId || sessionService.getSessionUserId(ws)
-    console.log('[UPDATE_LAST_ACTIVITY]', userId, response.lastActivityStatusResponse)
-    await activitySender.updateAndSendUserActivity(ws, userId, response.lastActivityStatusResponse.status)
   }
 }
 
