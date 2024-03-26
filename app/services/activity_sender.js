@@ -16,13 +16,13 @@ class ActivitySender {
 
     const deliver = await activityManagerService.updateUserActivity(userId, status)
 
+    const responses = []
+
     if (!deliver) {
-      return
+      return responses
     }
 
     const api = this.detectSocketAPI(ws)
-
-    const responses = []
 
     for (const subscriberUserId of deliver.subscribers) {
       const lastActivityMessage = await api.buildLastActivityPackage(
@@ -34,7 +34,7 @@ class ActivitySender {
         }
       )
 
-      const response = new Response().addDeliverMessage(new DeliverMessage(subscriberUserId, lastActivityMessage, true))
+      const response = new Response().addDeliverMessage(new DeliverMessage([subscriberUserId], lastActivityMessage, true))
 
       responses.push(response)
     }
