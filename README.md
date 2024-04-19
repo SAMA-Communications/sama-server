@@ -33,7 +33,6 @@ https://medium.com/sama-communications/introducing-sama-simple-but-advanced-mess
 - Run `docker-compose up` to run dependant services (MongoDB, Minio, Redis)
 - `npm install` to install dependencies 
 - `npm run migrate-mongo-up` to run DB migrations
-- fetch submodules `git submodule update --init --recursive`
 - `npm run start` to run server
 
 There are also other components. Make sure to check [Deploying SAMA chat server stack: a comprehensive guide](https://medium.com/sama-communications/deploying-sama-chat-server-stack-a-comprehensive-guide-294ddb9a2d78)
