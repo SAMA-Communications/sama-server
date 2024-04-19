@@ -28,7 +28,7 @@ https://medium.com/sama-communications/introducing-sama-simple-but-advanced-mess
 
 ## Development
 
-- Make sure you have `Node 18` installed.
+- Make sure you have `Node 18.20.x` installed.
 - Copy `.env.example` to `.env`.
 - Run `docker-compose up` to run dependant services (MongoDB, Minio, Redis)
 - `npm install` to install dependencies 
