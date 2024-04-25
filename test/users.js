@@ -85,7 +85,7 @@ describe('User cycle', async () => {
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'That email is already taken.',
+        message: 'That username is already taken.',
       })
     })
 
@@ -113,7 +113,7 @@ describe('User cycle', async () => {
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'That email is already taken.',
+        message: 'That username is already taken.',
       })
     })
 
@@ -141,7 +141,7 @@ describe('User cycle', async () => {
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'That email is already taken.',
+        message: 'That username is already taken.',
       })
     })
 
@@ -168,7 +168,7 @@ describe('User cycle', async () => {
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'That email is already taken.',
+        message: 'That username is already taken.',
       })
     })
   })
@@ -499,7 +499,7 @@ describe('User cycle', async () => {
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'That email is already taken.',
+        message: 'That username is already taken.',
       })
     })
 
@@ -524,7 +524,7 @@ describe('User cycle', async () => {
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'That email is already taken.',
+        message: 'That username is already taken.',
       })
     })
 
@@ -549,7 +549,7 @@ describe('User cycle', async () => {
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'That email is already taken.',
+        message: 'That username is already taken.',
       })
     })
   })

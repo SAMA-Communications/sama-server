@@ -21,10 +21,10 @@ export const ERROR_STATUES = {
   },
   USER_LOGIN_OR_PASS: {
     status: 422,
-    message: `The 'login' or 'password' field is missing.`,
+    message: `The 'username' or 'password' field is missing.`,
   },
   USER_SELECTED: { status: 422, message: 'Please select at least one user.' },
-  USER_ALREADY_EXISTS: { status: 422, message: 'That email is already taken.' },
+  USER_ALREADY_EXISTS: { status: 422, message: 'That username is already taken.' },
   TOO_MANY_USERS_IN_PRIVATE: {
     status: 422,
     message: 'There are too many users in the private conversation.',
