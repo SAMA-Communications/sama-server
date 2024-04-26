@@ -85,7 +85,7 @@ describe('User cycle', async () => {
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'This data is already used by another user.',
+        message: 'The provided data is already associated with an existing user account.',
       })
     })
 
@@ -113,7 +113,7 @@ describe('User cycle', async () => {
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'This data is already used by another user.',
+        message: 'The provided data is already associated with an existing user account.',
       })
     })
 
@@ -141,7 +141,7 @@ describe('User cycle', async () => {
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'This data is already used by another user.',
+        message: 'The provided data is already associated with an existing user account.',
       })
     })
 
@@ -168,7 +168,7 @@ describe('User cycle', async () => {
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'This data is already used by another user.',
+        message: 'The provided data is already associated with an existing user account.',
       })
     })
   })
@@ -499,7 +499,7 @@ describe('User cycle', async () => {
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'This data is already used by another user.',
+        message: 'The provided data is already associated with an existing user account.',
       })
     })
 
@@ -524,7 +524,7 @@ describe('User cycle', async () => {
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'This data is already used by another user.',
+        message: 'The provided data is already associated with an existing user account.',
       })
     })
 
@@ -549,7 +549,7 @@ describe('User cycle', async () => {
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'This data is already used by another user.',
+        message: 'The provided data is already associated with an existing user account.',
       })
     })
   })
