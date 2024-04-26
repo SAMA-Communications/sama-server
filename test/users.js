@@ -85,7 +85,7 @@ describe('User cycle', async () => {
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'That email is already taken.',
+        message: 'This data is already used by another user.',
       })
     })
 
@@ -113,7 +113,7 @@ describe('User cycle', async () => {
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'That email is already taken.',
+        message: 'This data is already used by another user.',
       })
     })
 
@@ -141,7 +141,7 @@ describe('User cycle', async () => {
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'That email is already taken.',
+        message: 'This data is already used by another user.',
       })
     })
 
@@ -168,7 +168,7 @@ describe('User cycle', async () => {
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'That email is already taken.',
+        message: 'This data is already used by another user.',
       })
     })
   })
@@ -499,11 +499,11 @@ describe('User cycle', async () => {
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'That email is already taken.',
+        message: 'This data is already used by another user.',
       })
     })
 
-    it('should fail email is already in use', async () => {
+    it('should fail login is already in use', async () => {
       const requestData = {
         request: {
           user_edit: {
@@ -524,7 +524,7 @@ describe('User cycle', async () => {
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'That email is already taken.',
+        message: 'This data is already used by another user.',
       })
     })
 
@@ -549,7 +549,7 @@ describe('User cycle', async () => {
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'That email is already taken.',
+        message: 'This data is already used by another user.',
       })
     })
   })
