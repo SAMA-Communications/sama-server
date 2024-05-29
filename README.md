@@ -84,7 +84,7 @@ Run e2e tests:
 docker-compose exec sama-server sh -c "MONGODB_URL=mongodb://172.25.0.4/samatests npm run test"
 ```
 
-## Public cloud
+## Public cloud DEMO
 
 The whole SAMA stack can be tested using https://app.samacloud.io public cloud.
 
