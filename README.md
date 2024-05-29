@@ -23,8 +23,9 @@
 
 The intention of our messaging protocol and chat server, which are different from others, is to provide an alternative solution to the wide spread XMPP messaging protocol (and to be honest — the only wide spread ‘standard’ these days).
 
-Read a complete medium post **Introducing SAMA** about what is SAMA and what problems we are trying to solve with it 
-https://medium.com/sama-communications/introducing-sama-simple-but-advanced-messaging-alternative-chat-server-524a532e2040
+Read complete medium posts **Introducing SAMA** and **What is SAMA** about what is SAMA and what problems we are trying to solve with it: 
+- https://medium.com/sama-communications/introducing-sama-simple-but-advanced-messaging-alternative-chat-server-524a532e2040
+- https://medium.com/sama-communications/what-is-sama-a6d9045fd69a
 
 ## Development
 
