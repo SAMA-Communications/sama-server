@@ -1,31 +1,25 @@
-import BaseJSONController from './base.js'
+import BaseJSONController from "./base.js"
 
-import { ERROR_STATUES } from '@sama/constants/errors.js'
+import { ERROR_STATUES } from "@sama/constants/errors.js"
 
-import RuntimeDefinedContext from '@sama/store/RuntimeDefinedContext.js'
-import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
+import RuntimeDefinedContext from "@sama/store/RuntimeDefinedContext.js"
+import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
-import PushSubscription from '@sama/models/push_subscription.js'
+import PushSubscription from "@sama/models/push_subscription.js"
 
-import { ObjectId } from '@sama/lib/db.js'
+import { ObjectId } from "@sama/lib/db.js"
 
-import Response from '@sama/networking/models/Response.js'
-import CreatePushEventOptions from '@sama/lib/push_queue/models/CreatePushEventOptions.js'
+import Response from "@sama/networking/models/Response.js"
+import CreatePushEventOptions from "@sama/lib/push_queue/models/CreatePushEventOptions.js"
 
 class PushNotificationsController extends BaseJSONController {
   async push_subscription_create(ws, data) {
     const {
       id: requestId,
-      push_subscription_create: {
-        platform,
-        web_endpoint,
-        web_key_auth,
-        web_key_p256dh,
-        device_udid,
-      },
+      push_subscription_create: { platform, web_endpoint, web_key_auth, web_key_p256dh, device_udid },
     } = data
 
-    const sessionService = ServiceLocatorContainer.use('SessionService')
+    const sessionService = ServiceLocatorContainer.use("SessionService")
 
     const userId = sessionService.getSessionUserId(ws)
     let pushSubscription = new PushSubscription(
@@ -38,7 +32,7 @@ class PushNotificationsController extends BaseJSONController {
     )
 
     if (!pushSubscription.params) {
-      data.push_subscription_create['user_id'] = new ObjectId(userId)
+      data.push_subscription_create["user_id"] = new ObjectId(userId)
       pushSubscription = new PushSubscription(data.push_subscription_create)
       await pushSubscription.save()
     }
@@ -68,7 +62,7 @@ class PushNotificationsController extends BaseJSONController {
       push_subscription_delete: { device_udid },
     } = data
 
-    const sessionService = ServiceLocatorContainer.use('SessionService')
+    const sessionService = ServiceLocatorContainer.use("SessionService")
 
     const userId = sessionService.getSessionUserId(ws)
     const pushSubscriptionRecord = await PushSubscription.findOne({
@@ -92,7 +86,7 @@ class PushNotificationsController extends BaseJSONController {
       push_event_create: { recipients_ids, message },
     } = data
 
-    const userService = ServiceLocatorContainer.use('UserService')
+    const userService = ServiceLocatorContainer.use("UserService")
 
     const recipients = await userService.userRepo.retrieveExistedIds(recipients_ids)
 
@@ -102,7 +96,7 @@ class PushNotificationsController extends BaseJSONController {
       })
     }
 
-    const sessionService = ServiceLocatorContainer.use('SessionService')
+    const sessionService = ServiceLocatorContainer.use("SessionService")
 
     const userId = sessionService.getSessionUserId(ws)
 
@@ -112,7 +106,7 @@ class PushNotificationsController extends BaseJSONController {
 
     const pushEvents = await RuntimeDefinedContext.PUSH_QUEUE_DRIVER.createPushEvents(createPushEventOptions)
 
-    const responsePushEvents = pushEvents.map(pushEvent => pushEvent.visibleParams())
+    const responsePushEvents = pushEvents.map((pushEvent) => pushEvent.visibleParams())
 
     return new Response().addBackMessage({ response: { id: requestId, event: responsePushEvents } })
   }

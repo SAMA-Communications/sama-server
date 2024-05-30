@@ -1,19 +1,14 @@
-import groupBy from '@sama/utils/groupBy.js'
+import groupBy from "@sama/utils/groupBy.js"
 
 class MessageReadOperation {
-  constructor(
-    sessionService,
-    userService,
-    messageService,
-    conversationService,
-  ) {
+  constructor(sessionService, userService, messageService, conversationService) {
     this.sessionService = sessionService
     this.userService = userService
     this.messageService = messageService
     this.conversationService = conversationService
   }
 
-  async perform (ws, messageParams) {
+  async perform(ws, messageParams) {
     const { cid, ids: mids } = messageParams
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
@@ -21,9 +16,9 @@ class MessageReadOperation {
 
     const unreadMessages = await this.messageService.readMessagesInConversation(cid, currentUser, mids)
 
-    const unreadMessagesGroupedByFrom = groupBy(unreadMessages, 'from')
+    const unreadMessagesGroupedByFrom = groupBy(unreadMessages, "from")
 
-    return { unreadMessagesGroupedByFrom, currentUserId } 
+    return { unreadMessagesGroupedByFrom, currentUserId }
   }
 }
 

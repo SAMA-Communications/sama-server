@@ -1,10 +1,9 @@
-import BaseJSONController from './base.js'
+import BaseJSONController from "./base.js"
 
-import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
+import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
-import DeliverMessage from '@sama/networking/models/DeliverMessage.js'
-import Response from '@sama/networking/models/Response.js'
-
+import DeliverMessage from "@sama/networking/models/DeliverMessage.js"
+import Response from "@sama/networking/models/Response.js"
 
 class MessagesController extends BaseJSONController {
   async create(ws, data) {
@@ -12,11 +11,17 @@ class MessagesController extends BaseJSONController {
 
     const response = new Response()
 
-    const messageCreateOperation = ServiceLocatorContainer.use('MessageCreateOperation')
-    const { messageId, message, deliverMessages, participantIds } = await messageCreateOperation.perform(ws, messageParams)
+    const messageCreateOperation = ServiceLocatorContainer.use("MessageCreateOperation")
+    const { messageId, message, deliverMessages, participantIds } = await messageCreateOperation.perform(
+      ws,
+      messageParams
+    )
 
-    deliverMessages.forEach(event => {
-      const deliverMessage = new DeliverMessage(event.participantIds || participantIds, event.message).addPushQueueMessage(event.notification)
+    deliverMessages.forEach((event) => {
+      const deliverMessage = new DeliverMessage(
+        event.participantIds || participantIds,
+        event.message
+      ).addPushQueueMessage(event.notification)
       response.addDeliverMessage(deliverMessage)
     })
 
@@ -28,7 +33,7 @@ class MessagesController extends BaseJSONController {
   async sendSystem(ws, data) {
     const { system_message: systemMessageParams } = data
 
-    const messageSendSystemOperation = ServiceLocatorContainer.use('MessageSendSystemOperation')
+    const messageSendSystemOperation = ServiceLocatorContainer.use("MessageSendSystemOperation")
     const { recipientsIds, systemMessage } = await messageSendSystemOperation.perform(ws, systemMessageParams)
 
     return new Response()
@@ -39,25 +44,28 @@ class MessagesController extends BaseJSONController {
   async edit(ws, data) {
     const { id: requestId, message_edit: messageParams } = data
 
-    const messageEditOperation = ServiceLocatorContainer.use('MessageEditOperation')
+    const messageEditOperation = ServiceLocatorContainer.use("MessageEditOperation")
     const { messageId, body, from, participantIds } = await messageEditOperation.perform(ws, messageParams)
 
-    return new Response()
-      .addBackMessage({ response: { id: requestId, success: true } })
-      .addDeliverMessage(new DeliverMessage(participantIds, {
+    return new Response().addBackMessage({ response: { id: requestId, success: true } }).addDeliverMessage(
+      new DeliverMessage(
+        participantIds,
+        {
           message_edit: {
             id: messageId,
             body: body,
             from: from,
-          }
-        }, true)
+          },
+        },
+        true
       )
+    )
   }
 
   async list(ws, data) {
     const { id: requestId, message_list: messagesListParams } = data
 
-    const messageListOperation = ServiceLocatorContainer.use('MessageListOperation')
+    const messageListOperation = ServiceLocatorContainer.use("MessageListOperation")
     const messages = await messageListOperation.perform(ws, messagesListParams)
 
     return new Response().addBackMessage({
@@ -71,15 +79,15 @@ class MessagesController extends BaseJSONController {
   async read(ws, data) {
     const { id: requestId, message_read: messagesReadOptions } = data
 
-    const messageReadOperation = ServiceLocatorContainer.use('MessageReadOperation')
-    const { unreadMessagesGroupedByFrom, currentUserId }  = await messageReadOperation.perform(ws, messagesReadOptions)
+    const messageReadOperation = ServiceLocatorContainer.use("MessageReadOperation")
+    const { unreadMessagesGroupedByFrom, currentUserId } = await messageReadOperation.perform(ws, messagesReadOptions)
 
     const response = new Response()
 
     for (const uId in unreadMessagesGroupedByFrom) {
       const firstMessage = unreadMessagesGroupedByFrom[uId].at(0)
       const cId = firstMessage.cid
-      const mIds = unreadMessagesGroupedByFrom[uId].map(message => message._id)
+      const mIds = unreadMessagesGroupedByFrom[uId].map((message) => message._id)
       const message = {
         message_read: {
           cid: cId,
@@ -102,8 +110,12 @@ class MessagesController extends BaseJSONController {
   async delete(ws, data) {
     const { id: requestId, message_delete: messageDeleteParams } = data
 
-    const messageDeleteOperation = ServiceLocatorContainer.use('MessageDeleteOperation')
-    const { isDeleteAll, participantIds, info: { userId, cId, mIds } } = await messageDeleteOperation.perform(ws, messageDeleteParams)
+    const messageDeleteOperation = ServiceLocatorContainer.use("MessageDeleteOperation")
+    const {
+      isDeleteAll,
+      participantIds,
+      info: { userId, cId, mIds },
+    } = await messageDeleteOperation.perform(ws, messageDeleteParams)
 
     const response = new Response()
 
@@ -112,7 +124,7 @@ class MessagesController extends BaseJSONController {
         message_delete: {
           cid: cId,
           ids: mIds,
-          type: 'all',
+          type: "all",
           from: userId,
         },
       }

@@ -1,9 +1,9 @@
-import BaseMapper from '../base/index.js'
+import BaseMapper from "../base/index.js"
 
 class UserMapper extends BaseMapper {
   mappedParams(record) {
     const mappedParams = {
-      native_id: record._id
+      native_id: record._id,
     }
 
     return mappedParams

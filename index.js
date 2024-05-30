@@ -1,42 +1,42 @@
 /* Simplified stock exchange made with uWebSockets.js pub/sub */
-import ip from 'ip'
-import os from 'os'
+import ip from "ip"
+import os from "os"
 
-import uWS from 'uWebSockets.js'
+import uWS from "uWebSockets.js"
 
-import RuntimeDefinedContext from './app/store/RuntimeDefinedContext.js'
-import ServiceLocatorContainer from './app/common/ServiceLocatorContainer.js'
-import providers from './app/providers/index.js'
-import RegisterProvider from './app/common/RegisterProvider.js'
+import RuntimeDefinedContext from "./app/store/RuntimeDefinedContext.js"
+import ServiceLocatorContainer from "./app/common/ServiceLocatorContainer.js"
+import providers from "./app/providers/index.js"
+import RegisterProvider from "./app/common/RegisterProvider.js"
 
-import clusterManager from './app/cluster/cluster_manager.js'
-import clusterSyncer from './app/cluster/cluster_syncer.js'
+import clusterManager from "./app/cluster/cluster_manager.js"
+import clusterSyncer from "./app/cluster/cluster_syncer.js"
 
-import clientManager from './app/networking/client_manager.js'
+import clientManager from "./app/networking/client_manager.js"
 
 // get MongoDB driver connection
-import Minio from './app/lib/storage/minio.js'
-import S3 from './app/lib/storage/s3.js'
-import Spaces from './app/lib/storage/spaces.js'
+import Minio from "./app/lib/storage/minio.js"
+import S3 from "./app/lib/storage/s3.js"
+import Spaces from "./app/lib/storage/spaces.js"
 
-import RSMPushQueue from './app/lib/push_queue/rsm_queue.js'
-import SamaNativePushQueue from './app/lib/push_queue/sama_native_queue.js'
+import RSMPushQueue from "./app/lib/push_queue/rsm_queue.js"
+import SamaNativePushQueue from "./app/lib/push_queue/sama_native_queue.js"
 
-import { connectToDBPromise, getDb } from './app/lib/db.js'
-import RedisClient from './app/lib/redis.js'
+import { connectToDBPromise, getDb } from "./app/lib/db.js"
+import RedisClient from "./app/lib/redis.js"
 
-import blockListRepository from './app/repositories/blocklist_repository.js'
+import blockListRepository from "./app/repositories/blocklist_repository.js"
 
-import { APIs } from './app/networking/APIs.js'
+import { APIs } from "./app/networking/APIs.js"
 
 RuntimeDefinedContext.APP_HOSTNAME = process.env.HOSTNAME || os.hostname()
 RuntimeDefinedContext.APP_IP = ip.address()
 
 switch (process.env.STORAGE_DRIVER) {
-  case 'minio':
+  case "minio":
     RuntimeDefinedContext.STORAGE_DRIVER = new Minio()
     break
-  case 'spaces':
+  case "spaces":
     RuntimeDefinedContext.STORAGE_DRIVER = new Spaces()
     break
   default:
@@ -45,13 +45,13 @@ switch (process.env.STORAGE_DRIVER) {
 }
 
 switch (process.env.PUSH_QUEUE_DRIVER) {
-  case 'rsmq':
+  case "rsmq":
     RuntimeDefinedContext.PUSH_QUEUE_DRIVER = new RSMPushQueue(RedisClient.client, {
       chatAlertQueueName: process.env.RSM_CHAT_ALERT_QUEUE_NAME,
-      pushQueueName: process.env.RSM_PUSH_QUEUE_NAME
+      pushQueueName: process.env.RSM_PUSH_QUEUE_NAME,
     })
     break
-  case 'sama_native':
+  case "sama_native":
   default:
     RuntimeDefinedContext.PUSH_QUEUE_DRIVER = new SamaNativePushQueue(
       process.env.SAMA_NATIVE_PUSH_QUEUE_NAME,
@@ -92,15 +92,17 @@ RuntimeDefinedContext.CLUSTER_PORT = await clusterManager.createLocalSocket(
   isSSL
 )
 
-console.log('[RuntimeDefinedContext]', RuntimeDefinedContext)
+console.log("[RuntimeDefinedContext]", RuntimeDefinedContext)
 
 // perform a database connection when the server starts
-await connectToDBPromise().then(() => {
-  console.log('[connectToDB] Ok')
-}).catch(err => {
-  console.error('[connectToDB] Error', err)
-  process.exit()
-})
+await connectToDBPromise()
+  .then(() => {
+    console.log("[connectToDB] Ok")
+  })
+  .catch((err) => {
+    console.error("[connectToDB] Error", err)
+    process.exit()
+  })
 
 await RedisClient.connect()
 
@@ -112,28 +114,28 @@ ServiceLocatorContainer.register(
     register(slc) {
       return RuntimeDefinedContext
     }
-  })({ name: 'RuntimeDefinedContext', implementationName: RuntimeDefinedContext.name })
+  })({ name: "RuntimeDefinedContext", implementationName: RuntimeDefinedContext.name })
 )
 ServiceLocatorContainer.register(
   new (class extends RegisterProvider {
     register(slc) {
       return RedisClient
     }
-  })({ name: 'RedisClient', implementationName: RedisClient.constructor.name })
+  })({ name: "RedisClient", implementationName: RedisClient.constructor.name })
 )
 ServiceLocatorContainer.register(
   new (class extends RegisterProvider {
     register(slc) {
       return getDb()
     }
-  })({ name: 'MongoConnection', implementationName: 'MongoConnection' })
+  })({ name: "MongoConnection", implementationName: "MongoConnection" })
 )
 ServiceLocatorContainer.register(
   new (class extends RegisterProvider {
     register(slc) {
       return RuntimeDefinedContext.STORAGE_DRIVER
     }
-  })({ name: 'StorageDriverClient', implementationName: RuntimeDefinedContext.STORAGE_DRIVER.constructor.name })
+  })({ name: "StorageDriverClient", implementationName: RuntimeDefinedContext.STORAGE_DRIVER.constructor.name })
 )
 
 for (const provider of providers) {

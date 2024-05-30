@@ -1,5 +1,5 @@
-import { ObjectId } from 'mongodb'
- 
+import { ObjectId } from "mongodb"
+
 export default class BaseRepository {
   constructor(dbConnection, Model, mapper) {
     this.dbConnection = dbConnection
@@ -7,11 +7,11 @@ export default class BaseRepository {
     this.mapper = mapper
   }
 
-  get collectionName () {
+  get collectionName() {
     return this.Model.collection
   }
 
-  get collectionCursor () {
+  get collectionCursor() {
     return this.dbConnection.collection(this.collectionName)
   }
 
@@ -24,9 +24,9 @@ export default class BaseRepository {
   }
 
   castObjectIds(ids) {
-    return ids.map(id => this.castObjectId(id))
+    return ids.map((id) => this.castObjectId(id))
   }
- 
+
   async prepareParams(params) {
     const currentDate = new Date()
 
@@ -62,14 +62,14 @@ export default class BaseRepository {
 
     const modelParams = insertParams.map((params, index) => ({ _id: result.insertedIds[index], ...params }))
 
-    const models = modelParams.map(params => this.wrapRawRecordInModel(params))
+    const models = modelParams.map((params) => this.wrapRawRecordInModel(params))
 
     return models
   }
 
   async bulkUpsert(operations) {
     const updateOneOperations = operations.map(([filter, update]) => ({
-      updateOne: { filter, update, upsert: true }
+      updateOne: { filter, update, upsert: true },
     }))
 
     const result = await this.collectionCursor.bulkWrite(updateOneOperations)
@@ -94,10 +94,8 @@ export default class BaseRepository {
       query.cid = this.castObjectId(query.cid)
     }
     if (query._id) {
-      query._id.$nin &&
-        (query._id.$nin = this.castObjectIds(query._id.$nin))
-      query._id.$in &&
-        (query._id.$in = this.castObjectIds(query._id.$in))
+      query._id.$nin && (query._id.$nin = this.castObjectIds(query._id.$nin))
+      query._id.$in && (query._id.$in = this.castObjectIds(query._id.$in))
     }
     if (query.user_id && !query.user_id.$ne) {
       query.user_id.$in
@@ -117,10 +115,13 @@ export default class BaseRepository {
       return { ...acc, [p]: 1 }
     }, {})
 
-    const records = await this.collectionCursor.find(query, { limit: limit || 100 })
-      .project(projection).sort(sortParams || { $natural: -1 }).toArray()
+    const records = await this.collectionCursor
+      .find(query, { limit: limit || 100 })
+      .project(projection)
+      .sort(sortParams || { $natural: -1 })
+      .toArray()
 
-    const models = records.map(record => this.wrapRawRecordInModel(record))
+    const models = records.map((record) => this.wrapRawRecordInModel(record))
 
     return models
   }
@@ -178,7 +179,9 @@ export default class BaseRepository {
       query.user_id = this.castObjectId(query.user_id)
     }
 
-    const record = await this.collectionCursor.findOneAndUpdate(query, update, { returnDocument: 'after' }).catch(error => error)
+    const record = await this.collectionCursor
+      .findOneAndUpdate(query, update, { returnDocument: "after" })
+      .catch((error) => error)
 
     const model = record.ok ? this.wrapRawRecordInModel(record.value) : null
 
@@ -196,12 +199,12 @@ export default class BaseRepository {
 
     const records = await this.collectionCursor.find(query).project({ _id: 1 }).toArray()
 
-    return records.map(record => record._id)
+    return records.map((record) => record._id)
   }
 
   async aggregate(query) {
-    const result =  await this.collectionCursor.aggregate(query).toArray()
-    
+    const result = await this.collectionCursor.aggregate(query).toArray()
+
     return result
   }
 

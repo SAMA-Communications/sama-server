@@ -1,19 +1,14 @@
-import { ERROR_STATUES } from '../../../../constants/errors.js'
+import { ERROR_STATUES } from "../../../../constants/errors.js"
 
 class MessageSendSystemOperation {
-  constructor(
-    sessionService,
-    userService,
-    conversationService,
-    messageService
-  ) {
+  constructor(sessionService, userService, conversationService, messageService) {
     this.sessionService = sessionService
     this.userService = userService
     this.conversationService = conversationService
     this.messageService = messageService
   }
 
-  async perform (ws, systemMessageParams) {
+  async perform(ws, systemMessageParams) {
     const { id, cid, uids, x } = systemMessageParams
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
@@ -34,7 +29,10 @@ class MessageSendSystemOperation {
   }
 
   async #conversationParticipants(conversationId, currentUserId) {
-    const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(conversationId, currentUserId)
+    const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
+      conversationId,
+      currentUserId
+    )
 
     if (!conversation) {
       throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {

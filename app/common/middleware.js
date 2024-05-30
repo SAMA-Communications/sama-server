@@ -1,5 +1,3 @@
 export default class BaseMiddleware {
-  handle(ws, message) {
-
-  }
+  handle(ws, message) {}
 }

@@ -1,26 +1,26 @@
-import BaseModel from './base.js'
+import BaseModel from "./base.js"
 
 export default class Conversation extends BaseModel {
   static get collection() {
-    return 'conversations'
+    return "conversations"
   }
 
   static get visibleFields() {
     return [
-      '_id',
-  
-      'name',
-      'type',
-      'description',
+      "_id",
 
-      'owner_id',
-      'opponent_id',
+      "name",
+      "type",
+      "description",
 
-      'created_at',
-      'updated_at',
+      "owner_id",
+      "opponent_id",
 
-      'last_message', // virtual
-      'unread_messages_count' // virtual
+      "created_at",
+      "updated_at",
+
+      "last_message", // virtual
+      "unread_messages_count", // virtual
     ]
   }
 }

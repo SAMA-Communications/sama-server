@@ -1,4 +1,4 @@
-import BaseRepository from '../base.js'
+import BaseRepository from "../base.js"
 
 class UserTokenRepository extends BaseRepository {
   async findToken(jwtToken, deviceId) {
@@ -23,7 +23,7 @@ class UserTokenRepository extends BaseRepository {
         { $set: { token: jwtToken } }
       )
 
-      existedToken.set('token', jwtToken)
+      existedToken.set("token", jwtToken)
 
       return existedToken
     } else {

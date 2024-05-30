@@ -1,7 +1,7 @@
-import RegisterProvider from '../../../../common/RegisterProvider.js'
-import BaseMapper from './index.js'
+import RegisterProvider from "../../../../common/RegisterProvider.js"
+import BaseMapper from "./index.js"
 
-const name = 'BaseMapper'
+const name = "BaseMapper"
 
 class BaseMapperRegisterProvider extends RegisterProvider {
   register(slc) {

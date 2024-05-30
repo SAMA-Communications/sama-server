@@ -1,7 +1,7 @@
-import BaseRepository from './base.js'
+import BaseRepository from "./base.js"
 
-import PushEvent from '../models/push_event.js'
-import PushSubscription from '../models/push_subscription.js'
+import PushEvent from "../models/push_event.js"
+import PushSubscription from "../models/push_subscription.js"
 
 class PushNotificationsRepository extends BaseRepository {
   constructor(PushEventModel, PushSubscriptionModel) {
@@ -29,7 +29,7 @@ class PushNotificationsRepository extends BaseRepository {
   async createPushEvents(userId, userIds, payload, options) {
     const platforms = await this.usersPlatforms(userIds)
 
-    const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64')
+    const base64Payload = Buffer.from(JSON.stringify(payload)).toString("base64")
 
     const pushEvents = []
 
@@ -42,7 +42,7 @@ class PushNotificationsRepository extends BaseRepository {
 
     for (const platform of platforms) {
       pushEventParams.platform = platform
-     
+
       const pushEvent = new this.Model(pushEventParams)
       await pushEvent.save()
 

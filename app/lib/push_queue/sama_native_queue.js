@@ -1,8 +1,8 @@
-import Queue from 'bull'
+import Queue from "bull"
 
-import BasePushQueue from './base.js'
+import BasePushQueue from "./base.js"
 
-import CreatePushEventOptions from './models/CreatePushEventOptions.js'
+import CreatePushEventOptions from "./models/CreatePushEventOptions.js"
 
 export default class SamaNativePushQueue extends BasePushQueue {
   constructor(queueName, redisUrl) {
@@ -31,7 +31,7 @@ export default class SamaNativePushQueue extends BasePushQueue {
   }
 
   async addToQueue(pushEvents) {
-    const pushEventIds = pushEvents.map(pushEvent => pushEvent.params._id.toString())
+    const pushEventIds = pushEvents.map((pushEvent) => pushEvent.params._id.toString())
 
     for (const pushEventId of pushEventIds) {
       await this.queue.add({ push_event_id: pushEventId })

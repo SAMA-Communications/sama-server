@@ -1,19 +1,15 @@
-import RegisterProvider from '../../../../common/RegisterProvider.js'
-import MessageDeleteOperation from './index.js'
+import RegisterProvider from "../../../../common/RegisterProvider.js"
+import MessageDeleteOperation from "./index.js"
 
-const name = 'MessageDeleteOperation'
+const name = "MessageDeleteOperation"
 
 class MessageDeleteOperationRegisterProvider extends RegisterProvider {
   register(slc) {
-    const sessionService = slc.use('SessionService')
-    const conversationService = slc.use('ConversationService')
-    const messageService = slc.use('MessageService')
+    const sessionService = slc.use("SessionService")
+    const conversationService = slc.use("ConversationService")
+    const messageService = slc.use("MessageService")
 
-    return new MessageDeleteOperation(
-      sessionService,
-      conversationService,
-      messageService
-    )
+    return new MessageDeleteOperation(sessionService, conversationService, messageService)
   }
 }
 

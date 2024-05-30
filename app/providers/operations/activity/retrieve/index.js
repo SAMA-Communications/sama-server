@@ -1,4 +1,4 @@
-import { CONSTANTS as MAIN_CONSTANTS } from '../../../../constants/constants.js'
+import { CONSTANTS as MAIN_CONSTANTS } from "../../../../constants/constants.js"
 
 class ActivityUserRetrieveOperation {
   constructor(sessionService, userService) {
@@ -14,7 +14,9 @@ class ActivityUserRetrieveOperation {
       const userId = targetUser.native_id
       const isUserOnline = await this.sessionService.getUserNodeData(userId)
 
-      const targetUserActivityStatus = isUserOnline ? MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE : targetUser.recent_activity
+      const targetUserActivityStatus = isUserOnline
+        ? MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE
+        : targetUser.recent_activity
 
       activities[userId] = targetUserActivityStatus
     }

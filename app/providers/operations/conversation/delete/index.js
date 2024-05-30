@@ -1,10 +1,7 @@
-import { ERROR_STATUES } from '../../../../constants/errors.js'
+import { ERROR_STATUES } from "../../../../constants/errors.js"
 
 class ConversationDeleteOperation {
-  constructor(
-    sessionService,
-    conversationService
-  ) {
+  constructor(sessionService, conversationService) {
     this.sessionService = sessionService
     this.conversationService = conversationService
   }
@@ -18,7 +15,10 @@ class ConversationDeleteOperation {
   }
 
   async #hasAccess(conversationId, userId) {
-    const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(conversationId, userId)
+    const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
+      conversationId,
+      userId
+    )
     if (!conversation) {
       throw new Error(ERROR_STATUES.BAD_REQUEST.message, {
         cause: ERROR_STATUES.BAD_REQUEST,

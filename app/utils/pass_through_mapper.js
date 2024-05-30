@@ -1,3 +1,3 @@
-const passThroughMapper = async model => model 
+const passThroughMapper = async (model) => model
 
 export default passThroughMapper

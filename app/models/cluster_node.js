@@ -1,4 +1,4 @@
-import BaseModel from './base.js'
+import BaseModel from "./base.js"
 
 export default class ClusterNode extends BaseModel {
   constructor(params) {
@@ -6,18 +6,10 @@ export default class ClusterNode extends BaseModel {
   }
 
   static get collection() {
-    return 'cluster_nodes'
+    return "cluster_nodes"
   }
 
   static get visibleFields() {
-    return [
-      '_id',
-      'created_at',
-      'updated_at',
-      'ip_address',
-      'hostname',
-      'port',
-      'users_count'
-    ]
+    return ["_id", "created_at", "updated_at", "ip_address", "hostname", "port", "users_count"]
   }
 }

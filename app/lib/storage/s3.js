@@ -1,9 +1,9 @@
-import { PutObjectCommand, S3, GetObjectCommand } from '@aws-sdk/client-s3'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { PutObjectCommand, S3, GetObjectCommand } from "@aws-sdk/client-s3"
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 
-import BaseStorage from './base.js'
+import BaseStorage from "./base.js"
 
-import getUniqueId from '../../utils/uuid.js'
+import getUniqueId from "../../utils/uuid.js"
 
 export default class S3Storage extends BaseStorage {
   constructor(options) {
@@ -28,11 +28,9 @@ export default class S3Storage extends BaseStorage {
       Key: objectId,
     }
 
-    const presignedUrl = await getSignedUrl(
-      this.s3Client,
-      new PutObjectCommand(bucketParams),
-      { expiresIn: this.expire }
-    )
+    const presignedUrl = await getSignedUrl(this.s3Client, new PutObjectCommand(bucketParams), {
+      expiresIn: this.expire,
+    })
 
     return { objectId, url: presignedUrl }
   }
@@ -43,10 +41,6 @@ export default class S3Storage extends BaseStorage {
       Key: fileId,
     }
 
-    return await getSignedUrl(
-      this.s3Client,
-      new GetObjectCommand(bucketParams),
-      { expiresIn: this.expire }
-    )
+    return await getSignedUrl(this.s3Client, new GetObjectCommand(bucketParams), { expiresIn: this.expire })
   }
 }

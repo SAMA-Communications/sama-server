@@ -1,4 +1,4 @@
-import BaseRepository from '../base.js'
+import BaseRepository from "../base.js"
 
 class FileRepository extends BaseRepository {
   async create(userId, fileObj) {

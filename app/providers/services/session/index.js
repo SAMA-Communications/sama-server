@@ -1,5 +1,5 @@
-import { buildWsEndpoint } from '../../../utils/build_ws_endpoint.js'
-import { splitWsEndpoint } from '../../../utils/split_ws_endpoint.js'
+import { buildWsEndpoint } from "../../../utils/build_ws_endpoint.js"
+import { splitWsEndpoint } from "../../../utils/split_ws_endpoint.js"
 
 class SessionService {
   constructor(activeSessions, redisConnection, RuntimeDefinedContext) {
@@ -7,7 +7,7 @@ class SessionService {
     this.redisConnection = redisConnection
     this.RuntimeDefinedContext = RuntimeDefinedContext
   }
-  
+
   totalSessions() {
     return this.activeSessions.SESSIONS.size
   }
@@ -38,14 +38,14 @@ class SessionService {
   async addUserToList(userId, deviceId, nodeIp, nodePort) {
     await this.redisConnection.client.sAdd(
       `node:${buildWsEndpoint(nodeIp, nodePort)}`,
-      JSON.stringify(userId + ':' + deviceId)
+      JSON.stringify(userId + ":" + deviceId)
     )
   }
 
   async removeUserFromList(userId, deviceId, nodeIp, nodePort) {
     await this.redisConnection.client.sRem(
       `node:${buildWsEndpoint(nodeIp, nodePort)}`,
-      JSON.stringify(userId + ':' + deviceId)
+      JSON.stringify(userId + ":" + deviceId)
     )
   }
 
@@ -57,7 +57,7 @@ class SessionService {
 
     const [nodeIp, nodePort] = splitWsEndpoint(nodeUrl)
     users.forEach((u) => {
-      const [userId, deviceId] = u.split(':')
+      const [userId, deviceId] = u.split(":")
       this.removeUserNodeData(userId, deviceId, nodeIp, nodePort)
     })
 
@@ -71,7 +71,7 @@ class SessionService {
     let record = null
     userConnectsString.forEach((d) => {
       const data = JSON.parse(d)
-      if (Object.keys(data)[0] === '' + deviceId) {
+      if (Object.keys(data)[0] === "" + deviceId) {
         record = d
 
         isRecordFromThisDevice = true
@@ -84,7 +84,7 @@ class SessionService {
     await this.redisConnection.client.sAdd(
       `user:${userId}`,
       JSON.stringify({
-        [deviceId]: buildWsEndpoint(nodeIp, nodePort)
+        [deviceId]: buildWsEndpoint(nodeIp, nodePort),
       })
     )
 
@@ -140,8 +140,7 @@ class SessionService {
 
   getDeviceId(ws, userId) {
     if (this.activeSessions.DEVICES[userId]) {
-      return this.activeSessions.DEVICES[userId].find((el) => el.ws === ws)
-        ?.deviceId
+      return this.activeSessions.DEVICES[userId].find((el) => el.ws === ws)?.deviceId
     }
 
     return null
@@ -162,7 +161,9 @@ class SessionService {
     userId = userId ?? this.getSessionUserId(ws)
     deviceId = deviceId ?? this.getDeviceId(ws, userId)
 
-    const leftActiveConnections = this.getUserDevices(userId).filter(({ deviceId: activeDeviceId }) => activeDeviceId !== deviceId)
+    const leftActiveConnections = this.getUserDevices(userId).filter(
+      ({ deviceId: activeDeviceId }) => activeDeviceId !== deviceId
+    )
 
     if (!leftActiveConnections.length) {
       this.removeAllUserSessions(ws)

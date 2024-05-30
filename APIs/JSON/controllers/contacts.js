@@ -1,22 +1,22 @@
-import BaseJSONController from './base.js'
+import BaseJSONController from "./base.js"
 
-import { ERROR_STATUES } from '@sama/constants/errors.js'
+import { ERROR_STATUES } from "@sama/constants/errors.js"
 
-import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
+import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
-import Contact from '@sama/models/contact.js'
+import Contact from "@sama/models/contact.js"
 
-import contactsMatchRepository from '@sama/repositories/contact_match_repository.js'
+import contactsMatchRepository from "@sama/repositories/contact_match_repository.js"
 
-import { ObjectId } from '@sama/lib/db.js'
+import { ObjectId } from "@sama/lib/db.js"
 
-import Response from '@sama/networking/models/Response.js'
+import Response from "@sama/networking/models/Response.js"
 
 class ContactsController extends BaseJSONController {
   async contact_add(ws, data) {
     const { id: requestId, contact_add: contactData } = data
 
-    const sessionService = ServiceLocatorContainer.use('SessionService')
+    const sessionService = ServiceLocatorContainer.use("SessionService")
 
     const currentUser = sessionService.getSessionUserId(ws)
 
@@ -41,9 +41,8 @@ class ContactsController extends BaseJSONController {
         continue
       }
 
-      const contact = (
-        await this.contact_add(ws, { contact_add: u, id: 'contact_batch_add' })
-      ).backMessages.at(0).response.contact
+      const contact = (await this.contact_add(ws, { contact_add: u, id: "contact_batch_add" })).backMessages.at(0)
+        .response.contact
       contactsList.push(contact)
     }
 
@@ -53,14 +52,11 @@ class ContactsController extends BaseJSONController {
   async contact_update(ws, data) {
     const { id: requestId, contact_update: updatedData } = data
     const recordId = updatedData.id
-    delete updatedData['id']
+    delete updatedData["id"]
 
     await contactsMatchRepository.matchContactWithUser(updatedData)
 
-    const updatedResult = await Contact.findOneAndUpdate(
-      { _id: recordId },
-      { $set: updatedData }
-    )
+    const updatedResult = await Contact.findOneAndUpdate({ _id: recordId }, { $set: updatedData })
 
     if (!updatedResult.ok) {
       throw new Error(ERROR_STATUES.CONTACT_NOT_FOUND.message, {
@@ -74,7 +70,7 @@ class ContactsController extends BaseJSONController {
   async contact_list(ws, data) {
     const { id: requestId, contact_list: query } = data
 
-    const sessionService = ServiceLocatorContainer.use('SessionService')
+    const sessionService = ServiceLocatorContainer.use("SessionService")
 
     const currentUser = sessionService.getSessionUserId(ws).toString()
 
@@ -89,9 +85,12 @@ class ContactsController extends BaseJSONController {
   }
 
   async contact_delete(ws, data) {
-    const { id: requestId, contact_delete: { id } } = data
+    const {
+      id: requestId,
+      contact_delete: { id },
+    } = data
 
-    const sessionService = ServiceLocatorContainer.use('SessionService')
+    const sessionService = ServiceLocatorContainer.use("SessionService")
 
     const userId = sessionService.getSessionUserId(ws)
     const contact = await Contact.findOne({ _id: id, user_id: userId })

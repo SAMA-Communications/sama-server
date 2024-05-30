@@ -1,5 +1,5 @@
-import Joi from 'joi'
-import { ERROR_STATUES } from '@sama/constants/errors.js'
+import Joi from "joi"
+import { ERROR_STATUES } from "@sama/constants/errors.js"
 
 export const contactsSchemaValidation = {
   contact_add: Joi.object()
@@ -16,16 +16,16 @@ export const contactsSchemaValidation = {
         value: Joi.string(),
       }),
     })
-    .or('email', 'phone')
-    .or('first_name', 'last_name')
+    .or("email", "phone")
+    .or("first_name", "last_name")
     .error((errors) => {
       return errors.map((error) => {
         switch (error.local.peers.toString()) {
-          case 'email,phone':
+          case "email,phone":
             return new Error(ERROR_STATUES.EMAIL_OR_PHONE_IS_MISSED.message, {
               cause: ERROR_STATUES.EMAIL_OR_PHONE_IS_MISSED,
             })
-          case 'first_name,last_name':
+          case "first_name,last_name":
             return new Error(ERROR_STATUES.FULLNAME_IS_MISSED.message, {
               cause: ERROR_STATUES.FULLNAME_IS_MISSED,
             })
@@ -49,19 +49,16 @@ export const contactsSchemaValidation = {
             value: Joi.string(),
           }),
         })
-        .or('email', 'phone')
-        .or('first_name', 'last_name')
+        .or("email", "phone")
+        .or("first_name", "last_name")
         .error((errors) => {
           return errors.map((error) => {
             switch (error.local.peers.toString()) {
-              case 'email,phone':
-                return new Error(
-                  ERROR_STATUES.EMAIL_OR_PHONE_IS_MISSED.message,
-                  {
-                    cause: ERROR_STATUES.EMAIL_OR_PHONE_IS_MISSED,
-                  }
-                )
-              case 'first_name,last_name':
+              case "email,phone":
+                return new Error(ERROR_STATUES.EMAIL_OR_PHONE_IS_MISSED.message, {
+                  cause: ERROR_STATUES.EMAIL_OR_PHONE_IS_MISSED,
+                })
+              case "first_name,last_name":
                 return new Error(ERROR_STATUES.FULLNAME_IS_MISSED.message, {
                   cause: ERROR_STATUES.FULLNAME_IS_MISSED,
                 })

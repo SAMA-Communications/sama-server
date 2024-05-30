@@ -1,4 +1,4 @@
-import { detectAPIType, BASE_API, APIs } from './APIs.js'
+import { detectAPIType, BASE_API, APIs } from "./APIs.js"
 
 class PacketMapper {
   detectAPIType(packet) {

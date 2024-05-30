@@ -1,7 +1,5 @@
 export default class BaseController {
-  constructor() {
-
-  }
+  constructor() {}
 
   validate(data, schema) {
     const validResult = schema.validate(data)

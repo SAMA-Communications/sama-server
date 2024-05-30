@@ -1,17 +1,14 @@
-import RegisterProvider from '../../../common/RegisterProvider.js'
-import MessageService from './index.js'
+import RegisterProvider from "../../../common/RegisterProvider.js"
+import MessageService from "./index.js"
 
-const name = 'MessageService'
+const name = "MessageService"
 
 class MessageServiceRegisterProvider extends RegisterProvider {
   register(slc) {
-    const messageRepo = slc.use('MessageRepository')
-    const messageStatusRepo = slc.use('MessageStatusRepository')
+    const messageRepo = slc.use("MessageRepository")
+    const messageStatusRepo = slc.use("MessageStatusRepository")
 
-    return new MessageService(
-      messageRepo,
-      messageStatusRepo
-    )
+    return new MessageService(messageRepo, messageStatusRepo)
   }
 }
 

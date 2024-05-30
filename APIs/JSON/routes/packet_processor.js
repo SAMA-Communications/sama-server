@@ -1,6 +1,6 @@
-import BasePacketProcessor from '@sama/common/packet_processor.js'
-import Response from '@sama/networking/models/Response.js'
-import { routes } from './routes.js'
+import BasePacketProcessor from "@sama/common/packet_processor.js"
+import Response from "@sama/networking/models/Response.js"
+import { routes } from "./routes.js"
 
 class PacketJsonProcessor extends BasePacketProcessor {
   constructor() {
@@ -13,11 +13,10 @@ class PacketJsonProcessor extends BasePacketProcessor {
   }
 
   async #processMessage(ws, json) {
-
     let reqFirstParams = Object.keys(json)[0]
     let reqData = null
 
-    if (reqFirstParams === 'request') {
+    if (reqFirstParams === "request") {
       reqData = json.request
       reqFirstParams = Object.keys(reqData)[0]
     } else {

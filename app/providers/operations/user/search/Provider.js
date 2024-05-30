@@ -1,17 +1,14 @@
-import RegisterProvider from '../../../../common/RegisterProvider.js'
-import UserSearchOperation from './index.js'
+import RegisterProvider from "../../../../common/RegisterProvider.js"
+import UserSearchOperation from "./index.js"
 
-const name = 'UserSearchOperation'
+const name = "UserSearchOperation"
 
 class UserSearchOperationRegisterProvider extends RegisterProvider {
   register(slc) {
-    const sessionService = slc.use('SessionService')
-    const userService = slc.use('UserService')
+    const sessionService = slc.use("SessionService")
+    const userService = slc.use("UserService")
 
-    return new UserSearchOperation(
-      sessionService,
-      userService
-    )
+    return new UserSearchOperation(sessionService, userService)
   }
 }
 

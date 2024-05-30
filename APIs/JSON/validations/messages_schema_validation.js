@@ -1,5 +1,5 @@
-import Joi from 'joi'
-import { ERROR_STATUES, requiredError } from '@sama/constants/errors.js'
+import Joi from "joi"
+import { ERROR_STATUES, requiredError } from "@sama/constants/errors.js"
 
 export const messagesSchemaValidation = {
   create: Joi.object()
@@ -21,7 +21,7 @@ export const messagesSchemaValidation = {
       x: Joi.object(),
       body: Joi.string()
         .max(65536)
-        .allow('')
+        .allow("")
         .error(
           new Error(ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY.message, {
             cause: ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY,
@@ -41,11 +41,9 @@ export const messagesSchemaValidation = {
             cause: ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY,
           })
         ),
-      deleted_for: Joi.array().items(
-        Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required()
-      ),
+      deleted_for: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required()),
     })
-    .or('body', 'attachments'),
+    .or("body", "attachments"),
   edit: Joi.object({
     id: Joi.alternatives()
       .try(Joi.object(), Joi.string())
@@ -93,12 +91,12 @@ export const messagesSchemaValidation = {
         })
       ),
     type: Joi.string()
-      .valid('all', 'myself')
+      .valid("all", "myself")
       .required()
       .error((errors) => {
         return errors.map((error) => {
           switch (error.code) {
-            case 'any.only':
+            case "any.only":
               return new Error(ERROR_STATUES.INCORRECT_TYPE.message, {
                 cause: ERROR_STATUES.INCORRECT_TYPE,
               })
@@ -118,27 +116,26 @@ export const messagesSchemaValidation = {
           cause: ERROR_STATUES.MESSAGE_ID_MISSED,
         })
       ),
-    deleted_for: Joi.array().items(
-      Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required()
-    ),
+    deleted_for: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required()),
   }).required(),
   system: Joi.object({
-      id: Joi.string()
-          .min(1)
-          .required()
-          .error(
-            new Error(ERROR_STATUES.INCORRECT_MESSAGE_ID.message, {
-              cause: ERROR_STATUES.INCORRECT_MESSAGE_ID,
-            })
+    id: Joi.string()
+      .min(1)
+      .required()
+      .error(
+        new Error(ERROR_STATUES.INCORRECT_MESSAGE_ID.message, {
+          cause: ERROR_STATUES.INCORRECT_MESSAGE_ID,
+        })
       ),
-      cid: Joi.string(),
-      uids: Joi.array().items(
-          Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required()
-        ).max(20),
-      x: Joi.object({}).unknown().required().error(requiredError(`'x'`))
-    })
-    .or('cid', 'uids').error((errors) => {
-      return errors.map(error => {
+    cid: Joi.string(),
+    uids: Joi.array()
+      .items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required())
+      .max(20),
+    x: Joi.object({}).unknown().required().error(requiredError(`'x'`)),
+  })
+    .or("cid", "uids")
+    .error((errors) => {
+      return errors.map((error) => {
         if (error instanceof Error) {
           return error
         }
@@ -148,13 +145,13 @@ export const messagesSchemaValidation = {
           return new Error(text, { cause: { status: 422, message: text } })
         }
 
-        if (error.local.peers?.toString() === 'cid,uids') {
+        if (error.local.peers?.toString() === "cid,uids") {
           return requiredError(`'cid' or 'uids'`)
         }
 
         return error
       })
     })
-    .oxor('cid', 'uids')
-    .required()
+    .oxor("cid", "uids")
+    .required(),
 }

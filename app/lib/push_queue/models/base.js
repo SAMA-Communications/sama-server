@@ -1,5 +1,5 @@
-export default class BasePushEvent {  
+export default class BasePushEvent {
   setRecipientIds() {
-    throw new Error('Not implemented')
+    throw new Error("Not implemented")
   }
 }

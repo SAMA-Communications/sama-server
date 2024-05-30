@@ -1,13 +1,13 @@
-import RegisterProvider from '../../../common/RegisterProvider.js'
-import Message from '../../../new_models/message.js'
-import MessageRepository from './index.js'
+import RegisterProvider from "../../../common/RegisterProvider.js"
+import Message from "../../../new_models/message.js"
+import MessageRepository from "./index.js"
 
-const name = 'MessageRepository'
+const name = "MessageRepository"
 
 class MessageRepositoryRegisterProvider extends RegisterProvider {
   register(slc) {
-    const mongoConnection = slc.use('MongoConnection')
-    const messageMapper = slc.use('MessageMapper')
+    const mongoConnection = slc.use("MongoConnection")
+    const messageMapper = slc.use("MessageMapper")
 
     return new MessageRepository(mongoConnection, Message, messageMapper)
   }

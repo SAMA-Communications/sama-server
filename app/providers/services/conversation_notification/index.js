@@ -1,11 +1,8 @@
-import { CONVERSATION_EVENTS } from '../../../constants/conversation.js' 
-import CreatePushEventOptions from '@sama/lib/push_queue/models/CreatePushEventOptions.js'
+import { CONVERSATION_EVENTS } from "../../../constants/conversation.js"
+import CreatePushEventOptions from "@sama/lib/push_queue/models/CreatePushEventOptions.js"
 
 class ConversationNotificationService {
-  constructor(
-    helpers,
-    messageService,
-  ) {
+  constructor(helpers, messageService) {
     this.helpers = helpers
     this.messageService = messageService
   }
@@ -22,13 +19,16 @@ class ConversationNotificationService {
     const createSystemMessageParams = {
       id: conversation._id.toString(),
       from: user.native_id.toString(),
-      x: { [eventParams.event_request_name]: conversation.visibleParams() }
+      x: { [eventParams.event_request_name]: conversation.visibleParams() },
     }
 
-    const systemMessage = await this.messageService.createSystemMessage(createSystemMessageParams, conversation._id.toString())
+    const systemMessage = await this.messageService.createSystemMessage(
+      createSystemMessageParams,
+      conversation._id.toString()
+    )
 
     const eventMessage = { system_message: systemMessage.serialize() }
-  
+
     const eventNotification = new CreatePushEventOptions(user.native_id, pushPayload, {})
 
     return { message: eventMessage, notification: eventNotification }

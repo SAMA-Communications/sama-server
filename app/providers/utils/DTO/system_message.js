@@ -12,7 +12,7 @@ class SystemMessage {
       _id: this._id,
       from: this.from,
       t: this.t,
-      x: this.x
+      x: this.x,
     }
 
     if (this.cid) {
