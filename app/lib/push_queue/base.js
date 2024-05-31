@@ -1,7 +1,7 @@
-import pushNotificationsRepository from '../../repositories/push_notifications_repository.js'
+import pushNotificationsRepository from "../../repositories/push_notifications_repository.js"
 
-import CreateChatAlertEventOptions from './models/CreateChatAlertEventOptions.js'
-import CreatePushEventOptions from './models/CreatePushEventOptions.js'
+import CreateChatAlertEventOptions from "./models/CreateChatAlertEventOptions.js"
+import CreatePushEventOptions from "./models/CreatePushEventOptions.js"
 
 export default class BasePushQueue {
   async buildPushEvents(createPushEventOptions) {
@@ -22,14 +22,14 @@ export default class BasePushQueue {
       await this.createPushEvents(pushQueueMessage)
     }
 
-    throw new Error('Unknown push message type')
+    throw new Error("Unknown push message type")
   }
 
   async createChatAlert() {
-    throw new Error('Not implemented')
+    throw new Error("Not implemented")
   }
 
   async createPushEvents() {
-    throw new Error('Not implemented')
+    throw new Error("Not implemented")
   }
 }

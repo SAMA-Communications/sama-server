@@ -1,7 +1,5 @@
-import BaseMapper from '../base/index.js'
+import BaseMapper from "../base/index.js"
 
-class ConversationMapper extends BaseMapper {
-
-}
+class ConversationMapper extends BaseMapper {}
 
 export default ConversationMapper

@@ -1,6 +1,6 @@
-import '../index.js'
+import "../index.js"
 
-import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
+import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
 async function sendLogin(ws, login, device) {
   const requestData = {
@@ -8,16 +8,13 @@ async function sendLogin(ws, login, device) {
       user_login: {
         deviceId: device || `${login}${Math.round(Math.random() * 10000)}`,
         login: login,
-        password: '1um',
+        password: "1um",
       },
-      id: 'UserLogin',
+      id: "UserLogin",
     },
   }
 
-  const response = await packetJsonProcessor.processMessageOrError(
-    ws,
-    JSON.stringify(requestData)
-  )
+  const response = await packetJsonProcessor.processMessageOrError(ws, JSON.stringify(requestData))
 
   return response.backMessages.at(0)
 }
@@ -26,7 +23,7 @@ async function sendLogout(ws, currentUserToken) {
   const requestData = {
     request: {
       user_logout: {},
-      id: 'UserLogout',
+      id: "UserLogout",
     },
   }
 
@@ -35,33 +32,29 @@ async function sendLogout(ws, currentUserToken) {
 
 const mockedWS = {
   send: (data) => {
-    console.log('[WS] send mocked data', data)
+    console.log("[WS] send mocked data", data)
   },
 }
 
 async function createUserArray(count, currentCountOfUsers, email, phone) {
   let usersIds = []
 
-  for (
-    let i = currentCountOfUsers || 0;
-    i < count + (currentCountOfUsers || 0);
-    i++
-  ) {
+  for (let i = currentCountOfUsers || 0; i < count + (currentCountOfUsers || 0); i++) {
     const requestData = {
       request: {
         user_create: {
           login: `user_${i + 1}`,
-          password: '1um',
+          password: "1um",
           email: email || `email_${i}`,
           phone: phone || `phone_${i}`,
-          deviceId: 'Computer',
+          deviceId: "Computer",
         },
-        id: 'UserCreate',
+        id: "UserCreate",
       },
     }
 
     const createUserResponse = await packetJsonProcessor.processMessageOrError(
-      'UserCreate',
+      "UserCreate",
       JSON.stringify(requestData)
     )
 
@@ -73,18 +66,18 @@ async function createUserArray(count, currentCountOfUsers, email, phone) {
 
 async function createConversation(ws, name, description, type, participants) {
   if (!participants) {
-    throw 'participants missed'
+    throw "participants missed"
   }
 
   const requestData = {
     request: {
       conversation_create: {
-        name: name || 'Chat',
-        description: description || 'Description',
-        type: type || 'g',
+        name: name || "Chat",
+        description: description || "Description",
+        type: type || "g",
         participants,
       },
-      id: 'ConversationCreate',
+      id: "ConversationCreate",
     },
   }
 

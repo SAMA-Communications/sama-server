@@ -1,15 +1,15 @@
-import JsonAPI from '../../APIs/JSON/index.js'
-import XmppAPI from '@sama-xmpp/index.js'
+import JsonAPI from "../../APIs/JSON/index.js"
+import XmppAPI from "@sama-xmpp/index.js"
 
-const BASE_API = 'JSON'
+const BASE_API = "JSON"
 
 const APIs = {
   [BASE_API]: new JsonAPI(),
 }
 
-const useXMPP = process.argv.some(arg => arg === '--xmpp')
+const useXMPP = process.argv.some((arg) => arg === "--xmpp")
 if (XmppAPI && useXMPP) {
-  APIs['XMPP'] = new XmppAPI()
+  APIs["XMPP"] = new XmppAPI()
 }
 
 const detectAPIType = (ws, stringMessage) => {

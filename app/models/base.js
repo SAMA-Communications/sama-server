@@ -1,5 +1,5 @@
-import { getDb, ObjectId } from '../lib/db.js'
-import { slice } from '../utils/req_res_utils.js'
+import { getDb, ObjectId } from "../lib/db.js"
+import { slice } from "../utils/req_res_utils.js"
 
 export default class BaseModel {
   constructor(params) {
@@ -8,11 +8,11 @@ export default class BaseModel {
   }
 
   static get collection() {
-    throw new Error('Not implemented')
+    throw new Error("Not implemented")
   }
 
   static get visibleFields() {
-    throw new Error('Not implemented')
+    throw new Error("Not implemented")
   }
 
   async save() {
@@ -28,9 +28,7 @@ export default class BaseModel {
     }
 
     try {
-      const result = await getDb()
-        .collection(this.constructor.collection)
-        .insertOne(insertParams)
+      const result = await getDb().collection(this.constructor.collection).insertOne(insertParams)
       this.params = { _id: result.insertedId, ...insertParams }
     } catch (e) {
       return e
@@ -58,23 +56,17 @@ export default class BaseModel {
         query.cid = new ObjectId(query.cid)
       }
       if (query._id) {
-        query._id.$nin &&
-          (query._id.$nin = query._id.$nin.map((id) => new ObjectId(id)))
-        query._id.$in &&
-          (query._id.$in = query._id.$in.map((id) => new ObjectId(id)))
+        query._id.$nin && (query._id.$nin = query._id.$nin.map((id) => new ObjectId(id)))
+        query._id.$in && (query._id.$in = query._id.$in.map((id) => new ObjectId(id)))
       }
       if (query.user_id && !query.user_id.$ne) {
         query.user_id.$in
-          ? (query.user_id.$in = query.user_id.$in.map(
-              (id) => new ObjectId(id)
-            ))
+          ? (query.user_id.$in = query.user_id.$in.map((id) => new ObjectId(id)))
           : (query.user_id = new ObjectId(query.user_id))
       }
       if (query.conversation_id) {
         query.conversation_id.$in
-          ? (query.conversation_id.$in = query.conversation_id.$in.map(
-              (id) => new ObjectId(id)
-            ))
+          ? (query.conversation_id.$in = query.conversation_id.$in.map((id) => new ObjectId(id)))
           : (query.conversation_id = new ObjectId(query.conversation_id))
       }
       if (query.from?.$ne) {
@@ -163,9 +155,7 @@ export default class BaseModel {
       if (query.user_id) {
         query.user_id = new ObjectId(query.user_id)
       }
-      return await getDb()
-        .collection(this.collection)
-        .findOneAndUpdate(query, update, { returnDocument: 'after' })
+      return await getDb().collection(this.collection).findOneAndUpdate(query, update, { returnDocument: "after" })
     } catch (e) {
       return e
     }
@@ -173,9 +163,7 @@ export default class BaseModel {
 
   static async updateMany(query, update) {
     try {
-      return await getDb()
-        .collection(this.collection)
-        .updateMany(query, update)
+      return await getDb().collection(this.collection).updateMany(query, update)
     } catch (e) {
       return null
     }
@@ -202,10 +190,7 @@ export default class BaseModel {
 
   static async aggregate(query) {
     try {
-      return await getDb()
-        .collection(this.collection)
-        .aggregate(query)
-        .toArray()
+      return await getDb().collection(this.collection).aggregate(query).toArray()
     } catch (e) {
       console.log(e)
       return null
@@ -213,9 +198,7 @@ export default class BaseModel {
   }
 
   async delete() {
-    await getDb()
-      .collection(this.constructor.collection)
-      .deleteOne({ _id: this.params._id })
+    await getDb().collection(this.constructor.collection).deleteOne({ _id: this.params._id })
   }
 
   static async deleteMany(query) {

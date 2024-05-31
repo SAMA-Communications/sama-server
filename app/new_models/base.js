@@ -1,4 +1,4 @@
-import { slice } from '../utils/req_res_utils.js'
+import { slice } from "../utils/req_res_utils.js"
 
 class BaseModel {
   constructor(params, mappedParams) {
@@ -7,15 +7,15 @@ class BaseModel {
   }
 
   static get collection() {
-    throw new Error('Not implemented')
+    throw new Error("Not implemented")
   }
 
   static get visibleFields() {
-    throw new Error('Not implemented')
+    throw new Error("Not implemented")
   }
 
   static get originalFields() {
-    throw new Error('Not implemented')
+    throw new Error("Not implemented")
   }
 
   visibleParams() {
@@ -23,7 +23,7 @@ class BaseModel {
   }
 
   set(propName, value) {
-    return this.mappedParams[propName] = value
+    return (this.mappedParams[propName] = value)
   }
 
   static createInstance(...params) {
@@ -35,7 +35,7 @@ class BaseModel {
         if (origVal !== void 0) {
           return origVal
         }
-        
+
         if (propName in model.mappedParams) {
           return model.mappedParams[propName]
         }
@@ -57,7 +57,7 @@ class BaseModel {
           enumerable: true,
           configurable: true,
         }
-      }
+      },
     })
 
     return proxyModel

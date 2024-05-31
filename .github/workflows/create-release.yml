@@ -10,16 +10,13 @@ env:
   IMAGE_NAME: samacommunity/sama-server
 
 jobs:
-
   run_tests:
     if: |
       contains(github.event.pull_request.title, 'release') == true &&
       github.event.pull_request.merged == true &&
       github.event.pull_request.base.ref == 'main'
     runs-on: self-hosted
-
     steps:
-
       - uses: actions/checkout@v3
       - name: Build the SAMA resources
         run: docker compose -f docker-compose-full.yml up -d --build
@@ -44,7 +41,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        
+
       - name: Extract Version
         id: extract-version
         run: |
@@ -58,7 +55,7 @@ jobs:
           # Extract the content between the last two version headers
           changelog=$(awk '/^## [0-9]+\.[0-9]+\.[0-9]+/{if (!version) {version=$0; next}} /^## [0-9]+\.[0-9]+\.[0-9]+/{exit} {if (version) description = description ORS $0} END {if (version) print description}' CHANGELOG.md | sed -e '/^## [0-9]+\.[0-9]+\.[0-9]+/d; s/^# //' > changelog.txt)
           echo "changelog_file=changelog.txt" >> $GITHUB_ENV
-          
+
       - name: Create Release
         id: create-release
         uses: actions/create-release@v1
@@ -83,7 +80,7 @@ jobs:
           RELEASE_URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ env.version }}
         with:
           # You can pass in multiple channels to post to by providing a comma-delimited list of channel IDs.
-          channel-id: 'git-releases'
+          channel-id: "git-releases"
           payload-file-path: "./.github/slack/payload-slack-content.json"
 
   push_to_registry:
@@ -92,27 +89,26 @@ jobs:
       github.event.pull_request.merged == true &&
       github.event.pull_request.base.ref == 'main'
     needs: [create-release]
-
     runs-on: self-hosted
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
-        
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-        
+
       - name: Log in to Docker Hub
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
         with:
-            username: ${{ secrets.DOCKER_USERNAME }}
-            password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Extract Version
         id: extract-version
         run: |
-            # Use grep to find the first occurrence of the version number matching "## 0.0.0" pattern
-            version=$(grep -m 1 -oP '## \d+\.\d+\.\d+' CHANGELOG.md | cut -d ' ' -f 2)
-            echo "version=$version" >> $GITHUB_ENV
+          # Use grep to find the first occurrence of the version number matching "## 0.0.0" pattern
+          version=$(grep -m 1 -oP '## \d+\.\d+\.\d+' CHANGELOG.md | cut -d ' ' -f 2)
+          echo "version=$version" >> $GITHUB_ENV
 
       - name: Set tag based on version
         id: set_tag
@@ -123,16 +119,16 @@ jobs:
         id: meta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
-            images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
-              context: .
-              push: true
-              tags: ${{ env.IMAGE_TAG }}
-              labels: ${{ steps.meta.outputs.labels }}
-              platforms: linux/amd64,linux/arm64
+          context: .
+          push: true
+          tags: ${{ env.IMAGE_TAG }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
 
   deploy:
     if: |
@@ -142,12 +138,12 @@ jobs:
     needs: [create-release]
     runs-on: self-hosted
     steps:
-    - name: Deploy using Ansible
-      run: |
-        ansible localhost -m community.general.jenkins_build -a "{\"name\": \"SAMA/api\", \"user\": \"$DEPLOY_USER\", \"password\": \"$DEPLOY_PASSWORD\", \"url\": \"$DEPLOY_URL\", \"state\": \"present\", \"args\": {\"branch\": \"main\", \"environment\": \"prod\"}}" -B 3600 -P 0
-        sleep 3 # just to make sure that the request was processed
-        echo "Starting prod deploying job was successful."
-      env:
-        DEPLOY_USER: ${{ secrets.JENKINS_USER }}
-        DEPLOY_PASSWORD: ${{ secrets.JENKINS_PASSWORD }}
-        DEPLOY_URL: ${{ secrets.JENKINS_URL }}
+      - name: Deploy using Ansible
+        run: |
+          ansible localhost -m community.general.jenkins_build -a "{\"name\": \"SAMA/api\", \"user\": \"$DEPLOY_USER\", \"password\": \"$DEPLOY_PASSWORD\", \"url\": \"$DEPLOY_URL\", \"state\": \"present\", \"args\": {\"branch\": \"main\", \"environment\": \"prod\"}}" -B 3600 -P 0
+          sleep 3 # just to make sure that the request was processed
+          echo "Starting prod deploying job was successful."
+        env:
+          DEPLOY_USER: ${{ secrets.JENKINS_USER }}
+          DEPLOY_PASSWORD: ${{ secrets.JENKINS_PASSWORD }}
+          DEPLOY_URL: ${{ secrets.JENKINS_URL }}

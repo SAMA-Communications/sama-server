@@ -1,5 +1,4 @@
-import BaseRepository from '../base.js'
-
+import BaseRepository from "../base.js"
 
 class MessageStatusRepository extends BaseRepository {
   async prepareParams(params) {
@@ -22,7 +21,7 @@ class MessageStatusRepository extends BaseRepository {
 
     await this.bulkUpsert(operations)
   }
-  
+
   async findReadStatusForMids(mids) {
     mids = this.castObjectIds(mids)
 
@@ -31,8 +30,8 @@ class MessageStatusRepository extends BaseRepository {
     }
 
     const $group = {
-      _id: '$mid',
-      users: { $addToSet: '$user_id' },
+      _id: "$mid",
+      users: { $addToSet: "$user_id" },
     }
 
     const aggregatedResult = await this.aggregate([{ $match }, { $group }])
@@ -58,15 +57,11 @@ class MessageStatusRepository extends BaseRepository {
     const $sort = { _id: -1 }
 
     const $group = {
-      _id: '$cid',
-      last_message: { $first: '$$ROOT' },
+      _id: "$cid",
+      last_message: { $first: "$$ROOT" },
     }
 
-    const aggregatedResult = await this.aggregate([
-      { $match },
-      { $sort },
-      { $group },
-    ])
+    const aggregatedResult = await this.aggregate([{ $match }, { $sort }, { $group }])
 
     const result = {}
 

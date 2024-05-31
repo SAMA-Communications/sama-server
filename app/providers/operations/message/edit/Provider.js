@@ -1,19 +1,15 @@
-import RegisterProvider from '../../../../common/RegisterProvider.js'
-import MessageEditOperation from './index.js'
+import RegisterProvider from "../../../../common/RegisterProvider.js"
+import MessageEditOperation from "./index.js"
 
-const name = 'MessageEditOperation'
+const name = "MessageEditOperation"
 
 class MessageEditOperationRegisterProvider extends RegisterProvider {
   register(slc) {
-    const sessionService = slc.use('SessionService')
-    const messageService = slc.use('MessageService')
-    const conversationService = slc.use('ConversationService')
+    const sessionService = slc.use("SessionService")
+    const messageService = slc.use("MessageService")
+    const conversationService = slc.use("ConversationService")
 
-    return new MessageEditOperation(
-      sessionService,
-      messageService,
-      conversationService
-    )
+    return new MessageEditOperation(sessionService, messageService, conversationService)
   }
 }
 

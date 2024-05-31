@@ -1,17 +1,13 @@
-import { ERROR_STATUES } from '../../../../constants/errors.js'
+import { ERROR_STATUES } from "../../../../constants/errors.js"
 
 class MessageEditOperation {
-  constructor(
-    sessionService,
-    messageService,
-    conversationService,
-  ) {
+  constructor(sessionService, messageService, conversationService) {
     this.sessionService = sessionService
     this.messageService = messageService
     this.conversationService = conversationService
   }
 
-  async perform (ws, messageParams) {
+  async perform(ws, messageParams) {
     const { id: messageId, body: newBody } = messageParams
 
     const currentUserId = this.sessionService.getSessionUserId(ws)

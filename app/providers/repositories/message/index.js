@@ -1,4 +1,4 @@
-import BaseRepository from '../base.js'
+import BaseRepository from "../base.js"
 
 class MessageRepository extends BaseRepository {
   async prepareParams(params) {
@@ -12,11 +12,15 @@ class MessageRepository extends BaseRepository {
   }
 
   async findAllOpponentsMessagesFromConversation(cid, readerUserId, { mids, lastReadMessageId }) {
-    const idQuery = lastReadMessageId ? { $gt: this.castObjectId(lastReadMessageId) } : mids ? { $in: this.castObjectIds(mids) } : null
+    const idQuery = lastReadMessageId
+      ? { $gt: this.castObjectId(lastReadMessageId) }
+      : mids
+        ? { $in: this.castObjectIds(mids) }
+        : null
 
     const query = {
       cid: this.castObjectId(cid),
-      from: { $ne: this.castObjectId(readerUserId) }
+      from: { $ne: this.castObjectId(readerUserId) },
     }
 
     if (idQuery) {
@@ -38,24 +42,19 @@ class MessageRepository extends BaseRepository {
     }
     const $sort = { t: -1, _id: -1 }
     const $group = {
-      _id: '$cid',
-      last_message: { $first: '$$ROOT' },
+      _id: "$cid",
+      last_message: { $first: "$$ROOT" },
     }
 
     const $project = { _id: 1, body: 1, from: 1, t: 1, cid: 1, attachments: 1 }
 
-    const aggregatedResult = await this.aggregate([
-      { $match },
-      { $project },
-      { $sort },
-      { $group },
-    ])
+    const aggregatedResult = await this.aggregate([{ $match }, { $project }, { $sort }, { $group }])
 
     const result = {}
 
     aggregatedResult.forEach((obj) => {
       const msg = obj.last_message
-      delete msg['cid']
+      delete msg["cid"]
       result[obj._id] = this.wrapRawRecordInModel(msg)
     })
 
@@ -90,7 +89,7 @@ class MessageRepository extends BaseRepository {
     })
 
     const $group = {
-      _id: '$cid',
+      _id: "$cid",
       count: { $sum: 1 },
     }
 

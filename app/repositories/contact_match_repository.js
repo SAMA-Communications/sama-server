@@ -1,8 +1,8 @@
-import BaseRepository from './base.js'
+import BaseRepository from "./base.js"
 
-import ServiceLocatorContainer from '../common/ServiceLocatorContainer.js'
+import ServiceLocatorContainer from "../common/ServiceLocatorContainer.js"
 
-import Contact from '../models/contact.js'
+import Contact from "../models/contact.js"
 
 class ContactsMatchRepository extends BaseRepository {
   async #getRecords(query) {
@@ -15,7 +15,7 @@ class ContactsMatchRepository extends BaseRepository {
 
     do {
       if (timeParam) {
-        query['created_at'] = { $gt: timeParam }
+        query["created_at"] = { $gt: timeParam }
       }
       tmpRecords = await this.Model.findAll(query)
 
@@ -33,7 +33,7 @@ class ContactsMatchRepository extends BaseRepository {
   async #updateFieldOnCreate(data, userId, value) {
     return data.map((el) => {
       if (el.value === value) {
-        el['matched_user_id'] = userId
+        el["matched_user_id"] = userId
       }
       return el
     })
@@ -60,18 +60,8 @@ class ContactsMatchRepository extends BaseRepository {
         continue
       }
 
-      email &&
-        (updateParam['email'] = await this.#updateFieldOnCreate(
-          r.email,
-          userId,
-          email
-        ))
-      phone &&
-        (updateParam['phone'] = await this.#updateFieldOnCreate(
-          r.phone,
-          userId,
-          phone
-        ))
+      email && (updateParam["email"] = await this.#updateFieldOnCreate(r.email, userId, email))
+      phone && (updateParam["phone"] = await this.#updateFieldOnCreate(r.phone, userId, phone))
 
       await this.Model.updateOne({ _id: r._id.toString() }, { $set: updateParam })
     }
@@ -83,7 +73,7 @@ class ContactsMatchRepository extends BaseRepository {
         el.value = value
       }
       if (el.value === value) {
-        el['matched_user_id'] = userId
+        el["matched_user_id"] = userId
       }
       return el
     })
@@ -95,10 +85,8 @@ class ContactsMatchRepository extends BaseRepository {
     }
 
     const query = { $or: [] }
-    phone &&
-      query.$or.push({ [`phone.value`]: phone }, { [`phone.value`]: oldPhone })
-    email &&
-      query.$or.push({ [`email.value`]: email }, { [`email.value`]: oldEmail })
+    phone && query.$or.push({ [`phone.value`]: phone }, { [`phone.value`]: oldPhone })
+    email && query.$or.push({ [`email.value`]: email }, { [`email.value`]: oldEmail })
 
     const records = await this.#getRecords(query)
     if (!records.length) {
@@ -112,20 +100,8 @@ class ContactsMatchRepository extends BaseRepository {
         continue
       }
 
-      email &&
-        (updateParam['email'] = await this.#updateFieldOnUpdate(
-          r.email,
-          userId,
-          email,
-          oldEmail
-        ))
-      phone &&
-        (updateParam['phone'] = await this.#updateFieldOnUpdate(
-          r.phone,
-          userId,
-          phone,
-          oldPhone
-        ))
+      email && (updateParam["email"] = await this.#updateFieldOnUpdate(r.email, userId, email, oldEmail))
+      phone && (updateParam["phone"] = await this.#updateFieldOnUpdate(r.phone, userId, phone, oldPhone))
 
       await this.Model.updateOne({ _id: r._id.toString() }, { $set: updateParam })
     }
@@ -134,7 +110,7 @@ class ContactsMatchRepository extends BaseRepository {
   async #updateFieldOnDelete(data, value) {
     return data.map((el) => {
       if (el.value === value) {
-        delete el['matched_user_id']
+        delete el["matched_user_id"]
       }
       return el
     })
@@ -161,16 +137,8 @@ class ContactsMatchRepository extends BaseRepository {
         continue
       }
 
-      email &&
-        (updateParam['email'] = await this.#updateFieldOnDelete(
-          r.email,
-          email
-        ))
-      phone &&
-        (updateParam['phone'] = await this.#updateFieldOnDelete(
-          r.phone,
-          phone
-        ))
+      email && (updateParam["email"] = await this.#updateFieldOnDelete(r.email, email))
+      phone && (updateParam["phone"] = await this.#updateFieldOnDelete(r.phone, phone))
 
       await this.Model.updateOne({ _id: r._id.toString() }, { $set: updateParam })
     }
@@ -179,17 +147,17 @@ class ContactsMatchRepository extends BaseRepository {
   async matchContactWithUser(contactData) {
     const fields = []
 
-    contactData.email && fields.push('email')
-    contactData.phone && fields.push('phone')
+    contactData.email && fields.push("email")
+    contactData.phone && fields.push("phone")
 
     if (!fields.length) {
       return
     }
 
-    const userService = ServiceLocatorContainer.use('UserService')
+    const userService = ServiceLocatorContainer.use("UserService")
 
-    const emails = contactData.email?.map(email => email.value)
-    const phones = contactData.phone?.map(phone => phone.value)
+    const emails = contactData.email?.map((email) => email.value)
+    const phones = contactData.phone?.map((phone) => phone.value)
     const foundUsersList = await userService.userRepo.matchUserContact(emails, phones)
 
     for (const field of fields) {
@@ -200,7 +168,7 @@ class ContactsMatchRepository extends BaseRepository {
 
       contactData[field].forEach((obj) => {
         if (foundUsersObj[obj.value]) {
-          obj['matched_user_id'] = foundUsersObj[obj.value]
+          obj["matched_user_id"] = foundUsersObj[obj.value]
         }
       })
     }

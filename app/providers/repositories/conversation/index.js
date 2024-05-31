@@ -1,4 +1,4 @@
-import BaseRepository from '../base.js'
+import BaseRepository from "../base.js"
 
 class ConversationRepository extends BaseRepository {
   async prepareParams(params) {
@@ -12,17 +12,17 @@ class ConversationRepository extends BaseRepository {
 
   async findExistedPrivateConversation(ownerId, opponentId) {
     ownerId = this.castObjectId(ownerId)
-    opponentId = this.castObjectId(opponentId)    
+    opponentId = this.castObjectId(opponentId)
 
     const conversation = await this.findOne({
       $or: [
         {
-          type: 'u',
+          type: "u",
           owner_id: ownerId,
           opponent_id: opponentId,
         },
         {
-          type: 'u',
+          type: "u",
           owner_id: opponentId,
           opponent_id: ownerId,
         },
@@ -34,7 +34,7 @@ class ConversationRepository extends BaseRepository {
 
   async list(conversationIds, options, limit) {
     const query = {
-      _id: { $in: conversationIds }
+      _id: { $in: conversationIds },
     }
 
     if (options.updatedAtFrom) {

@@ -1,6 +1,6 @@
-import RSMQPromise from 'rsmq-promise'
+import RSMQPromise from "rsmq-promise"
 
-import BasePushQueue from './base.js'
+import BasePushQueue from "./base.js"
 
 export default class RSMPushQueue extends BasePushQueue {
   constructor(redisClient, { chatAlertQueueName, pushQueueName }) {
@@ -14,7 +14,7 @@ export default class RSMPushQueue extends BasePushQueue {
 
   async createQueueIfNoExists(createQueueName) {
     const queueLists = await this.rsmq.listQueues()
-    const existedQueue = queueLists.find(qname => qname === createQueueName)
+    const existedQueue = queueLists.find((qname) => qname === createQueueName)
 
     if (existedQueue) {
       return
@@ -30,7 +30,7 @@ export default class RSMPushQueue extends BasePushQueue {
       dialogId: createChatAlertEventOptions.conversationId,
       messageId: createChatAlertEventOptions.messageId,
       senderID: createChatAlertEventOptions.senderID,
-      offlineUsersIDs: createChatAlertEventOptions.offlineUsersIDs
+      offlineUsersIDs: createChatAlertEventOptions.offlineUsersIDs,
     }
 
     await this.addToQueue(this.chatAlertQueueName, [JSON.stringify(messagePayload)])
@@ -41,7 +41,7 @@ export default class RSMPushQueue extends BasePushQueue {
 
     const pushEvents = await this.buildPushEvents(createPushEventOptions)
 
-    const pushEventIds = pushEvents.map(pushEvent => pushEvent.params._id.toString())
+    const pushEventIds = pushEvents.map((pushEvent) => pushEvent.params._id.toString())
 
     await this.addToQueue(this.pushQueueName, pushEventIds)
 

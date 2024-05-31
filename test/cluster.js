@@ -1,44 +1,33 @@
-import ip from 'ip'
-import uWS from 'uWebSockets.js'
-import assert from 'assert'
+import ip from "ip"
+import uWS from "uWebSockets.js"
+import assert from "assert"
 
-import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
-import clusterManager from './../app/cluster/cluster_manager.js'
-import {
-  createConversation,
-  createUserArray,
-  mockedWS,
-  sendLogin,
-} from './utils.js'
-import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
-import packetManager from './../app/networking/packet_manager.js'
+import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
+import clusterManager from "./../app/cluster/cluster_manager.js"
+import { createConversation, createUserArray, mockedWS, sendLogin } from "./utils.js"
+import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
+import packetManager from "./../app/networking/packet_manager.js"
 
-const sessionService = ServiceLocatorContainer.use('SessionService')
-const userRepo = ServiceLocatorContainer.use('UserRepository')
-const conversationRepo = ServiceLocatorContainer.use('ConversationRepository')
-const conversationParticipantRepo = ServiceLocatorContainer.use('ConversationParticipantRepository')
-const messageRepo = ServiceLocatorContainer.use('MessageRepository')
-const messageStatusRepo = ServiceLocatorContainer.use('MessageStatusRepository')
+const sessionService = ServiceLocatorContainer.use("SessionService")
+const userRepo = ServiceLocatorContainer.use("UserRepository")
+const conversationRepo = ServiceLocatorContainer.use("ConversationRepository")
+const conversationParticipantRepo = ServiceLocatorContainer.use("ConversationParticipantRepository")
+const messageRepo = ServiceLocatorContainer.use("MessageRepository")
+const messageStatusRepo = ServiceLocatorContainer.use("MessageStatusRepository")
 
-let currentConversationId = ''
+let currentConversationId = ""
 let usersIds = []
 let deviceId = null
 let secondClusterPort = null
 let secondSocketResponse = null
 
-describe('Cluster Message function', async () => {
+describe("Cluster Message function", async () => {
   before(async () => {
     usersIds = await createUserArray(2)
 
-    await sendLogin(mockedWS, 'user_1')
+    await sendLogin(mockedWS, "user_1")
 
-    currentConversationId = await createConversation(
-      mockedWS,
-      null,
-      null,
-      'g',
-      [usersIds[1], usersIds[0]]
-    )
+    currentConversationId = await createConversation(mockedWS, null, null, "g", [usersIds[1], usersIds[0]])
 
     //emulate user2 connect in other node
     deviceId = sessionService.activeSessions.DEVICES[usersIds[0]][0].deviceId
@@ -54,7 +43,7 @@ describe('Cluster Message function', async () => {
         console.log(`CLUSTER listening on port ${clusterPort}`)
         secondClusterPort = clusterPort
       } else {
-        throw 'CLUSTER_SOCKET.listen error'
+        throw "CLUSTER_SOCKET.listen error"
       }
     })
 
@@ -63,20 +52,15 @@ describe('Cluster Message function', async () => {
         secondSocketResponse = data
       },
     }
-    await sessionService.storeUserNodeData(
-      usersIds[1],
-      deviceId,
-      ip.address(),
-      secondClusterPort
-    )
+    await sessionService.storeUserNodeData(usersIds[1], deviceId, ip.address(), secondClusterPort)
   })
 
-  describe('Send Message to other node', async () => {
-    it('should work', async () => {
+  describe("Send Message to other node", async () => {
+    it("should work", async () => {
       const requestData = {
         message: {
-          id: 'xyz',
-          body: 'hey how is going?',
+          id: "xyz",
+          body: "hey how is going?",
           cid: currentConversationId,
         },
       }
@@ -104,9 +88,7 @@ describe('Cluster Message function', async () => {
 
       assert.notEqual(response.packet, undefined)
       assert.strictEqual(response.packet.message.from, usersIds[0].toString())
-      assert.strictEqual(response.packet.message.body, 'hey how is going?')
-
-
+      assert.strictEqual(response.packet.message.body, "hey how is going?")
     })
   })
 

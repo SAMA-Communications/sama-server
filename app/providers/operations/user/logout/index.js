@@ -1,15 +1,12 @@
-import { ERROR_STATUES } from '../../../../constants/errors.js'
+import { ERROR_STATUES } from "../../../../constants/errors.js"
 
 class UserLogoutOperation {
-  constructor(
-    sessionService,
-    userTokenRepo
-  ) {
+  constructor(sessionService, userTokenRepo) {
     this.sessionService = sessionService
     this.userTokenRepo = userTokenRepo
   }
 
-  async perform (ws) {
+  async perform(ws) {
     const userId = this.sessionService.getSessionUserId(ws)
 
     if (!userId) {

@@ -1,13 +1,13 @@
-import RegisterProvider from '../../../common/RegisterProvider.js'
-import File from '../../../new_models/file.js'
-import FileRepository from './index.js'
+import RegisterProvider from "../../../common/RegisterProvider.js"
+import File from "../../../new_models/file.js"
+import FileRepository from "./index.js"
 
-const name = 'FileRepository'
+const name = "FileRepository"
 
 class FileRepositoryRegisterProvider extends RegisterProvider {
   register(slc) {
-    const mongoConnection = slc.use('MongoConnection')
-    const baseMapper = slc.use('BaseMapper')
+    const mongoConnection = slc.use("MongoConnection")
+    const baseMapper = slc.use("BaseMapper")
 
     return new FileRepository(mongoConnection, File, baseMapper)
   }

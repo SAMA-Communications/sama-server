@@ -1,4 +1,4 @@
-import BasePushEvent from './base.js'
+import BasePushEvent from "./base.js"
 
 export default class CreateChatAlertEventOptions extends BasePushEvent {
   constructor(options, payload) {

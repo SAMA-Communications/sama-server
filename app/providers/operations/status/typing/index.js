@@ -1,15 +1,12 @@
-import { ERROR_STATUES } from '../../../../constants/errors.js'
+import { ERROR_STATUES } from "../../../../constants/errors.js"
 
 class StatusTypingOperation {
-  constructor(
-    sessionService,
-    conversationService
-  ) {
+  constructor(sessionService, conversationService) {
     this.sessionService = sessionService
     this.conversationService = conversationService
   }
 
-  async perform (ws, statusTypingParams) {
+  async perform(ws, statusTypingParams) {
     const { cid: conversationId, type } = statusTypingParams
     const currentUserId = this.sessionService.getSessionUserId(ws)
 
@@ -21,14 +18,17 @@ class StatusTypingOperation {
       cid: conversationId,
       from: conversationId,
       t: currentTs,
-      type
+      type,
     }
 
     return { status, participantIds }
   }
 
   async #hasAccess(conversationId, currentUserId) {
-    const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(conversationId, currentUserId)
+    const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
+      conversationId,
+      currentUserId
+    )
 
     if (!conversation) {
       throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {

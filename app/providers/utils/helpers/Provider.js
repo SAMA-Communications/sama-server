@@ -1,7 +1,7 @@
-import RegisterProvider from '../../../common/RegisterProvider.js'
-import Helpers from './index.js'
+import RegisterProvider from "../../../common/RegisterProvider.js"
+import Helpers from "./index.js"
 
-const name = 'Helpers'
+const name = "Helpers"
 
 class HelpersRegisterProvider extends RegisterProvider {
   register(slc) {

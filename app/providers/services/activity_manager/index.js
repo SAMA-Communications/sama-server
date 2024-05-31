@@ -1,4 +1,4 @@
-import { CONSTANTS as MAIN_CONSTANTS } from '../../../constants/constants.js'
+import { CONSTANTS as MAIN_CONSTANTS } from "../../../constants/constants.js"
 
 class ActivityManagerService {
   constructor(ACTIVITY, userService) {
@@ -65,7 +65,7 @@ class ActivityManagerService {
 
     if (status !== MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE) {
       await this.userService.updateActivity(userId, currentTime)
-      
+
       this.unsubscribeObserver(userId)
     }
 

@@ -1,7 +1,7 @@
 export default class RegisterProvider {
   static SCOPE = {
-    SINGLETON: 'SINGLETON',
-    TRANSIENT: 'TRANSIENT'
+    SINGLETON: "SINGLETON",
+    TRANSIENT: "TRANSIENT",
   }
 
   constructor(opts) {
@@ -12,11 +12,7 @@ export default class RegisterProvider {
     this.booted = false
   }
 
-  register(slc) {
+  register(slc) {}
 
-  }
-
-  async boot(slc) {
-
-  }
+  async boot(slc) {}
 }
