@@ -202,6 +202,12 @@ export default class BaseRepository {
     return records.map((record) => record._id)
   }
 
+  async distinct(field, query, options) {
+    const result = await this.collectionCursor.distinct(field, query, options)
+
+    return result
+  }
+
   async aggregate(query) {
     const result = await this.collectionCursor.aggregate(query).toArray()
 
