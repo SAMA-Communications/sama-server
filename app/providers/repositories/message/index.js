@@ -79,10 +79,17 @@ class MessageRepository extends BaseRepository {
     return messages
   }
 
-  async findParticipantIdsByCids(cids, filteredUserIds) {
-    const participantIds = await this.distinct("from", { cid: { $in: cids }, from: { $nin: filteredUserIds } })
+  async participantIdsFromMessages(cids, filteredUserIds) {
+    const idsFromSenders = await this.distinct("from", { cid: { $in: cids }, from: { $nin: filteredUserIds } })
 
-    return participantIds
+    const idsFromXParams = await this.distinct("x.user._id", {
+      cid: { $in: cids },
+      "x.user._id": { $nin: [...idsFromSenders, ...filteredUserIds] },
+    })
+
+    const result = [...idsFromSenders, ...idsFromXParams]
+
+    return result
   }
 
   async countUnreadMessagesByCids(cids, userId, lastReadMessageByUserForCids) {

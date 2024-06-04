@@ -18,7 +18,8 @@ class ConversationListParticipantsOperation {
 
     const participantIdsFromConversations =
       await this.conversationService.findConversationsParticipantIds(verifiedConversationIds)
-    const participantIdsFromMessages = await this.messageService.messageRepo.findParticipantIdsByCids(
+
+    const participantIdsFromMessages = await this.messageService.messageRepo.participantIdsFromMessages(
       verifiedConversationIds,
       participantIdsFromConversations
     )
