@@ -1,9 +1,10 @@
 import { slice } from "@sama/utils/req_res_utils.js"
 
 class ConversationListParticipantsOperation {
-  constructor(sessionService, userService, conversationService) {
+  constructor(sessionService, userService, messageService, conversationService) {
     this.sessionService = sessionService
     this.userService = userService
+    this.messageService = messageService
     this.conversationService = conversationService
   }
 
@@ -13,7 +14,16 @@ class ConversationListParticipantsOperation {
     const currentUserId = this.sessionService.getSessionUserId(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
-    const participantIds = await this.conversationService.findConversationsParticipantIds(cids, currentUser)
+    const verifiedConversationIds = await this.conversationService.verifiyParticipantConversationIds(cids, currentUser)
+
+    const participantIdsFromConversations =
+      await this.conversationService.findConversationsParticipantIds(verifiedConversationIds)
+    const participantIdsFromMessages = await this.messageService.messageRepo.findParticipantIdsByCids(
+      verifiedConversationIds,
+      participantIdsFromConversations
+    )
+
+    const participantIds = [...participantIdsFromConversations, ...participantIdsFromMessages]
 
     if (!participantIds.length) {
       return []

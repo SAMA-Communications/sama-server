@@ -50,11 +50,18 @@ class ConversationService {
     return participants.map((participant) => participant.user_id)
   }
 
-  async findConversationsParticipantIds(conversationIds, user) {
-    const conversationsParticipants = await this.conversationParticipantRepo.findConversationsParticipants(
+  async verifiyParticipantConversationIds(conversationIds, user) {
+    const verifiedConversationIds = await this.conversationParticipantRepo.verifiyParticipantConversationIds(
       conversationIds,
       user.native_id
     )
+
+    return verifiedConversationIds
+  }
+
+  async findConversationsParticipantIds(conversationIds) {
+    const conversationsParticipants =
+      await this.conversationParticipantRepo.findConversationsParticipants(conversationIds)
 
     return conversationsParticipants.map((participant) => participant.user_id)
   }

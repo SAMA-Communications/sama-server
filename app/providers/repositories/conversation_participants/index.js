@@ -14,14 +14,17 @@ class ConversationParticipantRepository extends BaseRepository {
     return participants
   }
 
-  async findConversationsParticipants(conversationIds, participantId) {
+  async verifiyParticipantConversationIds(conversationIds, participantId) {
     const availableConversationParticipants = await this.findAll({
       conversation_id: { $in: conversationIds },
       user_id: participantId,
     })
-    const availableConversationIds = availableConversationParticipants.map((participant) => participant.conversation_id)
 
-    const conversationsParticipants = await this.findAll({ conversation_id: { $in: availableConversationIds } })
+    return availableConversationParticipants.map((participant) => participant.conversation_id)
+  }
+
+  async findConversationsParticipants(conversationIds) {
+    const conversationsParticipants = await this.findAll({ conversation_id: { $in: conversationIds } })
 
     return conversationsParticipants
   }

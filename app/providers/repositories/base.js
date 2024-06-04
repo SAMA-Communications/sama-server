@@ -203,6 +203,13 @@ export default class BaseRepository {
   }
 
   async distinct(field, query, options) {
+    if (query.cids?.$in) {
+      query.cids.$in = this.castObjectIds(query.cids.$in)
+    }
+    if (query.from?.$in) {
+      query.from.$in = this.castObjectIds(query.cids.$in)
+    }
+
     const result = await this.collectionCursor.distinct(field, query, options)
 
     return result
