@@ -2,10 +2,12 @@ import { ERROR_STATUES } from '../../../constants/errors.js'
 
 class ConversationService {
   constructor(
+    CONVERSATION_MAX_PARTICIPANTS,
+
     conversationRepo,
-    conversationParticipantRepo
+    conversationParticipantRepo,
   ) {
-    this.CONVERSATION_MAX_PARTICIPANTS = process.env.CONVERSATION_MAX_PARTICIPANTS
+    this.CONVERSATION_MAX_PARTICIPANTS = CONVERSATION_MAX_PARTICIPANTS
 
     this.conversationRepo = conversationRepo
     this.conversationParticipantRepo = conversationParticipantRepo

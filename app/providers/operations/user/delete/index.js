@@ -5,13 +5,13 @@ class UserDeleteOperation {
     sessionService,
     userService,
     activityManagerService,
-    blockListRepository,
+    blockListService,
     contactsMatchRepository,
   ) {
     this.sessionService = sessionService
     this.userService = userService
     this.activityManagerService = activityManagerService
-    this.blockListRepository = blockListRepository
+    this.blockListService = blockListService
     this.contactsMatchRepository = contactsMatchRepository
   }
 
@@ -34,7 +34,7 @@ class UserDeleteOperation {
       })
     }
 
-    await this.blockListRepository.delete(user.native_id)
+    await this.blockListService.deleteAllBlocks(user.native_id)
     await this.contactsMatchRepository.matchUserWithContactOnDelete(
       user.native_id,
       user.phone,

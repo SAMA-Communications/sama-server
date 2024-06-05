@@ -3,7 +3,9 @@ import { ERROR_STATUES } from '@sama/constants/errors.js'
 
 export const usersBlockSchemaValidation = {
   block: Joi.object({
-    id: Joi.alternatives().try(Joi.object(), Joi.string(),  Joi.number()).required(),
+    ids: Joi.alternatives().try(Joi.object(), Joi.string(),  Joi.number()).required(),
+    group: Joi.bool().optional(),
+    system: Joi.bool().optional()
   })
     .required()
     .error(
@@ -12,7 +14,7 @@ export const usersBlockSchemaValidation = {
       })
     ),
   unblock: Joi.object({
-    id: Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required(),
+    ids: Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required(),
   })
     .required()
     .error(
@@ -21,4 +23,7 @@ export const usersBlockSchemaValidation = {
       })
     ),
   list: Joi.object({}).required(),
+  enable: Joi.object({
+    enable: Joi.bool()
+  })
 }

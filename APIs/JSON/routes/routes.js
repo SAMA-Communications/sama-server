@@ -195,6 +195,13 @@ export const routes = {
       usersBlockSchemaValidation.list
     )
     .list(ws, json),
+  list_blocked_users: (ws, json) =>
+    UsersBlockController.middleware(authGuardMiddleware, ws, json)
+    .validate(
+      json.block_list,
+      usersBlockSchemaValidation.enable
+    )
+    .enable(ws, json),
   user_last_activity_subscribe: (ws, json) =>
     LastActivityiesController.middleware(authGuardMiddleware, ws, json)
     .validate(
