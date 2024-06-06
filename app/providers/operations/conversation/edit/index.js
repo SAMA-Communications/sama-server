@@ -6,7 +6,8 @@ class ConversationEditOperation {
     this.sessionService = sessionService
     this.userService = userService
     this.conversationService = conversationService
-    ;(this.conversationNotificationService = conversationNotificationService), (this.messagesService = messagesService)
+    this.conversationNotificationService = conversationNotificationService
+    this.messagesService = messagesService
   }
 
   async perform(ws, conversationParams) {
