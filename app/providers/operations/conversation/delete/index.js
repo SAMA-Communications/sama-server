@@ -18,7 +18,7 @@ class ConversationDeleteOperation {
 
     const conversationEvents = await this.#createActionEvents(conversation, currentUserId, participantIds)
 
-    return { currentUserId, conversation, conversationEvents }
+    return { currentUserId, conversationEvents }
   }
 
   async #hasAccess(conversationId, userId) {

@@ -90,7 +90,7 @@ class ConversationsController extends BaseJSONController {
     const conversationDeleteOperation = ServiceLocatorContainer.use("ConversationDeleteOperation")
     const deletedConversationResult = await conversationDeleteOperation.perform(ws, conversationId)
 
-    const { currentUserId, conversation, conversationEvents } = deletedConversationResult
+    const { currentUserId, conversationEvents } = deletedConversationResult
 
     conversationEvents.forEach((event) => {
       const deliverMessage = new DeliverMessage(event.participantIds, event.message).addPushQueueMessage(
@@ -108,7 +108,6 @@ class ConversationsController extends BaseJSONController {
       response: {
         id: requestId,
         success: true,
-        conversation: conversation.visibleParams(),
       },
     })
   }
