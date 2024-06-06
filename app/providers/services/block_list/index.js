@@ -5,14 +5,14 @@ class BlockListService {
     this.blockedUserRepo = blockedUserRepo
   }
 
-  async blockMany(userId, blockUserIds, params) {
+  async blockMany(userId, blockUserIds, optionalParams) {
     const params = blockUserIds.map(blockedUserId => ({
       enabled: true,
 
       user_id: userId,
       blocked_user_id: blockedUserId,
 
-      ...params
+      ...optionalParams
     }))
 
     const blockedUsers = await this.blockedUserRepo.createMany(params)
@@ -35,8 +35,8 @@ class BlockListService {
   }
 
   async listMutualBlockedIds(userId, recipientsIds) {
-    const blockedByUser = await this.blockedUserRepo.list(userId, recipientsIds)
-    const userInBlock = await this.blockedUserRepo.blockers(userId, recipientsIds)
+    const blockedByUser = await this.blockedUserRepo.list(userId, true, recipientsIds)
+    const userInBlock = await this.blockedUserRepo.blockers(userId, true, recipientsIds)
 
     const blockedByUserIds = blockedByUser.map(blockUser => blockUser.blocked_user_id)
     const userInBlockIds = userInBlock.map(blockUser => blockUser.user_id)

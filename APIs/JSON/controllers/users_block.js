@@ -26,7 +26,7 @@ class UsersBlockController extends BaseJSONController {
   }
 
   async enable(ws, data) {
-    const { id: requestId, block_list: { enable } } = data
+    const { id: requestId, block_list_enable: { enable } } = data
 
     const blockListEnableOperation = ServiceLocatorContainer.use('BlockListEnableOperation')
 

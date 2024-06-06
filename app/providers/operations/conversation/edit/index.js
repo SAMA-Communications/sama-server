@@ -13,7 +13,7 @@ class ConversationEditOperation {
     this.sessionService = sessionService
     this.userService = userService
     this.conversationService = conversationService
-    this.conversationNotificationService = conversationNotificationService,
+    this.conversationNotificationService = conversationNotificationService
     this.messagesService = messagesService
   }
 

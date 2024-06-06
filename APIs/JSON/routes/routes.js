@@ -195,10 +195,10 @@ export const routes = {
       usersBlockSchemaValidation.list
     )
     .list(ws, json),
-  list_blocked_users: (ws, json) =>
+    block_list_enable: (ws, json) =>
     UsersBlockController.middleware(authGuardMiddleware, ws, json)
     .validate(
-      json.block_list,
+      json.block_list_enable,
       usersBlockSchemaValidation.enable
     )
     .enable(ws, json),

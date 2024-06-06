@@ -32,6 +32,7 @@ import UserSearchOperationProvider from './operations/user/search/Provider.js'
 
 import BlockListBlockOperationProvider from './operations/block_list/block/Provider.js'
 import BlockListUnblockOperationProvider from './operations/block_list/unblock/Provider.js'
+import BlockListEnableOperationProvider from './operations/block_list/enable/Provider.js'
 import BlockListRetrieveOperationProvider from './operations/block_list/list/Provider.js'
 
 import ActivityUserRetrieveOperationProvider from './operations/activity/retrieve/Provider.js'
@@ -88,6 +89,7 @@ const providers = [
 
   BlockListBlockOperationProvider,
   BlockListUnblockOperationProvider,
+  BlockListEnableOperationProvider,
   BlockListRetrieveOperationProvider,
 
   ActivityUserRetrieveOperationProvider,

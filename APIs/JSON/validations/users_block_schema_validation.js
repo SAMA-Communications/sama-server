@@ -3,23 +3,23 @@ import { ERROR_STATUES } from '@sama/constants/errors.js'
 
 export const usersBlockSchemaValidation = {
   block: Joi.object({
-    ids: Joi.alternatives().try(Joi.object(), Joi.string(),  Joi.number()).required(),
+    ids: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string().min(24),  Joi.number())).required(),
     group: Joi.bool().optional(),
     system: Joi.bool().optional()
   })
     .required()
     .error(
-      new Error(ERROR_STATUES.USER_ID_MISSED.message, {
-        cause: ERROR_STATUES.USER_ID_MISSED,
+      new Error(ERROR_STATUES.INVALID_DATA_FORMAT.message, {
+        cause: ERROR_STATUES.INVALID_DATA_FORMAT,
       })
     ),
   unblock: Joi.object({
-    ids: Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required(),
+    ids:Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string().min(24),  Joi.number())).required(),
   })
     .required()
     .error(
-      new Error(ERROR_STATUES.USER_ID_MISSED.message, {
-        cause: ERROR_STATUES.USER_ID_MISSED,
+      new Error(ERROR_STATUES.INVALID_DATA_FORMAT.message, {
+        cause: ERROR_STATUES.INVALID_DATA_FORMAT,
       })
     ),
   list: Joi.object({}).required(),

@@ -13,8 +13,14 @@ class BlockedUserRepository extends BaseRepository {
     return await super.prepareParams(params)
   }
 
-  async list(userId, recipientsIds) {
+  async list(userId, onlyEnabled, recipientsIds) {
     const query = { user_id: this.castObjectId(userId) }
+
+    if (onlyEnabled) {
+      const enabledQuery = { enabled: true }
+
+      this.mergeOperators(query, enabledQuery)
+    }
 
     if (recipientsIds) {
       const recipientsFilterQuery = { blocked_user_id: { $in: this.castObjectIds(recipientsIds) } }
@@ -27,8 +33,14 @@ class BlockedUserRepository extends BaseRepository {
     return blockedUsers
   }
 
-  async blockers(userId, recipientsIds) {
+  async blockers(userId, onlyEnabled, recipientsIds) {
     const query = { blocked_user_id: this.castObjectId(userId) }
+
+    if (onlyEnabled) {
+      const enabledQuery = { enabled: true }
+
+      this.mergeOperators(query, enabledQuery)
+    }
 
     if (recipientsIds) {
       const recipientsFilterQuery = { user_id: { $in: this.castObjectIds(recipientsIds) } }
