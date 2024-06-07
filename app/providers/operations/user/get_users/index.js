@@ -6,7 +6,13 @@ class UserListOperation {
     this.userService = userService
   }
 
-  async perform(ws, searchParams) {}
+  async perform(ws, userListParams) {
+    const { ids: userIds } = userListParams
+
+    const users = await this.userService.findByIds(userIds)
+
+    return users
+  }
 }
 
 export default UserListOperation
