@@ -1,5 +1,3 @@
-import { CONSTANTS as MAIN_CONSTANTS } from "../../../../constants/constants.js"
-
 class UserListOperation {
   constructor(sessionService, userService) {
     this.sessionService = sessionService
