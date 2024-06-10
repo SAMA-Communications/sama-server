@@ -63,7 +63,12 @@ class BlockedUserRepository extends BaseRepository {
   async deleteBlockedUser(userId, blockedUserIds) {
     const query = {
       user_id: this.castObjectId(userId),
-      blocked_user_id: { $in: this.castObjectIds(blockedUserIds) }
+    }
+
+    if (blockedUserIds) {
+      const blockedUsersFilter = { $in: this.castObjectIds(blockedUserIds) }
+
+      this.mergeOperators(query, blockedUsersFilter)
     }
 
     await this.deleteMany(query)

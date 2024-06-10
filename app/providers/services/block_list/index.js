@@ -24,6 +24,10 @@ class BlockListService {
     await this.blockedUserRepo.deleteBlockedUser(userId, blockedUserIds)
   }
 
+  async unblockAll(userId) {
+    await this.blockedUserRepo.deleteBlockedUser(userId)
+  }
+
   async enable(userId, isEnabled) {
     await this.blockedUserRepo.enable(userId, isEnabled)
   }
