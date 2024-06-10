@@ -85,10 +85,26 @@ class ConversationsController extends BaseJSONController {
       conversation_delete: { id: conversationId },
     } = data
 
-    const conversationDeleteOperation = ServiceLocatorContainer.use("ConversationDeleteOperation")
-    await conversationDeleteOperation.perform(ws, conversationId)
+    const response = new Response()
 
-    return new Response().addBackMessage({
+    const conversationDeleteOperation = ServiceLocatorContainer.use("ConversationDeleteOperation")
+    const deletedConversationResult = await conversationDeleteOperation.perform(ws, conversationId)
+
+    const { currentUserId, conversationEvents } = deletedConversationResult
+
+    conversationEvents.forEach((event) => {
+      const deliverMessage = new DeliverMessage(event.participantIds, event.message).addPushQueueMessage(
+        event.notification
+      )
+      response.addDeliverMessage(deliverMessage)
+
+      const isCurrentUser = event.participantIds.find((pId) => pId.toString() === currentUserId.toString())
+      if (isCurrentUser) {
+        response.addBackMessage(event.message)
+      }
+    })
+
+    return response.addBackMessage({
       response: {
         id: requestId,
         success: true,

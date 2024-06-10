@@ -6,9 +6,16 @@ const name = "ConversationDeleteOperation"
 class ConversationDeleteOperationRegisterProvider extends RegisterProvider {
   register(slc) {
     const sessionService = slc.use("SessionService")
+    const userService = slc.use("UserService")
     const conversationService = slc.use("ConversationService")
+    const conversationNotificationService = slc.use("ConversationNotificationService")
 
-    return new ConversationDeleteOperation(sessionService, conversationService)
+    return new ConversationDeleteOperation(
+      sessionService,
+      userService,
+      conversationService,
+      conversationNotificationService
+    )
   }
 }
 
