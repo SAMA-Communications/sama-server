@@ -6,8 +6,7 @@ class ConversationEditOperation {
     this.sessionService = sessionService
     this.userService = userService
     this.conversationService = conversationService
-    this.conversationNotificationService = conversationNotificationService
-    this.messagesService = messagesService
+    ;(this.conversationNotificationService = conversationNotificationService), (this.messagesService = messagesService)
   }
 
   async perform(ws, conversationParams) {
@@ -20,6 +19,9 @@ class ConversationEditOperation {
     const { participantIds: currentParticipantIds } = await this.#hasAccess(conversationId, currentUserId)
 
     const updatedConversation = await this.conversationService.conversationRepo.update(conversationId, updateFields)
+    if (updateFields && updatedConversation.type !== "u") {
+      await this.#createActionEvents(updatedConversation, currentUserId, [], [], currentParticipantIds)
+    }
 
     if (updateParticipants && updatedConversation.type !== "u") {
       const { isEmptyAndDeleted, addedIds, removedIds, currentIds } = await this.#updateParticipants(
@@ -155,6 +157,13 @@ class ConversationEditOperation {
       deleteEvent.participantIds = removedParticipantIds
 
       conversationEvent.push(deleteEvent)
+    }
+
+    if (!addedParticipantIds.length && !removedParticipantIds.length) {
+      const updatedEvent = await this.#actionEvent(conversation, currentUser, false)
+
+      updatedEvent.participantIds = currentParticipantIds
+      conversationEvent.push(updatedEvent)
     }
 
     return conversationEvent
