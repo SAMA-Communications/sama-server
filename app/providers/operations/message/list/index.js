@@ -4,11 +4,13 @@ import MessagePublicFields from '@sama/DTO/Response/message/create/public_fields
 
 class MessageListOperation {
   constructor(
+    helpers,
     sessionService,
     userService,
     messageService,
     conversationService
   ) {
+    this.helpers = helpers
     this.sessionService = sessionService
     this.userService = userService
     this.messageService = messageService
@@ -55,7 +57,7 @@ class MessageListOperation {
 
   async #assignMessageStatus(messages, messagesStatuses, currentUserId) {
     for (const message of messages) {
-      if (message.from.toString() === currentUserId.toString()) {
+      if (this.helpers.isEqualsNativeIds(message.from, currentUserId)) {
         const status = messagesStatuses[message._id]
         const statusName = status?.length ? 'read' : 'sent'
         message.set('status', statusName)

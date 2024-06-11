@@ -45,7 +45,7 @@ class ConversationsController extends BaseJSONController {
       const deliverMessage = new DeliverMessage(event.participantIds, event.message).addPushQueueMessage(event.notification)
       response.addDeliverMessage(deliverMessage)
 
-      const isCurrentUser = event.participantIds.find(pId => pId.toString() === currentUserId.toString())
+      const isCurrentUser = event.participantIds.find(pId => conversationEditOperation.helpers.isEqualsNativeIds(pId, currentUserId))
       if (isCurrentUser) {
         response.addBackMessage(event.message)
       }

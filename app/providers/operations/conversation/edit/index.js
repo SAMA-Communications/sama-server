@@ -4,12 +4,14 @@ import MessagePublicFields from '@sama/DTO/Response/message/create/public_fields
 
 class ConversationEditOperation {
   constructor(
+    helpers,
     sessionService,
     userService,
     conversationService,
     conversationNotificationService,
     messagesService
   ) {
+    this.helpers = helpers
     this.sessionService = sessionService
     this.userService = userService
     this.conversationService = conversationService

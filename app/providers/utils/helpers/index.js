@@ -9,6 +9,10 @@ class Helpers {
     const currentTs = Math.ceil(new Date() / 1000)
     return currentTs
   }
+
+  isEqualsNativeIds(nativeIdA, nativeIdB) {
+    return nativeIdA.toString() === nativeIdB.toString()
+  }
 }
 
 export default Helpers

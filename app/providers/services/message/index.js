@@ -57,7 +57,7 @@ class MessageService {
 
     result.message = message
 
-    result.asOwner = message.from.toString() === userId.toString()
+    result.asOwner = this.helpers.isEqualsNativeIds(message.from, userId)
 
     return result
   }

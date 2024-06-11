@@ -4,11 +4,13 @@ class ConversationService {
   constructor(
     CONVERSATION_MAX_PARTICIPANTS,
 
+    helpers,
     conversationRepo,
     conversationParticipantRepo,
   ) {
     this.CONVERSATION_MAX_PARTICIPANTS = CONVERSATION_MAX_PARTICIPANTS
 
+    this.helpers = helpers
     this.conversationRepo = conversationRepo
     this.conversationParticipantRepo = conversationParticipantRepo
   }
@@ -36,7 +38,7 @@ class ConversationService {
   }
 
   async restorePrivateConversation(conversation, currentParticipantIds) {
-    const requiredParticipantIds = [conversation.owner_id, conversation.opponent_id].map(pId => pId.toString())
+    const requiredParticipantIds = [conversation.owner_id, conversation.opponent_id]
 
     const missedParticipantIds = await this.addParticipants(conversation, requiredParticipantIds, currentParticipantIds)
 
@@ -71,8 +73,8 @@ class ConversationService {
     }
 
     const participantIds = await this.findConversationParticipants(conversationId)
-    result.asParticipant = !!participantIds.find(pId => pId.toString() === userId.toString())
-    result.asOwner = result.conversation.owner_id.toString() === userId.toString()
+    result.asParticipant = !!participantIds.find(pId => this.helpers.isEqualsNativeIds(pId, userId))
+    result.asOwner = this.helpers.isEqualsNativeIds(result.conversation.owner_id, userId)
     result.participantIds = participantIds
 
     return result
@@ -90,7 +92,7 @@ class ConversationService {
     const removeResult = await this.removeParticipants(conversation, removeParticipants, currentParticipantIds)
 
     if (!removeResult.isEmptyAndDeleted && removeResult.removedIds?.length) {
-      currentParticipantIds = currentParticipantIds.filter(currentPId => !removeResult.removedIds.find(removedId => removedId.toString() === currentPId.toString()))
+      currentParticipantIds = currentParticipantIds.filter(currentPId => !removeResult.removedIds.find(removedId => this.helpers.isEqualsNativeIds(removedId, currentPId)))
     }
 
     return { addedIds, ...removeResult, currentIds: currentParticipantIds }
@@ -101,7 +103,7 @@ class ConversationService {
       currentParticipantIds = await this.findConversationParticipants(conversation._id)
     }
 
-    participantIds = participantIds.filter(pId => !currentParticipantIds.find(currentPId => currentPId.toString() === pId.toString()))
+    participantIds = participantIds.filter(pId => !currentParticipantIds.find(currentPId => this.helpers.isEqualsNativeIds(currentPId, pId)))
 
     const participantsCount = participantIds.length + currentParticipantIds.length
 
@@ -130,10 +132,10 @@ class ConversationService {
       currentParticipantIds = await this.findConversationParticipants(conversation._id)
     }
 
-    participantIds = participantIds.filter(pId => currentParticipantIds.find(currentPId => currentPId.toString() === pId.toString()))
+    participantIds = participantIds.filter(pId => currentParticipantIds.find(currentPId => this.helpers.isEqualsNativeIds(currentPId, pId)))
     await this.conversationParticipantRepo.removeParticipants(conversation._id, participantIds)
     result.removedIds = participantIds
-    currentParticipantIds = currentParticipantIds.filter(currentPId => !participantIds.find(removedId => removedId.toString() === currentPId.toString()))
+    currentParticipantIds = currentParticipantIds.filter(currentPId => !participantIds.find(removedId => this.helpers.isEqualsNativeIds(removedId, currentPId)))
 
     const isConversationHasParticipants = await this.conversationParticipantRepo.isConversationHasParticipants(conversation._id)
 
@@ -143,7 +145,7 @@ class ConversationService {
       return result
     }
 
-    const isOwnerInRemove = participantIds.find(pId => pId.toString() === conversation.owner_id.toString())
+    const isOwnerInRemove = participantIds.find(pId => this.helpers.isEqualsNativeIds(pId, conversation.owner_id))
     if (isOwnerInRemove && conversation.type !== 'u') {
       const newOwnerId = currentParticipantIds.at(0)
       await this.conversationRepo.updateOwner(conversation._id, newOwnerId)

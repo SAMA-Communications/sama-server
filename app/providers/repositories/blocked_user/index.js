@@ -66,7 +66,7 @@ class BlockedUserRepository extends BaseRepository {
     }
 
     if (blockedUserIds) {
-      const blockedUsersFilter = { $in: this.castObjectIds(blockedUserIds) }
+      const blockedUsersFilter = { blocked_user_id: { $in: this.castObjectIds(blockedUserIds) } }
 
       this.mergeOperators(query, blockedUsersFilter)
     }
