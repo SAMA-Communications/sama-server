@@ -160,7 +160,6 @@ class ConversationEditOperation {
       conversationEvent.push(deleteEvent)
     }
 
-    console.log(isUpdateConversation)
     if (isUpdateConversation) {
       const updatedEvent = await this.#actionEvent(conversation, currentUser, false)
 
