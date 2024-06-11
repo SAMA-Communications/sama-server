@@ -5,9 +5,11 @@ const name = 'BlockListService'
 
 class BlockListServiceRegisterProvider extends RegisterProvider {
   register(slc) {
+    const helpers = slc.use('Helpers')
     const blockedUserRepo = slc.use('BlockedUserRepository')
 
     return new BlockListService(
+      helpers,
       blockedUserRepo
     )
   }

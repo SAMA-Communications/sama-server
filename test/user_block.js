@@ -126,6 +126,27 @@ describe('UserBlocked functions', async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.notEqual(responseData.response.success, true)
     })
+
+    it('should fail, block self user', async () => {
+      const requestData = {
+        request: {
+          block_user: {
+            ids: [usersIds.at(0)],
+          },
+          id: 6,
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(
+        mockedWS,
+        JSON.stringify(requestData)
+      )
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.notEqual(responseData.response.success, true)
+    })
   })
 
   describe('enable/disable', async () => {

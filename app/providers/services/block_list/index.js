@@ -1,11 +1,18 @@
 class BlockListService {
   constructor(
+    helpers,
     blockedUserRepo,
   ) {
+    this.helpers = helpers
     this.blockedUserRepo = blockedUserRepo
   }
 
   async blockMany(userId, blockUserIds, optionalParams) {
+    const isSelfUserBlocked = blockUserIds.find(blockedUserId => this.helpers.isEqualsNativeIds(userId, blockedUserId))
+    if (isSelfUserBlocked) {
+      throw new Error(`Can't block self user`)
+    }
+
     const params = blockUserIds.map(blockedUserId => ({
       enabled: true,
 
@@ -47,7 +54,7 @@ class BlockListService {
 
     const mutualBlocksUserIds = blockedByUserIds.concat(userInBlockIds)
 
-    return Array.from(new Set(mutualBlocksUserIds))
+    return mutualBlocksUserIds
   }
 
   async deleteAllBlocks(userId) {
