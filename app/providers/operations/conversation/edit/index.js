@@ -165,7 +165,7 @@ class ConversationEditOperation {
       const updatedEvent = await this.#actionEvent(conversation, currentUser, false)
 
       updatedEvent.participantIds = currentParticipantIds
-      conversationEvent.push(updatedEvent)
+      conversationEvent.push({ ...updatedEvent, ignoreOwnDelivery: true })
     }
 
     return conversationEvent

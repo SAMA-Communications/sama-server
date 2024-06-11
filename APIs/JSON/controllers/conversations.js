@@ -52,7 +52,7 @@ class ConversationsController extends BaseJSONController {
       response.addDeliverMessage(deliverMessage)
 
       const isCurrentUser = event.participantIds.find((pId) => pId.toString() === currentUserId.toString())
-      if (isCurrentUser) {
+      if (isCurrentUser && !event.ignoreOwnDelivery) {
         response.addBackMessage(event.message)
       }
     })
