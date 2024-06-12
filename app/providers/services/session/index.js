@@ -1,5 +1,6 @@
 import { buildWsEndpoint } from '../../../utils/build_ws_endpoint.js'
 import { splitWsEndpoint } from '../../../utils/split_ws_endpoint.js'
+import { CONSTANTS } from '../../../constants/constants.js'
 
 class SessionService {
   constructor(activeSessions, redisConnection, RuntimeDefinedContext) {
@@ -123,6 +124,8 @@ class SessionService {
     }
 
     session.userId = userId
+
+    return session
   }
 
   setSession(ws, userId, extraParams = {}) {
@@ -136,6 +139,20 @@ class SessionService {
 
   getSession(ws) {
     return this.activeSessions.SESSIONS.has(ws) ? this.activeSessions.SESSIONS.get(ws) : null
+  }
+
+  setSessionInactiveState(ws, isInactive) {
+    const session = this.getSession(ws)
+
+    session.extraParams[CONSTANTS.SESSION_INACTIVE_STATE_KEY] = isInactive
+
+    return session
+  }
+
+  isSessionInactive(ws) {
+    const session = this.getSession(ws)
+
+    return session.extraParams[CONSTANTS.SESSION_INACTIVE_STATE_KEY]
   }
 
   getDeviceId(ws, userId) {

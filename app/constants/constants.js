@@ -3,7 +3,8 @@ export const CONSTANTS = {
   LAST_ACTIVITY_STATUS: {
     ONLINE: 'online',
     OFFLINE: 'offline'
-  }
+  },
+  SESSION_INACTIVE_STATE_KEY: 'MOBILE_INACTIVE'
 }
 
 
