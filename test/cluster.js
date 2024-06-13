@@ -64,10 +64,10 @@ describe('Cluster Message function', async () => {
       },
     }
     await sessionService.storeUserNodeData(
-      usersIds[1],
-      deviceId,
       ip.address(),
-      secondClusterPort
+      secondClusterPort,
+      usersIds[1],
+      deviceId
     )
   })
 
@@ -105,8 +105,6 @@ describe('Cluster Message function', async () => {
       assert.notEqual(response.packet, undefined)
       assert.strictEqual(response.packet.message.from, usersIds[0].toString())
       assert.strictEqual(response.packet.message.body, 'hey how is going?')
-
-
     })
   })
 

@@ -12,7 +12,7 @@ class ActivityUserRetrieveOperation {
 
     for (const targetUser of targetUsers) {
       const userId = targetUser.native_id
-      const isUserOnline = await this.sessionService.getUserNodeData(userId)
+      const isUserOnline = !!(await this.sessionService.listUserDevice(userId))
 
       const targetUserActivityStatus = isUserOnline ? MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE : targetUser.recent_activity
 
