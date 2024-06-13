@@ -12,6 +12,12 @@ class UserService {
     return user
   }
 
+  async findByIds(userIds) {
+    const user = await this.userRepo.findByIds(userIds)
+
+    return user
+  }
+
   async create(createParams) {
     const { password, ...newUserParams } = createParams
 

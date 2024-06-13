@@ -27,6 +27,7 @@ import UserCreateOperationProvider from "./operations/user/create/Provider.js"
 import UserEditOperationProvider from "./operations/user/edit/Provider.js"
 import UserDeleteOperationProvider from "./operations/user/delete/Provider.js"
 import UserSearchOperationProvider from "./operations/user/search/Provider.js"
+import UserListOperationProvider from "./operations/user/get_users/Provider.js"
 
 import ActivityUserRetrieveOperationProvider from "./operations/activity/retrieve/Provider.js"
 import ActivityUserSubscribeOperationProvider from "./operations/activity/subscribe/Provider.js"
@@ -77,6 +78,7 @@ const providers = [
   UserEditOperationProvider,
   UserDeleteOperationProvider,
   UserSearchOperationProvider,
+  UserListOperationProvider,
 
   ActivityUserRetrieveOperationProvider,
   ActivityUserSubscribeOperationProvider,

@@ -146,6 +146,19 @@ Later, the subsequent logins can be done via `token`:
 { response: { id: "3", users: [...]} }
 ```
 
+## Get users by ids
+
+```
+{
+  get_users_by_ids: {
+    ids: [ "65fcb3f67dbaace5021595b9" ]
+  },
+  id: "4"
+}
+
+{ response: { id: "4", users: [...]} }
+```
+
 ## Address book (contacts list)
 
 ### Contact add
