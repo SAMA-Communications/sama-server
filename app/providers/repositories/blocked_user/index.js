@@ -2,13 +2,10 @@ import BaseRepository from '../base.js'
 
 class BlockedUserRepository extends BaseRepository {
   async prepareParams(params) {
-    params.user_id = this.castObjectId(params.user_id)
-    params.blocked_user_id = this.castObjectId(params.blocked_user_id)
-
     params.enabled = !!params.enabled
 
-    params.group = !!params.group
-    params.system = !!params.system
+    params.user_id = this.castObjectId(params.user_id)
+    params.blocked_user_id = this.castObjectId(params.blocked_user_id)
 
     return await super.prepareParams(params)
   }

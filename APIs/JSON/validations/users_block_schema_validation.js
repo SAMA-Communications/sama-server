@@ -4,8 +4,6 @@ import { ERROR_STATUES } from '@sama/constants/errors.js'
 export const usersBlockSchemaValidation = {
   block: Joi.object({
     ids: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string().min(24),  Joi.number())).required(),
-    group: Joi.bool().optional(),
-    system: Joi.bool().optional()
   })
     .required()
     .error(

@@ -5,13 +5,11 @@ class BlockListBlockOperation {
   }
 
   async perform(ws, blockParams) {
-    const { ids:targetUserIds, system, group } = blockParams
+    const { ids:targetUserIds } = blockParams
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
 
-    const optionalBlockParams = { group: !!group, system: !!system }
-
-    const blockedUsers = await this.blockListService.blockMany(currentUserId, targetUserIds, optionalBlockParams)
+    const blockedUsers = await this.blockListService.blockMany(currentUserId, targetUserIds)
 
     return blockedUsers
   }

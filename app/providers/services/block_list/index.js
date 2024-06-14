@@ -7,7 +7,7 @@ class BlockListService {
     this.blockedUserRepo = blockedUserRepo
   }
 
-  async blockMany(userId, blockUserIds, optionalParams) {
+  async blockMany(userId, blockUserIds) {
     const isSelfUserBlocked = blockUserIds.find(blockedUserId => this.helpers.isEqualsNativeIds(userId, blockedUserId))
     if (isSelfUserBlocked) {
       throw new Error(`Can't block self user`)
@@ -17,9 +17,7 @@ class BlockListService {
       enabled: true,
 
       user_id: userId,
-      blocked_user_id: blockedUserId,
-
-      ...optionalParams
+      blocked_user_id: blockedUserId
     }))
 
     const blockedUsers = await this.blockedUserRepo.createMany(params)

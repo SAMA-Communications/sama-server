@@ -1212,7 +1212,7 @@ TBA
 {
   request: {
     block_user: {
-      id: "63077ad836b78c3d82af0812"
+      ids: ["63077ad836b78c3d82af0812"]
     },
     id: "4"
   }
@@ -1232,7 +1232,7 @@ TBA
 {
   request: {
     unblock_user: {
-      id: "63077ad836b78c3d82af0812"
+      ids: ["63077ad836b78c3d82af0812"]
     },
     id: "5"
   }

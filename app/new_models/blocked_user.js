@@ -15,10 +15,7 @@ export default class BlockedUser extends BaseModel {
       'enabled',
 
       'user_id',
-      'blocked_user_id',
-
-      'group',
-      'system'
+      'blocked_user_id'
     ]
   }
 }
