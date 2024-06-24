@@ -146,6 +146,19 @@ Later, the subsequent logins can be done via `token`:
 { response: { id: "3", users: [...]} }
 ```
 
+## Get users by ids
+
+```
+{
+  get_users_by_ids: {
+    ids: [ "65fcb3f67dbaace5021595b9" ]
+  },
+  id: "4"
+}
+
+{ response: { id: "4", users: [...]} }
+```
+
 ## Address book (contacts list)
 
 ### Contact add
@@ -453,6 +466,7 @@ After adding users to a conversation, if they are online, they will receive the 
     }
   }
 }
+```
 
 The following message will also be sent to all users who are online and saved in the `Message` collection:
 
@@ -483,6 +497,7 @@ created_at: "2023-05-24T14:34:58.066Z"
 
 After kicking users out of the conversation, if they are online, they will receive the following event:
 
+```
 {
   system_message: {
     _id: "646e2092d80fe5c4e688dfa0",
@@ -567,6 +582,30 @@ The following message will also be sent to all users who are online and saved in
 }
 
 { response: { id: "4", success: true } }
+```
+
+When a user leaves the group chat, the next message will also be sent to all users who are online and saved in the `Messages` collection:
+
+```
+{
+  _id: "6666c4bb2429c50ad0eb0ff6",
+  cid: "665ee4ab01f6a3b5ec90a2f4",
+  body: "lane1991 has left the group",
+  t: 1718011067,
+  from: "65fcb3f67dbaace5021595b9",
+  x: {
+    type: "left_participants",
+    user: {
+      native_id: "646e2092d80fe5c4e688dfa0",
+      _id: "646e2092d80fe5c4e688dfa0",
+      login: "lane1991",
+      recent_activity: 1717670392,
+      created_at: "2024-03-21T22:25:58.169Z",
+      updated_at: "2024-03-21T22:25:58.169Z"
+    }
+  },
+  created_at: "2023-05-24T14:34:58.066Z"
+}
 ```
 
 ## List conversations

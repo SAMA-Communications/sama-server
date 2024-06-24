@@ -24,12 +24,14 @@
 
 The intention of our messaging protocol and chat server, which are different from others, is to provide an alternative solution to the wide spread XMPP messaging protocol (and to be honest — the only wide spread ‘standard’ these days).
 
-Read a complete medium post **Introducing SAMA** about what is SAMA and what problems we are trying to solve with it
-https://medium.com/sama-communications/introducing-sama-simple-but-advanced-messaging-alternative-chat-server-524a532e2040
+Read complete medium posts **Introducing SAMA** and **What is SAMA** about what is SAMA and what problems we are trying to solve with it:
+
+- https://medium.com/sama-communications/introducing-sama-simple-but-advanced-messaging-alternative-chat-server-524a532e2040
+- https://medium.com/sama-communications/what-is-sama-a6d9045fd69a
 
 ## Development
 
-- Make sure you have `Node 18` installed.
+- Make sure you have `Node 18.20.x` installed.
 - Copy `.env.example` to `.env`.
 - Run `docker-compose up` to run dependant services (MongoDB, Minio, Redis)
 - `npm install` to install dependencies
@@ -97,7 +99,7 @@ Run e2e tests:
 docker-compose exec sama-server sh -c "MONGODB_URL=mongodb://172.25.0.4/samatests npm run test"
 ```
 
-## Public cloud
+## Public cloud DEMO
 
 The whole SAMA stack can be tested using https://app.samacloud.io public cloud.
 

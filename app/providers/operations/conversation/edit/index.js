@@ -41,12 +41,14 @@ class ConversationEditOperation {
         return null
       }
 
+      const isUpdateConversationFields = !!Object.keys(updateFields).length
       const createdEvents = await this.#createActionEvents(
         updatedConversation,
         currentUserId,
         addedIds,
         removedIds,
-        currentIds
+        currentIds,
+        isUpdateConversationFields
       )
       conversationEvents = createdEvents
     }
@@ -119,7 +121,8 @@ class ConversationEditOperation {
     currentUserId,
     addedParticipantIds,
     removedParticipantIds,
-    currentParticipantIds
+    currentParticipantIds,
+    isUpdateConversation
   ) {
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
@@ -164,6 +167,13 @@ class ConversationEditOperation {
       deleteEvent.participantIds = removedParticipantIds
 
       conversationEvent.push(deleteEvent)
+    }
+
+    if (isUpdateConversation) {
+      const updatedEvent = await this.#actionEvent(conversation, currentUser, false)
+
+      updatedEvent.participantIds = currentParticipantIds
+      conversationEvent.push({ ...updatedEvent, ignoreOwnDelivery: true })
     }
 
     return conversationEvent

@@ -21,9 +21,11 @@ export const CONVERSATION_EVENTS = {
   CONVERSATION_PARTICIPANT_EVENT: {
     ADDED: "added_participant",
     REMOVED: "removed_participant",
+    LEFT: "left_participants",
   },
   ACTION_PARTICIPANT_MESSAGE: {
     added_participant: "has been added to the group",
     removed_participant: "has been removed from the group",
+    left_participants: "has left the group",
   },
 }
