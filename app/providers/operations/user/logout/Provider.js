@@ -1,17 +1,14 @@
-import RegisterProvider from '../../../../common/RegisterProvider.js'
-import UserLogoutOperation from './index.js'
+import RegisterProvider from "../../../../common/RegisterProvider.js"
+import UserLogoutOperation from "./index.js"
 
-const name = 'UserLogoutOperation'
+const name = "UserLogoutOperation"
 
 class UserLogoutOperationRegisterProvider extends RegisterProvider {
   register(slc) {
-    const sessionService = slc.use('SessionService')
-    const userTokenRepo = slc.use('UserTokenRepository')
+    const sessionService = slc.use("SessionService")
+    const userTokenRepo = slc.use("UserTokenRepository")
 
-    return new UserLogoutOperation(
-      sessionService,
-      userTokenRepo,
-    )
+    return new UserLogoutOperation(sessionService, userTokenRepo)
   }
 }
 

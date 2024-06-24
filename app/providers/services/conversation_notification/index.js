@@ -1,17 +1,14 @@
-import { CONVERSATION_EVENTS } from '../../../constants/conversation.js' 
-import CreatePushEventOptions from '@sama/lib/push_queue/models/CreatePushEventOptions.js'
+import { CONVERSATION_EVENTS } from "../../../constants/conversation.js"
+import CreatePushEventOptions from "@sama/lib/push_queue/models/CreatePushEventOptions.js"
 
-import MessagePublicFields from '@sama/DTO/Response/message/create/public_fields.js'
-import MessageResponse from '@sama/DTO/Response/message/create/response.js'
+import MessagePublicFields from "@sama/DTO/Response/message/create/public_fields.js"
+import MessageResponse from "@sama/DTO/Response/message/create/response.js"
 
-import SystemMessagePublicFields from '@sama/DTO/Response/message/system/public_fields.js'
-import SystemMessageResponse from '@sama/DTO/Response/message/system/response.js'
+import SystemMessagePublicFields from "@sama/DTO/Response/message/system/public_fields.js"
+import SystemMessageResponse from "@sama/DTO/Response/message/system/response.js"
 
 class ConversationNotificationService {
-  constructor(
-    helpers,
-    messageService,
-  ) {
+  constructor(helpers, messageService) {
     this.helpers = helpers
     this.messageService = messageService
   }
@@ -30,11 +27,11 @@ class ConversationNotificationService {
       from: user.native_id.toString(),
       x: { [eventParams.event_request_name]: conversation.visibleParams() },
       cid: conversation._id.toString(),
-      t: this.helpers.currentTimeStamp()
+      t: this.helpers.currentTimeStamp(),
     }
 
     const eventMessage = new SystemMessageResponse(new SystemMessagePublicFields(createSystemMessageParams))
-  
+
     const eventNotification = new CreatePushEventOptions(user.native_id, pushPayload, {})
 
     return { message: eventMessage, notification: eventNotification }

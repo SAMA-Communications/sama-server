@@ -1,6 +1,6 @@
-import { buildWsEndpoint } from '../../../utils/build_ws_endpoint.js'
-import { splitWsEndpoint } from '../../../utils/split_ws_endpoint.js'
-import { CONSTANTS } from '../../../constants/constants.js'
+import { buildWsEndpoint } from "../../../utils/build_ws_endpoint.js"
+import { splitWsEndpoint } from "../../../utils/split_ws_endpoint.js"
+import { CONSTANTS } from "../../../constants/constants.js"
 
 /*
   Structs:
@@ -15,7 +15,7 @@ class SessionService {
     this.redisConnection = redisConnection
     this.RuntimeDefinedContext = RuntimeDefinedContext
   }
-  
+
   totalSessions() {
     return this.activeSessions.SESSIONS.size
   }
@@ -65,8 +65,8 @@ class SessionService {
     const nodeKey = this.#nodesSetKey(nodeIp, nodePort, nodeEndpoint)
     const usersConnections = await this.redisConnection.client.sMembers(nodeKey)
 
-    const users = usersConnections.map(userConnection => {
-      const [userId, deviceId] = userConnection.split(':')
+    const users = usersConnections.map((userConnection) => {
+      const [userId, deviceId] = userConnection.split(":")
 
       return { userId, deviceId }
     })
@@ -138,7 +138,7 @@ class SessionService {
 
   async deleteUserData(userId) {
     const userDevices = await this.listUserDevice(userId)
-    
+
     for (const deviceId of userDevices) {
       await this.deleteUserExtraParams(userId, deviceId)
     }
@@ -147,7 +147,7 @@ class SessionService {
   }
 
   async listUserData(userId) {
-    const userData = { }
+    const userData = {}
 
     const userDevices = await this.listUserDevice(userId)
 
@@ -235,8 +235,7 @@ class SessionService {
 
   getDeviceId(ws, userId) {
     if (this.activeSessions.DEVICES[userId]) {
-      return this.activeSessions.DEVICES[userId].find((el) => el.ws === ws)
-        ?.deviceId
+      return this.activeSessions.DEVICES[userId].find((el) => el.ws === ws)?.deviceId
     }
 
     return null
@@ -252,7 +251,7 @@ class SessionService {
     this.activeSessions.SESSIONS.delete(ws)
 
     const userData = await this.listUserData(userId)
-    
+
     for (const [deviceId, extraParams] of Object.entries(userData)) {
       const [, nodeId, nodePort] = splitWsEndpoint(extraParams[CONSTANTS.SESSION_NODE_KEY])
       await this.removeUserDeviceFromNode(nodeId, nodePort, userId, deviceId)
@@ -265,7 +264,9 @@ class SessionService {
     userId = userId ?? this.getSessionUserId(ws)
     deviceId = deviceId ?? this.getDeviceId(ws, userId)
 
-    const leftActiveConnections = this.getUserDevices(userId).filter(({ deviceId: activeDeviceId }) => activeDeviceId !== deviceId)
+    const leftActiveConnections = this.getUserDevices(userId).filter(
+      ({ deviceId: activeDeviceId }) => activeDeviceId !== deviceId
+    )
 
     if (!leftActiveConnections.length) {
       this.removeAllUserSessions(ws)

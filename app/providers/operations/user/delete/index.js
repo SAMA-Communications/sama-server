@@ -1,13 +1,7 @@
-import { ERROR_STATUES } from '../../../../constants/errors.js'
+import { ERROR_STATUES } from "../../../../constants/errors.js"
 
 class UserDeleteOperation {
-  constructor(
-    sessionService,
-    userService,
-    activityManagerService,
-    blockListService,
-    contactsMatchRepository,
-  ) {
+  constructor(sessionService, userService, activityManagerService, blockListService, contactsMatchRepository) {
     this.sessionService = sessionService
     this.userService = userService
     this.activityManagerService = activityManagerService
@@ -15,7 +9,7 @@ class UserDeleteOperation {
     this.contactsMatchRepository = contactsMatchRepository
   }
 
-  async perform (ws) {
+  async perform(ws) {
     const userId = this.sessionService.getSessionUserId(ws)
     if (!userId) {
       throw new Error(ERROR_STATUES.FORBIDDEN.message, {
@@ -35,11 +29,7 @@ class UserDeleteOperation {
     }
 
     await this.blockListService.deleteAllBlocks(user.native_id)
-    await this.contactsMatchRepository.matchUserWithContactOnDelete(
-      user.native_id,
-      user.phone,
-      user.email
-    )
+    await this.contactsMatchRepository.matchUserWithContactOnDelete(user.native_id, user.phone, user.email)
 
     await this.userService.userRepo.deleteById(user.native_id)
 

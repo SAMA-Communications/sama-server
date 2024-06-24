@@ -1,12 +1,12 @@
-import RegisterProvider from '../../../../common/RegisterProvider.js'
-import BlockListBlockOperation from './index.js'
+import RegisterProvider from "../../../../common/RegisterProvider.js"
+import BlockListBlockOperation from "./index.js"
 
-const name = 'BlockListBlockOperation'
+const name = "BlockListBlockOperation"
 
 class BlockListBlockOperationRegisterProvider extends RegisterProvider {
   register(slc) {
-    const sessionService = slc.use('SessionService')
-    const blockListService = slc.use('BlockListService')
+    const sessionService = slc.use("SessionService")
+    const blockListService = slc.use("BlockListService")
 
     return new BlockListBlockOperation(sessionService, blockListService)
   }

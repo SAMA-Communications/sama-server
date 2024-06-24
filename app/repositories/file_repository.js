@@ -1,6 +1,6 @@
-import BaseRepository from './base.js'
+import BaseRepository from "./base.js"
 
-import RedisClient from '../lib/redis.js'
+import RedisClient from "../lib/redis.js"
 
 class FileRepository extends BaseRepository {
   #generateKey(fileId) {

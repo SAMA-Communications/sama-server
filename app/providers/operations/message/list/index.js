@@ -1,15 +1,9 @@
-import { ERROR_STATUES } from '../../../../constants/errors.js'
-import { CONSTANTS as MAIN_CONSTANTS } from '../../../../constants/constants.js'
-import MessagePublicFields from '@sama/DTO/Response/message/create/public_fields.js'
+import { ERROR_STATUES } from "../../../../constants/errors.js"
+import { CONSTANTS as MAIN_CONSTANTS } from "../../../../constants/constants.js"
+import MessagePublicFields from "@sama/DTO/Response/message/create/public_fields.js"
 
 class MessageListOperation {
-  constructor(
-    helpers,
-    sessionService,
-    userService,
-    messageService,
-    conversationService
-  ) {
+  constructor(helpers, sessionService, userService, messageService, conversationService) {
     this.helpers = helpers
     this.sessionService = sessionService
     this.userService = userService
@@ -17,7 +11,7 @@ class MessageListOperation {
     this.conversationService = conversationService
   }
 
-  async perform (ws, messageListParams) {
+  async perform(ws, messageListParams) {
     const { cid: cId, limit, updated_at } = messageListParams
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
@@ -36,11 +30,14 @@ class MessageListOperation {
 
     const messagesWithStatus = await this.#assignMessageStatus(messages, messagesStatuses, currentUserId)
 
-    return messagesWithStatus.map(message => new MessagePublicFields(message))
+    return messagesWithStatus.map((message) => new MessagePublicFields(message))
   }
 
   async #hasAccess(conversationId, currentUserId) {
-    const { conversation, asParticipant } = await this.conversationService.hasAccessToConversation(conversationId, currentUserId)
+    const { conversation, asParticipant } = await this.conversationService.hasAccessToConversation(
+      conversationId,
+      currentUserId
+    )
 
     if (!conversation) {
       throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {
@@ -59,8 +56,8 @@ class MessageListOperation {
     for (const message of messages) {
       if (this.helpers.isEqualsNativeIds(message.from, currentUserId)) {
         const status = messagesStatuses[message._id]
-        const statusName = status?.length ? 'read' : 'sent'
-        message.set('status', statusName)
+        const statusName = status?.length ? "read" : "sent"
+        message.set("status", statusName)
       }
     }
 

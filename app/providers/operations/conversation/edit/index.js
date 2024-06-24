@@ -1,6 +1,6 @@
-import { ERROR_STATUES } from '../../../../constants/errors.js'
-import { CONVERSATION_EVENTS } from '../../../../constants/conversation.js'
-import MessagePublicFields from '@sama/DTO/Response/message/create/public_fields.js'
+import { ERROR_STATUES } from "../../../../constants/errors.js"
+import { CONVERSATION_EVENTS } from "../../../../constants/conversation.js"
+import MessagePublicFields from "@sama/DTO/Response/message/create/public_fields.js"
 
 class ConversationEditOperation {
   constructor(
@@ -23,15 +23,15 @@ class ConversationEditOperation {
     const { id: conversationId, participants: updateParticipants, ...updateFields } = conversationParams
 
     let conversationEvents = []
-    
+
     const currentUserId = this.sessionService.getSessionUserId(ws)
-    
+
     const { participantIds: currentParticipantIds } = await this.#hasAccess(conversationId, currentUserId)
 
     const updatedConversation = await this.conversationService.conversationRepo.update(conversationId, updateFields)
 
-    if (updateParticipants && updatedConversation.type !== 'u') {
-      const { isEmptyAndDeleted, addedIds, removedIds, currentIds }  = await this.#updateParticipants(
+    if (updateParticipants && updatedConversation.type !== "u") {
+      const { isEmptyAndDeleted, addedIds, removedIds, currentIds } = await this.#updateParticipants(
         updatedConversation,
         updateParticipants,
         currentParticipantIds
@@ -41,7 +41,13 @@ class ConversationEditOperation {
         return null
       }
 
-      const createdEvents = await this.#createActionEvents(updatedConversation, currentUserId, addedIds, removedIds, currentIds)
+      const createdEvents = await this.#createActionEvents(
+        updatedConversation,
+        currentUserId,
+        addedIds,
+        removedIds,
+        currentIds
+      )
       conversationEvents = createdEvents
     }
 
@@ -49,7 +55,10 @@ class ConversationEditOperation {
   }
 
   async #hasAccess(conversationId, userId) {
-    const { conversation, asOwner, participantIds } = await this.conversationService.hasAccessToConversation(conversationId, userId)
+    const { conversation, asOwner, participantIds } = await this.conversationService.hasAccessToConversation(
+      conversationId,
+      userId
+    )
     if (!conversation) {
       throw new Error(ERROR_STATUES.BAD_REQUEST.message, {
         cause: ERROR_STATUES.BAD_REQUEST,
@@ -79,51 +88,75 @@ class ConversationEditOperation {
     addUsers ??= []
     removeUsers ??= []
 
-    const result = await this.conversationService.updateParticipants(conversation, addUsers, removeUsers, currentParticipantIds)
+    const result = await this.conversationService.updateParticipants(
+      conversation,
+      addUsers,
+      removeUsers,
+      currentParticipantIds
+    )
 
     return result
   }
 
   async #addMessagesInfo(conversation, user) {
-    const lastMessagesListByCid = await this.messagesService.aggregateLastMessageForConversation([conversation._id], user)
+    const lastMessagesListByCid = await this.messagesService.aggregateLastMessageForConversation(
+      [conversation._id],
+      user
+    )
 
     const conversationId = conversation._id.toString()
     const lastMessage = lastMessagesListByCid[conversationId]
     const lastMessageVal = lastMessage ? new MessagePublicFields(lastMessage) : void 0
 
-    conversation.set('last_message', lastMessageVal)
-    conversation.set('unread_messages_count', 1)
+    conversation.set("last_message", lastMessageVal)
+    conversation.set("unread_messages_count", 1)
 
     return conversation
   }
 
-  async #createActionEvents(conversation, currentUserId, addedParticipantIds, removedParticipantIds, currentParticipantIds) {
+  async #createActionEvents(
+    conversation,
+    currentUserId,
+    addedParticipantIds,
+    removedParticipantIds,
+    currentParticipantIds
+  ) {
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
     const conversationEvent = []
 
     if (addedParticipantIds.length) {
       for (const addedParticipantId of addedParticipantIds) {
-        const addParticipantEvent = await this.#participantsActionEvent(conversation, currentUser, addedParticipantId, false)
-  
+        const addParticipantEvent = await this.#participantsActionEvent(
+          conversation,
+          currentUser,
+          addedParticipantId,
+          false
+        )
+
         addParticipantEvent.participantIds = currentParticipantIds
-  
+
         conversationEvent.push(addParticipantEvent)
       }
 
       await this.#addMessagesInfo(conversation, currentUser)
       const updateEvent = await this.#actionEvent(conversation, currentUser, false)
       updateEvent.participantIds = addedParticipantIds
-  
+
       conversationEvent.push(updateEvent)
     }
 
     if (removedParticipantIds.length) {
       for (const removedParticipantId of removedParticipantIds) {
-        const removedParticipantEvent = await this.#participantsActionEvent(conversation, currentUser, removedParticipantId, true)
-  
+        const removedParticipantEvent = await this.#participantsActionEvent(
+          conversation,
+          currentUser,
+          removedParticipantId,
+          true
+        )
+
         removedParticipantEvent.participantIds = currentParticipantIds
-  
+
         conversationEvent.push(removedParticipantEvent)
       }
 
@@ -137,7 +170,9 @@ class ConversationEditOperation {
   }
 
   async #actionEvent(conversation, currentUser, isDelete) {
-    const eventType = isDelete ? CONVERSATION_EVENTS.CONVERSATION_EVENT.DELETE : CONVERSATION_EVENTS.CONVERSATION_EVENT.UPDATE
+    const eventType = isDelete
+      ? CONVERSATION_EVENTS.CONVERSATION_EVENT.DELETE
+      : CONVERSATION_EVENTS.CONVERSATION_EVENT.UPDATE
 
     const actionMessageNotification = await this.conversationNotificationService.actionEvent(
       eventType,
@@ -149,7 +184,9 @@ class ConversationEditOperation {
   }
 
   async #participantsActionEvent(conversation, currentUser, actionedUserId, isRemove) {
-    const eventType = isRemove ? CONVERSATION_EVENTS.CONVERSATION_PARTICIPANT_EVENT.REMOVED : CONVERSATION_EVENTS.CONVERSATION_PARTICIPANT_EVENT.ADDED
+    const eventType = isRemove
+      ? CONVERSATION_EVENTS.CONVERSATION_PARTICIPANT_EVENT.REMOVED
+      : CONVERSATION_EVENTS.CONVERSATION_PARTICIPANT_EVENT.ADDED
 
     const actionedUser = await this.userService.userRepo.findById(actionedUserId)
 

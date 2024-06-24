@@ -1,6 +1,6 @@
-import BaseRepository from './base.js'
+import BaseRepository from "./base.js"
 
-import OpLog from '../models/operations_log.js'
+import OpLog from "../models/operations_log.js"
 
 class OperationsLogRepository extends BaseRepository {
   async savePacket(user_id, packet) {

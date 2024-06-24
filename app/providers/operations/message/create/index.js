@@ -1,8 +1,7 @@
-import { ERROR_STATUES } from '../../../../constants/errors.js'
-import { CONVERSATION_EVENTS } from '../../../../constants/conversation.js'
-import CreateChatAlertEventOptions from '@sama/lib/push_queue/models/CreateChatAlertEventOptions.js'
-import MessagePublicFields from '@sama/DTO/Response/message/create/public_fields.js'
-
+import { ERROR_STATUES } from "../../../../constants/errors.js"
+import { CONVERSATION_EVENTS } from "../../../../constants/conversation.js"
+import CreateChatAlertEventOptions from "@sama/lib/push_queue/models/CreateChatAlertEventOptions.js"
+import MessagePublicFields from "@sama/DTO/Response/message/create/public_fields.js"
 
 class MessageCreateOperation {
   constructor(
@@ -31,12 +30,18 @@ class MessageCreateOperation {
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
-    const { conversation, blockedUserIds, participantIds } = await this.#hasAccess(createMessageParams.cid, currentUserId)
+    const { conversation, blockedUserIds, participantIds } = await this.#hasAccess(
+      createMessageParams.cid,
+      currentUserId
+    )
 
     const message = await this.messageService.create(currentUser, conversation, blockedUserIds, createMessageParams)
 
-    if (conversation.type === 'u') {
-      const missedParticipantIds = await this.conversationService.restorePrivateConversation(conversation, participantIds)
+    if (conversation.type === "u") {
+      const missedParticipantIds = await this.conversationService.restorePrivateConversation(
+        conversation,
+        participantIds
+      )
       if (missedParticipantIds.length) {
         participantIds.push(...missedParticipantIds)
 
@@ -48,7 +53,7 @@ class MessageCreateOperation {
 
     const deliverCreatedMessage = await this.#createMessageNotification(conversation, currentUser, message)
     deliverMessages.push(deliverCreatedMessage)
-    
+
     await this.conversationService.conversationRepo.updateLastActivity(conversation._id, message.created_at)
 
     return { messageId, message: message, deliverMessages, participantIds }
@@ -63,7 +68,10 @@ class MessageCreateOperation {
   }
 
   async #hasAccessToConversation(conversationId, currentUserId) {
-    const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(conversationId, currentUserId)
+    const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
+      conversationId,
+      currentUserId
+    )
 
     if (!conversation) {
       throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {
@@ -83,7 +91,7 @@ class MessageCreateOperation {
   async #checkBlocked(conversation, currentUserId, participantIds) {
     const blockedUserIds = await this.blockListService.listMutualBlockedIds(currentUserId, participantIds)
 
-    if (conversation.type === 'u' && blockedUserIds.length) {
+    if (conversation.type === "u" && blockedUserIds.length) {
       throw new Error(ERROR_STATUES.USER_BLOCKED.message, {
         cause: ERROR_STATUES.USER_BLOCKED,
       })
@@ -95,20 +103,25 @@ class MessageCreateOperation {
   async #createMessageNotification(conversation, user, message) {
     const userLogin = user.login
 
-    const firstAttachmentUrl = !message.attachments?.length ? null : await this.storageService.getDownloadUrl(message.attachments[0].file_id)
+    const firstAttachmentUrl = !message.attachments?.length
+      ? null
+      : await this.storageService.getDownloadUrl(message.attachments[0].file_id)
 
     const pushPayload = Object.assign({
-      title: conversation.type === 'u' ? userLogin : `${userLogin} | ${conversation.name}`,
+      title: conversation.type === "u" ? userLogin : `${userLogin} | ${conversation.name}`,
       body: message.body,
       firstAttachmentUrl,
       cid: message.cid,
     })
-    
-    const createChatAlertEventOptions = new CreateChatAlertEventOptions({
-      conversationId: conversation._id,
-      messageId: message._id,
-      senderID: message.from,
-    }, pushPayload)
+
+    const createChatAlertEventOptions = new CreateChatAlertEventOptions(
+      {
+        conversationId: conversation._id,
+        messageId: message._id,
+        senderID: message.from,
+      },
+      pushPayload
+    )
 
     const createdMessage = new MessagePublicFields(message)
 
@@ -119,7 +132,7 @@ class MessageCreateOperation {
 
   async #restorePrivateConversationNotification(conversation, currentUserId) {
     const user = await this.userService.userRepo.findById(currentUserId)
-  
+
     const event = await this.conversationNotificationService.actionEvent(
       CONVERSATION_EVENTS.CONVERSATION_EVENT.CREATE,
       conversation,

@@ -1,16 +1,16 @@
-import RegisterProvider from '../../../../common/RegisterProvider.js'
-import ConversationEditOperation from './index.js'
+import RegisterProvider from "../../../../common/RegisterProvider.js"
+import ConversationEditOperation from "./index.js"
 
-const name = 'ConversationEditOperation'
+const name = "ConversationEditOperation"
 
 class ConversationEditOperationRegisterProvider extends RegisterProvider {
   register(slc) {
-    const helpers = slc.use('Helpers')
-    const sessionService = slc.use('SessionService')
-    const userService = slc.use('UserService')
-    const conversationService = slc.use('ConversationService')
-    const messageService = slc.use('MessageService')
-    const conversationNotificationService = slc.use('ConversationNotificationService')
+    const helpers = slc.use("Helpers")
+    const sessionService = slc.use("SessionService")
+    const userService = slc.use("UserService")
+    const conversationService = slc.use("ConversationService")
+    const messageService = slc.use("MessageService")
+    const conversationNotificationService = slc.use("ConversationNotificationService")
 
     return new ConversationEditOperation(
       helpers,
@@ -23,4 +23,7 @@ class ConversationEditOperationRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new ConversationEditOperationRegisterProvider({ name, implementationName: ConversationEditOperation.name })
+export default new ConversationEditOperationRegisterProvider({
+  name,
+  implementationName: ConversationEditOperation.name,
+})

@@ -1,4 +1,4 @@
-import { ERROR_STATUES } from '../../../../constants/errors.js'
+import { ERROR_STATUES } from "../../../../constants/errors.js"
 
 class UserEditOperation {
   constructor(sessionService, userService, contactsMatchRepository) {
@@ -7,7 +7,7 @@ class UserEditOperation {
     this.contactsMatchRepository = contactsMatchRepository
   }
 
-  async perform (ws, updateUserParams) {
+  async perform(ws, updateUserParams) {
     const userId = this.sessionService.getSessionUserId(ws)
 
     const currentUser = await this.userService.userRepo.findById(userId)

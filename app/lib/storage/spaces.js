@@ -1,6 +1,6 @@
-import { S3 } from '@aws-sdk/client-s3'
+import { S3 } from "@aws-sdk/client-s3"
 
-import S3Storage from './s3.js'
+import S3Storage from "./s3.js"
 
 export default class Spaces extends S3Storage {
   constructor(options) {

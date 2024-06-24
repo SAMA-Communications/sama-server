@@ -1,9 +1,11 @@
-import Joi from 'joi'
-import { ERROR_STATUES } from '@sama/constants/errors.js'
+import Joi from "joi"
+import { ERROR_STATUES } from "@sama/constants/errors.js"
 
 export const usersBlockSchemaValidation = {
   block: Joi.object({
-    ids: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string().min(24),  Joi.number())).required(),
+    ids: Joi.array()
+      .items(Joi.alternatives().try(Joi.object(), Joi.string().min(24), Joi.number()))
+      .required(),
   })
     .required()
     .error(
@@ -12,7 +14,9 @@ export const usersBlockSchemaValidation = {
       })
     ),
   unblock: Joi.object({
-    ids:Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string().min(24),  Joi.number())).required(),
+    ids: Joi.array()
+      .items(Joi.alternatives().try(Joi.object(), Joi.string().min(24), Joi.number()))
+      .required(),
   })
     .required()
     .error(
@@ -22,6 +26,6 @@ export const usersBlockSchemaValidation = {
     ),
   list: Joi.object({}).required(),
   enable: Joi.object({
-    enable: Joi.bool()
-  })
+    enable: Joi.bool(),
+  }),
 }

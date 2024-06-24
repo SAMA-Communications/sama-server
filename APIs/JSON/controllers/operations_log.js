@@ -1,11 +1,11 @@
-import BaseJSONController from './base.js'
+import BaseJSONController from "./base.js"
 
-import OpLog from '@sama/models/operations_log.js'
+import OpLog from "@sama/models/operations_log.js"
 
-import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
+import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
-import MappableMessage from '@sama/networking/models/MappableMessage.js'
-import Response from '@sama/networking/models/Response.js'
+import MappableMessage from "@sama/networking/models/MappableMessage.js"
+import Response from "@sama/networking/models/Response.js"
 
 const mapOpLogsMessage = async function (mapper) {
   const mappedLogs = []
@@ -14,7 +14,7 @@ const mapOpLogsMessage = async function (mapper) {
     const mappedLog = await mapper(opLog)
     mappedLogs.push(mappedLog)
   }
-  
+
   this.packet.response.logs = mappedLogs
 
   return this.packet
@@ -29,7 +29,7 @@ class OperationsLogController extends BaseJSONController {
       },
     } = data
 
-    const sessionService = ServiceLocatorContainer.use('SessionService')
+    const sessionService = ServiceLocatorContainer.use("SessionService")
 
     const currentUserId = sessionService.getSessionUserId(ws)
 
@@ -38,7 +38,7 @@ class OperationsLogController extends BaseJSONController {
       created_at: gt ? { $gt: new Date(gt) } : { $lt: new Date(lt) },
     }
 
-    const opLogs = await OpLog.findAll(query, ['user_id', 'packet'])
+    const opLogs = await OpLog.findAll(query, ["user_id", "packet"])
     const packet = { response: { id: requestId, logs: opLogs } }
 
     return new Response().addBackMessage(new MappableMessage(packet, mapOpLogsMessage))

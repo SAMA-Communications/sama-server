@@ -1,11 +1,7 @@
-import { CONSTANTS as MAIN_CONSTANTS } from '../../../../constants/constants.js'
+import { CONSTANTS as MAIN_CONSTANTS } from "../../../../constants/constants.js"
 
 class ActivityUserSubscribeOperation {
-  constructor(
-    sessionService,
-    activityManagerService,
-    userService,
-  ) {
+  constructor(sessionService, activityManagerService, userService) {
     this.sessionService = sessionService
     this.activityManagerService = activityManagerService
     this.userService = userService
@@ -18,7 +14,7 @@ class ActivityUserSubscribeOperation {
 
     let targetUserActivityStatus = null
     const activeSessions = !!(await this.sessionService.listUserDevice(targetUserId))
-  
+
     if (activeSessions.length) {
       targetUserActivityStatus = MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE
     } else {

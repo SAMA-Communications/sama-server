@@ -1,67 +1,52 @@
-import assert from 'assert'
+import assert from "assert"
 
-import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
+import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
-import { ObjectId } from '../app/lib/db.js'
-import {
-  createConversation,
-  createUserArray,
-  mockedWS,
-  sendLogin,
-  sendLogout,
-} from './utils.js'
+import { ObjectId } from "../app/lib/db.js"
+import { createConversation, createUserArray, mockedWS, sendLogin, sendLogout } from "./utils.js"
 
-import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
+import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
-const userRepo = ServiceLocatorContainer.use('UserRepository')
-const conversationRepo = ServiceLocatorContainer.use('ConversationRepository')
-const conversationParticipantRepo = ServiceLocatorContainer.use('ConversationParticipantRepository')
-const messageRepo = ServiceLocatorContainer.use('MessageRepository')
-const messageStatusRepo = ServiceLocatorContainer.use('MessageStatusRepository')
-const messageService = ServiceLocatorContainer.use('MessageService')
+const userRepo = ServiceLocatorContainer.use("UserRepository")
+const conversationRepo = ServiceLocatorContainer.use("ConversationRepository")
+const conversationParticipantRepo = ServiceLocatorContainer.use("ConversationParticipantRepository")
+const messageRepo = ServiceLocatorContainer.use("MessageRepository")
+const messageStatusRepo = ServiceLocatorContainer.use("MessageStatusRepository")
+const messageService = ServiceLocatorContainer.use("MessageService")
 
-let filterUpdatedAt = ''
-let currentUserToken = ''
-let currentConversationId = ''
+let filterUpdatedAt = ""
+let currentUserToken = ""
+let currentConversationId = ""
 let usersIds = []
 let messagesIds = []
-let messageId1 = ''
+let messageId1 = ""
 
-describe('Message function', async () => {
+describe("Message function", async () => {
   before(async () => {
     usersIds = await createUserArray(3)
 
-    await sendLogin(mockedWS, 'user_2')
-    currentUserToken = (await sendLogin(mockedWS, 'user_1')).response.user._id
+    await sendLogin(mockedWS, "user_2")
+    currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user._id
 
-    currentConversationId = await createConversation(
-      mockedWS,
-      null,
-      null,
-      'g',
-      [usersIds[1], usersIds[0]]
-    )
+    currentConversationId = await createConversation(mockedWS, null, null, "g", [usersIds[1], usersIds[0]])
   })
 
-  describe('Send Message', async () => {
-    it('should work', async () => {
+  describe("Send Message", async () => {
+    it("should work", async () => {
       const requestData = {
         message: {
-          id: 'xyz',
-          body: 'hey how is going?',
+          id: "xyz",
+          body: "hey how is going?",
           cid: currentConversationId,
           x: {
-            param1: 'value',
-            param2: 'value',
+            param1: "value",
+            param2: "value",
           },
         },
       }
       let responseData = {}
       try {
-        responseData = await packetJsonProcessor.processMessageOrError(
-          mockedWS,
-          JSON.stringify(requestData)
-        )
+        responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
         responseData = responseData.backMessages.at(0)
       } catch (error) {
@@ -73,53 +58,47 @@ describe('Message function', async () => {
         }
       }
 
-      assert.strictEqual('xyz', responseData.ask.mid)
+      assert.strictEqual("xyz", responseData.ask.mid)
       assert.notEqual(responseData.ask.t, undefined)
     })
 
-    it('should fail incorrect ID', async () => {
+    it("should fail incorrect ID", async () => {
       const requestData = {
         message: {
           id: 12312,
-          body: 'hey how is going?',
+          body: "hey how is going?",
           cid: currentConversationId,
           x: {
-            param1: 'value',
-            param2: 'value',
+            param1: "value",
+            param2: "value",
           },
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
       assert.equal(responseData.ask, undefined)
       assert.deepEqual(responseData.message.error, {
         status: 422,
-        message: 'Incorrect message ID.',
+        message: "Incorrect message ID.",
       })
     })
 
     it(`should fail 'cid' field is required.`, async () => {
       const requestData = {
         message: {
-          id: 'xyz',
-          body: 'hey how is going?',
+          id: "xyz",
+          body: "hey how is going?",
           x: {
-            param1: 'value',
-            param2: 'value',
+            param1: "value",
+            param2: "value",
           },
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -130,58 +109,50 @@ describe('Message function', async () => {
       })
     })
 
-    it('should fail participant not found', async () => {
-      currentUserToken = (await sendLogin(mockedWS, 'user_3')).response.user
-        .token
+    it("should fail participant not found", async () => {
+      currentUserToken = (await sendLogin(mockedWS, "user_3")).response.user.token
 
       const requestData = {
         message: {
-          id: 'xyz',
-          body: 'hey how is going?',
+          id: "xyz",
+          body: "hey how is going?",
           cid: currentConversationId,
           x: {
-            param1: 'value',
-            param2: 'value',
+            param1: "value",
+            param2: "value",
           },
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
       await sendLogout(mockedWS, currentUserToken)
-      currentUserToken = (await sendLogin(mockedWS, 'user_1')).response.user
-        .token
+      currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user.token
 
       assert.equal(responseData.ask, undefined)
       assert.deepEqual(responseData.message.error, {
         status: 403,
-        message: 'Forbidden.',
+        message: "Forbidden.",
       })
     })
   })
 
-  describe('Send System Message', async () => {
-    it('should work with cid', async () => {
+  describe("Send System Message", async () => {
+    it("should work with cid", async () => {
       const requestData = {
         system_message: {
-          id: 'xyz',
+          id: "xyz",
           x: {
-            param1: 'value1',
-            param2: 'value2',
+            param1: "value1",
+            param2: "value2",
           },
-          cid: currentConversationId
-        }
+          cid: currentConversationId,
+        },
       }
-  
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       const deliverMessage = responseData.deliverMessages.at(0)
       responseData = responseData.backMessages.at(0)
@@ -194,30 +165,30 @@ describe('Message function', async () => {
         t: responseData.ask.t,
         from: usersIds[0],
         cid: currentConversationId,
-        x: requestData.system_message.x
+        x: requestData.system_message.x,
       }
 
       assert.deepEqual(deliverMessage.packet.system_message, expectedSystemMessage)
-      assert.deepEqual(deliverMessage.userIds.map(id => `${id}`), [usersIds[1], usersIds[0]].map(id => `${id}`))
+      assert.deepEqual(
+        deliverMessage.userIds.map((id) => `${id}`),
+        [usersIds[1], usersIds[0]].map((id) => `${id}`)
+      )
       assert.strictEqual(deliverMessage.notSaveInOfflineStorage, true)
     })
 
-    it('should work with uids', async () => {
+    it("should work with uids", async () => {
       const requestData = {
         system_message: {
-          id: 'xyz',
+          id: "xyz",
           x: {
-            param1: 'value1',
-            param2: 'value2',
+            param1: "value1",
+            param2: "value2",
           },
-          uids: [usersIds[1], usersIds[2]]
-        }
+          uids: [usersIds[1], usersIds[2]],
+        },
       }
-  
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       const deliverMessage = responseData.deliverMessages.at(0)
       responseData = responseData.backMessages.at(0)
@@ -229,29 +200,29 @@ describe('Message function', async () => {
         _id: requestData.system_message.id,
         t: responseData.ask.t,
         from: usersIds[0],
-        x: requestData.system_message.x
+        x: requestData.system_message.x,
       }
 
       assert.deepEqual(deliverMessage.packet.system_message, expectedSystemMessage)
-      assert.deepEqual(deliverMessage.userIds.map(id => `${id}`), [usersIds[1], usersIds[2]].map(id => `${id}`))
+      assert.deepEqual(
+        deliverMessage.userIds.map((id) => `${id}`),
+        [usersIds[1], usersIds[2]].map((id) => `${id}`)
+      )
       assert.strictEqual(deliverMessage.notSaveInOfflineStorage, true)
     })
 
     it(`should fail 'cid' or 'uids' field is required.`, async () => {
       const requestData = {
         system_message: {
-          id: 'xyz',
+          id: "xyz",
           x: {
-            param1: 'value',
-            param2: 'value',
+            param1: "value",
+            param2: "value",
           },
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -265,15 +236,12 @@ describe('Message function', async () => {
     it(`should fail 'x' is required`, async () => {
       const requestData = {
         system_message: {
-          id: 'xyz',
-          uids: [usersIds[1]]
+          id: "xyz",
+          uids: [usersIds[1]],
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -289,15 +257,12 @@ describe('Message function', async () => {
 
       const requestData = {
         system_message: {
-          id: 'xyz',
-          uids: bigUids
+          id: "xyz",
+          uids: bigUids,
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -312,14 +277,11 @@ describe('Message function', async () => {
       const requestData = {
         system_message: {
           uids: [usersIds[1]],
-          x: { val1: 'one' }
+          x: { val1: "one" },
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -331,7 +293,7 @@ describe('Message function', async () => {
     })
   })
 
-  describe('List of Messages', async () => {
+  describe("List of Messages", async () => {
     before(async () => {
       for (let i = 0; i < 8; i++) {
         const requestData = {
@@ -340,16 +302,13 @@ describe('Message function', async () => {
             body: `hey bro, this is message #${i + 1}`,
             cid: currentConversationId,
             x: {
-              param1: 'value_1',
-              param2: 'value_2',
+              param1: "value_1",
+              param2: "value_2",
             },
           },
         }
 
-        let responseData = await packetJsonProcessor.processMessageOrError(
-          mockedWS,
-          JSON.stringify(requestData)
-        )
+        let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
         responseData = responseData.backMessages.at(0)
 
@@ -360,7 +319,7 @@ describe('Message function', async () => {
       }
     })
 
-    it('should work with limit param', async () => {
+    it("should work with limit param", async () => {
       const numberOf = 5
       const requestData = {
         request: {
@@ -368,14 +327,11 @@ describe('Message function', async () => {
             cid: currentConversationId,
             limit: numberOf,
           },
-          id: '2',
+          id: "2",
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -387,7 +343,7 @@ describe('Message function', async () => {
       assert.equal(responseData.response.error, undefined)
     })
 
-    it('should work with date param', async () => {
+    it("should work with date param", async () => {
       const numberOf = 4
       const requestData = {
         request: {
@@ -397,14 +353,11 @@ describe('Message function', async () => {
               gt: filterUpdatedAt,
             },
           },
-          id: '2',
+          id: "2",
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -416,7 +369,7 @@ describe('Message function', async () => {
       assert.equal(responseData.response.error, undefined)
     })
 
-    it('should work with date and limit params', async () => {
+    it("should work with date and limit params", async () => {
       const numberOf = 3
       const requestData = {
         request: {
@@ -427,14 +380,11 @@ describe('Message function', async () => {
               gt: filterUpdatedAt,
             },
           },
-          id: '2',
+          id: "2",
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -442,7 +392,7 @@ describe('Message function', async () => {
 
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.notEqual(responseData.response.messages, undefined)
-      assert(count <= numberOf, 'limit filter does not work')
+      assert(count <= numberOf, "limit filter does not work")
       assert.equal(responseData.response.error, undefined)
 
       for (let i = 0; i < 5; i++) {
@@ -450,45 +400,42 @@ describe('Message function', async () => {
           request: {
             message_delete: {
               cid: currentConversationId,
-              type: 'all',
+              type: "all",
               ids: [`messageID_${i + 1}`],
               from: usersIds[0],
             },
-            id: '00',
+            id: "00",
           },
         }
         await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
       }
     })
 
-    it('should fail user haven`t permission', async () => {
+    it("should fail user haven`t permission", async () => {
       await sendLogout(mockedWS, currentUserToken)
-      currentUserToken = (await sendLogin(mockedWS, 'user_3')).response.user
+      currentUserToken = (await sendLogin(mockedWS, "user_3")).response.user
 
       const requestData = {
         request: {
           message_list: {
             cid: currentConversationId,
           },
-          id: '2',
+          id: "2",
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
       assert.equal(responseData.response.success, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 403,
-        message: 'Forbidden.',
+        message: "Forbidden.",
       })
 
       await sendLogout(mockedWS, currentUserToken)
-      currentUserToken = (await sendLogin(mockedWS, 'user_1')).response.user
+      currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user
     })
 
     after(async () => {
@@ -497,11 +444,11 @@ describe('Message function', async () => {
           request: {
             message_delete: {
               cid: currentConversationId,
-              type: 'all',
+              type: "all",
               ids: [`messageID_${i + 1}`],
               from: usersIds[0],
             },
-            id: '00',
+            id: "00",
           },
         }
         await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
@@ -509,7 +456,7 @@ describe('Message function', async () => {
     })
   })
 
-  describe('Delete Message', async () => {
+  describe("Delete Message", async () => {
     before(async () => {
       await messageRepo.deleteMany({})
 
@@ -517,43 +464,35 @@ describe('Message function', async () => {
         const requestData = {
           message: {
             id: `include_${i + 1}`,
-            body: 'hey how is going?',
+            body: "hey how is going?",
             cid: currentConversationId,
             deleted_for: [ObjectId(usersIds[2])],
           },
         }
 
         if (i === 3) {
-          messageId1 = (await packetJsonProcessor.processMessageOrError(
-              mockedWS,
-              JSON.stringify(requestData)
-            )
+          messageId1 = (
+            await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
           ).backMessages.at(0).ask.server_mid
         } else {
-          await packetJsonProcessor.processMessageOrError(
-            mockedWS,
-            JSON.stringify(requestData)
-          )
+          await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
         }
       }
     })
 
-    it('should work all', async () => {
+    it("should work all", async () => {
       const requestData = {
         request: {
           message_delete: {
             cid: currentConversationId,
-            ids: ['include_1', '63077ad836b78c3d82af0813'],
-            type: 'all',
+            ids: ["include_1", "63077ad836b78c3d82af0813"],
+            type: "all",
           },
-          id: '1',
+          id: "1",
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -562,22 +501,19 @@ describe('Message function', async () => {
       assert.equal(responseData.response.error, undefined)
     })
 
-    it('should work deleted_for', async () => {
+    it("should work deleted_for", async () => {
       const requestData = {
         request: {
           message_delete: {
             cid: currentConversationId,
-            ids: ['include_2', 'include_3'],
-            type: 'myself',
+            ids: ["include_2", "include_3"],
+            type: "myself",
           },
-          id: '2',
+          id: "2",
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -586,178 +522,157 @@ describe('Message function', async () => {
       assert.equal(responseData.response.error, undefined)
     })
 
-    it('should fail incorrect type', async () => {
+    it("should fail incorrect type", async () => {
       const requestData = {
         request: {
           message_delete: {
-            cid: 'xyz',
-            ids: ['63077ad836b78c3d82af0812', '63077ad836b78c3d82af0813'],
-            type: 'allasdas',
+            cid: "xyz",
+            ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
+            type: "allasdas",
           },
-          id: '1',
+          id: "1",
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
       assert.equal(responseData.response.success, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'The type you entered is incorrect.',
+        message: "The type you entered is incorrect.",
       })
     })
 
-    it('should fail type missed', async () => {
+    it("should fail type missed", async () => {
       const requestData = {
         request: {
           message_delete: {
             cid: currentConversationId,
-            ids: ['63077ad836b78c3d82af0812', '63077ad836b78c3d82af0813'],
+            ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
           },
-          id: '1',
+          id: "1",
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
       assert.equal(responseData.response.success, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'Message type missed.',
+        message: "Message type missed.",
       })
     })
 
-    it('should fail type is incorrect', async () => {
+    it("should fail type is incorrect", async () => {
       const requestData = {
         request: {
           message_delete: {
             cid: currentConversationId,
-            type: 'asdbads',
-            ids: ['63077ad836b78c3d82af0812', '63077ad836b78c3d82af0813'],
+            type: "asdbads",
+            ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
           },
-          id: '1',
+          id: "1",
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
       assert.equal(responseData.response.success, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'The type you entered is incorrect.',
+        message: "The type you entered is incorrect.",
       })
     })
 
-    it('should fail incorrect cid', async () => {
+    it("should fail incorrect cid", async () => {
       const requestData = {
         request: {
           message_delete: {
-            cid: 'abs',
-            ids: ['63077ad836b78c3d82af0812', '63077ad836b78c3d82af0813'],
-            type: 'all',
+            cid: "abs",
+            ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
+            type: "all",
           },
-          id: '1',
+          id: "1",
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
       assert.equal(responseData.response.success, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 404,
-        message: 'Conversation not found.',
+        message: "Conversation not found.",
       })
     })
 
-    it('should fail cid not found', async () => {
+    it("should fail cid not found", async () => {
       const requestData = {
         request: {
           message_delete: {
-            cid: 'asd',
-            ids: ['63077ad836b78c3d82af0812', '63077ad836b78c3d82af0813'],
-            type: 'all',
+            cid: "asd",
+            ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
+            type: "all",
           },
-          id: '1',
+          id: "1",
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
       assert.equal(responseData.response.success, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 404,
-        message: 'Conversation not found.',
+        message: "Conversation not found.",
       })
     })
 
-    it('should fail Message ID missed.', async () => {
+    it("should fail Message ID missed.", async () => {
       const requestData = {
         request: {
           message_delete: {
             cid: currentConversationId,
             ids: [],
-            type: 'all',
+            type: "all",
           },
-          id: '1',
+          id: "1",
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
       assert.equal(responseData.response.success, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'Message ID missed.',
+        message: "Message ID missed.",
       })
     })
   })
 
-  describe('Edit Message', async () => {
-    it('should work', async () => {
+  describe("Edit Message", async () => {
+    it("should work", async () => {
       const requestData = {
         request: {
           message_edit: {
             id: messageId1,
-            body: 'updated message body (UPDATED)',
+            body: "updated message body (UPDATED)",
           },
-          id: '1',
+          id: "1",
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -766,104 +681,92 @@ describe('Message function', async () => {
       assert.equal(responseData.response.error, undefined)
     })
 
-    it('should fail id incorrect', async () => {
+    it("should fail id incorrect", async () => {
       const requestData = {
         request: {
           message_edit: {
-            id: 'include_123123advdzvzdgsd2',
-            body: 'updated message body (UPDATED)',
+            id: "include_123123advdzvzdgsd2",
+            body: "updated message body (UPDATED)",
           },
-          id: '1',
+          id: "1",
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
       assert.equal(responseData.response.success, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'Message ID not found.',
+        message: "Message ID not found.",
       })
     })
 
-    it('should fail id not found', async () => {
+    it("should fail id not found", async () => {
       const requestData = {
         request: {
           message_edit: {
-            body: 'updated message body (UPDATED123)',
+            body: "updated message body (UPDATED123)",
           },
-          id: '2',
+          id: "2",
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
       assert.equal(responseData.response.success, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'Message ID not found.',
+        message: "Message ID not found.",
       })
     })
 
-    it('should fail message content is empty', async () => {
+    it("should fail message content is empty", async () => {
       const requestData = {
         request: {
           message_edit: {
-            id: 'include_2',
-            body: '',
+            id: "include_2",
+            body: "",
             attachments: [],
           },
-          id: '1',
+          id: "1",
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
       assert.equal(responseData.response.success, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: 'Either message body or attachments required.',
+        message: "Either message body or attachments required.",
       })
     })
 
-    it('should fail active_user is not owner message', async () => {
-      await sendLogin(mockedWS, 'user_3')
+    it("should fail active_user is not owner message", async () => {
+      await sendLogin(mockedWS, "user_3")
       const requestData = {
         request: {
           message_edit: {
             id: messageId1,
-            body: 'updated message body (UPDATED123)',
+            body: "updated message body (UPDATED123)",
           },
-          id: '2',
+          id: "2",
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
       assert.equal(responseData.response.success, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 403,
-        message: 'Forbidden.',
+        message: "Forbidden.",
       })
     })
 
@@ -877,7 +780,7 @@ describe('Message function', async () => {
     })
   })
 
-  describe('Aggregate functions message', async () => {
+  describe("Aggregate functions message", async () => {
     before(async () => {
       for (let i = 0; i < 3; i++) {
         const requestDataCreate = {
@@ -886,41 +789,33 @@ describe('Message function', async () => {
               login: `user_${i + 1}`,
               email: `email_${i + 1}`,
               phone: `phone_${i + 1}`,
-              password: '1um',
-              deviceId: 'device1',
+              password: "1um",
+              deviceId: "device1",
             },
-            id: '0',
+            id: "0",
           },
         }
 
-        let responseData = await packetJsonProcessor.processMessageOrError(
-          mockedWS,
-          JSON.stringify(requestDataCreate)
-        )
+        let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestDataCreate))
 
         responseData = responseData.backMessages.at(0)
         usersIds[i] = responseData.response.user._id
       }
-      currentUserToken = (
-        await sendLogin(mockedWS, 'user_1')
-      ).response.user._id.toString()
+      currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user._id.toString()
 
       let requestData = {
         request: {
           conversation_create: {
-            name: 'groupChat',
-            description: 'test aggregation',
-            type: 'g',
+            name: "groupChat",
+            description: "test aggregation",
+            type: "g",
             participants: [usersIds[0], usersIds[1], usersIds[2]],
           },
-          id: '0',
+          id: "0",
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
       currentConversationId = responseData.response.conversation._id.toString()
@@ -935,10 +830,7 @@ describe('Message function', async () => {
           },
         }
 
-        responseData = await packetJsonProcessor.processMessageOrError(
-          mockedWS,
-          JSON.stringify(requestData)
-        )
+        responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
         responseData = responseData.backMessages.at(0)
 
@@ -946,8 +838,7 @@ describe('Message function', async () => {
       }
 
       // read 3/6 messages by u2
-      currentUserToken = (await sendLogin(mockedWS, 'user_2')).response.user
-        ._id
+      currentUserToken = (await sendLogin(mockedWS, "user_2")).response.user._id
 
       requestData = {
         request: {
@@ -955,20 +846,17 @@ describe('Message function', async () => {
             cid: currentConversationId,
             ids: [messagesIds[0], messagesIds[1], messagesIds[2]],
           },
-          id: '123',
+          id: "123",
         },
       }
 
-      responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
     })
 
-    describe('--> getLastReadMessageByUserForCid', () => {
-      it('should work for u1', async () => {
+    describe("--> getLastReadMessageByUserForCid", () => {
+      it("should work for u1", async () => {
         const responseData = await messageStatusRepo.findLastReadMessageByUserForCid(
           [ObjectId(currentConversationId)],
           usersIds[0]
@@ -976,19 +864,16 @@ describe('Message function', async () => {
         assert.strictEqual(responseData[currentConversationId], undefined)
       })
 
-      it('should work for u2', async () => {
+      it("should work for u2", async () => {
         const responseData = await messageStatusRepo.findLastReadMessageByUserForCid(
           [ObjectId(currentConversationId)],
           usersIds[1]
         )
 
-        assert.strictEqual(
-          responseData[currentConversationId]?.toString(),
-          messagesIds[2].toString()
-        )
+        assert.strictEqual(responseData[currentConversationId]?.toString(), messagesIds[2].toString())
       })
 
-      it('should work for u3', async () => {
+      it("should work for u3", async () => {
         const responseData = await messageStatusRepo.findLastReadMessageByUserForCid(
           [ObjectId(currentConversationId)],
           usersIds[2]
@@ -997,8 +882,8 @@ describe('Message function', async () => {
       })
     })
 
-    describe('--> getCountOfUnredMessagesByCid', () => {
-      it('should work for sender user (u1)', async () => {
+    describe("--> getCountOfUnredMessagesByCid", () => {
+      it("should work for sender user (u1)", async () => {
         const responseData = await messageService.aggregateCountOfUnreadMessagesByCid(
           [ObjectId(currentConversationId)],
           { native_id: usersIds[0] }
@@ -1007,7 +892,7 @@ describe('Message function', async () => {
         assert.strictEqual(responseData[currentConversationId], undefined)
       })
 
-      it('should work for u2 (read 3/6 messages)', async () => {
+      it("should work for u2 (read 3/6 messages)", async () => {
         const responseData = await messageService.aggregateCountOfUnreadMessagesByCid(
           [ObjectId(currentConversationId)],
           { native_id: usersIds[1] }
@@ -1016,7 +901,7 @@ describe('Message function', async () => {
         assert.strictEqual(responseData[currentConversationId], 3)
       })
 
-      it('should work for u3 (read 0/6 messages)', async () => {
+      it("should work for u3 (read 0/6 messages)", async () => {
         const responseData = await messageService.aggregateCountOfUnreadMessagesByCid(
           [ObjectId(currentConversationId)],
           { native_id: usersIds[2] }
@@ -1026,11 +911,9 @@ describe('Message function', async () => {
       })
     })
 
-    describe('--> getReadStatusForMids', () => {
-      it('should work for sender user (u1)', async () => {
-        const responseData = await messageStatusRepo.findReadStatusForMids(
-          messagesIds
-        )
+    describe("--> getReadStatusForMids", () => {
+      it("should work for sender user (u1)", async () => {
+        const responseData = await messageStatusRepo.findReadStatusForMids(messagesIds)
         let isDone = false
         let midsSuccess = 0
         for (let i = 0; i < 3; i++) {
@@ -1043,15 +926,10 @@ describe('Message function', async () => {
       })
     })
 
-    describe('--> getLastMessageForConversation', () => {
-      it('should work', async () => {
-        const responseData = await messageService.aggregateLastMessageForConversation([
-          ObjectId(currentConversationId),
-        ])
-        assert.strictEqual(
-          responseData[currentConversationId]._id?.toString(),
-          messagesIds[5].toString()
-        )
+    describe("--> getLastMessageForConversation", () => {
+      it("should work", async () => {
+        const responseData = await messageService.aggregateLastMessageForConversation([ObjectId(currentConversationId)])
+        assert.strictEqual(responseData[currentConversationId]._id?.toString(), messagesIds[5].toString())
       })
     })
   })

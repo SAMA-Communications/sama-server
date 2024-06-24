@@ -1,28 +1,28 @@
-import assert from 'assert'
+import assert from "assert"
 
-import ServiceLocatorContainer from '../app/common/ServiceLocatorContainer.js'
+import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
-import { createUserArray, mockedWS, sendLogin } from './utils.js'
-import packetJsonProcessor from '../APIs/JSON/routes/packet_processor.js'
+import { createUserArray, mockedWS, sendLogin } from "./utils.js"
+import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
-const userRepo = ServiceLocatorContainer.use('UserRepository')
-const userTokenRepo = ServiceLocatorContainer.use('UserTokenRepository')
-const blockListService = ServiceLocatorContainer.use('BlockListService')
+const userRepo = ServiceLocatorContainer.use("UserRepository")
+const userTokenRepo = ServiceLocatorContainer.use("UserTokenRepository")
+const blockListService = ServiceLocatorContainer.use("BlockListService")
 
 let usersIds = []
 
-describe('UserBlocked functions', async () => {
+describe("UserBlocked functions", async () => {
   before(async () => {
     await userRepo.deleteMany({})
 
     await userTokenRepo.deleteMany({})
 
     usersIds = await createUserArray(5)
-    await sendLogin(mockedWS, 'user_1')
+    await sendLogin(mockedWS, "user_1")
   })
 
-  describe('Block method', async () => {
-    it('should work, block user_2', async () => {
+  describe("Block method", async () => {
+    it("should work, block user_2", async () => {
       const requestData = {
         request: {
           block_user: {
@@ -32,10 +32,7 @@ describe('UserBlocked functions', async () => {
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -43,7 +40,7 @@ describe('UserBlocked functions', async () => {
       assert.strictEqual(responseData.response.success, true)
     })
 
-    it('should work, block user_3', async () => {
+    it("should work, block user_3", async () => {
       const requestData = {
         request: {
           block_user: {
@@ -53,10 +50,7 @@ describe('UserBlocked functions', async () => {
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -64,7 +58,7 @@ describe('UserBlocked functions', async () => {
       assert.strictEqual(responseData.response.success, true)
     })
 
-    it('should work, block user_4', async () => {
+    it("should work, block user_4", async () => {
       const requestData = {
         request: {
           block_user: {
@@ -74,10 +68,7 @@ describe('UserBlocked functions', async () => {
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -85,7 +76,7 @@ describe('UserBlocked functions', async () => {
       assert.strictEqual(responseData.response.success, true)
     })
 
-    it('should work, block user_5', async () => {
+    it("should work, block user_5", async () => {
       const requestData = {
         request: {
           block_user: {
@@ -95,10 +86,7 @@ describe('UserBlocked functions', async () => {
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -106,20 +94,17 @@ describe('UserBlocked functions', async () => {
       assert.strictEqual(responseData.response.success, true)
     })
 
-    it('should fail, id missed', async () => {
+    it("should fail, id missed", async () => {
       const requestData = {
         request: {
           block_user: {
-            ids: [''],
+            ids: [""],
           },
           id: 6,
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -127,7 +112,7 @@ describe('UserBlocked functions', async () => {
       assert.notEqual(responseData.response.success, true)
     })
 
-    it('should fail, block self user', async () => {
+    it("should fail, block self user", async () => {
       const requestData = {
         request: {
           block_user: {
@@ -137,10 +122,7 @@ describe('UserBlocked functions', async () => {
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -149,8 +131,8 @@ describe('UserBlocked functions', async () => {
     })
   })
 
-  describe('enable/disable', async () => {
-    it('should work, disable', async () => {
+  describe("enable/disable", async () => {
+    it("should work, disable", async () => {
       const requestData = {
         request: {
           block_list_enable: { enable: false },
@@ -158,10 +140,7 @@ describe('UserBlocked functions', async () => {
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -173,7 +152,7 @@ describe('UserBlocked functions', async () => {
       assert.equal(blockedUserIds.length, 0)
     })
 
-    it('should work, enable', async () => {
+    it("should work, enable", async () => {
       const requestData = {
         request: {
           block_list_enable: { enable: true },
@@ -181,10 +160,7 @@ describe('UserBlocked functions', async () => {
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -197,8 +173,8 @@ describe('UserBlocked functions', async () => {
     })
   })
 
-  describe('List method', async () => {
-    it('should work', async () => {
+  describe("List method", async () => {
+    it("should work", async () => {
       const requestData = {
         request: {
           list_blocked_users: {},
@@ -206,10 +182,7 @@ describe('UserBlocked functions', async () => {
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -219,8 +192,8 @@ describe('UserBlocked functions', async () => {
     })
   })
 
-  describe('Unblock method', async () => {
-    it('should work, unblock user_2', async () => {
+  describe("Unblock method", async () => {
+    it("should work, unblock user_2", async () => {
       const requestData = {
         request: {
           unblock_user: {
@@ -230,10 +203,7 @@ describe('UserBlocked functions', async () => {
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -241,7 +211,7 @@ describe('UserBlocked functions', async () => {
       assert.strictEqual(responseData.response.success, true)
     })
 
-    it('should work, unblock user_4', async () => {
+    it("should work, unblock user_4", async () => {
       const requestData = {
         request: {
           unblock_user: {
@@ -251,10 +221,7 @@ describe('UserBlocked functions', async () => {
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -262,20 +229,17 @@ describe('UserBlocked functions', async () => {
       assert.strictEqual(responseData.response.success, true)
     })
 
-    it('should fail, id missed', async () => {
+    it("should fail, id missed", async () => {
       const requestData = {
         request: {
           unblock_user: {
-            ids: [''],
+            ids: [""],
           },
           id: 6,
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 
@@ -283,7 +247,7 @@ describe('UserBlocked functions', async () => {
       assert.notEqual(responseData.response.success, true)
     })
 
-    it('check blocked list again', async () => {
+    it("check blocked list again", async () => {
       const requestData = {
         request: {
           list_blocked_users: {},
@@ -291,10 +255,7 @@ describe('UserBlocked functions', async () => {
         },
       }
 
-      let responseData = await packetJsonProcessor.processMessageOrError(
-        mockedWS,
-        JSON.stringify(requestData)
-      )
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
 

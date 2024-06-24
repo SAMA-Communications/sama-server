@@ -9,7 +9,7 @@ class BlockListRetrieveOperation {
 
     const blockedUsers = await this.blockListService.list(currentUserId)
 
-    const userIds = blockedUsers.map(blockedUser => blockedUser.blocked_user_id)
+    const userIds = blockedUsers.map((blockedUser) => blockedUser.blocked_user_id)
 
     return userIds
   }

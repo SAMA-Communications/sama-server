@@ -1,14 +1,8 @@
-import { ERROR_STATUES } from '../../../../constants/errors.js'
-import { CONVERSATION_EVENTS } from '../../../../constants/conversation.js'
+import { ERROR_STATUES } from "../../../../constants/errors.js"
+import { CONVERSATION_EVENTS } from "../../../../constants/conversation.js"
 
 class ConversationCreateOperation {
-  constructor(
-    helpers,
-    sessionService,
-    userService,
-    conversationService,
-    conversationNotificationService
-  ) {
+  constructor(helpers, sessionService, userService, conversationService, conversationNotificationService) {
     this.helpers = helpers
     this.sessionService = sessionService
     this.userService = userService
@@ -27,19 +21,27 @@ class ConversationCreateOperation {
     let conversation = null
     let normalizedParticipants = null
 
-    if (conversationParams.type === 'u') {
-      const { conversation: createdConversation, participantIds } = await this.#createPrivateConversation(currentUser, conversationParams, paramsParticipantIds)
+    if (conversationParams.type === "u") {
+      const { conversation: createdConversation, participantIds } = await this.#createPrivateConversation(
+        currentUser,
+        conversationParams,
+        paramsParticipantIds
+      )
       conversation = createdConversation
       normalizedParticipants = participantIds
     } else {
-      const { conversation: createdConversation, participantIds } = await this.#createGroupConversation(currentUser, conversationParams, paramsParticipantIds)
+      const { conversation: createdConversation, participantIds } = await this.#createGroupConversation(
+        currentUser,
+        conversationParams,
+        paramsParticipantIds
+      )
       conversation = createdConversation
       normalizedParticipants = participantIds
     }
 
     const conversationEvent = await this.#createActionEvent(conversation, currentUserId)
     conversationEvent.participantIds = normalizedParticipants
-  
+
     return { conversation, event: conversationEvent }
   }
 
@@ -73,7 +75,7 @@ class ConversationCreateOperation {
       })
     }
 
-    const opponentId = paramsOpponentId || participantIds.find(pId => !this.helpers.isEqualsNativeIds(pId, ownerId))
+    const opponentId = paramsOpponentId || participantIds.find((pId) => !this.helpers.isEqualsNativeIds(pId, ownerId))
 
     if (this.helpers.isEqualsNativeIds(opponentId, ownerId)) {
       throw new Error(ERROR_STATUES.INCORRECT_USER.message, {
@@ -99,7 +101,9 @@ class ConversationCreateOperation {
   }
 
   async #createGroupConversation(user, conversationParams, participantIds) {
-    const isOwnerInParticipants = participantIds.find(pId => this.helpers.isEqualsNativeIds(pId, conversationParams.owner_id))
+    const isOwnerInParticipants = participantIds.find((pId) =>
+      this.helpers.isEqualsNativeIds(pId, conversationParams.owner_id)
+    )
     if (!isOwnerInParticipants) {
       participantIds.push(conversationParams.owner_id)
     }

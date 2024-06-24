@@ -1,4 +1,4 @@
-import BaseModel from './base.js'
+import BaseModel from "./base.js"
 
 export default class Contact extends BaseModel {
   constructor(params) {
@@ -6,19 +6,10 @@ export default class Contact extends BaseModel {
   }
 
   static get collection() {
-    return 'contacts'
+    return "contacts"
   }
 
   static get visibleFields() {
-    return [
-      '_id',
-      'first_name',
-      'last_name',
-      'company',
-      'email',
-      'phone',
-      'created_at',
-      'updated_at',
-    ]
+    return ["_id", "first_name", "last_name", "company", "email", "phone", "created_at", "updated_at"]
   }
 }

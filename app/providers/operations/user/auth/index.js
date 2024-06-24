@@ -1,14 +1,9 @@
-import jwt from 'jsonwebtoken'
+import jwt from "jsonwebtoken"
 
-import { ERROR_STATUES } from '../../../../constants/errors.js'
+import { ERROR_STATUES } from "../../../../constants/errors.js"
 
 class UserAuthOperation {
-  constructor(
-    RuntimeDefinedContext,
-    sessionService,
-    userService,
-    userTokenRepo,
-  ) {
+  constructor(RuntimeDefinedContext, sessionService, userService, userTokenRepo) {
     this.RuntimeDefinedContext = RuntimeDefinedContext
     this.sessionService = sessionService
     this.userService = userService
@@ -35,7 +30,7 @@ class UserAuthOperation {
     const wsToClose = this.sessionService.addUserDeviceConnection(ws, user.native_id, deviceId)
 
     const jwtToken = jwt.sign(
-      { _id: user._id, native_id: user.native_id,  login: user.login },
+      { _id: user._id, native_id: user.native_id, login: user.login },
       process.env.JWT_ACCESS_SECRET,
       {
         expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES_IN,
@@ -55,7 +50,7 @@ class UserAuthOperation {
   }
 
   async #authByToken(tokenJwt, deviceId) {
-    const token = await this.userTokenRepo.findToken(tokenJwt, deviceId) 
+    const token = await this.userTokenRepo.findToken(tokenJwt, deviceId)
 
     if (!token) {
       throw new Error(ERROR_STATUES.TOKEN_EXPIRED.message, {

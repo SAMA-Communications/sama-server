@@ -1,4 +1,4 @@
-import BaseRepository from '../base.js'
+import BaseRepository from "../base.js"
 
 class UserRepository extends BaseRepository {
   async findByLogin(login) {
@@ -11,11 +11,11 @@ class UserRepository extends BaseRepository {
     const query = [{ login }]
 
     if (email) {
-      query.push(({ email }))
+      query.push({ email })
     }
 
     if (phone) {
-      query.push(({ phone }))
+      query.push({ phone })
     }
 
     const user = await this.findOne({ $or: query })
@@ -32,7 +32,7 @@ class UserRepository extends BaseRepository {
   async search({ loginMatch, ignoreIds, timeFromUpdate }, limit) {
     const query = {
       _id: { $nin: ignoreIds },
-      login: { $regex: new RegExp(`^${loginMatch}.*`, 'i') },
+      login: { $regex: new RegExp(`^${loginMatch}.*`, "i") },
     }
 
     if (timeFromUpdate) {

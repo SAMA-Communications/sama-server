@@ -1,20 +1,15 @@
-import groupBy from '@sama/utils/groupBy.js'
-import ReadMessagesPublicFields from '@sama/DTO/Response/message/read/public_fields.js'
+import groupBy from "@sama/utils/groupBy.js"
+import ReadMessagesPublicFields from "@sama/DTO/Response/message/read/public_fields.js"
 
 class MessageReadOperation {
-  constructor(
-    sessionService,
-    userService,
-    messageService,
-    conversationService,
-  ) {
+  constructor(sessionService, userService, messageService, conversationService) {
     this.sessionService = sessionService
     this.userService = userService
     this.messageService = messageService
     this.conversationService = conversationService
   }
 
-  async perform (ws, messageParams) {
+  async perform(ws, messageParams) {
     const { cid, ids: mids } = messageParams
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
@@ -22,18 +17,18 @@ class MessageReadOperation {
 
     const unreadMessages = await this.messageService.readMessagesInConversation(cid, currentUser, mids)
 
-    const unreadMessagesGroupedByFrom = groupBy(unreadMessages, 'from')
+    const unreadMessagesGroupedByFrom = groupBy(unreadMessages, "from")
 
     const readMessagesGroups = Object.entries(unreadMessagesGroupedByFrom).map(([userId, messages]) => {
       const firstMessage = messages.at(0)
       const cId = firstMessage.cid
-      const messageIds = messages.map(message => message._id)
+      const messageIds = messages.map((message) => message._id)
       const readMessages = new ReadMessagesPublicFields({ cid: cId, messageIds, from: currentUserId })
 
       return { userId, readMessages }
     })
 
-    return { readMessagesGroups } 
+    return { readMessagesGroups }
   }
 }
 

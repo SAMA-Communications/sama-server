@@ -1,5 +1,5 @@
-import { ERROR_STATUES } from '../../../constants/errors.js'
-import { hashPassword, verifyPassword } from '../../../utils/crypto_utils.js'
+import { ERROR_STATUES } from "../../../constants/errors.js"
+import { hashPassword, verifyPassword } from "../../../utils/crypto_utils.js"
 
 class UserService {
   constructor(userRepo) {
@@ -18,14 +18,14 @@ class UserService {
     if (password) {
       const { encryptedPassword, salt } = await this.encryptAndSetPassword(password)
 
-      newUserParams['password_salt'] = salt
-      newUserParams['encrypted_password'] = encryptedPassword
+      newUserParams["password_salt"] = salt
+      newUserParams["encrypted_password"] = encryptedPassword
     }
 
-    newUserParams['recent_activity'] = Math.round(Date.now() / 1000)
+    newUserParams["recent_activity"] = Math.round(Date.now() / 1000)
 
     const user = await this.userRepo.create(newUserParams)
-    
+
     return user
   }
 
@@ -33,7 +33,7 @@ class UserService {
     const { current_password, new_password, ...updateFieldsParams } = updateParams
 
     if (new_password) {
-      if (!current_password || !await this.validatePassword(user, current_password)) {
+      if (!current_password || !(await this.validatePassword(user, current_password))) {
         throw new Error(ERROR_STATUES.INCORRECT_CURRENT_PASSWORD.message, {
           cause: ERROR_STATUES.INCORRECT_CURRENT_PASSWORD,
         })
@@ -41,11 +41,11 @@ class UserService {
 
       const { encryptedPassword, salt } = await this.encryptAndSetPassword(new_password)
 
-      updateFieldsParams['password_salt'] = salt
-      updateFieldsParams['encrypted_password'] = encryptedPassword
+      updateFieldsParams["password_salt"] = salt
+      updateFieldsParams["encrypted_password"] = encryptedPassword
     }
 
-    updateFieldsParams['updated_at'] = new Date()
+    updateFieldsParams["updated_at"] = new Date()
 
     const updatedUser = await this.userRepo.update(user.native_id, updateFieldsParams)
 
@@ -67,16 +67,12 @@ class UserService {
 
     return { encryptedPassword, salt }
   }
- 
+
   async validatePassword(user, plainPassword) {
     const passwordSalt = user.params.password_salt
     const passwordEncrypted = user.params.encrypted_password
 
-    const isSame = await verifyPassword(
-      plainPassword,
-      passwordEncrypted,
-      passwordSalt
-    )
+    const isSame = await verifyPassword(plainPassword, passwordEncrypted, passwordSalt)
 
     return isSame
   }

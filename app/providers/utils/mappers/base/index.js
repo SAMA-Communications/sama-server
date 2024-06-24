@@ -8,7 +8,7 @@ class BaseMapper {
 
   params(record) {
     const params = {
-      ...record
+      ...record,
     }
 
     return params

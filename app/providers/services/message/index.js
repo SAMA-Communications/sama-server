@@ -1,9 +1,5 @@
 class MessageService {
-  constructor(
-    helpers,
-    messageRepo,
-    messageStatusRepo
-  ) {
+  constructor(helpers, messageRepo, messageStatusRepo) {
     this.helpers = helpers
     this.messageRepo = messageRepo
     this.messageStatusRepo = messageStatusRepo
@@ -20,7 +16,7 @@ class MessageService {
 
     return message
   }
-  
+
   async messagesList(cId, user, options, limit) {
     const filterOptions = {}
     if (options.updatedAt?.gt) {
@@ -32,7 +28,7 @@ class MessageService {
 
     const messages = await this.messageRepo.list(cId, user.native_id, filterOptions, limit)
 
-    const messageIds = messages.map(message => message._id)
+    const messageIds = messages.map((message) => message._id)
 
     const messagesStatuses = await this.messageStatusRepo.findReadStatusForMids(messageIds)
 
@@ -65,16 +61,23 @@ class MessageService {
   async readMessagesInConversation(cid, user, mids) {
     const findMessagesOptions = { mids }
     if (!mids) {
-      const lastReadMessagesByConvIds = await this.messageStatusRepo.findLastReadMessageByUserForCid([cid], user.native_id)
+      const lastReadMessagesByConvIds = await this.messageStatusRepo.findLastReadMessageByUserForCid(
+        [cid],
+        user.native_id
+      )
       findMessagesOptions.lastReadMessageId = lastReadMessagesByConvIds[cid]?.mid || null
     }
 
-    const unreadMessages = await this.messageRepo.findAllOpponentsMessagesFromConversation(cid, user.native_id, findMessagesOptions)
+    const unreadMessages = await this.messageRepo.findAllOpponentsMessagesFromConversation(
+      cid,
+      user.native_id,
+      findMessagesOptions
+    )
 
     if (unreadMessages.length) {
       const mids = unreadMessages.map((message) => message._id).reverse()
 
-      await this.messageStatusRepo.upsertMessageReadStatuses(cid, mids, user.native_id, 'read')
+      await this.messageStatusRepo.upsertMessageReadStatuses(cid, mids, user.native_id, "read")
     }
 
     return unreadMessages
@@ -83,22 +86,29 @@ class MessageService {
   async aggregateLastMessageForConversation(cids, user) {
     const aggregateLastMessage = await this.messageRepo.findLastMessageForConversations(cids, user?.native_id)
 
-    const lastMessagesIds = Object.values(aggregateLastMessage).map(msg => msg._id)
+    const lastMessagesIds = Object.values(aggregateLastMessage).map((msg) => msg._id)
 
     const aggregateLastMessageStatus = await this.messageStatusRepo.findReadStatusForMids(lastMessagesIds)
 
-    Object.values(aggregateLastMessage).forEach(message => {
-      const status = aggregateLastMessageStatus[message._id.toString()] ? 'read' : 'sent'
-      message.set('status', status)
+    Object.values(aggregateLastMessage).forEach((message) => {
+      const status = aggregateLastMessageStatus[message._id.toString()] ? "read" : "sent"
+      message.set("status", status)
     })
 
     return aggregateLastMessage
   }
 
   async aggregateCountOfUnreadMessagesByCid(cids, user) {
-    const lastReadMessageByUserForCids = await this.messageStatusRepo.findLastReadMessageByUserForCid(cids, user.native_id)
+    const lastReadMessageByUserForCids = await this.messageStatusRepo.findLastReadMessageByUserForCid(
+      cids,
+      user.native_id
+    )
 
-    const unreadMessageCountByCids = await this.messageRepo.countUnreadMessagesByCids(cids, user.native_id, lastReadMessageByUserForCids)
+    const unreadMessageCountByCids = await this.messageRepo.countUnreadMessagesByCids(
+      cids,
+      user.native_id,
+      lastReadMessageByUserForCids
+    )
 
     return unreadMessageCountByCids
   }

@@ -1,4 +1,4 @@
-import { ERROR_STATUES } from '../../../../constants/errors.js'
+import { ERROR_STATUES } from "../../../../constants/errors.js"
 
 class UserCreateOperation {
   constructor(userService, contactsMatchRepository) {
@@ -6,8 +6,12 @@ class UserCreateOperation {
     this.contactsMatchRepository = contactsMatchRepository
   }
 
-  async perform (createUserParams) {
-    const existingUser = await this.userService.userRepo.findRegistered(createUserParams.login, createUserParams.email, createUserParams.phone)
+  async perform(createUserParams) {
+    const existingUser = await this.userService.userRepo.findRegistered(
+      createUserParams.login,
+      createUserParams.email,
+      createUserParams.phone
+    )
 
     if (existingUser) {
       throw new Error(ERROR_STATUES.USER_ALREADY_EXISTS.message, {

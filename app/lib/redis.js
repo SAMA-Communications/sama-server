@@ -1,4 +1,4 @@
-import { createClient } from 'redis'
+import { createClient } from "redis"
 
 class RedisManager {
   constructor() {
@@ -10,9 +10,9 @@ class RedisManager {
   async connect() {
     try {
       await this.client.connect()
-      console.log('[connectToRedis] Ok')
+      console.log("[connectToRedis] Ok")
     } catch (err) {
-      console.log('[connectToRedis] Fail', err)
+      console.log("[connectToRedis] Fail", err)
     }
   }
 }

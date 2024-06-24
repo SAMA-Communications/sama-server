@@ -1,9 +1,9 @@
-import { APIs } from '../networking/APIs.js'
+import { APIs } from "../networking/APIs.js"
 
-import ServiceLocatorContainer from '../common/ServiceLocatorContainer.js'
+import ServiceLocatorContainer from "../common/ServiceLocatorContainer.js"
 
-import DeliverMessage from '@sama/networking/models/DeliverMessage.js'
-import Response from '@sama/networking/models/Response.js'
+import DeliverMessage from "@sama/networking/models/DeliverMessage.js"
+import Response from "@sama/networking/models/Response.js"
 
 class ActivitySender {
   detectSocketAPI(ws) {
@@ -12,7 +12,7 @@ class ActivitySender {
   }
 
   async updateAndSendUserActivity(ws, userId, status) {
-    const activityManagerService = ServiceLocatorContainer.use('ActivityManagerService')
+    const activityManagerService = ServiceLocatorContainer.use("ActivityManagerService")
 
     const deliver = await activityManagerService.updateUserActivity(userId, status)
 
@@ -25,16 +25,14 @@ class ActivitySender {
     const api = this.detectSocketAPI(ws)
 
     for (const subscriberUserId of deliver.subscribers) {
-      const lastActivityMessage = await api.buildLastActivityPackage(
-        subscriberUserId,
-        deliver.targetUserId,
-        {
-          timestamp: deliver.activityStatus.timestamp,
-          status: deliver.activityStatus.status,
-        }
-      )
+      const lastActivityMessage = await api.buildLastActivityPackage(subscriberUserId, deliver.targetUserId, {
+        timestamp: deliver.activityStatus.timestamp,
+        status: deliver.activityStatus.status,
+      })
 
-      const response = new Response().addDeliverMessage(new DeliverMessage([subscriberUserId], lastActivityMessage, true))
+      const response = new Response().addDeliverMessage(
+        new DeliverMessage([subscriberUserId], lastActivityMessage, true)
+      )
 
       responses.push(response)
     }

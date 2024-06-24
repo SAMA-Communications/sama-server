@@ -1,23 +1,22 @@
 class BlockListService {
-  constructor(
-    helpers,
-    blockedUserRepo,
-  ) {
+  constructor(helpers, blockedUserRepo) {
     this.helpers = helpers
     this.blockedUserRepo = blockedUserRepo
   }
 
   async blockMany(userId, blockUserIds) {
-    const isSelfUserBlocked = blockUserIds.find(blockedUserId => this.helpers.isEqualsNativeIds(userId, blockedUserId))
+    const isSelfUserBlocked = blockUserIds.find((blockedUserId) =>
+      this.helpers.isEqualsNativeIds(userId, blockedUserId)
+    )
     if (isSelfUserBlocked) {
       throw new Error(`Can't block self user`)
     }
 
-    const params = blockUserIds.map(blockedUserId => ({
+    const params = blockUserIds.map((blockedUserId) => ({
       enabled: true,
 
       user_id: userId,
-      blocked_user_id: blockedUserId
+      blocked_user_id: blockedUserId,
     }))
 
     const blockedUsers = await this.blockedUserRepo.createMany(params)
@@ -47,8 +46,8 @@ class BlockListService {
     const blockedByUser = await this.blockedUserRepo.list(userId, true, recipientsIds)
     const userInBlock = await this.blockedUserRepo.blockers(userId, true, recipientsIds)
 
-    const blockedByUserIds = blockedByUser.map(blockUser => blockUser.blocked_user_id)
-    const userInBlockIds = userInBlock.map(blockUser => blockUser.user_id)
+    const blockedByUserIds = blockedByUser.map((blockUser) => blockUser.blocked_user_id)
+    const userInBlockIds = userInBlock.map((blockUser) => blockUser.user_id)
 
     const mutualBlocksUserIds = blockedByUserIds.concat(userInBlockIds)
 

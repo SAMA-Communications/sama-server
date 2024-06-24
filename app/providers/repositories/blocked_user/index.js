@@ -1,4 +1,4 @@
-import BaseRepository from '../base.js'
+import BaseRepository from "../base.js"
 
 class BlockedUserRepository extends BaseRepository {
   async prepareParams(params) {
@@ -73,10 +73,7 @@ class BlockedUserRepository extends BaseRepository {
 
   async deleteAllBlocks(userId) {
     const query = {
-      $or: [
-        { user_id: this.castObjectId(userId) },
-        { blocked_user_id: this.castObjectId(userId) }
-      ]
+      $or: [{ user_id: this.castObjectId(userId) }, { blocked_user_id: this.castObjectId(userId) }],
     }
 
     await this.deleteMany(query)
@@ -84,4 +81,3 @@ class BlockedUserRepository extends BaseRepository {
 }
 
 export default BlockedUserRepository
-

@@ -1,17 +1,17 @@
-import RegisterProvider from '../../../../common/RegisterProvider.js'
-import MessageCreateOperation from './index.js'
+import RegisterProvider from "../../../../common/RegisterProvider.js"
+import MessageCreateOperation from "./index.js"
 
-const name = 'MessageCreateOperation'
+const name = "MessageCreateOperation"
 
 class MessageCreateOperationRegisterProvider extends RegisterProvider {
   register(slc) {
-    const sessionService = slc.use('SessionService')
-    const storageService = slc.use('StorageDriverClient')
-    const blockListService = slc.use('BlockListService')
-    const userService = slc.use('UserService')
-    const conversationService = slc.use('ConversationService')
-    const conversationNotificationService = slc.use('ConversationNotificationService')
-    const messageService = slc.use('MessageService')
+    const sessionService = slc.use("SessionService")
+    const storageService = slc.use("StorageDriverClient")
+    const blockListService = slc.use("BlockListService")
+    const userService = slc.use("UserService")
+    const conversationService = slc.use("ConversationService")
+    const conversationNotificationService = slc.use("ConversationNotificationService")
+    const messageService = slc.use("MessageService")
 
     return new MessageCreateOperation(
       sessionService,

@@ -1,30 +1,28 @@
-import BaseModel from './base.js'
+import BaseModel from "./base.js"
 
 export default class Message extends BaseModel {
   static get collection() {
-    return 'messages'
+    return "messages"
   }
 
   static get visibleFields() {
     return [
-      '_id',
-      'cid',
+      "_id",
+      "cid",
 
-      't',
-      'from',
-      'body',
-      'x',
-      'attachments',
+      "t",
+      "from",
+      "body",
+      "x",
+      "attachments",
 
-      'created_at',
+      "created_at",
 
-      'status' // virtual
+      "status", // virtual
     ]
   }
 
   static get hiddenFields() {
-    return [
-      'updated_at',
-    ]
+    return ["updated_at"]
   }
 }

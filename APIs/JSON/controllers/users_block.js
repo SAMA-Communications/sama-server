@@ -1,14 +1,14 @@
-import BaseJSONController from './base.js'
+import BaseJSONController from "./base.js"
 
-import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
+import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
-import Response from '@sama/networking/models/Response.js'
+import Response from "@sama/networking/models/Response.js"
 
 class UsersBlockController extends BaseJSONController {
   async block(ws, data) {
     const { id: requestId, block_user: blockParams } = data
 
-    const blockListBlockOperation = ServiceLocatorContainer.use('BlockListBlockOperation')
+    const blockListBlockOperation = ServiceLocatorContainer.use("BlockListBlockOperation")
 
     await blockListBlockOperation.perform(ws, blockParams)
 
@@ -16,9 +16,12 @@ class UsersBlockController extends BaseJSONController {
   }
 
   async unblock(ws, data) {
-    const { id: requestId, unblock_user: { id: uId, ids: uIds } } = data
+    const {
+      id: requestId,
+      unblock_user: { id: uId, ids: uIds },
+    } = data
 
-    const blockListUnblockOperation = ServiceLocatorContainer.use('BlockListUnblockOperation')
+    const blockListUnblockOperation = ServiceLocatorContainer.use("BlockListUnblockOperation")
 
     await blockListUnblockOperation.perform(ws, uIds ?? uId)
 
@@ -26,9 +29,12 @@ class UsersBlockController extends BaseJSONController {
   }
 
   async enable(ws, data) {
-    const { id: requestId, block_list_enable: { enable } } = data
+    const {
+      id: requestId,
+      block_list_enable: { enable },
+    } = data
 
-    const blockListEnableOperation = ServiceLocatorContainer.use('BlockListEnableOperation')
+    const blockListEnableOperation = ServiceLocatorContainer.use("BlockListEnableOperation")
 
     await blockListEnableOperation.perform(ws, enable)
 
@@ -38,7 +44,7 @@ class UsersBlockController extends BaseJSONController {
   async list(ws, data) {
     const { id: requestId } = data
 
-    const blockListRetrieveOperation = ServiceLocatorContainer.use('BlockListRetrieveOperation')
+    const blockListRetrieveOperation = ServiceLocatorContainer.use("BlockListRetrieveOperation")
 
     const blockedUsersIds = await blockListRetrieveOperation.perform(ws)
 
