@@ -56,7 +56,7 @@ class UserRepository extends BaseRepository {
       query.updated_at = { $gt: new Date(timeFromUpdate) }
     }
 
-    const users = await this.findAll(query, null, limit)
+    const users = await this.findAll(query, null, limit, { first_name: -1, last_name: 1, login: 1 })
 
     return users
   }
