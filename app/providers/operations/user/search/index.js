@@ -20,7 +20,12 @@ class UserSearchOperation {
       limit
     )
 
-    const usersSearchResult = users.map((user) => ({ _id: user._id, native_id: user.native_id, login: user.login }))
+    const usersSearchResult = users.map((user) => ({
+      _id: user._id,
+      login: user.login,
+      first_name: user.first_name,
+      last_name: user.last_name,
+    }))
 
     return usersSearchResult
   }

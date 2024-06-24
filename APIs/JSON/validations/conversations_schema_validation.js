@@ -95,4 +95,7 @@ export const conversationsSchemaValidation = {
         })
       ),
   }).required(),
+  search: Joi.object({
+    name: Joi.string().required(),
+  }).required(),
 }

@@ -32,6 +32,21 @@ class ConversationRepository extends BaseRepository {
     return conversation
   }
 
+  async search({ chatNameMatch, ignoreIds, timeFromUpdate }, limit) {
+    const query = {
+      _id: { $nin: ignoreIds },
+      name: { $regex: new RegExp(`${chatNameMatch}.*`, "i") },
+    }
+
+    if (timeFromUpdate) {
+      query.updated_at = { $gt: new Date(timeFromUpdate) }
+    }
+
+    const conversations = await this.findAll(query, ["name"], limit)
+
+    return conversations
+  }
+
   async list(conversationIds, options, limit) {
     const query = {
       _id: { $in: conversationIds },
