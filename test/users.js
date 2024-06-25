@@ -9,6 +9,7 @@ import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 
 let userLogin = [...Array(30)].map(() => Math.random().toString(36)[2]).join("")
+let tmpUsersIds = []
 
 describe("User cycle", async () => {
   before(async () => {
@@ -33,6 +34,7 @@ describe("User cycle", async () => {
       let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
+      tmpUsersIds.push(responseData.response.user._id)
 
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.notEqual(responseData.response.user, undefined)
@@ -241,6 +243,68 @@ describe("User cycle", async () => {
 
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.notEqual(responseData.response.user, undefined)
+      assert.equal(responseData.response.error, undefined)
+    })
+  })
+
+  describe("Get Users By IDs", async () => {
+    it(`should fail ids array is empty`, async () => {
+      const requestData = {
+        request: {
+          get_users_by_ids: {
+            ids: [],
+          },
+          id: "5_2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(responseData.response.success, undefined)
+      assert.deepEqual(responseData.response.error, '"ids" must contain at least 1 items')
+    })
+
+    it(`should work incorrect ids`, async () => {
+      const requestData = {
+        request: {
+          get_users_by_ids: {
+            ids: ["test1", "test2"],
+          },
+          id: "5_3",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      const count = responseData.response.users.length
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.strictEqual(count, 0)
+      assert.deepEqual(responseData.response.error, undefined)
+    })
+
+    it("should work", async () => {
+      const requestData = {
+        request: {
+          get_users_by_ids: {
+            ids: tmpUsersIds,
+          },
+          id: "5_1",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+      const userResult = responseData.response.users
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.notEqual(responseData.response.users, undefined)
+      assert.equal(userResult[0].params.login, userLogin)
+      assert.equal(userResult.length, 1)
       assert.equal(responseData.response.error, undefined)
     })
   })
