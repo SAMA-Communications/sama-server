@@ -155,8 +155,7 @@ describe("Conversation functions", async () => {
 
       let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
 
-      responseData = responseData.backMessages.at(0)
-
+      responseData = responseData.backMessages.at(1)
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.notStrictEqual(responseData.response.success, undefined)
       assert.deepEqual(responseData.response.error, undefined)
@@ -989,7 +988,7 @@ describe("Conversation functions", async () => {
 
       let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
 
-      responseData = responseData.backMessages.at(0)
+      responseData = responseData.backMessages.at(1)
 
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.notEqual(responseData.response.success, undefined)
