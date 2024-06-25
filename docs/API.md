@@ -681,6 +681,40 @@ When a user leaves the group chat, the next message will also be sent to all use
 }
 ```
 
+## Conversations search
+
+```
+{
+  request: {
+    conversation_search: {
+      name: "conversationName",
+      limit: 100,
+      updated_at: {
+        gt: timestamp_in_ms,
+      },
+    },
+    id: "8"
+  }
+}
+
+{
+  response: {
+    id: "8",
+    conversations: [
+      {
+        _id: "507f1f77bcf86cd799439011",
+        name: "conversationNameTest",
+      },
+      {
+        _id: "507f1f77bcf86cd799439012",
+        name: "conversationNamePress",
+      },
+      ...
+    ]
+  }
+}
+```
+
 ## Send/Receive messages
 
 ```

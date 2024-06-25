@@ -98,5 +98,8 @@ export const conversationsSchemaValidation = {
   search: Joi.object({
     name: Joi.string().required(),
     limit: Joi.number().min(1).max(100),
+    updated_at: Joi.object({
+      gt: Joi.date(),
+    }),
   }).required(),
 }
