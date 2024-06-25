@@ -29,7 +29,7 @@ import UserCreateOperationProvider from "./operations/user/create/Provider.js"
 import UserEditOperationProvider from "./operations/user/edit/Provider.js"
 import UserDeleteOperationProvider from "./operations/user/delete/Provider.js"
 import UserSearchOperationProvider from "./operations/user/search/Provider.js"
-import UserListOperationProvider from "./operations/user/get_users/Provider.js"
+import UserListOperationProvider from "./operations/user/list/Provider.js"
 
 import BlockListBlockOperationProvider from "./operations/block_list/block/Provider.js"
 import BlockListUnblockOperationProvider from "./operations/block_list/unblock/Provider.js"

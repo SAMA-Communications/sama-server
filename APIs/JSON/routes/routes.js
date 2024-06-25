@@ -79,8 +79,8 @@ export const routes = {
       .search(ws, json),
   get_users_by_ids: (ws, json) =>
     UsersController.middleware(authGuardMiddleware, ws, json)
-      .validate(json.get_users_by_ids, usersSchemaValidation.get_users_by_ids)
-      .get_users_by_ids(ws, json),
+      .validate(json.get_users_by_ids, usersSchemaValidation.list)
+      .list(ws, json),
   contact_add: (ws, json) =>
     ContactsController.middleware(authGuardMiddleware, ws, json)
       .validate(json.contact_add, contactsSchemaValidation.contact_add)

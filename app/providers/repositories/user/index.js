@@ -7,16 +7,6 @@ class UserRepository extends BaseRepository {
     return user
   }
 
-  async findByIds(ids) {
-    const users = await this.findAll(
-      { _id: { $in: ids } },
-      ["native_id", "_id", "login", "first_name", "last_name", "updated_at"],
-      100
-    )
-
-    return users
-  }
-
   async findRegistered(login, email, phone) {
     const query = [{ login }]
 
