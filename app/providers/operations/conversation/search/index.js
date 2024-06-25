@@ -8,10 +8,7 @@ class ConversationSearchOperation {
   async perform(ws, searchParams) {
     const ignoreIds = []
 
-    const limit =
-      searchParams.limit > MAIN_CONSTANTS.LIMIT_MAX
-        ? MAIN_CONSTANTS.LIMIT_MAX
-        : searchParams.limit || MAIN_CONSTANTS.LIMIT_MAX
+    const limit = Math.min(searchParams.limit || MAIN_CONSTANTS.LIMIT_MAX, MAIN_CONSTANTS.LIMIT_MAX)
 
     const conversationsSearchResult = await this.conversationService.conversationRepo.search(
       { chatNameMatch: searchParams.name, ignoreIds, timeFromUpdate: searchParams.updated_at?.gt },
