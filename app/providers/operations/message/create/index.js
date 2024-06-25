@@ -98,13 +98,6 @@ class MessageCreateOperation {
       })
     }
 
-    const isAllBlocked = userIdsWhoBlockedCurrentUser.length === participantIds.length - 1
-    if (conversation.type === "g" && isAllBlocked) {
-      throw new Error(ERROR_STATUES.USER_BLOCKED_FOR_ALL_PARTICIPANTS.message, {
-        cause: ERROR_STATUES.USER_BLOCKED_FOR_ALL_PARTICIPANTS,
-      })
-    }
-
     return userIdsWhoBlockedCurrentUser
   }
 
