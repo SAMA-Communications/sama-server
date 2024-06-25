@@ -2,22 +2,15 @@ import BaseJSONController from "./base.js"
 
 import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
-import blockListRepository from "@sama/repositories/blocklist_repository.js"
-
 import Response from "@sama/networking/models/Response.js"
 
 class UsersBlockController extends BaseJSONController {
-  //TODO: add multiply block users [id1, id2..] || [id1]
   async block(ws, data) {
-    const {
-      id: requestId,
-      block_user: { id: uId },
-    } = data
+    const { id: requestId, block_user: blockParams } = data
 
-    const sessionService = ServiceLocatorContainer.use("SessionService")
+    const blockListBlockOperation = ServiceLocatorContainer.use("BlockListBlockOperation")
 
-    const currentUserId = sessionService.getSessionUserId(ws)
-    await blockListRepository.block(uId, currentUserId)
+    await blockListBlockOperation.perform(ws, blockParams)
 
     return new Response().addBackMessage({ response: { id: requestId, success: true } })
   }
@@ -25,13 +18,25 @@ class UsersBlockController extends BaseJSONController {
   async unblock(ws, data) {
     const {
       id: requestId,
-      unblock_user: { id: uId },
+      unblock_user: { id: uId, ids: uIds },
     } = data
 
-    const sessionService = ServiceLocatorContainer.use("SessionService")
+    const blockListUnblockOperation = ServiceLocatorContainer.use("BlockListUnblockOperation")
 
-    const currentUserId = sessionService.getSessionUserId(ws)
-    await blockListRepository.unblock(uId, currentUserId)
+    await blockListUnblockOperation.perform(ws, uIds ?? uId)
+
+    return new Response().addBackMessage({ response: { id: requestId, success: true } })
+  }
+
+  async enable(ws, data) {
+    const {
+      id: requestId,
+      block_list_enable: { enable },
+    } = data
+
+    const blockListEnableOperation = ServiceLocatorContainer.use("BlockListEnableOperation")
+
+    await blockListEnableOperation.perform(ws, enable)
 
     return new Response().addBackMessage({ response: { id: requestId, success: true } })
   }
@@ -39,10 +44,9 @@ class UsersBlockController extends BaseJSONController {
   async list(ws, data) {
     const { id: requestId } = data
 
-    const sessionService = ServiceLocatorContainer.use("SessionService")
+    const blockListRetrieveOperation = ServiceLocatorContainer.use("BlockListRetrieveOperation")
 
-    const currentUserId = sessionService.getSessionUserId(ws)
-    const blockedUsersIds = await blockListRepository.getBlockList(currentUserId)
+    const blockedUsersIds = await blockListRetrieveOperation.perform(ws)
 
     return new Response().addBackMessage({
       response: {

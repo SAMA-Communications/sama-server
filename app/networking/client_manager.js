@@ -34,6 +34,19 @@ const onMessage = async (ws, message) => {
   const api = APIs[ws.apiType]
   const response = await api.onMessage(ws, stringMessage)
 
+  if (response.lastActivityStatusResponse) {
+    const sessionService = ServiceLocatorContainer.use("SessionService")
+
+    const userId = response.lastActivityStatusResponse.userId || sessionService.getSessionUserId(ws)
+    console.log("[UPDATE_LAST_ACTIVITY]", userId, response.lastActivityStatusResponse)
+    const responses = await activitySender.updateAndSendUserActivity(
+      ws,
+      userId,
+      response.lastActivityStatusResponse.status
+    )
+    responses.forEach((activityResponse) => response.merge(activityResponse))
+  }
+
   for (let backMessage of response.backMessages) {
     try {
       if (backMessage instanceof MappableMessage) {
@@ -59,14 +72,6 @@ const onMessage = async (ws, message) => {
     } catch (e) {
       console.error("[ClientManager] connection with client ws is lost")
     }
-  }
-
-  if (response.lastActivityStatusResponse) {
-    const sessionService = ServiceLocatorContainer.use("SessionService")
-
-    const userId = response.lastActivityStatusResponse.userId || sessionService.getSessionUserId(ws)
-    console.log("[UPDATE_LAST_ACTIVITY]", userId, response.lastActivityStatusResponse)
-    await activitySender.updateAndSendUserActivity(ws, userId, response.lastActivityStatusResponse.status)
   }
 }
 
@@ -105,8 +110,9 @@ class ClientManager {
           try {
             await onMessage(ws, message)
           } catch (err) {
-            const rawPacket = decoder.write(Buffer.from(message))
-            console.error("[ClientManager] ws on message error", err, rawPacket)
+            console.log("[ClientManager] onMessage error", err)
+            // const rawPacket = decoder.write(Buffer.from(message))
+            // console.error('[ClientManager] ws on message error', err, rawPacket)
             ws.send(
               JSON.stringify({
                 response: {

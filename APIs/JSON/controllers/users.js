@@ -68,7 +68,7 @@ class UsersController extends BaseJSONController {
     return new Response().addBackMessage({ response: { id: requestId, users: usersSearchResult } })
   }
 
-  async get_users_by_ids(ws, data) {
+  async list(ws, data) {
     const { id: requestId, get_users_by_ids: userListParams } = data
 
     const userListOperation = ServiceLocatorContainer.use("UserListOperation")

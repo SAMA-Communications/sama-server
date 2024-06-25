@@ -9,6 +9,7 @@ import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 
 let userLogin = [...Array(30)].map(() => Math.random().toString(36)[2]).join("")
+const createdUsers = []
 
 describe("User cycle", async () => {
   before(async () => {
@@ -37,6 +38,8 @@ describe("User cycle", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.notEqual(responseData.response.user, undefined)
       assert.equal(responseData.response.error, undefined)
+
+      createdUsers.push(responseData.response.user)
     })
 
     it("should fail user login is already exist", async () => {
@@ -52,8 +55,8 @@ describe("User cycle", async () => {
       }
 
       let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
-
       responseData = responseData.backMessages.at(0)
+      createdUsers.push(responseData.response.user)
 
       requestData = {
         request: {
@@ -477,6 +480,28 @@ describe("User cycle", async () => {
         status: 422,
         message: "The provided data is already associated with an existing user account.",
       })
+    })
+  })
+
+  describe("List Users", async () => {
+    it("list by ids", async () => {
+      const userIds = createdUsers.map((user) => user._id.toString())
+
+      const requestData = {
+        request: {
+          get_users_by_ids: {
+            ids: userIds,
+          },
+          id: "1_list_users",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.strictEqual(responseData.response.users.length, 2)
     })
   })
 

@@ -1,4 +1,5 @@
 import { CONSTANTS as MAIN_CONSTANTS } from "../../../../constants/constants.js"
+import MessagePublicFields from "@sama/DTO/Response/message/create/public_fields.js"
 
 class ConversationListOperation {
   constructor(sessionService, userService, messagesService, conversationService) {
@@ -43,7 +44,7 @@ class ConversationListOperation {
     for (const conversation of conversations) {
       const conversationId = conversation._id.toString()
       const lastMessage = lastMessagesListByCid[conversationId]
-      const lastMessageVal = lastMessage ? lastMessage.visibleParams() : void 0
+      const lastMessageVal = lastMessage ? new MessagePublicFields(lastMessage) : void 0
       const unreadMessageCount = countOfUnreadMessagesByCid[conversationId] || 0
 
       conversation.set("last_message", lastMessageVal)

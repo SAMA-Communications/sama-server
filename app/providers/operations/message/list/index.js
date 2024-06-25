@@ -1,8 +1,10 @@
 import { ERROR_STATUES } from "../../../../constants/errors.js"
 import { CONSTANTS as MAIN_CONSTANTS } from "../../../../constants/constants.js"
+import MessagePublicFields from "@sama/DTO/Response/message/create/public_fields.js"
 
 class MessageListOperation {
-  constructor(sessionService, userService, messageService, conversationService) {
+  constructor(helpers, sessionService, userService, messageService, conversationService) {
+    this.helpers = helpers
     this.sessionService = sessionService
     this.userService = userService
     this.messageService = messageService
@@ -28,7 +30,7 @@ class MessageListOperation {
 
     const messagesWithStatus = await this.#assignMessageStatus(messages, messagesStatuses, currentUserId)
 
-    return messagesWithStatus.map((message) => message.visibleParams())
+    return messagesWithStatus.map((message) => new MessagePublicFields(message))
   }
 
   async #hasAccess(conversationId, currentUserId) {
@@ -52,7 +54,7 @@ class MessageListOperation {
 
   async #assignMessageStatus(messages, messagesStatuses, currentUserId) {
     for (const message of messages) {
-      if (message.from.toString() === currentUserId.toString()) {
+      if (this.helpers.isEqualsNativeIds(message.from, currentUserId)) {
         const status = messagesStatuses[message._id]
         const statusName = status?.length ? "read" : "sent"
         message.set("status", statusName)
