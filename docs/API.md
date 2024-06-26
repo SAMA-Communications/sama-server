@@ -4,7 +4,9 @@
 
 - WSS
 
-## Create user
+## Users API
+
+### Create
 
 ```
 {
@@ -30,7 +32,7 @@
 }
 ```
 
-## Login user
+### Login
 
 ```
 {
@@ -72,7 +74,7 @@ Later, the subsequent logins can be done via `token`:
 { response: { id: "3", user: {...}, token: "..." } }
 ```
 
-## Logout user
+### Logout
 
 ```
 {
@@ -85,7 +87,7 @@ Later, the subsequent logins can be done via `token`:
 { response: { id: "3", success: true } }
 ```
 
-## Update user
+### Update / edit
 
 ```
 {
@@ -113,7 +115,7 @@ Later, the subsequent logins can be done via `token`:
 }
 ```
 
-## User delete
+### Delete
 
 ```
 {
@@ -126,7 +128,7 @@ Later, the subsequent logins can be done via `token`:
 { response: { id: "3", success: true } }
 ```
 
-## Users search
+### Search
 
 ```
 {
@@ -146,7 +148,7 @@ Later, the subsequent logins can be done via `token`:
 { response: { id: "3", users: [...]} }
 ```
 
-## Get users by ids
+### List by ids
 
 ```
 {
@@ -159,9 +161,9 @@ Later, the subsequent logins can be done via `token`:
 { response: { id: "4", users: [...]} }
 ```
 
-## Address book (contacts list)
+## Address book (Contact) API
 
-### Contact add
+### Add
 
 ```
 {
@@ -212,7 +214,7 @@ Later, the subsequent logins can be done via `token`:
 
 `email` or `phone` param is required, as well as `first_name` or `last_name`.
 
-### Contact batch add
+### Batch add
 
 ```
 {
@@ -267,7 +269,7 @@ Later, the subsequent logins can be done via `token`:
 }
 ```
 
-### Contact update
+### Update
 
 ```
 {
@@ -317,7 +319,7 @@ Later, the subsequent logins can be done via `token`:
 }
 ```
 
-### Contact list
+### List
 
 ```
 {
@@ -359,7 +361,7 @@ Later, the subsequent logins can be done via `token`:
 }
 ```
 
-### Contact delete
+### Delete
 
 ```
 {
@@ -376,7 +378,9 @@ Later, the subsequent logins can be done via `token`:
 
 A `id` param is required.
 
-## Conversation create
+## Conversations API
+
+### Create
 
 ```
 {
@@ -423,7 +427,7 @@ After conversation created, all the online participants will receive the followi
 }
 ```
 
-## Conversation update
+### Update / edit
 
 ```
 {
@@ -567,7 +571,7 @@ The following message will also be sent to all users who are online and saved in
 }
 ```
 
-## Conversation delete
+### Delete
 
 ```
 {
@@ -606,7 +610,7 @@ When a user leaves the group chat, the next message will also be sent to all use
 }
 ```
 
-## List conversations
+### List
 
 ```
 {
@@ -647,7 +651,7 @@ When a user leaves the group chat, the next message will also be sent to all use
 }
 ```
 
-## List conversations' participants
+### List conversations' participants
 
 ```
 {
@@ -681,7 +685,43 @@ When a user leaves the group chat, the next message will also be sent to all use
 }
 ```
 
-## Send/Receive messages
+### Search
+
+```
+{
+  request: {
+    conversation_search: {
+      name: "conversationName",
+      limit: 100,
+      updated_at: {
+        gt: timestamp_in_ms,
+      },
+    },
+    id: "8"
+  }
+}
+
+{
+  response: {
+    id: "8",
+    conversations: [
+      {
+        _id: "507f1f77bcf86cd799439011",
+        name: "conversationNameTest",
+      },
+      {
+        _id: "507f1f77bcf86cd799439012",
+        name: "conversationNamePress",
+      },
+      ...
+    ]
+  }
+}
+```
+
+## Messages API
+
+### Send/Receive messages
 
 ```
 {
@@ -737,7 +777,7 @@ Additionally, all conversation's participants who is offline will receive the fo
 
 All offline participants can retrieve the messages via below `List messages` API.
 
-## Send/Receive system messages
+### Send/Receive system messages
 
 ```
 {
@@ -800,13 +840,13 @@ All conversation's participants who is online will receive the following message
 }
 ```
 
-## Sent status
+### Sent status
 
 On each message sent to server - a server will deliver back to client a simple packet with message id and timestamp at which the message was stored in DB so both sender & recipient will have same date sent time stored:
 
 `{ ack: { mid: "63480e68f4794709f802a2fa", server_mid: "63480e68f4794709f802a2fa", t: 15673838833}}`
 
-## List messages
+### List
 
 ```
 {
@@ -844,7 +884,7 @@ On each message sent to server - a server will deliver back to client a simple p
 
 ```
 
-## Read message status
+### Read status
 
 ```
 {
@@ -874,7 +914,7 @@ Then, all the users whose messages we read will receive the following message:
 }
 ```
 
-## Message typing
+### Typing status
 
 A user either can send typing or stop typing packets:
 
@@ -891,7 +931,7 @@ A user either can send typing or stop typing packets:
 
 Then other users in this conversation who is online will receive the same typing message.
 
-## Delete message
+### Delete
 
 Delete multiple messages in conversation.
 
@@ -927,7 +967,7 @@ If use "all", then other users in this conversation who is online will receive t
 
 If users are offline, they will receive a message once became online.
 
-## Edit message
+### Update / edit
 
 A message sender can edit own message.
 
@@ -959,7 +999,9 @@ Then other users in this conversation who is online will receive the following m
 
 If users are offline, they will receive a message once became online.
 
-## Create Push Subscription
+## Push Subscription API
+
+### Create
 
 ```
 {
@@ -993,7 +1035,7 @@ If users are offline, they will receive a message once became online.
 }
 ```
 
-## Push Subscriptions list
+### List
 
 ```
 {
@@ -1037,7 +1079,7 @@ If users are offline, they will receive a message once became online.
 
 ```
 
-## Push Subscription delete
+### Delete
 
 ```
 {
@@ -1052,7 +1094,7 @@ If users are offline, they will receive a message once became online.
 { response: { id: 1, success: true } }
 ```
 
-## Create Push Event
+### Create Push Event
 
 ```
 {
@@ -1087,7 +1129,9 @@ If users are offline, they will receive a message once became online.
 
 Carbons is enabled by default. On send - a message will be delivered back to all active sender's devices except the current one.
 
-## Last activity
+## Last activity API
+
+### Last activity by ids
 
 A user can request last activity of other users:
 
@@ -1186,7 +1230,9 @@ TBA
 
 `gt` or `lt`param is required
 
-## Attachments create file upload url
+## Attachments API
+
+### Create file upload url
 
 ```
 {
@@ -1222,7 +1268,7 @@ TBA
 }
 ```
 
-## Get file download url
+### Get file download url
 
 ```
 {
@@ -1245,7 +1291,9 @@ TBA
 }
 ```
 
-## Block user
+## Block users API
+
+### Block
 
 ```
 {
@@ -1265,7 +1313,7 @@ TBA
 }
 ```
 
-## Unblock user
+### Unblock
 
 ```
 {
@@ -1285,7 +1333,7 @@ TBA
 }
 ```
 
-## Get blocked users list
+### List
 
 ```
 {

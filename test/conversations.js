@@ -155,8 +155,7 @@ describe("Conversation functions", async () => {
 
       let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
 
-      responseData = responseData.backMessages.at(0)
-
+      responseData = responseData.backMessages.at(1)
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.notStrictEqual(responseData.response.success, undefined)
       assert.deepEqual(responseData.response.error, undefined)
@@ -728,6 +727,109 @@ describe("Conversation functions", async () => {
     })
   })
 
+  describe("Search for conversations", async () => {
+    before(async () => {
+      for (let i = 18; i < 24; i++) {
+        let requestData = {
+          request: {
+            conversation_create: {
+              name: `chat_${i + 1}`,
+              description: `conversation_${i + 1}`,
+              type: "g",
+              participants: [usersIds[2]],
+            },
+            id: "0",
+          },
+        }
+
+        await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
+      }
+    })
+
+    it("should work for 1* chats", async () => {
+      const requestData = {
+        request: {
+          conversation_search: {
+            name: "chat_1",
+          },
+          id: "5_1",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      const conversationsResult = responseData.response.conversations
+      const count = conversationsResult.length
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.notEqual(conversationsResult, undefined)
+      assert.equal(count, 2)
+    })
+
+    it("should work for 2* chats", async () => {
+      const requestData = {
+        request: {
+          conversation_search: {
+            name: "chat_2",
+          },
+          id: "5_2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      const conversationsResult = responseData.response.conversations
+      const count = conversationsResult.length
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.notEqual(conversationsResult, undefined)
+      assert.equal(count, 6)
+    })
+
+    it("should work for 2* chats with limit", async () => {
+      const requestData = {
+        request: {
+          conversation_search: {
+            name: "chat_2",
+            limit: 3,
+          },
+          id: "5_4",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      const conversationsResult = responseData.response.conversations
+      const count = conversationsResult.length
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.notEqual(conversationsResult, undefined)
+      assert.equal(count, 3)
+    })
+
+    it("should fail name is missing", async () => {
+      const requestData = {
+        request: {
+          conversation_search: {},
+          id: "5_3",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(responseData.response.conversation, undefined)
+      assert.deepEqual(responseData.response.error, '"name" is required')
+    })
+  })
+
   describe("GetParticipantsByCids Conversation", async () => {
     before(async () => {
       await sendLogout("test", currentUserToken)
@@ -886,7 +988,7 @@ describe("Conversation functions", async () => {
 
       let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
 
-      responseData = responseData.backMessages.at(0)
+      responseData = responseData.backMessages.at(1)
 
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.notEqual(responseData.response.success, undefined)

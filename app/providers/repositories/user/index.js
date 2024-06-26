@@ -40,16 +40,23 @@ class UserRepository extends BaseRepository {
   }
 
   async search({ loginMatch, ignoreIds, timeFromUpdate }, limit) {
+    const escapedLoginMatch = loginMatch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    const regexPattern = new RegExp(`${escapedLoginMatch}.*`, "i")
+
     const query = {
       _id: { $nin: ignoreIds },
-      login: { $regex: new RegExp(`^${loginMatch}.*`, "i") },
+      $or: [
+        { login: { $regex: regexPattern } },
+        { first_name: { $regex: regexPattern } },
+        { last_name: { $regex: regexPattern } },
+      ],
     }
 
     if (timeFromUpdate) {
       query.updated_at = { $gt: new Date(timeFromUpdate) }
     }
 
-    const users = await this.findAll(query, null, limit)
+    const users = await this.findAll(query, null, limit, { first_name: -1, last_name: 1, login: 1 })
 
     return users
   }
