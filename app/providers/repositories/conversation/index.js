@@ -42,7 +42,7 @@ class ConversationRepository extends BaseRepository {
       query.updated_at = { $gt: new Date(timeFromUpdate) }
     }
 
-    const conversations = await this.findAll(query, ["name"], limit, { updated_at: -1 })
+    const conversations = await this.findAll(query, ["_id"], limit, { updated_at: -1 })
 
     return conversations
   }

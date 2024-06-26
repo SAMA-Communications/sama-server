@@ -15,7 +15,9 @@ class ConversationSearchOperation {
       limit
     )
 
-    return conversationsSearchResult
+    const conversationIds = conversationsSearchResult.map((conversion) => conversion._id)
+
+    return conversationIds
   }
 }
 
