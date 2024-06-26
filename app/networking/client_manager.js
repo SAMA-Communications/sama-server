@@ -55,7 +55,7 @@ const onMessage = async (ws, message) => {
       console.log("[SENT]", backMessage)
       ws.send(backMessage)
     } catch (e) {
-      console.error("[ClientManager] connection with client ws is lost")
+      console.error("[ClientManager] connection with client ws is lost", e)
     }
   }
 
@@ -70,7 +70,7 @@ const onMessage = async (ws, message) => {
         deliverMessage.notSaveInOfflineStorage
       )
     } catch (e) {
-      console.error("[ClientManager] connection with client ws is lost")
+      console.error("[ClientManager] connection with client ws is lost", e)
     }
   }
 }

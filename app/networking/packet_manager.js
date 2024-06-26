@@ -37,7 +37,7 @@ class PacketManager {
   #deliverToUserDevices(ws, nodeConnections, userId, packet) {
     const sessionService = ServiceLocatorContainer.use("SessionService")
     const senderUserSession = sessionService.getSession(ws)
-    const senderDeviceId = sessionService.getDeviceId(ws, senderUserSession.userId)
+    const senderDeviceId = senderUserSession ? sessionService.getDeviceId(ws, senderUserSession.userId) : null
 
     const currentDeviceId = sessionService.getDeviceId(ws, userId)
     const currentNodeUrl = buildWsEndpoint(RuntimeDefinedContext.APP_IP, RuntimeDefinedContext.CLUSTER_PORT)

@@ -13,9 +13,9 @@ class ActivityUserSubscribeOperation {
     await this.activityManagerService.subscribeObserverToTarget(currentUserId, targetUserId)
 
     let targetUserActivityStatus = null
-    const activeSessions = !!(await this.sessionService.listUserDevice(targetUserId))
+    const activeSessions = await this.sessionService.listUserDevice(targetUserId)
 
-    if (activeSessions.length) {
+    if (activeSessions?.length) {
       targetUserActivityStatus = MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE
     } else {
       const targetUser = await this.userService.userRepo.findById(targetUserId)
