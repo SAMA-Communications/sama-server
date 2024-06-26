@@ -80,7 +80,7 @@ class MessagesController extends BaseJSONController {
 
     const response = new Response()
 
-    for (const readMessagesGroup in readMessagesGroups) {
+    for (const readMessagesGroup of readMessagesGroups) {
       const { userId, readMessages } = readMessagesGroup
       response.addDeliverMessage(new DeliverMessage([userId], new ReadMessagesResponse(readMessages)))
     }
