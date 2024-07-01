@@ -21,7 +21,7 @@ class ConversationListParticipantsOperation {
 
     const pluckFields = includes
       ? ["_id", "native_id"]
-      : ["_id", "native_id", "first_name", "last_name", "login", "email", "phone"]
+      : ["_id", "native_id", "avatar_object", "first_name", "last_name", "login", "email", "phone"]
 
     const users = await this.userService.userRepo.findAllByIds(participantIds)
 
