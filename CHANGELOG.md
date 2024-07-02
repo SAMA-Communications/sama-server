@@ -22,6 +22,8 @@
 - Implemented System Message API
 - Added Session extra params
 
+### Updated
+
 - Added system Message API for conversation event messages
 
 ## 0.21.0
