@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.23.0
+
+### Features
+
+- Added prettier
+- Added new method `get_users_by_ids` for UserController
+- Implemented search for conversations by name
+- Implemented a system message: [user_name] left the chat
+- Implemented a system message about updating chat fields
+
+### Updated
+
+- Updated some errors on login/signup functionality
+- Removed the error when a user was stayed alone in the group chat
+
 ## 0.22.0
 
 ### Features
