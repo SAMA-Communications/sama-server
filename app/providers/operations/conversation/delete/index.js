@@ -14,9 +14,19 @@ class ConversationDeleteOperation {
 
     const { conversation, participantIds } = await this.#hasAccess(conversationId, currentUserId)
 
-    await this.conversationService.removeParticipants(conversation, [currentUserId], participantIds)
+    const { removedIds: removedUserIds } = await this.conversationService.removeParticipants(
+      conversation,
+      [currentUserId],
+      participantIds
+    )
 
-    const conversationEvents = await this.#createActionEvents(conversation, currentUserId, participantIds)
+    const removedUserIdsStrings = removedUserIds.map((id) => id.toString())
+
+    const filteredParticipants = participantIds.filter(
+      (participantId) => !removedUserIdsStrings.includes(participantId.toString())
+    )
+
+    const conversationEvents = await this.#createActionEvents(conversation, currentUserId, filteredParticipants)
 
     return { currentUserId, conversationEvents }
   }
