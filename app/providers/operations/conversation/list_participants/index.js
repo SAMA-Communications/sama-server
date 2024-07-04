@@ -26,8 +26,9 @@ class ConversationListParticipantsOperation {
     const users = await this.userService.userRepo.findAllByIds(participantIds)
 
     const userFields = users.map((user) => slice(user, pluckFields, true))
+    const usersWithAvatars = await this.userService.addAvatarUrl(userFields)
 
-    return userFields
+    return usersWithAvatars
   }
 }
 

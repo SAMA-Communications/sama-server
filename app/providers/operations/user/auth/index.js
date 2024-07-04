@@ -46,6 +46,9 @@ class UserAuthOperation {
       this.RuntimeDefinedContext.CLUSTER_PORT
     )
 
+    const userWithAvatarUrl = (await this.userService.addAvatarUrl([user.params])).at(0)
+    user.params["avatar_url"] = userWithAvatarUrl.avatar_url
+
     return { user, token }
   }
 
