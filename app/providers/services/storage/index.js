@@ -15,7 +15,7 @@ class StorageService {
     return { file: fileModel.visibleParams(), upload_url: url }
   }
 
-  async downloadFile(userId, fileObjectId) {
+  async getFileDownloadUrl(userId, fileObjectId) {
     const file = await this.fileRepo.findUserFile(userId, fileObjectId)
 
     if (!file) {
