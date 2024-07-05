@@ -21,6 +21,7 @@ class UserSearchOperation {
     )
 
     const usersSearchResult = users.map((user) => ({
+      _id: user._id,
       native_id: user.native_id,
       login: user.login,
       first_name: user.first_name,
