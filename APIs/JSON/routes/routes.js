@@ -161,6 +161,10 @@ export const routes = {
     ConversationsController.middleware(authGuardMiddleware, ws, json)
       .validate(json.conversation_list, conversationsSchemaValidation.list)
       .list(ws, json),
+  conversation_search: (ws, json) =>
+    ConversationsController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.conversation_search, conversationsSchemaValidation.search)
+      .search(ws, json),
   push_subscription_create: (ws, json) =>
     PushNotificationsController.middleware(authGuardMiddleware, ws, json)
       .validate(json.push_subscription_create, pushNotificationsSchemaValidation.push_subscription_create)

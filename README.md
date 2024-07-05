@@ -29,6 +29,8 @@ Read complete medium posts **Introducing SAMA** and **What is SAMA** about what 
 - https://medium.com/sama-communications/introducing-sama-simple-but-advanced-messaging-alternative-chat-server-524a532e2040
 - https://medium.com/sama-communications/what-is-sama-a6d9045fd69a
 
+Frontend app (web + mobile) is available at https://github.com/SAMA-Communications/sama-client
+
 ## Development
 
 - Make sure you have `Node 18.20.x` installed.

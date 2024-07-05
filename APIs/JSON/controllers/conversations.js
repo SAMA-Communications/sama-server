@@ -126,6 +126,15 @@ class ConversationsController extends BaseJSONController {
       response: { id: requestId, users: users },
     })
   }
+
+  async search(ws, data) {
+    const { id: requestId, conversation_search: searchParams } = data
+
+    const conversationSearchOperation = ServiceLocatorContainer.use("ConversationSearchOperation")
+    const conversationsSearchOperation = await conversationSearchOperation.perform(ws, searchParams)
+
+    return new Response().addBackMessage({ response: { id: requestId, conversations: conversationsSearchOperation } })
+  }
 }
 
 export default new ConversationsController()
