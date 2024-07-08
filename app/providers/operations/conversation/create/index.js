@@ -2,7 +2,8 @@ import { ERROR_STATUES } from "../../../../constants/errors.js"
 import { CONVERSATION_EVENTS } from "../../../../constants/conversation.js"
 
 class ConversationCreateOperation {
-  constructor(sessionService, userService, conversationService, conversationNotificationService) {
+  constructor(helpers, sessionService, userService, conversationService, conversationNotificationService) {
+    this.helpers = helpers
     this.sessionService = sessionService
     this.userService = userService
     this.conversationService = conversationService
@@ -53,7 +54,7 @@ class ConversationCreateOperation {
 
     let normalizedParticipants = participantIds
     let existedConversation = await this.conversationService.findExistedPrivateConversation(
-      conversationParams.owner_id,
+      user,
       conversationParams.opponent_id
     )
 
@@ -74,9 +75,9 @@ class ConversationCreateOperation {
       })
     }
 
-    const opponentId = paramsOpponentId || participantIds.find((pId) => pId.toString() !== ownerId.toString())
+    const opponentId = paramsOpponentId || participantIds.find((pId) => !this.helpers.isEqualsNativeIds(pId, ownerId))
 
-    if (opponentId.toString() === ownerId.toString()) {
+    if (this.helpers.isEqualsNativeIds(opponentId, ownerId)) {
       throw new Error(ERROR_STATUES.INCORRECT_USER.message, {
         cause: ERROR_STATUES.INCORRECT_USER,
       })
@@ -100,8 +101,8 @@ class ConversationCreateOperation {
   }
 
   async #createGroupConversation(user, conversationParams, participantIds) {
-    const isOwnerInParticipants = participantIds.find(
-      (pId) => pId.toString() === conversationParams.owner_id.toString()
+    const isOwnerInParticipants = participantIds.find((pId) =>
+      this.helpers.isEqualsNativeIds(pId, conversationParams.owner_id)
     )
     if (!isOwnerInParticipants) {
       participantIds.push(conversationParams.owner_id)

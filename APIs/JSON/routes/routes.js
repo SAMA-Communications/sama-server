@@ -79,8 +79,8 @@ export const routes = {
       .search(ws, json),
   get_users_by_ids: (ws, json) =>
     UsersController.middleware(authGuardMiddleware, ws, json)
-      .validate(json.get_users_by_ids, usersSchemaValidation.get_users_by_ids)
-      .get_users_by_ids(ws, json),
+      .validate(json.get_users_by_ids, usersSchemaValidation.list)
+      .list(ws, json),
   contact_add: (ws, json) =>
     ContactsController.middleware(authGuardMiddleware, ws, json)
       .validate(json.contact_add, contactsSchemaValidation.contact_add)
@@ -125,6 +125,10 @@ export const routes = {
     UsersBlockController.middleware(authGuardMiddleware, ws, json)
       .validate(json.list_blocked_users, usersBlockSchemaValidation.list)
       .list(ws, json),
+  block_list_enable: (ws, json) =>
+    UsersBlockController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.block_list_enable, usersBlockSchemaValidation.enable)
+      .enable(ws, json),
   user_last_activity_subscribe: (ws, json) =>
     LastActivityiesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.user_last_activity_subscribe, activitiesSchemaValidation.status_subscribe)

@@ -1,4 +1,5 @@
 import { ERROR_STATUES } from "../../../../constants/errors.js"
+import EditMessagePublicFields from "@sama/DTO/Response/message/edit/public_fields.js"
 
 class MessageEditOperation {
   constructor(sessionService, messageService, conversationService) {
@@ -18,7 +19,9 @@ class MessageEditOperation {
 
     const participantIds = await this.conversationService.findConversationParticipants(message.cid)
 
-    return { messageId, body: newBody, from: currentUserId, participantIds }
+    const editedMessageParams = { messageId, body: newBody, from: currentUserId }
+
+    return { editedMessage: new EditMessagePublicFields(editedMessageParams), participantIds }
   }
 
   async #hasAccess(messageId, currentUserId) {

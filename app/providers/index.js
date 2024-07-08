@@ -7,6 +7,7 @@ import MessageMapperProvider from "./utils/mappers/message/Provider.js"
 
 import UserRepoProvider from "./repositories/user/Provider.js"
 import UserTokenRepoProvider from "./repositories/user_token/Provider.js"
+import BlockedUserRepoProvider from "./repositories/blocked_user/Provider.js"
 import FileRepoProvider from "./repositories/file/Provider.js"
 import ConversationRepoProvider from "./repositories/conversation/Provider.js"
 import ConversationParticipantRepoProvider from "./repositories/conversation_participants/Provider.js"
@@ -15,6 +16,7 @@ import MessageStatusRepoProvider from "./repositories/message_status/Provider.js
 
 import SessionServiceProvider from "./services/session/Provider.js"
 import UserServiceProvider from "./services/user/Provider.js"
+import BlockListServiceProvider from "./services/block_list/Provider.js"
 import StorageServiceProvider from "./services/storage/Provider.js"
 import ActivityManagerServiceProvider from "./services/activity_manager/Provider.js"
 import ConversationServiceProvider from "./services/conversation/Provider.js"
@@ -27,7 +29,12 @@ import UserCreateOperationProvider from "./operations/user/create/Provider.js"
 import UserEditOperationProvider from "./operations/user/edit/Provider.js"
 import UserDeleteOperationProvider from "./operations/user/delete/Provider.js"
 import UserSearchOperationProvider from "./operations/user/search/Provider.js"
-import UserListOperationProvider from "./operations/user/get_users/Provider.js"
+import UserListOperationProvider from "./operations/user/list/Provider.js"
+
+import BlockListBlockOperationProvider from "./operations/block_list/block/Provider.js"
+import BlockListUnblockOperationProvider from "./operations/block_list/unblock/Provider.js"
+import BlockListEnableOperationProvider from "./operations/block_list/enable/Provider.js"
+import BlockListRetrieveOperationProvider from "./operations/block_list/list/Provider.js"
 
 import ActivityUserRetrieveOperationProvider from "./operations/activity/retrieve/Provider.js"
 import ActivityUserSubscribeOperationProvider from "./operations/activity/subscribe/Provider.js"
@@ -59,6 +66,7 @@ const providers = [
 
   UserRepoProvider,
   UserTokenRepoProvider,
+  BlockedUserRepoProvider,
   FileRepoProvider,
   ConversationRepoProvider,
   ConversationParticipantRepoProvider,
@@ -67,6 +75,7 @@ const providers = [
 
   SessionServiceProvider,
   UserServiceProvider,
+  BlockListServiceProvider,
   StorageServiceProvider,
   ActivityManagerServiceProvider,
   ConversationServiceProvider,
@@ -80,6 +89,11 @@ const providers = [
   UserDeleteOperationProvider,
   UserSearchOperationProvider,
   UserListOperationProvider,
+
+  BlockListBlockOperationProvider,
+  BlockListUnblockOperationProvider,
+  BlockListEnableOperationProvider,
+  BlockListRetrieveOperationProvider,
 
   ActivityUserRetrieveOperationProvider,
   ActivityUserSubscribeOperationProvider,

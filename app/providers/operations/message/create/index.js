@@ -1,12 +1,13 @@
 import { ERROR_STATUES } from "../../../../constants/errors.js"
 import { CONVERSATION_EVENTS } from "../../../../constants/conversation.js"
 import CreateChatAlertEventOptions from "@sama/lib/push_queue/models/CreateChatAlertEventOptions.js"
+import MessagePublicFields from "@sama/DTO/Response/message/create/public_fields.js"
 
 class MessageCreateOperation {
   constructor(
     sessionService,
     storageService,
-    blockListRepo,
+    blockListService,
     userService,
     conversationService,
     conversationNotificationService,
@@ -14,7 +15,7 @@ class MessageCreateOperation {
   ) {
     this.sessionService = sessionService
     this.storageService = storageService
-    this.blockListRepo = blockListRepo
+    this.blockListService = blockListService
     this.userService = userService
     this.conversationService = conversationService
     this.conversationNotificationService = conversationNotificationService
@@ -88,17 +89,15 @@ class MessageCreateOperation {
   }
 
   async #checkBlocked(conversation, currentUserId, participantIds) {
-    const stringParticipantIds = participantIds.map((pId) => pId.toString())
+    const blockedUserIds = await this.blockListService.listMutualBlockedIds(currentUserId, participantIds)
 
-    const userIdsWhoBlockedCurrentUser = await this.blockListRepo.getBlockingUsers(currentUserId, stringParticipantIds)
-
-    if (conversation.type === "u" && userIdsWhoBlockedCurrentUser.length) {
+    if (conversation.type === "u" && blockedUserIds.length) {
       throw new Error(ERROR_STATUES.USER_BLOCKED.message, {
         cause: ERROR_STATUES.USER_BLOCKED,
       })
     }
 
-    return userIdsWhoBlockedCurrentUser
+    return blockedUserIds
   }
 
   async #createMessageNotification(conversation, user, message) {
@@ -124,7 +123,7 @@ class MessageCreateOperation {
       pushPayload
     )
 
-    const createdMessage = { message: message.visibleParams() }
+    const createdMessage = new MessagePublicFields(message)
 
     const createMessageEvent = { message: createdMessage, notification: createChatAlertEventOptions }
 
