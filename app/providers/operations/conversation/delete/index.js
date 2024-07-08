@@ -2,7 +2,8 @@ import { ERROR_STATUES } from "../../../../constants/errors.js"
 import { CONVERSATION_EVENTS } from "../../../../constants/conversation.js"
 
 class ConversationDeleteOperation {
-  constructor(sessionService, userService, conversationService, conversationNotificationService) {
+  constructor(helpers, sessionService, userService, conversationService, conversationNotificationService) {
+    this.helpers = helpers
     this.sessionService = sessionService
     this.userService = userService
     this.conversationService = conversationService
@@ -16,7 +17,9 @@ class ConversationDeleteOperation {
 
     await this.conversationService.removeParticipants(conversation, [currentUserId], participantIds)
 
-    const filteredParticipants = participantIds.filter((participantId) => !participantId.equals(currentUserId))
+    const filteredParticipants = participantIds.filter(
+      (participantId) => !this.helpers.isEqualsNativeIds(participantId, currentUserId)
+    )
 
     const conversationEvents = await this.#createActionEvents(conversation, currentUserId, filteredParticipants)
 

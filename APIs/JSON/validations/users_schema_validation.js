@@ -72,5 +72,10 @@ export const usersSchemaValidation = {
     }),
     ignore_ids: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number())),
   }).required(),
-  get_users_by_ids: Joi.object({ ids: Joi.array().items(Joi.string()).min(1).max(100) }).required(),
+  list: Joi.object({
+    ids: Joi.array()
+      .items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()))
+      .min(1)
+      .max(100),
+  }).required(),
 }

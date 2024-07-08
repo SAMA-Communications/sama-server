@@ -1,8 +1,17 @@
 import { ERROR_STATUES } from "../../../../constants/errors.js"
 import { CONVERSATION_EVENTS } from "../../../../constants/conversation.js"
+import MessagePublicFields from "@sama/DTO/Response/message/create/public_fields.js"
 
 class ConversationEditOperation {
-  constructor(sessionService, userService, conversationService, conversationNotificationService, messagesService) {
+  constructor(
+    helpers,
+    sessionService,
+    userService,
+    conversationService,
+    conversationNotificationService,
+    messagesService
+  ) {
+    this.helpers = helpers
     this.sessionService = sessionService
     this.userService = userService
     this.conversationService = conversationService
@@ -99,7 +108,7 @@ class ConversationEditOperation {
 
     const conversationId = conversation._id.toString()
     const lastMessage = lastMessagesListByCid[conversationId]
-    const lastMessageVal = lastMessage ? lastMessage.visibleParams() : void 0
+    const lastMessageVal = lastMessage ? new MessagePublicFields(lastMessage) : void 0
 
     conversation.set("last_message", lastMessageVal)
     conversation.set("unread_messages_count", 1)
