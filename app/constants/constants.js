@@ -4,4 +4,6 @@ export const CONSTANTS = {
     ONLINE: "online",
     OFFLINE: "offline",
   },
+  SESSION_NODE_KEY: "NODE_ENDPOINT",
+  SESSION_INACTIVE_STATE_KEY: "MOBILE_INACTIVE",
 }

@@ -1,4 +1,5 @@
 import { ERROR_STATUES } from "../../../../constants/errors.js"
+import DeleteMessagesPublicFields from "@sama/DTO/Response/message/delete/public_fields.js"
 
 class MessageDeleteOperation {
   constructor(sessionService, conversationService, messageService) {
@@ -16,7 +17,11 @@ class MessageDeleteOperation {
     const isDeleteAll = type === "all"
     await this.messageService.deleteMessages(currentUserId, mIds, isDeleteAll)
 
-    return { isDeleteAll, participantIds, info: { userId: currentUserId, cId, mIds: mIds } }
+    const deletedMessages = isDeleteAll
+      ? new DeleteMessagesPublicFields({ messageIds: mIds, cid: cId, from: currentUserId })
+      : null
+
+    return { deletedMessages, participantIds }
   }
 
   async #hasAccess(conversationId, currentUserId) {

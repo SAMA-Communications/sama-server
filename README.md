@@ -165,10 +165,10 @@ export default new MyProviderRegistration({ name, implementationName: MyProvider
 4. Then, add export of `Provider.js` to `app/providers/index.js`
 
 ```js
-import UserRepoProvider from './repositories/user/Provider.js'
+import UserRepoProvider from "./repositories/user/Provider.js"
 ...
 ...
-import MyProviderRegistration from './services/my_provider/Provider.js'
+import MyProviderRegistration from "./services/my_provider/Provider.js"
 
 const providers = [
   UserRepoProvider,
@@ -187,11 +187,11 @@ export default providers
 6. And now yiou can use `MyProvider` class where needed, e.g. in controller:
 
 ```js
-import ServiceLocatorContainer from '@sama/common/ServiceLocatorContainer.js'
+import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
 class Controller {
   async edit(ws, data) {
-    const myProvider = ServiceLocatorContainer.use('MyProvider')
+    const myProvider = ServiceLocatorContainer.use("MyProvider")
     const updatedUser = await myProvider.updateAction(ws, data)
     ....
   }

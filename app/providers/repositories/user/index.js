@@ -7,16 +7,6 @@ class UserRepository extends BaseRepository {
     return user
   }
 
-  async findByIds(ids) {
-    const users = await this.findAll(
-      { _id: { $in: ids } },
-      ["native_id", "_id", "login", "first_name", "last_name", "updated_at"],
-      100
-    )
-
-    return users
-  }
-
   async findRegistered(login, email, phone) {
     const query = [{ login }]
 
@@ -39,9 +29,9 @@ class UserRepository extends BaseRepository {
     return existedUserIds
   }
 
-  async search({ loginMatch, ignoreIds, timeFromUpdate }, limit) {
-    const escapedLoginMatch = loginMatch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-    const regexPattern = new RegExp(`${escapedLoginMatch}.*`, "i")
+  async search({ match, ignoreIds, timeFromUpdate }, limit) {
+    const escapedMatch = match.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    const regexPattern = new RegExp(`${escapedMatch}.*`, "i")
 
     const query = {
       _id: { $nin: ignoreIds },

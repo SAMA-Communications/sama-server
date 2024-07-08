@@ -16,12 +16,13 @@ class UserSearchOperation {
         : searchParams.limit || MAIN_CONSTANTS.LIMIT_MAX
 
     const users = await this.userService.userRepo.search(
-      { loginMatch: searchParams.login, ignoreIds, timeFromUpdate: searchParams.updated_at?.gt },
+      { match: searchParams.login, ignoreIds, timeFromUpdate: searchParams.updated_at?.gt },
       limit
     )
 
     const usersSearchResult = users.map((user) => ({
       _id: user._id,
+      native_id: user.native_id,
       login: user.login,
       first_name: user.first_name,
       last_name: user.last_name,

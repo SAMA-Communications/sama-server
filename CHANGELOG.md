@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.24.0
+
+### Updated
+
+- Updates to DI (moved more code to DI containers)
+
 ## 0.23.0
 
 ### Features
