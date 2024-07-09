@@ -23,9 +23,11 @@ class ConversationListOperation {
 
     await this.#addMessagesInfo(conversations, currentUser)
 
-    const mappedConversations = conversations.map((conversion) => conversion.visibleParams())
+    const conversationsWithImages = await this.conversationService.addImageUrl(
+      conversations.map((conversion) => conversion.visibleParams())
+    )
 
-    return mappedConversations
+    return conversationsWithImages
   }
 
   async #addMessagesInfo(conversations, currentUser) {

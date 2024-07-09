@@ -33,8 +33,10 @@ class ConversationEditOperation {
       }
 
       const isUpdateConversationFields = !!Object.keys(updateFields).length
+      const updatedConversationWithImageUrl = await this.conversationService.addImageUrl([updatedConversation])
+
       const createdEvents = await this.#createActionEvents(
-        updatedConversation,
+        updatedConversationWithImageUrl.at(0),
         currentUserId,
         addedIds,
         removedIds,
