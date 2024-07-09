@@ -146,10 +146,6 @@ export const ERROR_STATUES = {
     status: 422,
     message: `'cids' field is required.`,
   },
-  INCORRECT_INCLUDES: {
-    status: 422,
-    message: "Incorrect includes field.",
-  },
 }
 
 export const requiredError = (field) => {
