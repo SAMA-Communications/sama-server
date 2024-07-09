@@ -62,9 +62,11 @@ class UserService {
   async addAvatarUrl(users) {
     const avatarUrlPromises = users.map(async (user) => {
       if (user.avatar_object) {
-        user.params.avatar_url = await this.storageService.getFileDownloadUrl(user.native_id, user.avatar_object.file_id).catch(error => null)
+        user.params.avatar_url = await this.storageService
+          .getFileDownloadUrl(user.native_id, user.avatar_object.file_id)
+          .catch((error) => null)
       }
-  
+
       return user
     })
 

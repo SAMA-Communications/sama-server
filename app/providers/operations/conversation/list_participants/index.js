@@ -21,7 +21,7 @@ class ConversationListParticipantsOperation {
 
     const usersWithAvatars = await this.userService.addAvatarUrl(users)
 
-    const userFields = usersWithAvatars.map(user => user.visibleParams())
+    const userFields = usersWithAvatars.map((user) => user.visibleParams())
 
     return userFields
   }
