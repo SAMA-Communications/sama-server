@@ -2,7 +2,8 @@ import { ERROR_STATUES } from "../../../../constants/errors.js"
 import { CONVERSATION_EVENTS } from "../../../../constants/conversation.js"
 
 class ConversationDeleteOperation {
-  constructor(sessionService, userService, conversationService, conversationNotificationService) {
+  constructor(helpers, sessionService, userService, conversationService, conversationNotificationService) {
+    this.helpers = helpers
     this.sessionService = sessionService
     this.userService = userService
     this.conversationService = conversationService
@@ -12,16 +13,20 @@ class ConversationDeleteOperation {
   async perform(ws, conversationId) {
     const currentUserId = this.sessionService.getSessionUserId(ws)
 
-    const { conversation, participantIds } = await this.#hasAccess(conversationId, currentUserId)
+    const { conversation, participantIds } = await this.#getConversationDetails(conversationId, currentUserId)
 
     await this.conversationService.removeParticipants(conversation, [currentUserId], participantIds)
 
-    const conversationEvents = await this.#createActionEvents(conversation, currentUserId, participantIds)
+    const filteredParticipants = participantIds.filter(
+      (participantId) => !this.helpers.isEqualsNativeIds(participantId, currentUserId)
+    )
+
+    const conversationEvents = await this.#createActionEvents(conversation, currentUserId, filteredParticipants)
 
     return { currentUserId, conversationEvents }
   }
 
-  async #hasAccess(conversationId, userId) {
+  async #getConversationDetails(conversationId, userId) {
     const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
       conversationId,
       userId

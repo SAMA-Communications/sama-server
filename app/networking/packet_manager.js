@@ -8,6 +8,7 @@ import clusterManager from "../cluster/cluster_manager.js"
 import packetMapper from "./packet_mapper.js"
 
 import { buildWsEndpoint } from "../utils/build_ws_endpoint.js"
+import { CONSTANTS } from "../constants/constants.js"
 
 class PacketManager {
   async deliverToUserOnThisNode(ws, userId, packet, deviceId, senderInfo) {
@@ -36,8 +37,9 @@ class PacketManager {
   #deliverToUserDevices(ws, nodeConnections, userId, packet) {
     const sessionService = ServiceLocatorContainer.use("SessionService")
     const senderUserSession = sessionService.getSession(ws)
-    const senderDeviceId = sessionService.getDeviceId(ws, senderUserSession.userId)
+    const senderDeviceId = senderUserSession ? sessionService.getDeviceId(ws, senderUserSession.userId) : null
 
+    const currentDeviceId = sessionService.getDeviceId(ws, userId)
     const currentNodeUrl = buildWsEndpoint(RuntimeDefinedContext.APP_IP, RuntimeDefinedContext.CLUSTER_PORT)
 
     const senderInfo = {
@@ -47,12 +49,8 @@ class PacketManager {
       node: currentNodeUrl,
     }
 
-    nodeConnections.forEach(async (data) => {
-      const nodeInfo = JSON.parse(data)
-      const nodeUrl = nodeInfo[Object.keys(nodeInfo)[0]]
-      const nodeDeviceId = Object.keys(nodeInfo)[0]
-
-      const currentDeviceId = sessionService.getDeviceId(ws, userId)
+    Object.entries(nodeConnections).forEach(async ([nodeDeviceId, extraParams]) => {
+      const nodeUrl = extraParams[CONSTANTS.SESSION_NODE_KEY]
 
       if (currentNodeUrl === nodeUrl) {
         if (currentDeviceId !== nodeDeviceId) {
@@ -81,15 +79,23 @@ class PacketManager {
     const offlineUsersByPackets = []
 
     for (const userId of usersIds) {
-      const userNodeData = await sessionService.getUserNodeData(userId)
+      const userNodeData = await sessionService.listUserData(userId)
+      const isNoConnections = !userNodeData || !Object.keys(userNodeData).length
 
-      if (!userNodeData?.length) {
+      if (isNoConnections) {
         if (!notSaveInOfflineStorage) {
           operationsLogRepository.savePacket(userId, packet)
         }
 
         offlineUsersByPackets.push(userId)
         continue
+      }
+
+      const isInactive = Object.values(userNodeData).some((extraParams) =>
+        sessionService.isUserInactive(ws, extraParams)
+      )
+      if (isInactive) {
+        offlineUsersByPackets.push(userId)
       }
 
       this.#deliverToUserDevices(ws, userNodeData, userId, packet)

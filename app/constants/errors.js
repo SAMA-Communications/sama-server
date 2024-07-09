@@ -115,10 +115,6 @@ export const ERROR_STATUES = {
     status: 422,
     message: "Communication is not possible - you are in a block list of the recipient.",
   },
-  USER_BLOCKED_FOR_ALL_PARTICIPANTS: {
-    status: 422,
-    message: "Communication is not possible - you are in a block list of all the recipients.",
-  },
   // Status -->
   STATUS_ID_MISSED: { status: 422, message: "Status ID missed." },
   STATUS_TYPE_MISSED: { status: 422, message: "Status type missed." },

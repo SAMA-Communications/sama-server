@@ -2,12 +2,12 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
-import BlockedUser from "./../app/models/blocked_user.js"
 import { createUserArray, mockedWS, sendLogin } from "./utils.js"
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 const userTokenRepo = ServiceLocatorContainer.use("UserTokenRepository")
+const blockListService = ServiceLocatorContainer.use("BlockListService")
 
 let usersIds = []
 
@@ -26,7 +26,7 @@ describe("UserBlocked functions", async () => {
       const requestData = {
         request: {
           block_user: {
-            id: usersIds[1],
+            ids: [usersIds[1]],
           },
           id: 2,
         },
@@ -44,7 +44,7 @@ describe("UserBlocked functions", async () => {
       const requestData = {
         request: {
           block_user: {
-            id: usersIds[2],
+            ids: [usersIds[2]],
           },
           id: 3,
         },
@@ -62,7 +62,7 @@ describe("UserBlocked functions", async () => {
       const requestData = {
         request: {
           block_user: {
-            id: usersIds[3],
+            ids: [usersIds[3]],
           },
           id: 4,
         },
@@ -80,7 +80,7 @@ describe("UserBlocked functions", async () => {
       const requestData = {
         request: {
           block_user: {
-            id: usersIds[4],
+            ids: [usersIds[4]],
           },
           id: 5,
         },
@@ -98,7 +98,7 @@ describe("UserBlocked functions", async () => {
       const requestData = {
         request: {
           block_user: {
-            id: "",
+            ids: [""],
           },
           id: 6,
         },
@@ -110,6 +110,66 @@ describe("UserBlocked functions", async () => {
 
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.notEqual(responseData.response.success, true)
+    })
+
+    it("should fail, block self user", async () => {
+      const requestData = {
+        request: {
+          block_user: {
+            ids: [usersIds.at(0)],
+          },
+          id: 6,
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.notEqual(responseData.response.success, true)
+    })
+  })
+
+  describe("enable/disable", async () => {
+    it("should work, disable", async () => {
+      const requestData = {
+        request: {
+          block_list_enable: { enable: false },
+          id: 10,
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.equal(responseData.response.success, true)
+
+      const blockedUserIds = await blockListService.listMutualBlockedIds(usersIds.at(0))
+
+      assert.equal(blockedUserIds.length, 0)
+    })
+
+    it("should work, enable", async () => {
+      const requestData = {
+        request: {
+          block_list_enable: { enable: true },
+          id: 11,
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.equal(responseData.response.success, true)
+
+      const blockedUserIds = await blockListService.listMutualBlockedIds(usersIds.at(0))
+
+      assert.notEqual(blockedUserIds.length, 0)
     })
   })
 
@@ -137,7 +197,7 @@ describe("UserBlocked functions", async () => {
       const requestData = {
         request: {
           unblock_user: {
-            id: usersIds[1],
+            ids: [usersIds[1]],
           },
           id: 2,
         },
@@ -155,7 +215,7 @@ describe("UserBlocked functions", async () => {
       const requestData = {
         request: {
           unblock_user: {
-            id: usersIds[3],
+            ids: [usersIds[3]],
           },
           id: 3,
         },
@@ -173,7 +233,7 @@ describe("UserBlocked functions", async () => {
       const requestData = {
         request: {
           unblock_user: {
-            id: "",
+            ids: [""],
           },
           id: 6,
         },
@@ -207,7 +267,7 @@ describe("UserBlocked functions", async () => {
 
   after(async () => {
     await userRepo.deleteMany({})
-    await BlockedUser.clearCollection()
+    await blockListService.blockedUserRepo.deleteMany({})
 
     usersIds = []
   })

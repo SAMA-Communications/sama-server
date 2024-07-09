@@ -1,6 +1,5 @@
 class UserListOperation {
-  constructor(sessionService, userService) {
-    this.sessionService = sessionService
+  constructor(userService) {
     this.userService = userService
   }
 

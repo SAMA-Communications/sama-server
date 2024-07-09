@@ -1,9 +1,17 @@
 import { ERROR_STATUES } from "../../../constants/errors.js"
 
 class ConversationService {
-  constructor(conversationRepo, conversationParticipantRepo, storageService) {
-    this.CONVERSATION_MAX_PARTICIPANTS = process.env.CONVERSATION_MAX_PARTICIPANTS
+  constructor(
+    CONVERSATION_MAX_PARTICIPANTS,
 
+    helpers,
+    storageService,
+    conversationRepo,
+    conversationParticipantRepo
+  ) {
+    this.CONVERSATION_MAX_PARTICIPANTS = CONVERSATION_MAX_PARTICIPANTS
+
+    this.helpers = helpers
     this.storageService = storageService
     this.conversationRepo = conversationRepo
     this.conversationParticipantRepo = conversationParticipantRepo
@@ -46,15 +54,15 @@ class ConversationService {
   }
 
   async restorePrivateConversation(conversation, currentParticipantIds) {
-    const requiredParticipantIds = [conversation.owner_id, conversation.opponent_id].map((pId) => pId.toString())
+    const requiredParticipantIds = [conversation.owner_id, conversation.opponent_id]
 
     const missedParticipantIds = await this.addParticipants(conversation, requiredParticipantIds, currentParticipantIds)
 
     return missedParticipantIds
   }
 
-  async findExistedPrivateConversation(ownerId, participantId) {
-    const conversation = await this.conversationRepo.findExistedPrivateConversation(ownerId, participantId)
+  async findExistedPrivateConversation(userOwner, participantId) {
+    const conversation = await this.conversationRepo.findExistedPrivateConversation(userOwner.native_id, participantId)
 
     return conversation
   }
@@ -84,8 +92,8 @@ class ConversationService {
     }
 
     const participantIds = await this.findConversationParticipants(conversationId)
-    result.asParticipant = !!participantIds.find((pId) => pId.toString() === userId.toString())
-    result.asOwner = result.conversation.owner_id.toString() === userId.toString()
+    result.asParticipant = !!participantIds.find((pId) => this.helpers.isEqualsNativeIds(pId, userId))
+    result.asOwner = this.helpers.isEqualsNativeIds(result.conversation.owner_id, userId)
     result.participantIds = participantIds
 
     return result
@@ -104,7 +112,8 @@ class ConversationService {
 
     if (!removeResult.isEmptyAndDeleted && removeResult.removedIds?.length) {
       currentParticipantIds = currentParticipantIds.filter(
-        (currentPId) => !removeResult.removedIds.find((removedId) => removedId.toString() === currentPId.toString())
+        (currentPId) =>
+          !removeResult.removedIds.find((removedId) => this.helpers.isEqualsNativeIds(removedId, currentPId))
       )
     }
 
@@ -117,7 +126,7 @@ class ConversationService {
     }
 
     participantIds = participantIds.filter(
-      (pId) => !currentParticipantIds.find((currentPId) => currentPId.toString() === pId.toString())
+      (pId) => !currentParticipantIds.find((currentPId) => this.helpers.isEqualsNativeIds(currentPId, pId))
     )
 
     const participantsCount = participantIds.length + currentParticipantIds.length
@@ -148,12 +157,12 @@ class ConversationService {
     }
 
     participantIds = participantIds.filter((pId) =>
-      currentParticipantIds.find((currentPId) => currentPId.toString() === pId.toString())
+      currentParticipantIds.find((currentPId) => this.helpers.isEqualsNativeIds(currentPId, pId))
     )
     await this.conversationParticipantRepo.removeParticipants(conversation._id, participantIds)
     result.removedIds = participantIds
     currentParticipantIds = currentParticipantIds.filter(
-      (currentPId) => !participantIds.find((removedId) => removedId.toString() === currentPId.toString())
+      (currentPId) => !participantIds.find((removedId) => this.helpers.isEqualsNativeIds(removedId, currentPId))
     )
 
     const isConversationHasParticipants = await this.conversationParticipantRepo.isConversationHasParticipants(
@@ -166,7 +175,7 @@ class ConversationService {
       return result
     }
 
-    const isOwnerInRemove = participantIds.find((pId) => pId.toString() === conversation.owner_id.toString())
+    const isOwnerInRemove = participantIds.find((pId) => this.helpers.isEqualsNativeIds(pId, conversation.owner_id))
     if (isOwnerInRemove && conversation.type !== "u") {
       const newOwnerId = currentParticipantIds.at(0)
       await this.conversationRepo.updateOwner(conversation._id, newOwnerId)
