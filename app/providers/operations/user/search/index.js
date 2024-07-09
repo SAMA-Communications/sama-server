@@ -1,5 +1,4 @@
 import { CONSTANTS as MAIN_CONSTANTS } from "../../../../constants/constants.js"
-import { slice } from "@sama/utils/req_res_utils.js"
 
 class UserSearchOperation {
   constructor(sessionService, userService) {
@@ -21,7 +20,7 @@ class UserSearchOperation {
       limit
     )
 
-    const usersWithAvatars = await this.userService.addAvatarUrl(userFields)
+    const usersWithAvatars = await this.userService.addAvatarUrl(users)
 
     const userFields = usersWithAvatars.map((user) => user.visibleParams())
 
