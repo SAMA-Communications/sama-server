@@ -21,10 +21,11 @@ class UserSearchOperation {
       limit
     )
 
-    const userFields = users.map((user) => user.visibleParams())
     const usersWithAvatars = await this.userService.addAvatarUrl(userFields)
 
-    return usersWithAvatars
+    const userFields = usersWithAvatars.map((user) => user.visibleParams())
+
+    return userFields
   }
 }
 

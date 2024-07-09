@@ -46,10 +46,9 @@ class UserAuthOperation {
       this.RuntimeDefinedContext.CLUSTER_PORT
     )
 
-    const userWithAvatarUrl = (await this.userService.addAvatarUrl([user.params])).at(0)
-    user.params["avatar_url"] = userWithAvatarUrl.avatar_url
+    const userWithAvatarUrl = (await this.userService.addAvatarUrl([user])).at(0)
 
-    return { user, token }
+    return { user: userWithAvatarUrl, token }
   }
 
   async #authByToken(tokenJwt, deviceId) {
