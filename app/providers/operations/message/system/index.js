@@ -1,15 +1,17 @@
-import { ERROR_STATUES } from "../../../../constants/errors.js"
+import { ERROR_STATUES } from "@sama/constants/errors.js"
+import SystemMessagePublicFields from "@sama/DTO/Response/message/system/public_fields.js"
 
 class MessageSendSystemOperation {
-  constructor(sessionService, userService, conversationService, messageService) {
+  constructor(helpers, sessionService, userService, conversationService, messageService) {
+    this.helpers = helpers
     this.sessionService = sessionService
     this.userService = userService
     this.conversationService = conversationService
     this.messageService = messageService
   }
 
-  async perform(ws, systemMessageParams) {
-    const { id, cid, uids, x } = systemMessageParams
+  async perform(ws, createSystemMessageParams) {
+    const { id, cid, uids, x } = createSystemMessageParams
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
 
@@ -21,11 +23,15 @@ class MessageSendSystemOperation {
       recipientsIds = await this.userService.userRepo.retrieveExistedIds(uids)
     }
 
-    const createSystemMessage = { id: id, x, from: currentUserId }
+    const systemMessageParams = {
+      id: id,
+      from: currentUserId,
+      cid: cid,
+      x,
+      t: this.helpers.currentTimeStamp(),
+    }
 
-    const systemMessage = await this.messageService.createSystemMessage(createSystemMessage, cid)
-
-    return { recipientsIds, systemMessage: systemMessage.serialize() }
+    return { recipientsIds, systemMessage: new SystemMessagePublicFields(systemMessageParams) }
   }
 
   async #conversationParticipants(conversationId, currentUserId) {

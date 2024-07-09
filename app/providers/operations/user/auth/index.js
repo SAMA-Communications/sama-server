@@ -40,10 +40,10 @@ class UserAuthOperation {
     token = await this.userTokenRepo.updateToken(token, user.native_id, deviceId, jwtToken)
 
     await this.sessionService.storeUserNodeData(
-      user.native_id,
-      deviceId,
       this.RuntimeDefinedContext.APP_IP,
-      this.RuntimeDefinedContext.CLUSTER_PORT
+      this.RuntimeDefinedContext.CLUSTER_PORT,
+      user.native_id,
+      deviceId
     )
 
     const userWithAvatarUrl = (await this.userService.addAvatarUrl([user.params])).at(0)

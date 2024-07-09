@@ -314,7 +314,7 @@ describe("Message function", async () => {
 
         if (i === 3) {
           const findMessage = await messageRepo.findById(responseData.ask.server_mid)
-          filterUpdatedAt = findMessage.params.updated_at
+          filterUpdatedAt = findMessage.updated_at
         }
       }
     })

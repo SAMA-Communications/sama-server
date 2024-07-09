@@ -17,12 +17,11 @@ class UserSearchOperation {
         : searchParams.limit || MAIN_CONSTANTS.LIMIT_MAX
 
     const users = await this.userService.userRepo.search(
-      { loginMatch: searchParams.login, ignoreIds, timeFromUpdate: searchParams.updated_at?.gt },
+      { match: searchParams.login, ignoreIds, timeFromUpdate: searchParams.updated_at?.gt },
       limit
     )
 
-    const userFields = users.map((user) => user.visibleParams())
-    const usersWithAvatars = await this.userService.addAvatarUrl(userFields)
+    const usersWithAvatars = await this.userService.addAvatarUrl(users.map((user) => user.visibleParams()))
 
     return usersWithAvatars
   }

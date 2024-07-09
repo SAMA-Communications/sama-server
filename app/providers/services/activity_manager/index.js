@@ -75,7 +75,11 @@ class ActivityManagerService {
       return
     }
 
-    return { subscriptions: activitySubscribers, last_activity: { userId: userId, timestamp: currentTime, status } }
+    return {
+      subscribers: activitySubscribers,
+      targetUserId: userId,
+      activityStatus: { timestamp: currentTime, status },
+    }
   }
 }
 

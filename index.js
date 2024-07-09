@@ -25,8 +25,6 @@ import SamaNativePushQueue from "./app/lib/push_queue/sama_native_queue.js"
 import { connectToDBPromise, getDb } from "./app/lib/db.js"
 import RedisClient from "./app/lib/redis.js"
 
-import blockListRepository from "./app/repositories/blocklist_repository.js"
-
 import { APIs } from "./app/networking/APIs.js"
 
 RuntimeDefinedContext.APP_HOSTNAME = process.env.HOSTNAME || os.hostname()
@@ -105,8 +103,6 @@ await connectToDBPromise()
   })
 
 await RedisClient.connect()
-
-await blockListRepository.warmCache()
 
 // Register providers
 ServiceLocatorContainer.register(
