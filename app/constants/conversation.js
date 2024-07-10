@@ -2,6 +2,7 @@ export const CONVERSATION_EVENTS = {
   CONVERSATION_EVENT: {
     CREATE: "create",
     UPDATE: "update",
+    UPDATE_IMAGE: "update_image",
     DELETE: "delete",
   },
   EVENT_TYPE_PARAMS: {
@@ -11,6 +12,10 @@ export const CONVERSATION_EVENTS = {
     },
     update: {
       push_message_body: "added you to conversation",
+      event_request_name: "conversation_updated",
+    },
+    update_image: {
+      push_message_body: "A new group chat image has been added",
       event_request_name: "conversation_updated",
     },
     delete: {

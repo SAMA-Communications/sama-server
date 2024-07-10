@@ -16,6 +16,7 @@ export default class BasePushQueue {
   }
 
   async createPush(pushQueueMessage) {
+    console.log(pushQueueMessage)
     if (pushQueueMessage instanceof CreateChatAlertEventOptions) {
       await this.createChatAlert(pushQueueMessage)
     } else if (pushQueueMessage instanceof CreatePushEventOptions) {

@@ -42,6 +42,7 @@ class ConversationEditOperation {
       }
 
       const isUpdateConversationFields = !!Object.keys(updateFields).length
+      const isUpdateConversationImage = !!updateFields.image_object
       const updatedConversationWithImageUrl = await this.conversationService.addImageUrl([updatedConversation])
 
       const createdEvents = await this.#createActionEvents(
@@ -50,7 +51,8 @@ class ConversationEditOperation {
         addedIds,
         removedIds,
         currentIds,
-        isUpdateConversationFields
+        isUpdateConversationFields,
+        isUpdateConversationImage
       )
       conversationEvents = createdEvents
     }
@@ -124,7 +126,8 @@ class ConversationEditOperation {
     addedParticipantIds,
     removedParticipantIds,
     currentParticipantIds,
-    isUpdateConversation
+    isUpdateConversation,
+    isUpdateConversationImage
   ) {
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
@@ -178,6 +181,13 @@ class ConversationEditOperation {
       conversationEvent.push({ ...updatedEvent, ignoreOwnDelivery: true })
     }
 
+    if (isUpdateConversationImage) {
+      const updatedEvent = await this.#imageActionEvent(conversation, currentUser)
+
+      updatedEvent.participantIds = currentParticipantIds
+      conversationEvent.push({ ...updatedEvent, ignoreOwnDelivery: false })
+    }
+
     return conversationEvent
   }
 
@@ -187,6 +197,18 @@ class ConversationEditOperation {
       : CONVERSATION_EVENTS.CONVERSATION_EVENT.UPDATE
 
     const actionMessageNotification = await this.conversationNotificationService.actionEvent(
+      eventType,
+      conversation,
+      currentUser
+    )
+
+    return actionMessageNotification
+  }
+
+  async #imageActionEvent(conversation, currentUser) {
+    const eventType = CONVERSATION_EVENTS.CONVERSATION_EVENT.UPDATE_IMAGE
+
+    const actionMessageNotification = await this.conversationNotificationService.imageActionEvent(
       eventType,
       conversation,
       currentUser
