@@ -38,7 +38,7 @@ class FilesController extends BaseJSONController {
     const urls = {}
 
     for (const fileObjectId of objectIds) {
-      const downloadUrl = await storageService.downloadFile(currentUserId, fileObjectId)
+      const downloadUrl = await storageService.getFileDownloadUrl(currentUserId, fileObjectId)
 
       urls[fileObjectId] = downloadUrl
     }

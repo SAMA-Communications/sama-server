@@ -6,8 +6,9 @@ const name = "UserService"
 class UserServiceRegisterProvider extends RegisterProvider {
   register(slc) {
     const userRepo = slc.use("UserRepository")
+    const storageService = slc.use("StorageService")
 
-    return new UserService(userRepo)
+    return new UserService(userRepo, storageService)
   }
 }
 

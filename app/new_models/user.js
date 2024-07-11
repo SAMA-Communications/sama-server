@@ -14,6 +14,8 @@ export default class User extends BaseModel {
       "updated_at",
       "recent_activity",
 
+      "avatar_object",
+      "avatar_url",
       "first_name",
       "last_name",
       "login",
@@ -30,6 +32,8 @@ export default class User extends BaseModel {
       "updated_at",
       "recent_activity",
 
+      "avatar_object",
+      "avatar_url",
       "first_name",
       "last_name",
       "login",

@@ -41,6 +41,11 @@ export const usersSchemaValidation = {
     login: Joi.string().min(3).max(40),
     first_name: Joi.string().min(1).max(20),
     last_name: Joi.string().min(1).max(20),
+    avatar_object: Joi.object({
+      file_id: Joi.string(),
+      file_name: Joi.string().max(255),
+      file_blur_hash: Joi.string().max(255),
+    }),
   }).with("current_password", "current_password"),
   login: Joi.object({
     login: Joi.string().error(

@@ -6,9 +6,10 @@ class UserListOperation {
   async perform(ws, userListParams) {
     const { ids: userIds } = userListParams
 
-    const users = await this.userService.userRepo.findAllByIds(userIds)
+    const users = await this.userService.findByIds(userIds)
+    const usersWithAvatars = await this.userService.addAvatarUrl(users.map((user) => user.visibleParams()))
 
-    return users.map((user) => user.visibleParams())
+    return usersWithAvatars
   }
 }
 

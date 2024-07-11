@@ -2,8 +2,9 @@ import { ERROR_STATUES } from "../../../constants/errors.js"
 import { hashPassword, verifyPassword } from "../../../utils/crypto_utils.js"
 
 class UserService {
-  constructor(userRepo) {
+  constructor(userRepo, storageService) {
     this.userRepo = userRepo
+    this.storageService = storageService
   }
 
   async findByLogin(userInfo) {
@@ -56,6 +57,17 @@ class UserService {
     }
 
     return updatedUser
+  }
+
+  async addAvatarUrl(users) {
+    const avatarUrlPromises = users.map(async (user) => {
+      if (user.avatar_object) {
+        user["avatar_url"] = await this.storageService.getFileDownloadUrl(user._id, user.avatar_object.file_id)
+      }
+      return user
+    })
+
+    return await Promise.all(avatarUrlPromises)
   }
 
   async updateActivity(userId, reactActivity) {
