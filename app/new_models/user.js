@@ -21,6 +21,9 @@ export default class User extends BaseModel {
       "login",
       "email",
       "phone",
+
+      "avatar_object",
+      "avatar_url",
     ]
   }
 
@@ -39,6 +42,9 @@ export default class User extends BaseModel {
       "login",
       "email",
       "phone",
+
+      "avatar_object",
+      "avatar_url",
 
       "encrypted_password",
       "password_salt",
