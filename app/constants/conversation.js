@@ -15,7 +15,7 @@ export const CONVERSATION_EVENTS = {
       event_request_name: "conversation_updated",
     },
     update_image: {
-      push_message_body: "A new group chat image has been added",
+      push_message_body: "Group chat image was updated",
       event_request_name: "conversation_updated",
     },
     delete: {
