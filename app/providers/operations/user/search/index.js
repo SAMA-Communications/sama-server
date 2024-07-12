@@ -1,4 +1,5 @@
 import { CONSTANTS as MAIN_CONSTANTS } from "../../../../constants/constants.js"
+import { slice } from "@sama/utils/req_res_utils.js"
 
 class UserSearchOperation {
   constructor(sessionService, userService) {
