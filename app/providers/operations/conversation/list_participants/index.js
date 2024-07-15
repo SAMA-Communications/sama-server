@@ -1,5 +1,3 @@
-import { slice } from "@sama/utils/req_res_utils.js"
-
 class ConversationListParticipantsOperation {
   constructor(sessionService, userService, conversationService) {
     this.sessionService = sessionService
@@ -8,7 +6,7 @@ class ConversationListParticipantsOperation {
   }
 
   async perform(ws, options) {
-    const { cids, includes } = options
+    const { cids } = options
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
@@ -19,16 +17,13 @@ class ConversationListParticipantsOperation {
       return []
     }
 
-    const pluckFields = includes
-      ? ["_id", "native_id"]
-      : ["_id", "native_id", "avatar_object", "first_name", "last_name", "login", "email", "phone"]
-
     const users = await this.userService.userRepo.findAllByIds(participantIds)
 
-    const userFields = users.map((user) => slice(user, pluckFields, true))
-    const usersWithAvatars = await this.userService.addAvatarUrl(userFields)
+    const usersWithAvatars = await this.userService.addAvatarUrl(users)
 
-    return usersWithAvatars
+    const userFields = usersWithAvatars.map((user) => user.visibleParams())
+
+    return userFields
   }
 }
 

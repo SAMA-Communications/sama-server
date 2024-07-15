@@ -83,8 +83,8 @@ export default class BaseRepository {
     return model
   }
 
-  async findAllByIds(ids) {
-    const models = await this.findAll({ _id: { $in: ids } })
+  async findAllByIds(ids, limit = 100) {
+    const models = await this.findAll({ _id: { $in: ids } }, null, limit)
 
     return models
   }
