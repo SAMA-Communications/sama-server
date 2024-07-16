@@ -9,8 +9,7 @@ class UserListOperation {
     const users = await this.userService.userRepo.findAllByIds(userIds)
     const usersWithAvatars = await this.userService.addAvatarUrl(users.map((user) => user.visibleParams()))
 
-
-    return userFields
+    return usersWithAvatars
   }
 }
 
