@@ -35,7 +35,9 @@ class ConversationCreateOperation {
         conversationParams,
         paramsParticipantIds
       )
-      conversation = createdConversation
+
+      const updatedConversationWithImageUrl = await this.conversationService.addImageUrl([createdConversation])
+      conversation = updatedConversationWithImageUrl.at(0)
       normalizedParticipants = participantIds
     }
 

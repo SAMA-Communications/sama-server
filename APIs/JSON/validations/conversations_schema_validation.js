@@ -58,6 +58,11 @@ export const conversationsSchemaValidation = {
           }
         })
       }),
+    image_object: Joi.object({
+      file_id: Joi.string(),
+      file_name: Joi.string().max(255),
+      file_blur_hash: Joi.string().max(255),
+    }),
   }).required(),
   update: Joi.object({
     id: Joi.string().required(),
