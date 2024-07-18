@@ -12,6 +12,8 @@ export default class Conversation extends BaseModel {
       "name",
       "type",
       "description",
+      "image_object",
+      "image_url",
 
       "owner_id",
       "opponent_id",

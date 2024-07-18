@@ -58,6 +58,11 @@ export const conversationsSchemaValidation = {
           }
         })
       }),
+    image_object: Joi.object({
+      file_id: Joi.string(),
+      file_name: Joi.string().max(255),
+      file_blur_hash: Joi.string().max(255),
+    }),
   }).required(),
   update: Joi.object({
     id: Joi.string().required(),
@@ -66,6 +71,11 @@ export const conversationsSchemaValidation = {
     participants: Joi.object({
       add: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number())),
       remove: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number())),
+    }),
+    image_object: Joi.object({
+      file_id: Joi.string(),
+      file_name: Joi.string().max(255),
+      file_blur_hash: Joi.string().max(255),
     }),
   }),
   list: Joi.object({

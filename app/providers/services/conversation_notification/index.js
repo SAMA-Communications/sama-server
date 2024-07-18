@@ -37,6 +37,31 @@ class ConversationNotificationService {
     return { message: eventMessage, notification: eventNotification }
   }
 
+  async imageActionEvent(eventType, conversation, userActionCreator) {
+    const eventParams = CONVERSATION_EVENTS.EVENT_TYPE_PARAMS[eventType]
+
+    const createMessageParams = {
+      cid: conversation._id,
+      body: `${eventParams.push_message_body}`,
+      x: { type: eventType, conversation: conversation.visibleParams() },
+    }
+
+    const createdMessage = await this.messageService.create(userActionCreator, conversation, [], createMessageParams)
+
+    const userActionCreatorDisplayName = this.helpers.getDisplayName(userActionCreator)
+    const pushPayload = {
+      title: `${userActionCreatorDisplayName} | ${conversation.name}`,
+      body: createdMessage.body,
+      cid: createdMessage.cid,
+    }
+
+    const eventMessage = new MessageResponse(new MessagePublicFields(createdMessage))
+
+    const eventNotification = new CreatePushEventOptions(userActionCreator, conversation, pushPayload, {})
+
+    return { message: eventMessage, notification: eventNotification }
+  }
+
   async participantActionEvent(eventType, conversation, userActionCreator, userActioned) {
     const userActionedDisplayName = this.helpers.getDisplayName(userActioned)
     const text = CONVERSATION_EVENTS.ACTION_PARTICIPANT_MESSAGE[eventType]

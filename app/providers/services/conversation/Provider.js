@@ -8,6 +8,7 @@ class ConversationServiceRegisterProvider extends RegisterProvider {
     const CONVERSATION_MAX_PARTICIPANTS = process.env.CONVERSATION_MAX_PARTICIPANTS
 
     const helpers = slc.use("Helpers")
+    const storageService = slc.use("StorageService")
     const conversationRepo = slc.use("ConversationRepository")
     const conversationParticipantRepo = slc.use("ConversationParticipantRepository")
 
@@ -15,6 +16,7 @@ class ConversationServiceRegisterProvider extends RegisterProvider {
       CONVERSATION_MAX_PARTICIPANTS,
 
       helpers,
+      storageService,
       conversationRepo,
       conversationParticipantRepo
     )
