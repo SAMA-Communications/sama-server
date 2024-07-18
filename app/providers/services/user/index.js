@@ -60,9 +60,7 @@ class UserService {
   }
 
   async addAvatarUrl(users) {
-    console.log(users)
     const avatarUrlPromises = users.map(async (user) => {
-      console.log(user)
       if (user.params.avatar_object) {
         user.params.avatar_url = await this.storageService
           .getFileDownloadUrl(user.native_id, user.avatar_object.file_id)
