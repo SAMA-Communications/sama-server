@@ -21,7 +21,7 @@ export default class S3Storage extends BaseStorage {
   }
 
   async getUploadUrl(fileName) {
-    const objectId = getUniqueId(fileName)
+    const objectId = getUniqueId()
 
     const bucketParams = {
       Bucket: this.bucketName,
