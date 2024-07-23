@@ -922,9 +922,6 @@ A user either can send typing or stop typing packets:
 ```
 {
   typing: {
-    id: "xyz",
-    t: 15673838833,
-    type: "start/stop",
     cid: "xcv"
   }
 }
