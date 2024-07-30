@@ -25,8 +25,6 @@ describe(`Sending 'typing' status`, async () => {
   it("should fail user not login", async () => {
     const requestData = {
       typing: {
-        id: "xyz",
-        type: "start",
         cid: currentConversationId,
       },
     }
@@ -44,70 +42,9 @@ describe(`Sending 'typing' status`, async () => {
     await sendLogin(mockedWS, "user_1")
   })
 
-  it("should fail id missed", async () => {
-    const requestData = {
-      typing: {
-        type: "start",
-        cid: currentConversationId,
-      },
-    }
-
-    let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
-
-    responseData = responseData.backMessages.at(0)
-
-    assert.strictEqual(responseData.typing.user, undefined)
-    assert.deepEqual(responseData.typing.error, {
-      status: 422,
-      message: "Status ID missed.",
-    })
-  })
-
-  it("should fail type missed", async () => {
-    const requestData = {
-      typing: {
-        id: "xyz",
-        cid: currentConversationId,
-      },
-    }
-
-    let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
-
-    responseData = responseData.backMessages.at(0)
-
-    assert.strictEqual(responseData.typing.user, undefined)
-    assert.deepEqual(responseData.typing.error, {
-      status: 422,
-      message: "Status type missed.",
-    })
-  })
-
-  it("should fail type incorrect", async () => {
-    const requestData = {
-      typing: {
-        id: "xyz",
-        type: "asdvsa123",
-        cid: currentConversationId,
-      },
-    }
-
-    let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
-
-    responseData = responseData.backMessages.at(0)
-
-    assert.strictEqual(responseData.typing.user, undefined)
-    assert.deepEqual(responseData.typing.error, {
-      status: 422,
-      message: "The type you entered is incorrect.",
-    })
-  })
-
   it("should fail cid or to missed", async () => {
     const requestData = {
-      typing: {
-        id: "xyz",
-        type: "start",
-      },
+      typing: {},
     }
 
     let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
@@ -124,10 +61,7 @@ describe(`Sending 'typing' status`, async () => {
   it("should fail Conversation not found", async () => {
     const requestData = {
       typing: {
-        id: "xyz",
-        type: "start",
         cid: "currentConversationId",
-        t: 15673838833,
       },
     }
 
@@ -145,10 +79,7 @@ describe(`Sending 'typing' status`, async () => {
   it("should work", async () => {
     const requestData = {
       typing: {
-        id: "xyz",
-        type: "start",
         cid: currentConversationId,
-        t: 15673838833,
       },
     }
 
