@@ -5,12 +5,14 @@ class ConversationService {
     CONVERSATION_MAX_PARTICIPANTS,
 
     helpers,
+    storageService,
     conversationRepo,
     conversationParticipantRepo
   ) {
     this.CONVERSATION_MAX_PARTICIPANTS = CONVERSATION_MAX_PARTICIPANTS
 
     this.helpers = helpers
+    this.storageService = storageService
     this.conversationRepo = conversationRepo
     this.conversationParticipantRepo = conversationParticipantRepo
   }
@@ -22,6 +24,20 @@ class ConversationService {
     await this.addParticipants(conversation, participantIds, [])
 
     return conversation
+  }
+
+  async addImageUrl(conversations) {
+    const imageUrlPromises = conversations.map(async (conv) => {
+      if (conv.image_object) {
+        ;(conv.params ? conv.params : conv)["image_url"] = await this.storageService.getFileDownloadUrl(
+          conv._id,
+          conv.image_object.file_id
+        )
+      }
+      return conv
+    })
+
+    return await Promise.all(imageUrlPromises)
   }
 
   async conversationsList(user, options, limit) {

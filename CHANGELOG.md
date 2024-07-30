@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.25.0
+
+### Features
+
+- Initiated support for user avatars
+- Implemented group chat avatar support
+- Integrated ‘typing’ indicator for one-to-one and group chats
+
+### Updated
+
+- Resolved issue causing notifications to be sent to users after exiting a chat
+
 ## 0.24.0
 
 ### Updated

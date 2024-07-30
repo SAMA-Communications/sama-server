@@ -19,7 +19,7 @@ export default class Minio extends BaseStorage {
   }
 
   async getUploadUrl(fileName) {
-    const objectId = getUniqueId(fileName)
+    const objectId = getUniqueId()
 
     const presignedUrl = await this.minioClient.presignedPutObject(this.bucketName, objectId, this.expire)
 
