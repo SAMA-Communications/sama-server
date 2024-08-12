@@ -7,6 +7,12 @@ class EncryptionRepository extends BaseRepository {
     return device
   }
 
+  async findById(recordId) {
+    const device = await this.findOne({ _id: recordId })
+
+    return device
+  }
+
   async update(recordId, updateParams) {
     const device = await this.findOneAndUpdate({ _id: recordId }, { $set: updateParams })
 

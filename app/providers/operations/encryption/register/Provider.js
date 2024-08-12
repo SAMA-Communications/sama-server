@@ -6,8 +6,9 @@ const name = "EncryptionRegisterOperation"
 class EncryptionRegisterOperationRegisterProvider extends RegisterProvider {
   register(slc) {
     const encryptionService = slc.use("EncryptionService")
+    const sessionService = slc.use("SessionService")
 
-    return new EncryptionRegisterOperation(encryptionService)
+    return new EncryptionRegisterOperation(encryptionService, sessionService)
   }
 }
 

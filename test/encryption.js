@@ -124,6 +124,23 @@ describe("Encryption function", async () => {
     })
   })
 
+  describe("Device Delete", async () => {
+    it("should work", async () => {
+      const requestData = {
+        device_delete: {
+          key: "test_key",
+        },
+        id: "1",
+      }
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+      responseData = responseData.backMessages.at(0).response
+
+      assert.equal(responseData.success, true)
+      assert.equal(responseData.id, requestData.id)
+      assert.deepEqual(responseData.error, undefined)
+    })
+  })
+
   after(async () => {
     await userRepo.deleteMany({})
     await encryptionRepo.deleteMany({})

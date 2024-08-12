@@ -37,4 +37,14 @@ export const encryptionSchemaValidation = {
         })
       ),
   }),
+  device_delete: Joi.object({
+    key: Joi.string()
+      .max(255)
+      .required()
+      .error(
+        new Error(ERROR_STATUES.INCORRECT_IDENTITY_KEY.message, {
+          cause: ERROR_STATUES.INCORRECT_IDENTITY_KEY,
+        })
+      ),
+  }),
 }

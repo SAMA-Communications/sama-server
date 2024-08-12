@@ -59,6 +59,7 @@ import MessageSendSystemOperationProvider from "./operations/message/system/Prov
 import StatusTypingOperationProvider from "./operations/status/typing/Provider.js"
 
 import EncryptionRegisterOperationProvider from "./operations/encryption/register/Provider.js"
+import EncryptionDeleteOperationProvider from "./operations/encryption/delete/Provider.js"
 
 const providers = [
   HelpersProvider,
@@ -122,6 +123,7 @@ const providers = [
   StatusTypingOperationProvider,
 
   EncryptionRegisterOperationProvider,
+  EncryptionDeleteOperationProvider,
 ]
 
 export default providers
