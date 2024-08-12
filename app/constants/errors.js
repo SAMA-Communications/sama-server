@@ -136,6 +136,10 @@ export const ERROR_STATUES = {
     message: "Push notification record not found.",
   },
   INCORRECT_KEYS: { status: 422, message: "Incorrect keys." },
+  //Encryption -->
+  INCORRECT_IDENTITY_KEY: { status: 422, message: "Incorrect identity device key." },
+  INCORRECT_SIGNED_KEY: { status: 422, message: "Incorrect signed key." },
+  INCORRECT_ONE_TIME_PRE_KEYS: { status: 422, message: "Incorrect one time pre keys." },
   // Other -->
   LOG_TIMETAMP_MISSED: { status: 422, message: "Gt or lt query missed." },
   CID_REQUIRED: {

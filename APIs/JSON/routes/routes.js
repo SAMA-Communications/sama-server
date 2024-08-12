@@ -1,5 +1,6 @@
 import { default as ContactsController } from "../controllers/contacts.js"
 import { default as ConversationsController } from "../controllers/conversations.js"
+import { default as EncryptionController } from "../controllers/encryption.js"
 import { default as FilesController } from "../controllers/files.js"
 import { default as LastActivityiesController } from "../controllers/activities.js"
 import { default as MessagesController } from "../controllers/messages.js"
@@ -14,6 +15,7 @@ import authGuardMiddleware from "../middleware/auth_guard.js"
 import { activitiesSchemaValidation } from "../validations/activities_schema_validation.js"
 import { contactsSchemaValidation } from "../validations/contacts_schema_validation.js"
 import { conversationsSchemaValidation } from "../validations/conversations_schema_validation.js"
+import { encryptionSchemaValidation } from "../validations/encryption_schema_validation.js"
 import { filesSchemaValidation } from "../validations/files_schema_validation.js"
 import { messagesSchemaValidation } from "../validations/messages_schema_validation.js"
 import { operationsLogSchemaValidation } from "../validations/operations_log_schema_validation.js"
@@ -181,4 +183,8 @@ export const routes = {
     PushNotificationsController.middleware(authGuardMiddleware, ws, json)
       .validate(json.push_event_create, pushNotificationsSchemaValidation.push_event_create)
       .push_event_create(ws, json),
+  device_register: (ws, json) =>
+    EncryptionController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.device_register, encryptionSchemaValidation.device_register)
+      .register(ws, json),
 }
