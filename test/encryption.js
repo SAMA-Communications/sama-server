@@ -124,13 +124,69 @@ describe("Encryption function", async () => {
     })
   })
 
+  describe("Device List", async () => {
+    it("should work, myself", async () => {
+      const requestData = {
+        device_list: {
+          ids: [],
+        },
+        id: "1",
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+      responseData = responseData.backMessages.at(0).response
+
+      assert.equal(responseData.id, requestData.id)
+      assert.equal(responseData.devices[0].signed_key, "test_key-1")
+      assert.equal(responseData.devices[0].identity_key, "test_key")
+      assert.equal(responseData.devices[0].one_time_pre_keys.length, 1)
+    })
+
+    it("should work, by id", async () => {
+      await sendLogout(mockedWS, currentUserToken)
+      currentUserToken = (await sendLogin(mockedWS, "user_2")).response.user.token
+
+      const requestData = {
+        device_list: {
+          ids: [usersIds[0]],
+        },
+        id: "1",
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+      responseData = responseData.backMessages.at(0).response
+      responseData = responseData.devices[usersIds[0]][0]
+
+      assert.equal(responseData.signed_key, "test_key-1")
+      assert.equal(responseData.identity_key, "test_key")
+      assert.equal(responseData.one_time_pre_keys.length, 1)
+    })
+  })
+
   describe("Device Delete", async () => {
-    it("should work", async () => {
+    it("should fail, forbidden", async () => {
       const requestData = {
         device_delete: {
           key: "test_key",
         },
         id: "1",
+      }
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+      responseData = responseData.backMessages.at(0).device_delete
+
+      assert.notEqual(responseData, undefined)
+      assert.deepEqual(responseData.error, { status: 403, message: "Forbidden." })
+    })
+
+    it("should work", async () => {
+      await sendLogout(mockedWS, currentUserToken)
+      currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user.token
+
+      const requestData = {
+        device_delete: {
+          key: "test_key",
+        },
+        id: "2",
       }
       let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
       responseData = responseData.backMessages.at(0).response

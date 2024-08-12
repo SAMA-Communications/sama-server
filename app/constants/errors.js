@@ -140,6 +140,8 @@ export const ERROR_STATUES = {
   INCORRECT_IDENTITY_KEY: { status: 422, message: "Incorrect identity device key." },
   INCORRECT_SIGNED_KEY: { status: 422, message: "Incorrect signed key." },
   INCORRECT_ONE_TIME_PRE_KEYS: { status: 422, message: "Incorrect one time pre keys." },
+  INCORRECT_USER_ID: { status: 422, message: "Incorrect user id." },
+  INCORRECT_USERS_ARRAY: { status: 422, message: "Incorrect users array." },
   // Other -->
   LOG_TIMETAMP_MISSED: { status: 422, message: "Gt or lt query missed." },
   CID_REQUIRED: {

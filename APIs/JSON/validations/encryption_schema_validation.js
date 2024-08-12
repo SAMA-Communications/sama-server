@@ -37,6 +37,23 @@ export const encryptionSchemaValidation = {
         })
       ),
   }),
+  device_list: Joi.object({
+    ids: Joi.array()
+      .items(
+        Joi.string().error(
+          new Error(ERROR_STATUES.INCORRECT_USER_ID.message, {
+            cause: ERROR_STATUES.INCORRECT_USER_ID,
+          })
+        )
+      )
+      .max(50)
+      .required()
+      .error(
+        new Error(ERROR_STATUES.INCORRECT_USERS_ARRAY.message, {
+          cause: ERROR_STATUES.INCORRECT_USERS_ARRAY,
+        })
+      ),
+  }),
   device_delete: Joi.object({
     key: Joi.string()
       .max(255)

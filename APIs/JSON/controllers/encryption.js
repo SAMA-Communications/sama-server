@@ -6,30 +6,28 @@ import Response from "@sama/networking/models/Response.js"
 
 class EncryptionController extends BaseJSONController {
   async register(ws, data) {
-    const { id: requestId, device_register: userKeys } = data
+    const { id: requestId } = data
 
     const encryptionRegisterOperation = ServiceLocatorContainer.use("EncryptionRegisterOperation")
-    await encryptionRegisterOperation.perform(ws, userKeys)
+    await encryptionRegisterOperation.perform(ws, data.device_register)
 
     return new Response().addBackMessage({ response: { id: requestId, success: true } })
   }
 
   async list(ws, data) {
-    const { id: requestId, device_list: deviceListParams } = data
+    const { id: requestId } = data
 
-    // const encryptionRegisterOperation = ServiceLocatorContainer.use("EncryptionRegisterOperation")
-    // await encryptionRegisterOperation.perform(userKeys)
+    const encryptionListOperation = ServiceLocatorContainer.use("EncryptionListOperation")
+    const deviceList = await encryptionListOperation.perform(ws, data.device_list)
 
-    // [id, id, id]
-    // []
-    return new Response().addBackMessage({ response: { id: requestId, devices: true } })
+    return new Response().addBackMessage({ response: { id: requestId, devices: deviceList } })
   }
 
   async delete(ws, data) {
-    const { id: requestId, device_delete: deleteParams } = data
+    const { id: requestId } = data
 
     const encryptionDeleteOperation = ServiceLocatorContainer.use("EncryptionDeleteOperation")
-    await encryptionDeleteOperation.perform(ws, deleteParams)
+    await encryptionDeleteOperation.perform(ws, data.device_delete)
 
     return new Response().addBackMessage({ response: { id: requestId, success: true } })
   }
