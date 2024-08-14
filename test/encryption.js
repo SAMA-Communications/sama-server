@@ -111,7 +111,7 @@ describe("Encryption function", async () => {
         device_register: {
           identity_key: "test_key",
           signed_key: "test_key-1",
-          one_time_pre_keys: ["test_key"],
+          one_time_pre_keys: ["test_key", "test_key1", "test_key2"],
         },
         id: "2",
       }
@@ -127,9 +127,7 @@ describe("Encryption function", async () => {
   describe("Device List", async () => {
     it("should work, myself", async () => {
       const requestData = {
-        device_list: {
-          ids: [],
-        },
+        device_list: {},
         id: "1",
       }
 
@@ -139,7 +137,7 @@ describe("Encryption function", async () => {
       assert.equal(responseData.id, requestData.id)
       assert.equal(responseData.devices[0].signed_key, "test_key-1")
       assert.equal(responseData.devices[0].identity_key, "test_key")
-      assert.equal(responseData.devices[0].one_time_pre_keys.length, 1)
+      assert.equal(responseData.devices[0].one_time_pre_keys, null)
     })
 
     it("should work, by id", async () => {
@@ -147,8 +145,8 @@ describe("Encryption function", async () => {
       currentUserToken = (await sendLogin(mockedWS, "user_2")).response.user.token
 
       const requestData = {
-        device_list: {
-          ids: [usersIds[0]],
+        request_keys: {
+          user_ids: [usersIds[0]],
         },
         id: "1",
       }
@@ -160,6 +158,25 @@ describe("Encryption function", async () => {
       assert.equal(responseData.signed_key, "test_key-1")
       assert.equal(responseData.identity_key, "test_key")
       assert.equal(responseData.one_time_pre_keys.length, 1)
+      assert.equal(responseData.one_time_pre_keys, "test_key")
+    })
+
+    it("should work, by id again", async () => {
+      const requestData = {
+        request_keys: {
+          user_ids: [usersIds[0]],
+        },
+        id: "1",
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+      responseData = responseData.backMessages.at(0).response
+      responseData = responseData.devices[usersIds[0]][0]
+
+      assert.equal(responseData.signed_key, "test_key-1")
+      assert.equal(responseData.identity_key, "test_key")
+      assert.equal(responseData.one_time_pre_keys.length, 1)
+      assert.equal(responseData.one_time_pre_keys, "test_key1")
     })
   })
 

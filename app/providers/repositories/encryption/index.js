@@ -49,7 +49,7 @@ class EncryptionRepository extends BaseRepository {
         (result[obj._id] = obj.devices.map((device) => ({
           identity_key: device.identity_key,
           signed_key: device.signed_key,
-          one_time_pre_keys: device.one_time_pre_keys,
+          one_time_pre_keys: device.one_time_pre_keys.slice(0, 1), //{ $arrayElemAt: ["$one_time_pre_keys", 0] } }
         })))
     )
 

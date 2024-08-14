@@ -191,6 +191,10 @@ export const routes = {
     EncryptionController.middleware(authGuardMiddleware, ws, json)
       .validate(json.device_list, encryptionSchemaValidation.device_list)
       .list(ws, json),
+  request_keys: (ws, json) =>
+    EncryptionController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.request_keys, encryptionSchemaValidation.request_keys)
+      .request_keys(ws, json),
   device_delete: (ws, json) =>
     EncryptionController.middleware(authGuardMiddleware, ws, json)
       .validate(json.device_delete, encryptionSchemaValidation.device_delete)

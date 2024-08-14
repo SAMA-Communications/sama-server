@@ -18,7 +18,16 @@ class EncryptionController extends BaseJSONController {
     const { id: requestId } = data
 
     const encryptionListOperation = ServiceLocatorContainer.use("EncryptionListOperation")
-    const deviceList = await encryptionListOperation.perform(ws, data.device_list)
+    const deviceList = await encryptionListOperation.perform(ws)
+
+    return new Response().addBackMessage({ response: { id: requestId, devices: deviceList } })
+  }
+
+  async request_keys(ws, data) {
+    const { id: requestId } = data
+
+    const encryptionRequestKeysOperation = ServiceLocatorContainer.use("EncryptionRequestKeysOperation")
+    const deviceList = await encryptionRequestKeysOperation.perform(ws, data.request_keys)
 
     return new Response().addBackMessage({ response: { id: requestId, devices: deviceList } })
   }

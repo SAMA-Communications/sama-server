@@ -37,8 +37,9 @@ export const encryptionSchemaValidation = {
         })
       ),
   }),
-  device_list: Joi.object({
-    ids: Joi.array()
+  device_list: Joi.object({}),
+  request_keys: Joi.object({
+    user_ids: Joi.array()
       .items(
         Joi.string().error(
           new Error(ERROR_STATUES.INCORRECT_USER_ID.message, {

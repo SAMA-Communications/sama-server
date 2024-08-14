@@ -60,6 +60,7 @@ import StatusTypingOperationProvider from "./operations/status/typing/Provider.j
 
 import EncryptionRegisterOperationProvider from "./operations/encryption/register/Provider.js"
 import EncryptionListOperationProvider from "./operations/encryption/list/Provider.js"
+import EncryptionRequestKeysOperationProvider from "./operations/encryption/request_keys/Provider.js"
 import EncryptionDeleteOperationProvider from "./operations/encryption/delete/Provider.js"
 
 const providers = [
@@ -125,6 +126,7 @@ const providers = [
 
   EncryptionRegisterOperationProvider,
   EncryptionListOperationProvider,
+  EncryptionRequestKeysOperationProvider,
   EncryptionDeleteOperationProvider,
 ]
 

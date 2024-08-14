@@ -7,9 +7,8 @@ class EncryptionListOperationRegisterProvider extends RegisterProvider {
   register(slc) {
     const encryptionService = slc.use("EncryptionService")
     const sessionService = slc.use("SessionService")
-    const userRepo = slc.use("UserRepository")
 
-    return new EncryptionListOperation(encryptionService, sessionService, userRepo)
+    return new EncryptionListOperation(encryptionService, sessionService)
   }
 }
 

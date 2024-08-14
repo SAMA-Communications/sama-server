@@ -3,7 +3,7 @@ import EncryptionRegisterOperation from "./index.js"
 
 const name = "EncryptionRegisterOperation"
 
-class EncryptionRegisterOperationRegisterProvider extends RegisterProvider {
+class EncryptionRegisterOperationProvider extends RegisterProvider {
   register(slc) {
     const encryptionService = slc.use("EncryptionService")
     const sessionService = slc.use("SessionService")
@@ -12,7 +12,7 @@ class EncryptionRegisterOperationRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new EncryptionRegisterOperationRegisterProvider({
+export default new EncryptionRegisterOperationProvider({
   name,
   implementationName: EncryptionRegisterOperation.name,
 })
