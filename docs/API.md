@@ -1349,6 +1349,122 @@ TBA
 }
 ```
 
+## Encryption API
+
+### Device register
+
+```
+{
+  request: {
+    device_register: {
+      identity_key: "identity_key",
+      signed_key: "signed_key",
+      one_time_pre_keys: ["key_1", "key_2", "key_3", "key_4", ...],
+    },
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
+  }
+}
+
+{
+  response: {
+    success: true,
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
+  }
+}
+```
+
+### Your own list of devices
+
+```
+{
+  request: {
+    device_list: {},
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
+  }
+}
+
+{
+  response: {
+    devices: [
+      {
+        identity_key: "identity_key1",
+        signed_key: "signed_key1",
+        one_time_pre_keys: ["key_1", "key_2", "key_3", "key_4", ...],
+      },
+      {
+        identity_key: "identity_key2",
+        signed_key: "signed_key2",
+        one_time_pre_keys: ["key_1", "key_2", "key_3", "key_4", ...],
+      },
+      ...
+    ],
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
+  }
+}
+```
+
+### List of device keys by user IDs
+
+```
+{
+  request: {
+    request_keys: {
+      user_ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"]
+    },
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
+  }
+}
+
+{
+  response: {
+    devices: {
+      "63077ad836b78c3d82af0812": [
+        {
+          identity_key: "identity_key1",
+          signed_key: "signed_key1",
+          one_time_pre_keys: ["key_1", "key_2", "key_3", "key_4", ...],
+        }
+      ],
+      "63077ad836b78c3d82af0813": [
+        {
+        identity_key: "identity_key2",
+        signed_key: "signed_key2",
+        one_time_pre_keys: ["key_1", "key_2", "key_3", "key_4", ...],
+        },
+        {
+          identity_key: "identity_key1",
+          signed_key: "signed_key1",
+          one_time_pre_keys: ["key_1", "key_2", "key_3", "key_4", ...],
+        },
+        ...
+      ],
+      ...
+    },
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
+  }
+}
+```
+
+### Remove the device
+
+```
+{
+  request: {
+    device_delete: {
+      identity_key: "identity_key",
+    },
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
+  }
+}
+
+{
+  response: {
+    success: true,
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
+  }
+}
+```
+
 ## PubSub
 
 TBA
