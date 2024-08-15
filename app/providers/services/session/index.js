@@ -274,7 +274,7 @@ class SessionService {
     }
 
     const extraParams = await this.retrieveUserExtraParams(userId, deviceId)
-    console.log('[removeUserSession][extraParams]', extraParams, userId, deviceId)
+    console.log("[removeUserSession][extraParams]", extraParams, userId, deviceId)
 
     await this.deleteUserDevices(userId)
     await this.deleteUserExtraParams(userId, deviceId)
@@ -285,7 +285,7 @@ class SessionService {
     const nodeEndpoint = extraParams[CONSTANTS.SESSION_NODE_KEY]
     if (nodeEndpoint) {
       const [, nodeId, nodePort] = splitWsEndpoint(nodeEndpoint)
-      await this.removeUserDeviceFromNode(nodeId, nodePort, userId, deviceId) 
+      await this.removeUserDeviceFromNode(nodeId, nodePort, userId, deviceId)
     }
   }
 }

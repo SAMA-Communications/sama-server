@@ -19,7 +19,13 @@ class EncryptionRepository extends BaseRepository {
     return device
   }
 
-  async getAllUserDevicesByIds(uids) {
+  async getAllUserDevices(user_id) {
+    const devices = await this.findAll({ user_id })
+
+    return devices
+  }
+
+  async getUsersDevices(uids) {
     const userIds = this.castObjectIds(uids)
 
     const $match = {

@@ -9,7 +9,7 @@ class EncryptionRequestKeysOperation {
 
     const existUserIds = await this.userRepo.retrieveExistedIds(userIds)
 
-    const deviceList = await this.encryptionService.encryptionRepo.getAllUserDevicesByIds(existUserIds)
+    const deviceList = await this.encryptionService.encryptionRepo.getUsersDevices(existUserIds)
 
     await this.encryptionService.removeFirstOneTimeKey(userIds)
 

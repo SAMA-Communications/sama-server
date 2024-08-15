@@ -5,6 +5,7 @@ class EncryptionRegisterOperation {
   }
 
   async perform(ws, registerDeviceParams) {
+    const userId = this.sessionService.getSessionUserId(ws)
     const existingDevice = await this.encryptionService.encryptionRepo.findByIdentityKey(
       registerDeviceParams.identity_key
     )
@@ -12,8 +13,10 @@ class EncryptionRegisterOperation {
     if (existingDevice) {
       await this.encryptionService.update(existingDevice, registerDeviceParams)
     } else {
-      const currentuserId = this.sessionService.getSessionUserId(ws)
-      await this.encryptionService.encryptionRepo.create({ user_id: currentuserId, ...registerDeviceParams })
+      await this.encryptionService.encryptionRepo.create({
+        user_id: userId,
+        ...registerDeviceParams,
+      })
     }
   }
 }

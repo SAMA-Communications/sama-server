@@ -8,11 +8,11 @@ class EncryptionDeleteOperation {
   }
 
   async perform(ws, deleteParams) {
-    const device = await this.encryptionService.encryptionRepo.findByIdentityKey(deleteParams.key)
+    const device = await this.encryptionService.encryptionRepo.findById(deleteParams.id)
 
     const userId = this.sessionService.getSessionUserId(ws)
 
-    if (!this.helpers.isEqualsNativeIds(device.user_id, userId)) {
+    if (!device || !this.helpers.isEqualsNativeIds(device.user_id, userId)) {
       throw new Error(ERROR_STATUES.FORBIDDEN.message, {
         cause: ERROR_STATUES.FORBIDDEN,
       })

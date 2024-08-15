@@ -7,8 +7,13 @@ class EncryptionListOperation {
   async perform(ws) {
     const userId = this.sessionService.getSessionUserId(ws)
 
-    const deviceList = await this.encryptionService.encryptionRepo.findAll({ user_id: userId })
-    return deviceList.map((device) => ({ identity_key: device.identity_key, signed_key: device.signed_key }))
+    const deviceList = await this.encryptionService.encryptionRepo.getAllUserDevices(userId)
+
+    return deviceList.map((obj) => ({
+      id: obj._id,
+      identity_key: obj.identity_key,
+      signed_key: obj.signed_key,
+    }))
   }
 }
 
