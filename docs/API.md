@@ -1389,12 +1389,12 @@ TBA
       {
         identity_key: "identity_key1",
         signed_key: "signed_key1",
-        one_time_pre_keys: ["key_1", "key_2", "key_3", "key_4", ...],
+        device_id: "device_1"
       },
       {
         identity_key: "identity_key2",
         signed_key: "signed_key2",
-        one_time_pre_keys: ["key_1", "key_2", "key_3", "key_4", ...],
+        device_id: "device_1"
       },
       ...
     ],
@@ -1427,9 +1427,9 @@ TBA
       ],
       "63077ad836b78c3d82af0813": [
         {
-        identity_key: "identity_key2",
-        signed_key: "signed_key2",
-        one_time_pre_keys: ["key_1", "key_2", "key_3", "key_4", ...],
+          identity_key: "identity_key2",
+          signed_key: "signed_key2",
+          one_time_pre_keys: ["key_1", "key_2", "key_3", "key_4", ...],
         },
         {
           identity_key: "identity_key1",
@@ -1451,7 +1451,7 @@ TBA
 {
   request: {
     device_delete: {
-      identity_key: "identity_key",
+      device_id: "deviceId1",
     },
     id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
   }

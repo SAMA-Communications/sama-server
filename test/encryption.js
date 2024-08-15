@@ -11,12 +11,14 @@ const encryptionRepo = ServiceLocatorContainer.use("EncryptionRepository")
 
 let currentUserToken = ""
 let usersIds = []
+let userDeviceId = null
 
 describe("Encryption function", async () => {
   before(async () => {
     usersIds = await createUserArray(3)
 
-    currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user._id
+    userDeviceId = "device_1"
+    currentUserToken = (await sendLogin(mockedWS, "user_1", "device_1")).response.user._id
   })
 
   describe("Device Registration", async () => {
@@ -134,9 +136,12 @@ describe("Encryption function", async () => {
       let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
       responseData = responseData.backMessages.at(0).response
 
+      console.log(responseData.devices[0])
+
       assert.equal(responseData.id, requestData.id)
       assert.equal(responseData.devices[0].signed_key, "test_key-1")
       assert.equal(responseData.devices[0].identity_key, "test_key")
+      assert.equal(responseData.devices[0].device_id, "device_1")
       assert.equal(responseData.devices[0].one_time_pre_keys, null)
     })
 
@@ -184,7 +189,7 @@ describe("Encryption function", async () => {
     it("should fail, forbidden", async () => {
       const requestData = {
         device_delete: {
-          key: "test_key",
+          device_id: "user_19673",
         },
         id: "1",
       }
@@ -195,13 +200,27 @@ describe("Encryption function", async () => {
       assert.deepEqual(responseData.error, { status: 403, message: "Forbidden." })
     })
 
-    it("should work", async () => {
+    it("should fail, no record by device_id", async () => {
       await sendLogout(mockedWS, currentUserToken)
       currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user.token
 
       const requestData = {
         device_delete: {
-          key: "test_key",
+          device_id: "312dfsszfg",
+        },
+        id: "1",
+      }
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+      responseData = responseData.backMessages.at(0).device_delete
+
+      assert.notEqual(responseData, undefined)
+      assert.deepEqual(responseData.error, { status: 403, message: "Forbidden." })
+    })
+
+    it("should fail, forbidden", async () => {
+      const requestData = {
+        device_delete: {
+          device_id: userDeviceId,
         },
         id: "2",
       }

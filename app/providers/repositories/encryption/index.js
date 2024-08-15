@@ -1,8 +1,8 @@
 import BaseRepository from "../base.js"
 
 class EncryptionRepository extends BaseRepository {
-  async findByIdentityKey(identity_key) {
-    const device = await this.findOne({ identity_key })
+  async findByDeviceId(device_id) {
+    const device = await this.findOne({ device_id })
 
     return device
   }
@@ -19,7 +19,13 @@ class EncryptionRepository extends BaseRepository {
     return device
   }
 
-  async getAllUserDevicesByIds(uids) {
+  async getAllUserDevices(user_id) {
+    const devices = await this.findAll({ user_id })
+
+    return devices
+  }
+
+  async getUsersDevices(uids) {
     const userIds = this.castObjectIds(uids)
 
     const $match = {
