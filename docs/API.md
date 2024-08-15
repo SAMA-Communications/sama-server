@@ -1387,14 +1387,14 @@ TBA
   response: {
     devices: [
       {
-        identity_key: "identity_key1",
-        signed_key: "signed_key1",
-        device_id: "device_1"
+        id: "63077ad836b78c3d82af0812",
+        device_id: "device_1",
+        signed_key: "signed_key1"
       },
       {
+        id: "63077ad836b78c3d82af0813",
         identity_key: "identity_key2",
-        signed_key: "signed_key2",
-        device_id: "device_1"
+        signed_key: "signed_key2"
       },
       ...
     ],
@@ -1451,7 +1451,7 @@ TBA
 {
   request: {
     device_delete: {
-      device_id: "deviceId1",
+      id: "63077ad836b78c3d82af0813",
     },
     id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
   }

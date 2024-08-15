@@ -6,7 +6,7 @@ class EncryptedDevice extends BaseModel {
   }
 
   static get visibleFields() {
-    return ["_id", "identity_key", "signed_key", "one_time_pre_keys", "device_id"]
+    return ["_id", "identity_key", "signed_key", "one_time_pre_keys"]
   }
 }
 

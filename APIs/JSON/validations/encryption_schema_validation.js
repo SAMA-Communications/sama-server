@@ -56,6 +56,6 @@ export const encryptionSchemaValidation = {
       ),
   }),
   device_delete: Joi.object({
-    device_id: Joi.alternatives().try(Joi.number().max(255).required(), Joi.string().max(255).required()).required(),
+    id: Joi.alternatives().try(Joi.number().max(255).required(), Joi.string().max(255).required()).required(),
   }),
 }

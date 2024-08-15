@@ -1,8 +1,8 @@
 import BaseRepository from "../base.js"
 
 class EncryptionRepository extends BaseRepository {
-  async findByDeviceId(device_id) {
-    const device = await this.findOne({ device_id })
+  async findByIdentityKey(identity_key) {
+    const device = await this.findOne({ identity_key })
 
     return device
   }
