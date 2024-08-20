@@ -56,7 +56,7 @@ If you only want to run dependency services (for local development without Docke
 docker-compose up
 ```
 
-Run dependency services with `SAMA` main apps:
+Run dependency services with `SAMA` main apps (sama-client, sama-server, sama-push-daemon):
 
 ```
 RUN_SAMA=true docker-compose up --build
