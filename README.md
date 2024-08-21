@@ -38,7 +38,7 @@ Frontend app (web + mobile) is available at https://github.com/SAMA-Communicatio
 - Run `docker-compose up` to run dependant services (MongoDB, Minio, Redis)
 - `npm install` to install dependencies
 - `npm run migrate-mongo-up` to run DB migrations
-- `npm run start` to run server
+- `npm run start` to run server (in a case of running under Windows - see https://github.com/SAMA-Communications/sama-server/issues/128)
 
 There are also other components. Make sure to check [Deploying SAMA chat server stack: a comprehensive guide](https://medium.com/sama-communications/deploying-sama-chat-server-stack-a-comprehensive-guide-294ddb9a2d78)
 
