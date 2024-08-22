@@ -10,9 +10,9 @@ class EncryptionListOperation {
     const deviceList = await this.encryptionService.encryptionRepo.getAllUserDevices(userId)
 
     return deviceList.map((obj) => ({
-      id: obj._id,
       identity_key: obj.identity_key,
       signed_key: obj.signed_key,
+      device_id: obj.device_id,
     }))
   }
 }

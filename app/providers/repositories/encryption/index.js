@@ -1,20 +1,8 @@
 import BaseRepository from "../base.js"
 
 class EncryptionRepository extends BaseRepository {
-  async findByIdentityKey(identity_key) {
-    const device = await this.findOne({ identity_key })
-
-    return device
-  }
-
   async findByDeviceId(device_id) {
     const device = await this.findOne({ device_id })
-
-    return device
-  }
-
-  async findById(recordId) {
-    const device = await this.findOne({ _id: recordId })
 
     return device
   }
@@ -28,7 +16,6 @@ class EncryptionRepository extends BaseRepository {
   async removeByDeviceId(user_id, device_id) {
     const record = await this.findOne({ user_id, device_id })
     if (record) {
-      console.log(record)
       await this.deleteById(record.params._id)
     }
   }
