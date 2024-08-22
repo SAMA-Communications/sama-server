@@ -19,17 +19,7 @@ export const encryptionSchemaValidation = {
           cause: ERROR_STATUES.INCORRECT_SIGNED_KEY,
         })
       ),
-    one_time_pre_keys: Joi.array()
-      .items(
-        Joi.string()
-          .max(255)
-          .error(
-            new Error(ERROR_STATUES.INCORRECT_ONE_TIME_PRE_KEYS.message, {
-              cause: ERROR_STATUES.INCORRECT_ONE_TIME_PRE_KEYS,
-            })
-          )
-      )
-      .max(100)
+    one_time_pre_keys: Joi.alternatives(Joi.object().max(100), Joi.array().items(Joi.string().max(255)).max(100))
       .required()
       .error(
         new Error(ERROR_STATUES.INCORRECT_ONE_TIME_PRE_KEYS.message, {

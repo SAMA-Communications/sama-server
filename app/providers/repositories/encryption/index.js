@@ -7,6 +7,12 @@ class EncryptionRepository extends BaseRepository {
     return device
   }
 
+  async findByDeviceId(device_id) {
+    const device = await this.findOne({ device_id })
+
+    return device
+  }
+
   async findById(recordId) {
     const device = await this.findOne({ _id: recordId })
 
@@ -17,6 +23,14 @@ class EncryptionRepository extends BaseRepository {
     const device = await this.findOneAndUpdate({ _id: recordId }, { $set: updateParams })
 
     return device
+  }
+
+  async removeByDeviceId(user_id, device_id) {
+    const record = await this.findOne({ user_id, device_id })
+    if (record) {
+      console.log(record)
+      await this.deleteById(record.params._id)
+    }
   }
 
   async getAllUserDevices(user_id) {
