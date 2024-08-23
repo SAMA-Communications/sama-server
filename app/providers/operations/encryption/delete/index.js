@@ -8,7 +8,7 @@ class EncryptionDeleteOperation {
   }
 
   async perform(ws, deleteParams) {
-    const device = await this.encryptionService.encryptionRepo.findById(deleteParams.id)
+    const device = await this.encryptionService.encryptionRepo.findByDeviceId(deleteParams.device_id)
 
     const userId = this.sessionService.getSessionUserId(ws)
 

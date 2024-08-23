@@ -135,16 +135,16 @@ describe("Encryption function", async () => {
       let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
       responseData = responseData.backMessages.at(0).response
 
-      userDeviceId = responseData.devices[0].id
+      userDeviceId = responseData.devices[0].device_id
 
       assert.equal(responseData.id, requestData.id)
       assert.equal(responseData.devices[0].signed_key, "test_key-1")
       assert.equal(responseData.devices[0].identity_key, "test_key")
+      assert.notEqual(responseData.devices[0].device_id, null)
       assert.equal(responseData.devices[0].one_time_pre_keys, null)
     })
 
     it("should work, by id", async () => {
-      await sendLogout(mockedWS, currentUserToken)
       currentUserToken = (await sendLogin(mockedWS, "user_2")).response.user.token
 
       const requestData = {
@@ -187,7 +187,7 @@ describe("Encryption function", async () => {
     it("should fail, forbidden", async () => {
       const requestData = {
         device_delete: {
-          id: "user_19673",
+          device_id: "user_19673",
         },
         id: "1",
       }
@@ -204,7 +204,7 @@ describe("Encryption function", async () => {
 
       const requestData = {
         device_delete: {
-          id: "312dfsszfg",
+          device_id: "312dfsszfg",
         },
         id: "1",
       }
@@ -216,18 +216,20 @@ describe("Encryption function", async () => {
     })
 
     it("should fail, forbidden", async () => {
+      await sendLogout(mockedWS, currentUserToken)
+      currentUserToken = (await sendLogin(mockedWS, "user_2")).response.user.token
+
       const requestData = {
         device_delete: {
-          id: userDeviceId,
+          device_id: userDeviceId,
         },
         id: "2",
       }
       let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
-      responseData = responseData.backMessages.at(0).response
+      responseData = responseData.backMessages.at(0).device_delete
 
-      assert.equal(responseData.success, true)
-      assert.equal(responseData.id, requestData.id)
-      assert.deepEqual(responseData.error, undefined)
+      assert.notEqual(responseData, undefined)
+      assert.deepEqual(responseData.error, { status: 403, message: "Forbidden." })
     })
   })
 
