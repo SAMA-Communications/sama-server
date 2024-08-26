@@ -198,9 +198,12 @@ class Controller {
 }
 ```
 
-## Clustering
+## Community and Support
 
-[Clustering documentation](docs/CLUSTERING.md)
+Join our community for support and discussions:
+- [GitHub Issues - SAMA server](https://github.com/SAMA-Communications/sama-server/issues), [GitHub Issues - SAMA client](https://github.com/SAMA-Communications/sama-client/issues)
+- [SAMA on Medium](https://medium.com/sama-communications)
+- Get help - [Discord 💬](https://discord.gg/yrHvnwcV) 
 
 ## Roadmap
 
