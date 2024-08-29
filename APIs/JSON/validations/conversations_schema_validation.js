@@ -63,6 +63,7 @@ export const conversationsSchemaValidation = {
       file_name: Joi.string().max(255),
       file_blur_hash: Joi.string().max(255),
     }),
+    is_encrypted: Joi.boolean().allow(true),
   }).required(),
   update: Joi.object({
     id: Joi.string().required(),
