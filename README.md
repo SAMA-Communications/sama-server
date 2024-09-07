@@ -53,13 +53,13 @@ docker-compose -f docker-compose-full.yml up --build
 If you only want to run dependency services (for local development without Docker), use this command:
 
 ```
-docker-compose up
+docker-compose -f docker-compose.yaml -f docker-compose.development.yaml up
 ```
 
 Run dependency services with `SAMA` main apps (sama-client, sama-server, sama-push-daemon):
 
 ```
-RUN_SAMA=true docker-compose up --build
+docker-compose up --build
 ```
 
 :warning: If you are using MacOS or Windows, and want run `SAMA` apps, add these two variables before the launch command:

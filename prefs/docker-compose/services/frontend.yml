@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  sama-client:
+    build:
+      context: ../../client
+      dockerfile: Dockerfile.frontend
+    container_name: "sama-client"
+    networks:
+      sama_network:
+        ipv4_address: 172.25.0.8
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../../client/.env.frontend:/app/.env
