@@ -18,7 +18,7 @@
     "url": "git@KhomenkoIgor:IgorKhomenko/SAMA.git"
   },
   "author": "Igor Khomenko",
-  "license": "AGPL-3.0-or-later",
+  "license": "GPL-3.0",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.327.0",
     "@aws-sdk/s3-request-presigner": "^3.328.0",
