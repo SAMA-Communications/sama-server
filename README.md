@@ -63,6 +63,7 @@ docker-compose up --build
 ```
 
 :warning: If you are using MacOS or Windows, and want run `SAMA` apps, add these two variables before the launch command:
+
 MacOS
 
 ```
