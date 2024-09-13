@@ -217,4 +217,6 @@ Join our community for support and discussions:
 
 Any thoughts, feedback is welcome! Please create a GitHub issue for any feedback you have.
 
-Want to support us with [some coffee?](https://www.buymeacoffee.com/khomenkoigor). Will be much appreciated!
+Want to support us?
+
+<a href="https://www.buymeacoffee.com/khomenkoigor" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
