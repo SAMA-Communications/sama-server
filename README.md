@@ -42,21 +42,31 @@ Frontend app (web + mobile) is available at https://github.com/SAMA-Communicatio
 
 There are also other components. Make sure to check [Deploying SAMA chat server stack: a comprehensive guide](https://medium.com/sama-communications/deploying-sama-chat-server-stack-a-comprehensive-guide-294ddb9a2d78)
 
-### Docker one-command deployment
+### Docker local development
 
-To build and run the `SAMA` with all dependencies, you can use the following command:
-
-```
-docker-compose -f docker-compose-full.yml up --build
-```
-
-If you only want to run dependency services (for local development without Docker), use this command:
+To run only the dependency services (for local development without the main SAMA applications running in Docker), use this command:
 
 ```
 docker-compose -f docker-compose.yaml -f docker-compose.development.yaml up
 ```
 
-Run dependency services with `SAMA` main apps (sama-client, sama-server, sama-push-daemon):
+## Deployment
+
+Deploying the SAMA application can be done easily with Docker, whether you want a complete setup with all dependencies or a local environment with the main applications. Below are the steps to follow:
+
+### Docker one-command deployment
+
+This approach builds and runs the entire SAMA application, including all dependencies, in a single command. It is ideal for setting up the full environment quickly.
+
+To deploy using this method, run:
+
+```
+docker-compose -f docker-compose-full.yml up --build
+```
+
+### Docker local deployment
+
+To run the dependency services along with the main `SAMA` applications (`sama-client`, `sama-server`, and `sama-push-daemon`), use:
 
 ```
 docker-compose up --build
