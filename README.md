@@ -31,24 +31,18 @@ Read complete medium posts **Introducing SAMA** and **What is SAMA** about what 
 
 Frontend app (web + mobile) is available at https://github.com/SAMA-Communications/sama-client
 
-## Development
+## Local development
 
-- Make sure you have `Node 18.20.x` installed.
+- Make sure you have latest `Node 18` installed.
 - Copy `.env.example` to `.env`.
-- Run `docker-compose up` to run dependant services (MongoDB, Minio, Redis)
+- Run `docker-compose -f docker-compose.yml -f docker-compose.development.yml up` to run dependant services (MongoDB, Minio, Redis)
 - `npm install` to install dependencies
 - `npm run migrate-mongo-up` to run DB migrations
 - `npm run start` to run server (in a case of running under Windows - see https://github.com/SAMA-Communications/sama-server/issues/128)
+- Now the server will be listening for incoming connections at `ws://localhost:9001`
 
-There are also other components. Make sure to check [Deploying SAMA chat server stack: a comprehensive guide](https://medium.com/sama-communications/deploying-sama-chat-server-stack-a-comprehensive-guide-294ddb9a2d78)
+There are also other components available in SAMA stack - check it out [Deploying SAMA chat server stack: a comprehensive guide](https://medium.com/sama-communications/deploying-sama-chat-server-stack-a-comprehensive-guide-294ddb9a2d78)
 
-### Docker local development
-
-To run only the dependency services (for local development without the main SAMA applications running in Docker), use this command:
-
-```
-docker-compose -f docker-compose.yaml -f docker-compose.development.yaml up
-```
 
 ## Deployment
 
