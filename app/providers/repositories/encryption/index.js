@@ -1,8 +1,8 @@
 import BaseRepository from "../base.js"
 
 class EncryptionRepository extends BaseRepository {
-  async findByDeviceId(device_id, user_id) {
-    const device = await this.findOne({ device_id, user_id })
+  async findByDeviceId(device_id) {
+    const device = await this.findOne({ device_id })
 
     return device
   }
@@ -44,7 +44,7 @@ class EncryptionRepository extends BaseRepository {
       _id: 1,
       identity_key: 1,
       signed_key: 1,
-      one_time_pre_keys: 1,
+      one_time_pre_key: 1,
       devices: 1,
     }
     const aggregatedResult = await this.aggregate([{ $match }, { $group }, { $sort }, { $project }])
@@ -56,7 +56,7 @@ class EncryptionRepository extends BaseRepository {
         (result[obj._id] = obj.devices.map((device) => ({
           identity_key: device.identity_key,
           signed_key: device.signed_key,
-          one_time_pre_keys: Object.values(device.one_time_pre_keys)[0],
+          one_time_pre_key: Object.values(device.one_time_pre_keys)[0],
         })))
     )
 

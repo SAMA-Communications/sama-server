@@ -8,6 +8,7 @@ class MessagePublicFields {
     this.body = messageModel.body
     this.attachments = messageModel.attachments
     this.x = messageModel.x
+    this.encrypted_message_type = messageModel.encrypted_message_type
 
     this.created_at = messageModel.created_at
 

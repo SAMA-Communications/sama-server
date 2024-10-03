@@ -42,6 +42,7 @@ export const messagesSchemaValidation = {
           })
         ),
       deleted_for: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required()),
+      encrypted_message_type: Joi.number().allow(1, 0),
     })
     .or("body", "attachments"),
   edit: Joi.object({
