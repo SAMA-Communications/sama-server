@@ -31,38 +31,43 @@ Read complete medium posts **Introducing SAMA** and **What is SAMA** about what 
 
 Frontend app (web + mobile) is available at https://github.com/SAMA-Communications/sama-client
 
-## Development
+## Local development
 
-- Make sure you have `Node 18.20.x` installed.
+- Make sure you have latest `Node 18` installed.
 - Copy `.env.example` to `.env`.
-- Run `docker-compose up` to run dependant services (MongoDB, Minio, Redis)
+- Run `docker-compose -f docker-compose.yml -f docker-compose.development.yml up` to run dependant services (MongoDB, Minio, Redis)
 - `npm install` to install dependencies
 - `npm run migrate-mongo-up` to run DB migrations
-- `npm run start` to run server
+- `npm run start` to run server (in a case of running under Windows - see https://github.com/SAMA-Communications/sama-server/issues/128)
+- Now the server will be listening for incoming connections at `ws://localhost:9001`
 
-There are also other components. Make sure to check [Deploying SAMA chat server stack: a comprehensive guide](https://medium.com/sama-communications/deploying-sama-chat-server-stack-a-comprehensive-guide-294ddb9a2d78)
+There are also other components available in SAMA stack - check it out [Deploying SAMA chat server stack: a comprehensive guide](https://medium.com/sama-communications/deploying-sama-chat-server-stack-a-comprehensive-guide-294ddb9a2d78)
+
+
+## Deployment
+
+Deploying the SAMA application can be done easily with Docker, whether you want a complete setup with all dependencies or a local environment with the main applications. Below are the steps to follow:
 
 ### Docker one-command deployment
 
-To build and run the `SAMA` with all dependencies, you can use the following command:
+This approach builds and runs the entire SAMA application, including all dependencies, in a single command. It is ideal for setting up the full environment quickly.
+
+To deploy using this method, run:
 
 ```
 docker-compose -f docker-compose-full.yml up --build
 ```
 
-If you only want to run dependency services (for local development without Docker), use this command:
+### Docker local deployment
+
+To run the dependency services along with the main `SAMA` applications (`sama-client`, `sama-server`, and `sama-push-daemon`), use:
 
 ```
-docker-compose up
-```
-
-Run dependency services with `SAMA` main apps:
-
-```
-RUN_SAMA=true docker-compose up --build
+docker-compose up --build
 ```
 
 :warning: If you are using MacOS or Windows, and want run `SAMA` apps, add these two variables before the launch command:
+
 MacOS
 
 ```
@@ -198,9 +203,12 @@ class Controller {
 }
 ```
 
-## Clustering
+## Community and Support
 
-[Clustering documentation](docs/CLUSTERING.md)
+Join our community for support and discussions:
+- [GitHub Issues - SAMA server](https://github.com/SAMA-Communications/sama-server/issues), [GitHub Issues - SAMA client](https://github.com/SAMA-Communications/sama-client/issues)
+- [SAMA on Medium](https://medium.com/sama-communications)
+- Get help - [Discord 💬](https://discord.gg/bHSm9a7DpC)
 
 ## Roadmap
 
@@ -214,4 +222,6 @@ class Controller {
 
 Any thoughts, feedback is welcome! Please create a GitHub issue for any feedback you have.
 
-Want to support us with [some coffee?](https://www.buymeacoffee.com/khomenkoigor). Will be much appreciated!
+Want to support us?
+
+<a href="https://www.buymeacoffee.com/khomenkoigor" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>

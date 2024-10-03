@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+
+  sama-server:
+    build:
+      context: ../../../.
+      dockerfile: Dockerfile
+    container_name: "sama-server"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT:-172.25.0.2}
+      - MINIO_PORT=${MINIO_PORT:-9000}
+    networks:
+      sama_network:
+        ipv4_address: 172.25.0.7
+    volumes:
+      - ../../../.env.local:/app/.env
+    ports:
+      - "9000:9001"
