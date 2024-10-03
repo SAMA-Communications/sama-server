@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  sama-push-daemon:
+    build:
+      context: ../../push
+      dockerfile: Dockerfile.push
+    networks:
+      sama_network:
+        ipv4_address: 172.25.0.10
+    volumes:
+      - ../../push/.env.push:/app/.env

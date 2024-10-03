@@ -39,7 +39,8 @@
   request: {
     user_login: {
       login: "user_1",
-      password: "user_paswword_1"
+      password: "user_paswword_1",
+      device_id: "xxx-yyy-zzz"
     },
     id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
   }
