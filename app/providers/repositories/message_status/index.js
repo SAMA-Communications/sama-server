@@ -71,6 +71,10 @@ class MessageStatusRepository extends BaseRepository {
 
     return result
   }
+
+  async deleteByMidsAndCid(mids, cid, user_id) {
+    await this.deleteMany({ mid: { $in: mids }, cid, user_id })
+  }
 }
 
 export default MessageStatusRepository

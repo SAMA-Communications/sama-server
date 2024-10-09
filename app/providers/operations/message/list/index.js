@@ -17,7 +17,8 @@ class MessageListOperation {
     const currentUserId = this.sessionService.getSessionUserId(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
-    await this.#hasAccess(cId, currentUserId)
+    const { conversation } = await this.#hasAccess(cId, currentUserId)
+    const isRemoveMessage = !!conversation.is_encrypted
 
     const normalizedLimit = this.#normalizeLimitParam(limit)
 
@@ -25,7 +26,8 @@ class MessageListOperation {
       cId,
       currentUser,
       { updatedAt: updated_at },
-      normalizedLimit
+      normalizedLimit,
+      isRemoveMessage
     )
 
     const messagesWithStatus = await this.#assignMessageStatus(messages, messagesStatuses, currentUserId)
@@ -50,6 +52,8 @@ class MessageListOperation {
         cause: ERROR_STATUES.FORBIDDEN,
       })
     }
+
+    return { conversation }
   }
 
   async #assignMessageStatus(messages, messagesStatuses, currentUserId) {
