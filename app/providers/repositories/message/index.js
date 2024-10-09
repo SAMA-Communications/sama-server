@@ -11,6 +11,19 @@ class MessageRepository extends BaseRepository {
     return await super.prepareParams(params)
   }
 
+  async prepareEncryptedParams(params) {
+    params._id = this.castObjectId(params._id)
+    params.expired_at = new Date()
+
+    return await this.prepareParams(params)
+  }
+
+  async createPhantomMessageObject(messageParams) {
+    const insertParams = await this.prepareParams(messageParams)
+
+    return this.wrapRawRecordInModel({ _id: this.castObjectId(), ...insertParams })
+  }
+
   async findAllOpponentsMessagesFromConversation(cid, readerUserId, { mids, lastReadMessageId }) {
     const idQuery = lastReadMessageId
       ? { $gt: this.castObjectId(lastReadMessageId) }
@@ -115,6 +128,10 @@ class MessageRepository extends BaseRepository {
     messageIds = this.castObjectIds(messageIds)
 
     await this.updateMany({ _id: { $in: messageIds } }, { $addToSet: { deleted_for: userId } })
+  }
+
+  async deleteOpponentMessageByMids(mids, uId) {
+    await this.deleteMany({ _id: { $in: mids }, from: { $ne: uId } }) //$ne - care for group chat in future
   }
 }
 

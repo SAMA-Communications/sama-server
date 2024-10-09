@@ -14,6 +14,7 @@ import ConversationParticipantRepoProvider from "./repositories/conversation_par
 import MessageRepoProvider from "./repositories/message/Provider.js"
 import MessageStatusRepoProvider from "./repositories/message_status/Provider.js"
 import EncryptionRepoProvider from "./repositories/encryption/Provider.js"
+import OperationLogRepoProvider from "./repositories/operation_log/Provider.js"
 
 import SessionServiceProvider from "./services/session/Provider.js"
 import UserServiceProvider from "./services/user/Provider.js"
@@ -63,6 +64,8 @@ import EncryptionListOperationProvider from "./operations/encryption/list/Provid
 import EncryptionRequestKeysOperationProvider from "./operations/encryption/request_keys/Provider.js"
 import EncryptionDeleteOperationProvider from "./operations/encryption/delete/Provider.js"
 
+import OperationLogLogsOperationProvider from "./operations/operation_log/logs/Provider.js"
+
 const providers = [
   HelpersProvider,
 
@@ -80,6 +83,7 @@ const providers = [
   MessageRepoProvider,
   MessageStatusRepoProvider,
   EncryptionRepoProvider,
+  OperationLogRepoProvider,
 
   SessionServiceProvider,
   UserServiceProvider,
@@ -128,6 +132,8 @@ const providers = [
   EncryptionListOperationProvider,
   EncryptionRequestKeysOperationProvider,
   EncryptionDeleteOperationProvider,
+
+  OperationLogLogsOperationProvider,
 ]
 
 export default providers

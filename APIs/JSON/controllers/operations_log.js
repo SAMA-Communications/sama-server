@@ -1,7 +1,5 @@
 import BaseJSONController from "./base.js"
 
-import OpLog from "@sama/models/operations_log.js"
-
 import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
 import MappableMessage from "@sama/networking/models/MappableMessage.js"
@@ -22,23 +20,11 @@ const mapOpLogsMessage = async function (mapper) {
 
 class OperationsLogController extends BaseJSONController {
   async logs(ws, data) {
-    const {
-      id: requestId,
-      op_log_list: {
-        created_at: { gt, lt },
-      },
-    } = data
+    const { id: requestId, op_log_list: opLogParams } = data
 
-    const sessionService = ServiceLocatorContainer.use("SessionService")
+    const operationLogLogsOperation = ServiceLocatorContainer.use("OperationLogLogsOperation")
+    const opLogs = await operationLogLogsOperation.perform(opLogParams)
 
-    const currentUserId = sessionService.getSessionUserId(ws)
-
-    const query = {
-      user_id: currentUserId,
-      created_at: gt ? { $gt: new Date(gt) } : { $lt: new Date(lt) },
-    }
-
-    const opLogs = await OpLog.findAll(query, ["user_id", "packet"])
     const packet = { response: { id: requestId, logs: opLogs } }
 
     return new Response().addBackMessage(new MappableMessage(packet, mapOpLogsMessage))

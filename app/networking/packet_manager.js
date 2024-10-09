@@ -84,7 +84,17 @@ class PacketManager {
 
       if (isNoConnections) {
         if (!notSaveInOfflineStorage) {
-          operationsLogRepository.savePacket(userId, packet)
+          const packetObject = JSON.parse(packet)
+
+          if (packetObject.typing) continue
+
+          if (packetObject.message?.encrypted_message_type !== undefined) {
+            const messageService = ServiceLocatorContainer.use("MessageService")
+
+            messageService.savePacketMessage(userId, packetObject.message)
+          } else {
+            operationsLogRepository.savePacket(userId, packet)
+          }
         }
 
         offlineUsersByPackets.push(userId)
