@@ -1,9 +1,10 @@
 class MessageService {
-  constructor(helpers, messageRepo, messageStatusRepo, encryptionRepo) {
+  constructor(helpers, messageRepo, messageStatusRepo, encryptionRepo, encryptedMessageStatusRepo) {
     this.helpers = helpers
     this.messageRepo = messageRepo
     this.messageStatusRepo = messageStatusRepo
     this.encryptionRepo = encryptionRepo
+    this.encryptedMessageStatusRepo = encryptedMessageStatusRepo
   }
 
   async create(user, conversation, blockedUserIds, messageParams) {
@@ -14,28 +15,13 @@ class MessageService {
     messageParams.t = this.helpers.currentTimeStamp()
 
     if (messageParams.encrypted_message_type !== undefined) {
-      return await this.messageRepo.createPhantomMessageObject(messageParams)
+      messageParams.expired_at = new Date()
     }
+
     return await this.messageRepo.create(messageParams)
   }
 
-  async savePacketMessage(uId, messageParams) {
-    const userEncryptedDevices = await this.encryptionRepo.getAllUserDevices(uId)
-
-    const saveMessagePromises = userEncryptedDevices.map(async (device) => {
-      //TODO: problem of the same _id for different devices
-      const message = await this.messageRepo.prepareEncryptedParams({
-        identity_key: device.identity_key,
-        ...messageParams,
-      })
-
-      return this.messageRepo.collectionCursor.insertOne(message)
-    })
-
-    return await Promise.all(saveMessagePromises)
-  }
-
-  async messagesList(cid, user, options, limit, isRemove) {
+  async messagesList(cid, user, options, limit, isEncrypted, deviceId) {
     const filterOptions = {}
     if (options.updatedAt?.gt) {
       filterOptions.updatedAtFrom = new Date(options.updatedAt.gt)
@@ -44,17 +30,30 @@ class MessageService {
       filterOptions.updatedAtBefore = new Date(options.updatedAt.lt)
     }
 
-    //TODO: send encrypted messages only for the current identity_key
-    const messages = await this.messageRepo.list(cid, user.native_id, filterOptions, limit)
+    let messageIds = [],
+      messageIdsToRemove = [],
+      messages
 
-    const messageIds = messages.map((message) => message._id)
+    if (isEncrypted) {
+      const identityKey = await this.encryptionRepo.getIdentityKeyByUserId(user.native_id, deviceId)
+      const { midsToDelivery, midsToRemove } = await this.encryptedMessageStatusRepo.getMidsByIdentityKey(
+        identityKey,
+        cid
+      )
+
+      messageIds = midsToDelivery
+      messageIdsToRemove = midsToRemove
+      messages = await this.messageRepo.listByMids(messageIds, filterOptions, limit)
+    } else {
+      messages = await this.messageRepo.list(cid, user.native_id, filterOptions, limit)
+      messageIds = messages.map((message) => message._id)
+    }
 
     const messagesStatuses = await this.messageStatusRepo.findReadStatusForMids(messageIds)
 
-    if (isRemove) {
-      //TODO: include the identity_key field to delete messages
-      await this.messageRepo.deleteOpponentMessageByMids(messageIds, user.native_id)
-      await this.messageStatusRepo.deleteByMidsAndCid(messageIds, cid, user.native_id)
+    if (messageIdsToRemove.length) {
+      await this.messageRepo.deleteMessageByMids(messageIdsToRemove)
+      await this.messageStatusRepo.deleteByMidsAndCid(messageIdsToRemove, cid, user.native_id)
     }
 
     return { messages, messagesStatuses }

@@ -24,6 +24,6 @@ export default class Message extends BaseModel {
   }
 
   static get hiddenFields() {
-    return ["updated_at", "expired_at", "identity_key"]
+    return ["updated_at", "expired_at"]
   }
 }

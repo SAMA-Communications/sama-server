@@ -11,19 +11,6 @@ class MessageRepository extends BaseRepository {
     return await super.prepareParams(params)
   }
 
-  async prepareEncryptedParams(params) {
-    params._id = this.castObjectId(params._id)
-    params.expired_at = new Date()
-
-    return await this.prepareParams(params)
-  }
-
-  async createPhantomMessageObject(messageParams) {
-    const insertParams = await this.prepareParams(messageParams)
-
-    return this.wrapRawRecordInModel({ _id: this.castObjectId(), ...insertParams })
-  }
-
   async findAllOpponentsMessagesFromConversation(cid, readerUserId, { mids, lastReadMessageId }) {
     const idQuery = lastReadMessageId
       ? { $gt: this.castObjectId(lastReadMessageId) }
@@ -74,19 +61,32 @@ class MessageRepository extends BaseRepository {
     return result
   }
 
+  async buildOptions(baseOptions, options) {
+    if (options.updatedAtFrom) {
+      baseOptions.updated_at = this.mergeOperators(baseOptions.updated_at, { $gt: options.updatedAtFrom })
+    }
+    if (options.updatedAtBefore) {
+      baseOptions.updated_at = this.mergeOperators(baseOptions.updated_at, { $lt: options.updatedAtBefore })
+    }
+    return baseOptions
+  }
+
   async list(conversationId, userId, options, limit) {
-    const query = {
+    let query = {
       cid: this.castObjectId(conversationId),
       deleted_for: { $nin: [this.castObjectId(userId)] },
     }
 
-    if (options.updatedAtFrom) {
-      query.updated_at = this.mergeOperators(query.updated_at, { $gt: options.updatedAtFrom })
-    }
-    if (options.updatedAtBefore) {
-      query.updated_at = this.mergeOperators(query.updated_at, { $lt: options.updatedAtBefore })
-    }
+    query = await this.buildOptions(query, options)
+    const messages = await this.findAll(query, null, limit)
 
+    return messages
+  }
+
+  async listByMids(mids, options, limit) {
+    let query = { _id: { $in: mids } }
+
+    query = await this.buildOptions(query, options)
     const messages = await this.findAll(query, null, limit)
 
     return messages
@@ -130,8 +130,8 @@ class MessageRepository extends BaseRepository {
     await this.updateMany({ _id: { $in: messageIds } }, { $addToSet: { deleted_for: userId } })
   }
 
-  async deleteOpponentMessageByMids(mids, uId) {
-    await this.deleteMany({ _id: { $in: mids }, from: { $ne: uId } }) //$ne - care for group chat in future
+  async deleteMessageByMids(mids) {
+    await this.deleteMany({ _id: { $in: mids } })
   }
 }
 

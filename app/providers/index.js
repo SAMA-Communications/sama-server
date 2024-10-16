@@ -15,6 +15,7 @@ import MessageRepoProvider from "./repositories/message/Provider.js"
 import MessageStatusRepoProvider from "./repositories/message_status/Provider.js"
 import EncryptionRepoProvider from "./repositories/encryption/Provider.js"
 import OperationLogRepoProvider from "./repositories/operation_log/Provider.js"
+import EncryptedMessageStatusRepoProvider from "./repositories/encrypted_message_status/Provider.js"
 
 import SessionServiceProvider from "./services/session/Provider.js"
 import UserServiceProvider from "./services/user/Provider.js"
@@ -25,6 +26,7 @@ import ConversationServiceProvider from "./services/conversation/Provider.js"
 import MessageServiceProvider from "./services/message/Provider.js"
 import ConversationNotificationProvider from "./services/conversation_notification/Provider.js"
 import EncryptionServiceProvider from "./services/encryption/Provider.js"
+import EncryptedMessageStatusServiceProvider from "./services/encrypted_message_status/Provider.js"
 
 import UserAuthOperationProvider from "./operations/user/auth/Provider.js"
 import UserLogoutOperationProvider from "./operations/user/logout/Provider.js"
@@ -84,6 +86,7 @@ const providers = [
   MessageStatusRepoProvider,
   EncryptionRepoProvider,
   OperationLogRepoProvider,
+  EncryptedMessageStatusRepoProvider,
 
   SessionServiceProvider,
   UserServiceProvider,
@@ -94,6 +97,7 @@ const providers = [
   MessageServiceProvider,
   ConversationNotificationProvider,
   EncryptionServiceProvider,
+  EncryptedMessageStatusServiceProvider,
 
   UserAuthOperationProvider,
   UserLogoutOperationProvider,

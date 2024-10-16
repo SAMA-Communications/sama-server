@@ -89,9 +89,9 @@ class PacketManager {
           if (packetObject.typing) continue
 
           if (packetObject.message?.encrypted_message_type !== undefined) {
-            const messageService = ServiceLocatorContainer.use("MessageService")
-
-            messageService.savePacketMessage(userId, packetObject.message)
+            const { cid, _id: mid } = packetObject.message
+            const encryptedMessageStatusService = ServiceLocatorContainer.use("EncryptedMessageStatusService")
+            await encryptedMessageStatusService.markAsNotDelivered(mid, cid, userId)
           } else {
             operationsLogRepository.savePacket(userId, packet)
           }

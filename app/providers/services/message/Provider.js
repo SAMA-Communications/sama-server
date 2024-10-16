@@ -9,8 +9,9 @@ class MessageServiceRegisterProvider extends RegisterProvider {
     const messageRepo = slc.use("MessageRepository")
     const messageStatusRepo = slc.use("MessageStatusRepository")
     const encryptionRepo = slc.use("EncryptionRepository")
+    const encryptedMessageStatusRepo = slc.use("EncryptedMessageStatusRepository")
 
-    return new MessageService(helpers, messageRepo, messageStatusRepo, encryptionRepo)
+    return new MessageService(helpers, messageRepo, messageStatusRepo, encryptionRepo, encryptedMessageStatusRepo)
   }
 }
 

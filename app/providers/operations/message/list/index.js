@@ -18,16 +18,19 @@ class MessageListOperation {
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
     const { conversation } = await this.#hasAccess(cId, currentUserId)
-    const isRemoveMessage = !!conversation.is_encrypted
+    const isEncrypted = !!conversation.is_encrypted
 
     const normalizedLimit = this.#normalizeLimitParam(limit)
+
+    const deviceId = this.sessionService.getDeviceId(ws, currentUser._id)
 
     const { messages, messagesStatuses } = await this.messageService.messagesList(
       cId,
       currentUser,
       { updatedAt: updated_at },
       normalizedLimit,
-      isRemoveMessage
+      isEncrypted,
+      deviceId
     )
 
     const messagesWithStatus = await this.#assignMessageStatus(messages, messagesStatuses, currentUserId)
