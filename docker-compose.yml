@@ -10,150 +10,45 @@ networks:
 
 services:
   sama-client:
-    build:
-      context: ./prefs/client
-      dockerfile: Dockerfile.frontend
-    environment:
-      - RUN_SAMA=${RUN_SAMA:-false}
-    entrypoint: >
-      sh -c "if [ \$$RUN_SAMA = 'true' ]; then
-               npm run start;
-             else
-               sleep infinity;
-             fi"
-    networks:
-      sama_network:
-        ipv4_address: 172.25.0.8
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./prefs/client/.env.frontend:/app/.env
+    extends:
+      file: ./prefs/docker-compose/services/frontend.yml
+      service: sama-client
 
   sama-server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    depends_on:
-      mongo:
-        condition: service_healthy
-    environment:
-      - RUN_SAMA=${RUN_SAMA:-false}
-      - MINIO_ENDPOINT=${MINIO_ENDPOINT:-172.25.0.2}
-      - MINIO_PORT=${MINIO_PORT:-9000}
-    entrypoint: >
-      sh -c "if [ \$$RUN_SAMA = 'true' ]; then
-               npm run migrate-mongo-up;
-               npm run start;
-             else
-               sleep infinity;
-             fi"
-    networks:
-      sama_network:
-        ipv4_address: 172.25.0.7
-    volumes:
-      - ./.env.local:/app/.env
-    ports:
-      - "9000:9001"
+    extends:
+      file: ./prefs/docker-compose/services/backend.yml
+      service: sama-server
 
   sama-push-daemon:
-    build:
-      context: ./prefs/push
-      dockerfile: Dockerfile.push
-    environment:
-      - RUN_SAMA=${RUN_SAMA:-false}
-    entrypoint: >
-      sh -c "if [ \$$RUN_SAMA = 'true' ]; then
-               npm run start;
-             else
-               sleep infinity;
-             fi"
-    networks:
-      sama_network:
-        ipv4_address: 172.25.0.10
-    volumes:
-      - ./prefs/push/.env.push:/app/.env
+    extends:
+      file: ./prefs/docker-compose/services/push-daemon.yml
+      service: sama-push-daemon
 
   s3:
-    image: minio/minio
-    networks:
-      sama_network:
-        ipv4_address: 172.25.0.2
-    ports:
-      - "9011:9001"
-      - "9010:9000"
-    volumes:
-      - data:/data
-    env_file:
-      - ./.env.local
-    command: server --address 0.0.0.0:9000 --console-address :9001 /data
-    healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
+    extends:
+      file: ./prefs/docker-compose/services/s3.yml
+      service: s3
 
   s3-service:
-    image: minio/mc
-    networks:
-      sama_network:
-        ipv4_address: 172.25.0.3
-    depends_on:
-      s3:
-        condition: service_healthy
-    env_file:
-      - ./.env.local
-    entrypoint: >
-      /bin/sh -c "
-      /usr/bin/mc alias set sama http://s3:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD};
-      /usr/bin/mc mb sama/samabucket;
-      /usr/bin/mc policy set public sama/samabucket;
-      /usr/bin/mc admin user svcacct add --access-key $${MINIO_ACCESS_KEY} --secret-key $${MINIO_SECRET_KEY} sama $${MINIO_ROOT_USER}
-      "
+    extends:
+      file: ./prefs/docker-compose/services/s3.yml
+      service: s3-service
 
   mongo:
-    platform: linux/x86_64
-    image: mongo:4.4
-    networks:
-      sama_network:
-        ipv4_address: 172.25.0.4
-    container_name: server_mongo_database
-    restart: always
-    volumes:
-      - mongo:/data/db
-    environment:
-      - MONGO_INITDB_DATABASE=samadb
-    ports:
-      - "27017:27017"
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongo localhost:27017/samadb --quiet
-      interval: 30s
-      timeout: 20s
-      retries: 3
+    extends:
+      file: ./prefs/docker-compose/services/db.yml
+      service: mongo
 
   redis:
-    image: redis
-    networks:
-      sama_network:
-        ipv4_address: 172.25.0.5
-    container_name: server_redis_database
-    restart: always
-    ports:
-      - "6379:6379"
+    extends:
+      file: ./prefs/docker-compose/services/db.yml
+      service: redis
 
   redis-commander:
-    container_name: redis-commander
-    hostname: redis-commander
-    image: rediscommander/redis-commander:latest
-    networks:
-      sama_network:
-        ipv4_address: 172.25.0.6
-    restart: always
-    environment:
-      - REDIS_HOSTS=local:redis:6379
-    ports:
-      - "8081:8081"
+    extends:
+      file: ./prefs/docker-compose/services/db.yml
+      service: redis-commander
 
 volumes:
   data:
   mongo:
-  mongo-tests:
