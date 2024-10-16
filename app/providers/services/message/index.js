@@ -1,8 +1,10 @@
 class MessageService {
-  constructor(helpers, messageRepo, messageStatusRepo) {
+  constructor(helpers, messageRepo, messageStatusRepo, encryptionRepo, encryptedMessageStatusRepo) {
     this.helpers = helpers
     this.messageRepo = messageRepo
     this.messageStatusRepo = messageStatusRepo
+    this.encryptionRepo = encryptionRepo
+    this.encryptedMessageStatusRepo = encryptedMessageStatusRepo
   }
 
   async create(user, conversation, blockedUserIds, messageParams) {
@@ -12,12 +14,10 @@ class MessageService {
 
     messageParams.t = this.helpers.currentTimeStamp()
 
-    const message = await this.messageRepo.create(messageParams)
-
-    return message
+    return await this.messageRepo.create(messageParams)
   }
 
-  async messagesList(cId, user, options, limit) {
+  async messagesList(cid, user, options, limit, isEncrypted, deviceId) {
     const filterOptions = {}
     if (options.updatedAt?.gt) {
       filterOptions.updatedAtFrom = new Date(options.updatedAt.gt)
@@ -26,11 +26,31 @@ class MessageService {
       filterOptions.updatedAtBefore = new Date(options.updatedAt.lt)
     }
 
-    const messages = await this.messageRepo.list(cId, user.native_id, filterOptions, limit)
+    let messageIds = [],
+      messageIdsToRemove = [],
+      messages
 
-    const messageIds = messages.map((message) => message._id)
+    if (isEncrypted) {
+      const identityKey = await this.encryptionRepo.getIdentityKeyByUserId(user.native_id, deviceId)
+      const { midsToDelivery, midsToRemove } = await this.encryptedMessageStatusRepo.getMidsByIdentityKey(
+        identityKey,
+        cid
+      )
+
+      messageIds = midsToDelivery
+      messageIdsToRemove = midsToRemove
+      messages = await this.messageRepo.listByMids(messageIds, filterOptions, limit)
+    } else {
+      messages = await this.messageRepo.list(cid, user.native_id, filterOptions, limit)
+      messageIds = messages.map((message) => message._id)
+    }
 
     const messagesStatuses = await this.messageStatusRepo.findReadStatusForMids(messageIds)
+
+    if (messageIdsToRemove.length) {
+      await this.messageRepo.deleteMessageByMids(messageIdsToRemove)
+      await this.messageStatusRepo.deleteByMidsAndCid(messageIdsToRemove, cid, user.native_id)
+    }
 
     return { messages, messagesStatuses }
   }

@@ -20,6 +20,14 @@ class EncryptionRepository extends BaseRepository {
     }
   }
 
+  async getIdentityKeyByUserId(user_id, device_id) {
+    console.log({ user_id, device_id })
+
+    const device = await this.findOne({ user_id, device_id })
+
+    return device?.identity_key
+  }
+
   async getAllUserDevices(user_id) {
     const devices = await this.findAll({ user_id })
 
