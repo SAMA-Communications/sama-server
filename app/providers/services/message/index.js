@@ -14,10 +14,6 @@ class MessageService {
 
     messageParams.t = this.helpers.currentTimeStamp()
 
-    if (messageParams.encrypted_message_type !== undefined) {
-      messageParams.expired_at = new Date()
-    }
-
     return await this.messageRepo.create(messageParams)
   }
 
