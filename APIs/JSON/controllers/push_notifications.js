@@ -16,7 +16,7 @@ class PushNotificationsController extends BaseJSONController {
   async push_subscription_create(ws, data) {
     const {
       id: requestId,
-      push_subscription_create: { platform, web_endpoint, web_key_auth, web_key_p256dh, device_udid },
+      push_subscription_create: { web_endpoint, web_key_auth, web_key_p256dh, device_udid },
     } = data
 
     const sessionService = ServiceLocatorContainer.use("SessionService")
