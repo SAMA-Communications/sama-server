@@ -1010,11 +1010,14 @@ If users are offline, they will receive a message once became online.
       web_endpoint: 'enpoint',
       web_key_auth: 'auth',
       web_key_p256dh: 'p256dh',
+      device_token: "..."
       device_udid: "deviceId"
     },
     id: "1",
   },
 };
+
+The [`web_endpoint`, `web_key_auth`, `web_key_p256dh`] and `device_token` fields are interchangeable for different devices
 
 {
   response: {

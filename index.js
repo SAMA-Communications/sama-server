@@ -19,7 +19,6 @@ import Minio from "./app/lib/storage/minio.js"
 import S3 from "./app/lib/storage/s3.js"
 import Spaces from "./app/lib/storage/spaces.js"
 
-import RSMPushQueue from "./app/lib/push_queue/rsm_queue.js"
 import SamaNativePushQueue from "./app/lib/push_queue/sama_native_queue.js"
 
 import { connectToDBPromise, getDb } from "./app/lib/db.js"
@@ -43,12 +42,6 @@ switch (process.env.STORAGE_DRIVER) {
 }
 
 switch (process.env.PUSH_QUEUE_DRIVER) {
-  case "rsmq":
-    RuntimeDefinedContext.PUSH_QUEUE_DRIVER = new RSMPushQueue(RedisClient.client, {
-      chatAlertQueueName: process.env.RSM_CHAT_ALERT_QUEUE_NAME,
-      pushQueueName: process.env.RSM_PUSH_QUEUE_NAME,
-    })
-    break
   case "sama_native":
   default:
     RuntimeDefinedContext.PUSH_QUEUE_DRIVER = new SamaNativePushQueue(
