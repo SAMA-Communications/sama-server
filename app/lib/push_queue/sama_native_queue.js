@@ -36,7 +36,7 @@ export default class SamaNativePushQueue extends BasePushQueue {
       const platform = pushEvent.params.platform
 
       for (const uid of pushEvent.params.user_ids) {
-        const userDevices = await this.getUserDevicesByPlatform(platform, uid)
+        const userDevices = await this.getSubscriptionsByPlatform(platform, uid)
         if (!userDevices.length) continue
         devices = devices.concat(userDevices)
       }

@@ -15,18 +15,18 @@ export default class BasePushQueue {
     return pushEvents
   }
 
-  async getUserDevicesByPlatform(platform, user_id) {
-    return await pushNotificationsRepository.getUserDevicesByPlatform(platform, user_id)
+  async getSubscriptionsByPlatform(platform, user_id) {
+    return await pushNotificationsRepository.getSubscriptionsByPlatform(platform, user_id)
   }
 
   async createPush(pushQueueMessage) {
     if (pushQueueMessage instanceof CreateChatAlertEventOptions) {
-      await this.createChatAlert(pushQueueMessage)
+      return await this.createChatAlert(pushQueueMessage)
     } else if (pushQueueMessage instanceof CreatePushEventOptions) {
-      await this.createPushEvents(pushQueueMessage)
+      return await this.createPushEvents(pushQueueMessage)
     }
 
-    throw new Error("Unknown push message type") //Why do we always return an error?
+    throw new Error("Unknown push message type")
   }
 
   async createChatAlert() {
