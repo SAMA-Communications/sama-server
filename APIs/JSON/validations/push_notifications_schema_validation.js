@@ -11,27 +11,21 @@ export const pushNotificationsSchemaValidation = {
           cause: ERROR_STATUES.INCORRECT_PLATFROM_TYPE,
         })
       ),
-    web_endpoint: Joi.string()
-      .required()
-      .error(
-        new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
-          cause: ERROR_STATUES.INCORRECT_TOKEN,
-        })
-      ),
-    web_key_auth: Joi.string()
-      .required()
-      .error(
-        new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
-          cause: ERROR_STATUES.INCORRECT_KEYS,
-        })
-      ),
-    web_key_p256dh: Joi.string()
-      .required()
-      .error(
-        new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
-          cause: ERROR_STATUES.INCORRECT_KEYS,
-        })
-      ),
+    web_endpoint: Joi.string().error(
+      new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
+        cause: ERROR_STATUES.INCORRECT_TOKEN,
+      })
+    ),
+    web_key_auth: Joi.string().error(
+      new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
+        cause: ERROR_STATUES.INCORRECT_KEYS,
+      })
+    ),
+    web_key_p256dh: Joi.string().error(
+      new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
+        cause: ERROR_STATUES.INCORRECT_KEYS,
+      })
+    ),
     device_udid: Joi.string()
       .required()
       .error(
@@ -39,7 +33,8 @@ export const pushNotificationsSchemaValidation = {
           cause: ERROR_STATUES.INCORRECT_DEVICE_ID,
         })
       ),
-  }).required(),
+    device_token: Joi.string(),
+  }).or("web_endpoint", "device_token"),
   push_subscription_list: Joi.object({
     user_id: Joi.alternatives()
       .try(Joi.object(), Joi.string(), Joi.number())

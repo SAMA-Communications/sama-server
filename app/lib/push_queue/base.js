@@ -15,11 +15,15 @@ export default class BasePushQueue {
     return pushEvents
   }
 
+  async getSubscriptionsByPlatform(platform, user_id) {
+    return await pushNotificationsRepository.getSubscriptionsByPlatform(platform, user_id)
+  }
+
   async createPush(pushQueueMessage) {
     if (pushQueueMessage instanceof CreateChatAlertEventOptions) {
-      await this.createChatAlert(pushQueueMessage)
+      return await this.createChatAlert(pushQueueMessage)
     } else if (pushQueueMessage instanceof CreatePushEventOptions) {
-      await this.createPushEvents(pushQueueMessage)
+      return await this.createPushEvents(pushQueueMessage)
     }
 
     throw new Error("Unknown push message type")

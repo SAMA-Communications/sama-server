@@ -19,24 +19,32 @@ export default class SamaNativePushQueue extends BasePushQueue {
 
     const pushEvents = await this.buildPushEvents(createPushEventOptions)
 
-    await this.addToQueue(pushEvents)
+    await this.#addToQueue(pushEvents)
   }
 
   async createPushEvents(createPushEventOptions) {
     const pushEvents = await this.buildPushEvents(createPushEventOptions)
 
-    await this.addToQueue(pushEvents)
+    await this.#addToQueue(pushEvents)
 
     return pushEvents
   }
 
-  async addToQueue(pushEvents) {
-    const pushEventIds = pushEvents.map((pushEvent) => pushEvent.params._id.toString())
+  async #addToQueue(pushEvents) {
+    for (const pushEvent of pushEvents) {
+      let devices = []
+      const platform = pushEvent.params.platform
 
-    for (const pushEventId of pushEventIds) {
-      await this.queue.add({ push_event_id: pushEventId })
+      for (const uid of pushEvent.params.user_ids) {
+        const userDevices = await this.getSubscriptionsByPlatform(platform, uid)
+        if (!userDevices.length) continue
+        devices = devices.concat(userDevices)
+      }
+
+      if (!Object.keys(devices).length) continue
+
+      const data = { devices, message: pushEvent.params.message, platform }
+      await this.queue.add(data)
     }
-
-    return pushEventIds
   }
 }

@@ -19,6 +19,7 @@ export default class PushSubscription extends BaseModel {
       "web_key_auth",
       "web_key_p256dh",
       "device_udid",
+      "device_token",
     ]
   }
 }

@@ -10,7 +10,7 @@ class PushNotificationsRepository extends BaseRepository {
     this.PushSubscriptionModel = PushSubscriptionModel
   }
 
-  async usersPlatforms(users_ids) {
+  async #usersPlatforms(users_ids) {
     let notificationChannelIds = new Set()
 
     for (const user_id of users_ids) {
@@ -26,8 +26,17 @@ class PushNotificationsRepository extends BaseRepository {
     return [...notificationChannelIds]
   }
 
+  async getSubscriptionsByPlatform(platform, user_id) {
+    return await this.PushSubscriptionModel.findAll({ platform, user_id }, [
+      "web_endpoint",
+      "web_key_auth",
+      "web_key_p256dh",
+      "device_token",
+    ])
+  }
+
   async createPushEvents(userId, userIds, payload, options) {
-    const platforms = await this.usersPlatforms(userIds)
+    const platforms = await this.#usersPlatforms(userIds)
 
     const base64Payload = Buffer.from(JSON.stringify(payload)).toString("base64")
 
