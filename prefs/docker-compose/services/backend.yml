@@ -17,6 +17,6 @@ services:
       sama_network:
         ipv4_address: 172.25.0.7
     volumes:
-      - ../../../.env.local:/app/.env
+      - ../../../.env.docker:/app/.env
     ports:
       - "9000:9001"
