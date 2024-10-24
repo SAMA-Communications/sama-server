@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.26.0
+
+### Features
+
+- Implemented a new docker flow for the project build
+- Added `device_token` field for `push_sbuscription_create` request
+
+### Updated
+
+- Сhanged development flow
+- Updated environment variables
+- Updated tests for status typing
+
 ## 0.25.0
 
 ### Features
