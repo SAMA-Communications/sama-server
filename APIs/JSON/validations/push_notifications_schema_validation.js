@@ -3,38 +3,57 @@ import { ERROR_STATUES } from "@sama/constants/errors.js"
 
 export const pushNotificationsSchemaValidation = {
   push_subscription_create: Joi.object({
-    platform: Joi.string()
-      .valid("web", "ios", "android")
-      .required()
-      .error(
-        new Error(ERROR_STATUES.INCORRECT_PLATFROM_TYPE.message, {
-          cause: ERROR_STATUES.INCORRECT_PLATFROM_TYPE,
-        })
-      ),
-    web_endpoint: Joi.string().error(
-      new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
-        cause: ERROR_STATUES.INCORRECT_TOKEN,
-      })
-    ),
-    web_key_auth: Joi.string().error(
-      new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
-        cause: ERROR_STATUES.INCORRECT_KEYS,
-      })
-    ),
-    web_key_p256dh: Joi.string().error(
-      new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
-        cause: ERROR_STATUES.INCORRECT_KEYS,
-      })
-    ),
-    device_udid: Joi.string()
-      .required()
-      .error(
-        new Error(ERROR_STATUES.INCORRECT_DEVICE_ID.message, {
-          cause: ERROR_STATUES.INCORRECT_DEVICE_ID,
-        })
-      ),
+    platform: Joi.string().valid("web", "ios", "android").required(),
+    web_endpoint: Joi.string(),
+    web_key_auth: Joi.string(),
+    web_key_p256dh: Joi.string(),
+    device_udid: Joi.string().required(),
     device_token: Joi.string(),
-  }).or("web_endpoint", "device_token"),
+  })
+    .xor("web_endpoint", "device_token")
+    .when(Joi.object({ web_endpoint: Joi.exist() }).unknown(), {
+      then: Joi.object({
+        web_key_auth: Joi.string().required(),
+        web_key_p256dh: Joi.string().required(),
+      }),
+    })
+    .error((errors) => {
+      return errors.map((error) => {
+        switch (error.code) {
+          case "object.missing":
+            return new Error(ERROR_STATUES.FILE_LIMIT_EXCEEDED.message, {
+              cause: ERROR_STATUES.INCORRECT_TOKEN,
+            })
+          default:
+            switch (error.local.key) {
+              case "platform":
+                return new Error(ERROR_STATUES.INCORRECT_PLATFROM_TYPE.message, {
+                  cause: ERROR_STATUES.INCORRECT_PLATFROM_TYPE,
+                })
+              case "web_endpoint":
+                return new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
+                  cause: ERROR_STATUES.INCORRECT_TOKEN,
+                })
+              case "web_key_auth":
+                return new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
+                  cause: ERROR_STATUES.INCORRECT_KEYS,
+                })
+              case "web_key_p256dh":
+                return new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
+                  cause: ERROR_STATUES.INCORRECT_KEYS,
+                })
+              case "device_udid":
+                return new Error(ERROR_STATUES.INCORRECT_DEVICE_ID.message, {
+                  cause: ERROR_STATUES.INCORRECT_DEVICE_ID,
+                })
+              case "device_token":
+                return new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
+                  cause: ERROR_STATUES.INCORRECT_TOKEN,
+                })
+            }
+        }
+      })
+    }),
   push_subscription_list: Joi.object({
     user_id: Joi.alternatives()
       .try(Joi.object(), Joi.string(), Joi.number())
