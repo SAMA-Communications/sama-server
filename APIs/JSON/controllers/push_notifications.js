@@ -25,7 +25,7 @@ class PushNotificationsController extends BaseJSONController {
     let pushSubscription = new PushSubscription(
       (
         await PushSubscription.findOneAndUpdate(
-          { device_udid, user_id: userId },
+          { user_id: userId, device_udid },
           { $set: { web_endpoint, web_key_auth, web_key_p256dh, device_token } }
         )
       )?.value

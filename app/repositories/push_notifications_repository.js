@@ -27,7 +27,7 @@ class PushNotificationsRepository extends BaseRepository {
   }
 
   async getSubscriptionsByPlatform(platform, user_id) {
-    return await this.PushSubscriptionModel.findAll({ platform, user_id }, [
+    return await this.PushSubscriptionModel.findAll({ user_id, platform }, [
       "web_endpoint",
       "web_key_auth",
       "web_key_p256dh",

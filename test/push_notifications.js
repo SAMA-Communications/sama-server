@@ -19,7 +19,7 @@ describe("PushNotification functions", async () => {
   })
 
   describe("Create method", async () => {
-    it("should work", async () => {
+    it("should work, web_endpoint ", async () => {
       const requestData = {
         request: {
           push_subscription_create: {
@@ -49,6 +49,38 @@ describe("PushNotification functions", async () => {
       assert.strictEqual(
         responseData.response.subscription.web_key_p256dh,
         requestData.request.push_subscription_create.web_key_p256dh
+      )
+      assert.strictEqual(
+        responseData.response.subscription.device_udid,
+        requestData.request.push_subscription_create.device_udid
+      )
+      assert.strictEqual(
+        responseData.response.subscription.platform,
+        requestData.request.push_subscription_create.platform
+      )
+      assert.strictEqual(responseData.response.subscription.user_id.toString(), usersIds[0].toString())
+    })
+
+    it("should work, device_token", async () => {
+      const requestData = {
+        request: {
+          push_subscription_create: {
+            platform: "web",
+            device_token: "enpoint_u1",
+            device_udid: "device_u1",
+          },
+          id: 1,
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.strictEqual(
+        responseData.response.subscription.device_token,
+        requestData.request.push_subscription_create.device_token
       )
       assert.strictEqual(
         responseData.response.subscription.device_udid,
@@ -494,7 +526,7 @@ describe("PushNotification functions", async () => {
       const requestData = {
         request: {
           push_event_create: {
-            recipients_ids: ["testId", usersIds[0].toString()],
+            recipients_ids: [usersIds[0].toString()],
             message: {
               title: "Title",
               topic: "topic",
@@ -513,7 +545,7 @@ describe("PushNotification functions", async () => {
       const event = responseData.response.event.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id)
-      assert.strictEqual(event.user_ids[1], usersIds[0].toString())
+      assert.strictEqual(event.user_ids[0], usersIds[0].toString())
     })
 
     it("should fail, recipients ids not found", async () => {
