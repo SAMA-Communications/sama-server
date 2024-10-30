@@ -83,7 +83,7 @@ export const conversationsSchemaValidation = {
     updated_at: Joi.object({
       gt: Joi.date(),
     }),
-    ids: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string())),
+    ids: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string())).max(10),
   }).required(),
   delete: Joi.object({
     id: Joi.string().required(),

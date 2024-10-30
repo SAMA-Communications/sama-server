@@ -654,7 +654,6 @@ describe("Conversation functions", async () => {
     })
 
     it("should work with ids", async () => {
-      const numberOf = 2
       const requestData = {
         request: {
           conversation_list: {
@@ -677,6 +676,25 @@ describe("Conversation functions", async () => {
         false
       )
       assert.equal(responseData.response.error, undefined)
+    })
+
+    it("should fail max ids 10", async () => {
+      const requestData = {
+        request: {
+          conversation_list: {
+            ids: ["1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"],
+          },
+          id: "3_1",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.equal(responseData.response.conversations, undefined)
+      assert.equal(responseData.response.error, '"ids" must contain less than or equal to 10 items')
     })
 
     it("should fail limit exceeded", async () => {
