@@ -333,7 +333,7 @@ Later, the subsequent logins can be done via `token`:
    },
 };
 
-You can also add the `ids` parameter if you need to get the target chat objects.
+You can also add the `ids` parameter if you need to get the target chat objects. The maximum number of ids in a request is 10.
 For example: ["63480e68f4794709f802a2fa", "63480e68f4794709f802a2fy"]
 
 
