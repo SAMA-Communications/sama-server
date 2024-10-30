@@ -653,6 +653,32 @@ describe("Conversation functions", async () => {
       assert.equal(responseData.response.error, undefined)
     })
 
+    it("should work with ids", async () => {
+      const numberOf = 2
+      const requestData = {
+        request: {
+          conversation_list: {
+            ids: ArrayOfTmpConversaionts,
+          },
+          id: "3_1",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      const conversations = responseData.response.conversations
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.notEqual(responseData.response.conversations, undefined)
+      assert.equal(
+        conversations.some((el) => !ArrayOfTmpConversaionts.includes(el._id.toString())),
+        false
+      )
+      assert.equal(responseData.response.error, undefined)
+    })
+
     it("should fail limit exceeded", async () => {
       await sendLogout("test", currentUserToken)
       currentUserToken = (await sendLogin("test", "user_1")).response.user.token
