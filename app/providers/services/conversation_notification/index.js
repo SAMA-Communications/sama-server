@@ -19,6 +19,7 @@ class ConversationNotificationService {
 
     const pushPayload = {
       title: conversation.name,
+      cid: conversation._id,
       body: `${userDisplayName} ${eventParams.push_message_body}`,
     }
 
@@ -82,7 +83,7 @@ class ConversationNotificationService {
 
     const eventMessage = new MessageResponse(new MessagePublicFields(createdMessage))
 
-    const eventNotification = new CreatePushEventOptions(userActionCreator, conversation, pushPayload, {})
+    const eventNotification = new CreatePushEventOptions(userActionCreator, conversation, pushPayload)
 
     return { message: eventMessage, notification: eventNotification }
   }
