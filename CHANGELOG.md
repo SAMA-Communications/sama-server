@@ -2,7 +2,7 @@
 
 ## 0.27.0
 
-### Imporvments
+### Improvements
 
 - Extended the conversation_list request to allow requesting conversations by ids
 
