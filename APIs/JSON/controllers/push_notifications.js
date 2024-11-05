@@ -104,11 +104,9 @@ class PushNotificationsController extends BaseJSONController {
       user_ids: recipients_ids,
     })
 
-    const pushEvents = await RuntimeDefinedContext.PUSH_QUEUE_DRIVER.createPushEvents(createPushEventOptions)
+    const pushEvent = await RuntimeDefinedContext.PUSH_QUEUE_DRIVER.createPushEvent(createPushEventOptions)
 
-    const responsePushEvents = pushEvents.map((pushEvent) => pushEvent.visibleParams())
-
-    return new Response().addBackMessage({ response: { id: requestId, event: responsePushEvents } })
+    return new Response().addBackMessage({ response: { id: requestId, event: pushEvent.visibleParams() } })
   }
 }
 
