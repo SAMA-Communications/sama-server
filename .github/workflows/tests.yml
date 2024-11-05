@@ -1,0 +1,23 @@
+name: Docker Compose Test
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  run_tests:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build the SAMA resources
+        run: docker compose -f docker-compose-full.yml up -d --build
+
+      - name: Run migrations
+        run: docker compose exec sama-server sh -c "MONGODB_URL=mongodb://172.25.0.4/samatests npm run migrate-mongo-up"
+
+      - name: Run tests
+        run: docker compose exec sama-server sh -c "MONGODB_URL=mongodb://172.25.0.4/samatests npm run test"
+
+      - name: Stop the SAMA resources
+        run: docker compose -f docker-compose-full.yml down -v --rmi all
