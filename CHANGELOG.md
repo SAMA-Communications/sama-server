@@ -4,7 +4,7 @@
 
 ### Improvements
 
-- Extended the conversation_list request to allow requesting conversations by ids
+- Extended the `conversation_list` request to allow requesting conversations by ids
 
 ### Updated
 
