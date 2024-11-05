@@ -10,24 +10,9 @@ class PushNotificationsRepository extends BaseRepository {
     this.PushSubscriptionModel = PushSubscriptionModel
   }
 
-  async #usersPlatforms(users_ids) {
-    let notificationChannelIds = new Set()
-
-    for (const user_id of users_ids) {
-      let userSubscriptions = await this.PushSubscriptionModel.findAll({ user_id: user_id })
-
-      userSubscriptions = userSubscriptions ?? []
-
-      for (const subscription of userSubscriptions) {
-        notificationChannelIds.add(subscription.platform)
-      }
-    }
-
-    return [...notificationChannelIds]
-  }
-
-  async getSubscriptionsByPlatform(platform, user_id) {
-    return await this.PushSubscriptionModel.findAll({ user_id, platform }, [
+  async getSubscriptionsByUid(user_id) {
+    return await this.PushSubscriptionModel.findAll({ user_id }, [
+      "platform",
       "web_endpoint",
       "web_key_auth",
       "web_key_p256dh",
@@ -35,12 +20,8 @@ class PushNotificationsRepository extends BaseRepository {
     ])
   }
 
-  async createPushEvents(userId, userIds, payload, options) {
-    const platforms = await this.#usersPlatforms(userIds)
-
+  async createPushEvent(userId, userIds, payload, options) {
     const base64Payload = Buffer.from(JSON.stringify(payload)).toString("base64")
-
-    const pushEvents = []
 
     const pushEventParams = {
       user_id: userId,
@@ -48,17 +29,10 @@ class PushNotificationsRepository extends BaseRepository {
 
       message: base64Payload,
     }
+    const pushEvent = new this.Model(pushEventParams)
+    await pushEvent.save()
 
-    for (const platform of platforms) {
-      pushEventParams.platform = platform
-
-      const pushEvent = new this.Model(pushEventParams)
-      await pushEvent.save()
-
-      pushEvents.push(pushEvent)
-    }
-
-    return pushEvents
+    return pushEvent
   }
 }
 

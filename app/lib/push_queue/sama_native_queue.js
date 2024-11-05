@@ -17,34 +17,31 @@ export default class SamaNativePushQueue extends BasePushQueue {
       { user_ids: createChatAlertEventOptions.offlineUsersIDs }
     )
 
-    const pushEvents = await this.buildPushEvents(createPushEventOptions)
+    const pushEvent = await this.buildPushEvent(createPushEventOptions)
 
-    await this.#addToQueue(pushEvents)
+    await this.#addToQueue(pushEvent)
   }
 
-  async createPushEvents(createPushEventOptions) {
-    const pushEvents = await this.buildPushEvents(createPushEventOptions)
+  async createPushEvent(createPushEventOptions) {
+    const pushEvents = await this.buildPushEvent(createPushEventOptions)
 
     await this.#addToQueue(pushEvents)
 
     return pushEvents
   }
 
-  async #addToQueue(pushEvents) {
-    for (const pushEvent of pushEvents) {
-      let devices = []
-      const platform = pushEvent.params.platform
+  async #addToQueue(pushEvent) {
+    let devices = []
 
-      for (const uid of pushEvent.params.user_ids) {
-        const userDevices = await this.getSubscriptionsByPlatform(platform, uid)
-        if (!userDevices.length) continue
-        devices = devices.concat(userDevices)
-      }
-
-      if (!Object.keys(devices).length) continue
-
-      const data = { devices, message: pushEvent.params.message, platform }
-      await this.queue.add(data)
+    for (const uid of pushEvent.params.user_ids) {
+      const userDevices = await this.getSubscriptionsByUid(uid)
+      if (!userDevices.length) continue
+      devices = devices.concat(userDevices)
     }
+
+    if (!Object.keys(devices).length) return
+
+    const data = { devices, message: pushEvent.params.message }
+    await this.queue.add(data)
   }
 }

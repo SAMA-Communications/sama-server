@@ -464,7 +464,7 @@ describe("PushNotification functions", async () => {
 
       responseData = responseData.backMessages.at(0)
 
-      const event = responseData.response.event.at(0)
+      const event = responseData.response.event
 
       const eventMessage = Buffer.from(event.message, "base64").toString("utf8")
 
@@ -542,7 +542,7 @@ describe("PushNotification functions", async () => {
 
       responseData = responseData.backMessages.at(0)
 
-      const event = responseData.response.event.at(0)
+      const event = responseData.response.event
 
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.strictEqual(event.user_ids[0], usersIds[0].toString())

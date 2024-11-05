@@ -10,7 +10,7 @@ class ConversationListOperation {
   }
 
   async perform(ws, options) {
-    const { limit, updated_at } = options
+    const { limit, updated_at, ids } = options
     const normalizedLimit = this.#normalizeLimitParam(limit)
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
@@ -18,7 +18,7 @@ class ConversationListOperation {
 
     const conversations = await this.conversationService.conversationsList(
       currentUser,
-      { updatedAt: updated_at },
+      { updatedAt: updated_at, ids },
       normalizedLimit
     )
 
