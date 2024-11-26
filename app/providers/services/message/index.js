@@ -85,7 +85,7 @@ class MessageService {
         [cid],
         user.native_id
       )
-      findMessagesOptions.lastReadMessageId = lastReadMessagesByConvIds[cid]?.mid || null
+      findMessagesOptions.lastReadMessageId = lastReadMessagesByConvIds[cid] || null
     }
 
     const unreadMessages = await this.messageRepo.findAllOpponentsMessagesFromConversation(
@@ -101,6 +101,10 @@ class MessageService {
     }
 
     return unreadMessages
+  }
+
+  async upsertMessageStatusInConversation(cid, user, mids) {
+    await this.messageStatusRepo.upsertMessageReadStatuses(cid, mids, user.native_id, "decryption_failed")
   }
 
   async aggregateLastMessageForConversation(cids, user) {

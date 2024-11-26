@@ -916,6 +916,36 @@ Then, all the users whose messages we read will receive the following message:
 }
 ```
 
+### Decryption failed status
+
+```
+{
+  request: {
+    message_decryption_failed: {
+      cid: "63077ad836b78c3d82af0813",
+      ids: [63480e68f4794709f802a2fb, 63077ad836b78c3d82af0866]
+    },
+    id: "4"
+  }
+}
+
+{ response: { id: "4", success: true } }
+```
+
+The `ids` field is required.
+
+Then, all the users whose messages we read will receive the following message:
+
+```
+{
+  message_read: {
+    cid: "63077ad836b78c3d82af0813",
+    ids: ["63480e68f4794709f802a2fb", "63077ad836b78c3d82af0866"],
+    from: "634ec51c0b65918393dca5bf"
+  }
+}
+```
+
 ### Typing status
 
 A user either can send typing or stop typing packets:

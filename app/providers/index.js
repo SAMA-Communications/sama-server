@@ -54,6 +54,7 @@ import ConversationSearchOperationProvider from "./operations/conversation/searc
 
 import MessageCreateOperationProvider from "./operations/message/create/Provider.js"
 import MessageEditOperationProvider from "./operations/message/edit/Provider.js"
+import MessageDecryptionFailedOperationProvider from "./operations/message/decryption_failed/Provider.js"
 import MessageReadOperationProvider from "./operations/message/read/Provider.js"
 import MessageDeleteOperationProvider from "./operations/message/delete/Provider.js"
 import MessageListOperationProvider from "./operations/message/list/Provider.js"
@@ -126,6 +127,7 @@ const providers = [
   MessageCreateOperationProvider,
   MessageEditOperationProvider,
   MessageReadOperationProvider,
+  MessageDecryptionFailedOperationProvider,
   MessageDeleteOperationProvider,
   MessageListOperationProvider,
   MessageSendSystemOperationProvider,

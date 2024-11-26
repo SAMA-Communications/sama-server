@@ -10,12 +10,16 @@ class ConversationRepository extends BaseRepository {
     return await super.prepareParams(params)
   }
 
+  async findExistedPrivateConversationByCid(cid) {
+    return this.findOne({ _id: cid })
+  }
+
   async findExistedPrivateConversation(ownerId, opponentId, isEncrypted) {
     ownerId = this.castObjectId(ownerId)
     opponentId = this.castObjectId(opponentId)
 
     const query = { type: "u" }
-    isEncrypted && (query["is_encrypted"] = isEncrypted)
+    query["is_encrypted"] = isEncrypted || { $ne: true }
 
     const conversation = await this.findOne({
       $or: [

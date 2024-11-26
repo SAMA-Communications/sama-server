@@ -81,6 +81,16 @@ export const messagesSchemaValidation = {
           cause: ERROR_STATUES.CID_REQUIRED,
         })
       ),
+    ids: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string())).min(1).required(),
+  }).required(),
+  decryption_failed: Joi.object({
+    cid: Joi.string()
+      .required()
+      .error(
+        new Error(ERROR_STATUES.CID_REQUIRED.message, {
+          cause: ERROR_STATUES.CID_REQUIRED,
+        })
+      ),
     ids: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string())),
   }).required(),
   delete: Joi.object({
