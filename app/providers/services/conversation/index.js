@@ -27,7 +27,7 @@ class ConversationService {
   }
 
   async findOpponentId(cid, currentUserId) {
-    const conversation = await this.conversationRepo.findExistedPrivateConversationByCid(cid)
+    const conversation = await this.conversationRepo.findOne({ _id: cid })
 
     return this.helpers.isEqualsNativeIds(conversation.owner_id, currentUserId)
       ? conversation.opponent_id

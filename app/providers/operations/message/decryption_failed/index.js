@@ -14,7 +14,7 @@ class MessageDecryptionFailedOperation {
     const currentUserId = this.sessionService.getSessionUserId(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
-    await this.messageService.upsertMessageStatusInConversation(cid, currentUser, mids)
+    await this.messageService.upsertMessageReadStatuses(cid, mids, currentUser.native_id, "decryption_failed")
 
     const responseReceiverUid = await this.conversationService.findOpponentId(cid, currentUserId)
 

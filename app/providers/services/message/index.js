@@ -103,10 +103,6 @@ class MessageService {
     return unreadMessages
   }
 
-  async upsertMessageStatusInConversation(cid, user, mids) {
-    await this.messageStatusRepo.upsertMessageReadStatuses(cid, mids, user.native_id, "decryption_failed")
-  }
-
   async aggregateLastMessageForConversation(cids, user) {
     const aggregateLastMessage = await this.messageRepo.findLastMessageForConversations(cids, user?.native_id)
 

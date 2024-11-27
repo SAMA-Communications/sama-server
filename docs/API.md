@@ -938,7 +938,7 @@ Then, all the users whose messages we read will receive the following message:
 
 ```
 {
-  message_read: {
+  message_decryption_failed: {
     cid: "63077ad836b78c3d82af0813",
     ids: ["63480e68f4794709f802a2fb", "63077ad836b78c3d82af0866"],
     from: "634ec51c0b65918393dca5bf"
