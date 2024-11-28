@@ -13,6 +13,9 @@ import ConversationRepoProvider from "./repositories/conversation/Provider.js"
 import ConversationParticipantRepoProvider from "./repositories/conversation_participants/Provider.js"
 import MessageRepoProvider from "./repositories/message/Provider.js"
 import MessageStatusRepoProvider from "./repositories/message_status/Provider.js"
+import EncryptionRepoProvider from "./repositories/encryption/Provider.js"
+import OperationLogRepoProvider from "./repositories/operation_log/Provider.js"
+import EncryptedMessageStatusRepoProvider from "./repositories/encrypted_message_status/Provider.js"
 
 import SessionServiceProvider from "./services/session/Provider.js"
 import UserServiceProvider from "./services/user/Provider.js"
@@ -22,6 +25,8 @@ import ActivityManagerServiceProvider from "./services/activity_manager/Provider
 import ConversationServiceProvider from "./services/conversation/Provider.js"
 import MessageServiceProvider from "./services/message/Provider.js"
 import ConversationNotificationProvider from "./services/conversation_notification/Provider.js"
+import EncryptionServiceProvider from "./services/encryption/Provider.js"
+import EncryptedMessageStatusServiceProvider from "./services/encrypted_message_status/Provider.js"
 
 import UserAuthOperationProvider from "./operations/user/auth/Provider.js"
 import UserLogoutOperationProvider from "./operations/user/logout/Provider.js"
@@ -49,12 +54,20 @@ import ConversationSearchOperationProvider from "./operations/conversation/searc
 
 import MessageCreateOperationProvider from "./operations/message/create/Provider.js"
 import MessageEditOperationProvider from "./operations/message/edit/Provider.js"
+import MessageDecryptionFailedOperationProvider from "./operations/message/decryption_failed/Provider.js"
 import MessageReadOperationProvider from "./operations/message/read/Provider.js"
 import MessageDeleteOperationProvider from "./operations/message/delete/Provider.js"
 import MessageListOperationProvider from "./operations/message/list/Provider.js"
 import MessageSendSystemOperationProvider from "./operations/message/system/Provider.js"
 
 import StatusTypingOperationProvider from "./operations/status/typing/Provider.js"
+
+import EncryptionRegisterOperationProvider from "./operations/encryption/register/Provider.js"
+import EncryptionListOperationProvider from "./operations/encryption/list/Provider.js"
+import EncryptionRequestKeysOperationProvider from "./operations/encryption/request_keys/Provider.js"
+import EncryptionDeleteOperationProvider from "./operations/encryption/delete/Provider.js"
+
+import OperationLogLogsOperationProvider from "./operations/operation_log/logs/Provider.js"
 
 const providers = [
   HelpersProvider,
@@ -72,6 +85,9 @@ const providers = [
   ConversationParticipantRepoProvider,
   MessageRepoProvider,
   MessageStatusRepoProvider,
+  EncryptionRepoProvider,
+  OperationLogRepoProvider,
+  EncryptedMessageStatusRepoProvider,
 
   SessionServiceProvider,
   UserServiceProvider,
@@ -81,6 +97,8 @@ const providers = [
   ConversationServiceProvider,
   MessageServiceProvider,
   ConversationNotificationProvider,
+  EncryptionServiceProvider,
+  EncryptedMessageStatusServiceProvider,
 
   UserAuthOperationProvider,
   UserLogoutOperationProvider,
@@ -109,11 +127,19 @@ const providers = [
   MessageCreateOperationProvider,
   MessageEditOperationProvider,
   MessageReadOperationProvider,
+  MessageDecryptionFailedOperationProvider,
   MessageDeleteOperationProvider,
   MessageListOperationProvider,
   MessageSendSystemOperationProvider,
 
   StatusTypingOperationProvider,
+
+  EncryptionRegisterOperationProvider,
+  EncryptionListOperationProvider,
+  EncryptionRequestKeysOperationProvider,
+  EncryptionDeleteOperationProvider,
+
+  OperationLogLogsOperationProvider,
 ]
 
 export default providers
