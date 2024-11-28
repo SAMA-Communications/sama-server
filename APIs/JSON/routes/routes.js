@@ -46,6 +46,10 @@ export const routes = {
     MessagesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.message_read, messagesSchemaValidation.read)
       .read(ws, json),
+  message_decryption_failed: (ws, json) =>
+    MessagesController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.message_decryption_failed, messagesSchemaValidation.decryption_failed)
+      .decryption_failed(ws, json),
   message_delete: (ws, json) =>
     MessagesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.message_delete, messagesSchemaValidation.delete)

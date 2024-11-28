@@ -14,8 +14,7 @@ class ConversationRepository extends BaseRepository {
     ownerId = this.castObjectId(ownerId)
     opponentId = this.castObjectId(opponentId)
 
-    const query = { type: "u" }
-    isEncrypted && (query["is_encrypted"] = isEncrypted)
+    const query = { type: "u", is_encrypted: { $exists: isEncrypted || false } }
 
     const conversation = await this.findOne({
       $or: [

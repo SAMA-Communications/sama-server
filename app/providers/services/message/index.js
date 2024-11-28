@@ -85,7 +85,7 @@ class MessageService {
         [cid],
         user.native_id
       )
-      findMessagesOptions.lastReadMessageId = lastReadMessagesByConvIds[cid]?.mid || null
+      findMessagesOptions.lastReadMessageId = lastReadMessagesByConvIds[cid] || null
     }
 
     const unreadMessages = await this.messageRepo.findAllOpponentsMessagesFromConversation(
@@ -97,7 +97,7 @@ class MessageService {
     if (unreadMessages.length) {
       const mids = unreadMessages.map((message) => message._id).reverse()
 
-      await this.messageStatusRepo.upsertMessageReadStatuses(cid, mids, user.native_id, "read")
+      await this.messageStatusRepo.upsertMessageStatus(cid, mids, user.native_id, "read")
     }
 
     return unreadMessages
