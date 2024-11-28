@@ -97,7 +97,7 @@ class MessageService {
     if (unreadMessages.length) {
       const mids = unreadMessages.map((message) => message._id).reverse()
 
-      await this.messageStatusRepo.upsertMessageReadStatuses(cid, mids, user.native_id, "read")
+      await this.messageStatusRepo.upsertMessageStatus(cid, mids, user.native_id, "read")
     }
 
     return unreadMessages

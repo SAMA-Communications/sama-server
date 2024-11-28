@@ -9,7 +9,7 @@ class MessageStatusRepository extends BaseRepository {
     return await super.prepareParams(params)
   }
 
-  async upsertMessageReadStatuses(cid, mids, user_id, status) {
+  async upsertMessageStatus(cid, mids, user_id, status) {
     const operations = []
 
     for (const mid of mids) {
