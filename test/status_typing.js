@@ -35,7 +35,7 @@ describe(`Sending 'typing' status`, async () => {
 
     assert.strictEqual(responseData.typing.user, undefined)
     assert.deepEqual(responseData.typing.error, {
-      status: 404,
+      status: 401,
       message: "Unauthorized.",
     })
 

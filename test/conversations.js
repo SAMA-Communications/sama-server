@@ -70,7 +70,7 @@ describe("Conversation functions", async () => {
 
       assert.strictEqual(responseData.response.conversation, undefined)
       assert.deepEqual(responseData.response.error, {
-        status: 404,
+        status: 401,
         message: "Unauthorized.",
       })
     })
@@ -91,7 +91,7 @@ describe("Conversation functions", async () => {
 
       assert.strictEqual(responseData.response.success, undefined)
       assert.deepEqual(responseData.response.error, {
-        status: 404,
+        status: 401,
         message: "Unauthorized.",
       })
     })
@@ -112,7 +112,7 @@ describe("Conversation functions", async () => {
 
       assert.strictEqual(responseData.response.success, undefined)
       assert.deepEqual(responseData.response.error, {
-        status: 404,
+        status: 401,
         message: "Unauthorized.",
       })
     })
