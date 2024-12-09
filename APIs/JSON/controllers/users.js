@@ -18,7 +18,7 @@ class UsersController extends BaseJSONController {
   }
 
   async connect(ws, data) {
-    const { id: requestId, connect_socket: userConnectionParams } = data
+    const { id: requestId, connect: userConnectionParams } = data
 
     const userConnectSocketOperation = ServiceLocatorContainer.use("UserConnectSocketOperation")
     const { user } = await userConnectSocketOperation.perform(ws, userConnectionParams)

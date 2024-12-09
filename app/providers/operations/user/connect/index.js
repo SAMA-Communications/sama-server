@@ -11,7 +11,7 @@ class UserConnectSocketOperation {
   async perform(ws, connectionData) {
     const deviceId = connectionData.device_id.toString()
 
-    const token = await this.userTokenRepo.findAccessToken(connectionData.token, deviceId)
+    const token = await this.userTokenRepo.findToken(connectionData.token, deviceId, "access")
     if (!token) {
       throw new Error(ERROR_STATUES.TOKEN_EXPIRED.message, {
         cause: ERROR_STATUES.TOKEN_EXPIRED,

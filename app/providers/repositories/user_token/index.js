@@ -1,14 +1,11 @@
 import BaseRepository from "../base.js"
 
 class UserTokenRepository extends BaseRepository {
-  async findToken(jwtToken, deviceId) {
-    const token = await this.findOne({ token: jwtToken, device_id: deviceId })
+  async findToken(jwtToken, deviceId, tokenType) {
+    const params = { token: jwtToken, device_id: deviceId }
+    tokenType && (params["type"] = tokenType)
 
-    return token
-  }
-
-  async findAccessToken(jwtToken, deviceId, tokenType = "access") {
-    const token = await this.findOne({ token: jwtToken, device_id: deviceId, type: tokenType })
+    const token = await this.findOne(params)
 
     return token
   }

@@ -161,7 +161,7 @@ class ClientManager {
         },
       })
 
-      this.#localSocket.options("/login", (res) => {
+      this.#localSocket.options("/*", (res) => {
         this.#setCorsHeaders(res)
         res.end()
       })
