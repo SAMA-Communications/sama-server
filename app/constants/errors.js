@@ -146,6 +146,14 @@ export const ERROR_STATUES = {
     status: 422,
     message: `'cids' field is required.`,
   },
+  INTERNAL_SERVER: {
+    status: 500,
+    message: "Internal server error",
+  },
+  MISSING_AUTH_CREDENTIALS: {
+    status: 401,
+    message: "Missing authentication credentials",
+  },
 }
 
 export const requiredError = (field) => {
