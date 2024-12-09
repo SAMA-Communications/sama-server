@@ -50,7 +50,7 @@ export const ERROR_STATUES = {
     status: 422,
     message: "Incorrect username or password.",
   },
-  DEVICE_ID_MISSED: { status: 422, message: `'deviceId' is required.` },
+  DEVICE_ID_MISSED: { status: 422, message: `'device_id' is required.` },
   // Contacts -->
   CONTACT_NOT_FOUND: { status: 422, message: "Contact not found." },
   CONTACT_ID_MISSED: { status: 422, message: "Contact id is missed." },
@@ -121,7 +121,7 @@ export const ERROR_STATUES = {
   STATUS_T_MISSED: { status: 422, message: `Status 't' missed.` },
   // Push Notification -->
   INCORRECT_PLATFROM_TYPE: { status: 422, message: "Incorrect platform type." },
-  INCORRECT_DEVICE_ID: { status: 422, message: "Incorrect deviceId." },
+  INCORRECT_DEVICE_ID: { status: 422, message: "Incorrect device id." },
   INCORRECT_RECIPIENTS_IDS: {
     status: 422,
     message: "Incorrect recipients IDs.",

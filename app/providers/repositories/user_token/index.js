@@ -7,18 +7,28 @@ class UserTokenRepository extends BaseRepository {
     return token
   }
 
-  async findTokenByUserId(userId, deviceId) {
-    const token = await this.findOne({ user_id: userId, device_id: deviceId })
+  async findAccessToken(jwtToken, deviceId, tokenType = "access") {
+    const token = await this.findOne({ token: jwtToken, device_id: deviceId, type: tokenType })
 
     return token
   }
 
-  async updateToken(existedToken, userId, deviceId, jwtToken) {
+  async findTokenByUserId(userId, deviceId, tokenType) {
+    const token = await this.findOne({ user_id: userId, device_id: deviceId, token: tokenType })
+
+    return token
+  }
+
+  async updateToken(token, userId, deviceId, jwtToken, tokenType) {
+    const existedToken =
+      !token || tokenType !== token.type ? await this.findTokenByUserId(userId, deviceId, tokenType) : token
+
     if (existedToken) {
       await this.updateOne(
         {
           user_id: existedToken.user_id,
           device_id: deviceId,
+          type: tokenType,
         },
         { $set: { token: jwtToken } }
       )
@@ -30,6 +40,7 @@ class UserTokenRepository extends BaseRepository {
       const newToken = await this.create({
         user_id: userId,
         device_id: deviceId,
+        type: tokenType,
         token: jwtToken,
       })
 

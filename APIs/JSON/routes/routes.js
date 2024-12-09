@@ -52,6 +52,10 @@ export const routes = {
     MessagesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.system_message, messagesSchemaValidation.system)
       .sendSystem(ws, json),
+  connect_socket: (ws, json) =>
+    UsersController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.connect_socket, usersSchemaValidation.connect)
+      .connect(ws, json),
   user_create: (ws, json) =>
     UsersController.middleware(authGuardMiddleware, ws, json)
       .validate(json.user_create, usersSchemaValidation.create)

@@ -78,6 +78,40 @@ const onMessage = async (ws, message) => {
 class ClientManager {
   #localSocket = null
 
+  #setCorsHeaders(res) {
+    res.writeHeader("Access-Control-Allow-Origin", process.env.CORS_ORIGIN || "*")
+    res.writeHeader("Access-Control-Allow-Credentials", "true")
+    res.writeHeader("Access-Control-Allow-Methods", "POST")
+    res.writeHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
+  }
+
+  #sendError(res, status, message) {
+    if (!res.aborted) {
+      res.writeStatus(status.toString()).end(JSON.stringify({ message }))
+    }
+  }
+
+  #sendSuccess(res, data) {
+    if (!res.aborted) {
+      res.writeStatus("200").end(JSON.stringify(data))
+    }
+  }
+
+  #readJson(res, cb) {
+    let buffer = Buffer.alloc(0)
+    res.onData((ab, isLast) => {
+      let chunk = Buffer.from(ab)
+      buffer = Buffer.concat([buffer, chunk])
+      if (isLast) {
+        try {
+          cb(JSON.parse(buffer))
+        } catch (e) {
+          cb(null)
+        }
+      }
+    })
+  }
+
   async createLocalSocket(appOptions, wsOptions, listenOptions, isSSL, port) {
     return new Promise((resolve) => {
       this.#localSocket = isSSL ? uWS.SSLApp(appOptions) : uWS.App(appOptions)
@@ -125,6 +159,74 @@ class ClientManager {
             )
           }
         },
+      })
+
+      this.#localSocket.options("/login", (res) => {
+        this.#setCorsHeaders(res)
+        res.end()
+      })
+
+      this.#localSocket.post("/login", async (res, req) => {
+        this.#setCorsHeaders(res)
+
+        res.onAborted(() => (res.aborted = true))
+
+        try {
+          const cookieHeader = req.getHeader("cookie")
+          const refreshToken = cookieHeader
+            ? cookieHeader
+                .split("; ")
+                .find((cookie) => cookie.startsWith("refresh_token="))
+                ?.split("=")[1]
+            : null
+
+          this.#readJson(res, async (requestData) => {
+            const { login, password, access_token, device_id } = requestData
+            if (!device_id) {
+              return this.#sendError(res, ERROR_STATUES.DEVICE_ID_MISSED.status, ERROR_STATUES.DEVICE_ID_MISSED.message)
+            }
+
+            const userAuthOperation = ServiceLocatorContainer.use("UserAuthOperation")
+            const userInfo = { device_id }
+            let needToUpdateRefreshToken = true
+
+            //any validation for req fields?
+            if (login && password) {
+              userInfo.login = login
+              userInfo.password = password
+            } else if (access_token) {
+              userInfo.token = access_token
+              needToUpdateRefreshToken = false
+            } else if (refreshToken) {
+              userInfo.token = refreshToken
+            } else {
+              return this.#sendError(res, 400, "Missing authentication credentials")
+            }
+
+            try {
+              const { user, token: accessToken } = await userAuthOperation.perform(null, userInfo)
+
+              let newRefreshToken
+              if (needToUpdateRefreshToken) {
+                newRefreshToken = await userAuthOperation.createRefreshToken(user, device_id)
+                res.writeHeader("Set-Cookie", `refresh_token=${newRefreshToken.token}; HttpOnly; SameSite=Lax;`)
+              }
+
+              const accessTokenExpiredAt =
+                new Date(accessToken.created_at).getTime() + process.env.JWT_ACCESS_TOKEN_EXPIRES_IN * 1000
+
+              this.#sendSuccess(res, {
+                user,
+                access_token: accessToken.token,
+                expired_at: accessTokenExpiredAt,
+              })
+            } catch (err) {
+              this.#sendError(res, err.cause?.status || 500, err.cause?.message || "Internal server error")
+            }
+          })
+        } catch (err) {
+          this.#sendError(res, 500, "Unexpected server error")
+        }
       })
 
       this.#localSocket.listen(port, listenOptions, (listenSocket) => {

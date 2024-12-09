@@ -790,7 +790,7 @@ describe("Message function", async () => {
               email: `email_${i + 1}`,
               phone: `phone_${i + 1}`,
               password: "1um",
-              deviceId: "device1",
+              device_id: "device1",
             },
             id: "0",
           },
