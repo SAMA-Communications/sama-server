@@ -8,6 +8,8 @@ import { APIs, detectAPIType } from "./APIs.js"
 
 import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
+import HttpAuthController from "../../APIs/JSON/controllers/http/auth.js"
+
 import packetManager from "./packet_manager.js"
 import packetMapper from "./packet_mapper.js"
 
@@ -78,6 +80,21 @@ const onMessage = async (ws, message) => {
 class ClientManager {
   #localSocket = null
 
+  #setCorsHeaders(res) {
+    res.writeHeader("Access-Control-Allow-Origin", process.env.CORS_ORIGIN || "*")
+    res.writeHeader("Access-Control-Allow-Credentials", "true")
+    res.writeHeader("Access-Control-Allow-Methods", "POST")
+    res.writeHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
+  }
+
+  #handleRequestWithCors(handler) {
+    return (res, req) => {
+      this.#setCorsHeaders(res)
+      res.onAborted(() => (res.aborted = true))
+      handler(res, req)
+    }
+  }
+
   async createLocalSocket(appOptions, wsOptions, listenOptions, isSSL, port) {
     return new Promise((resolve) => {
       this.#localSocket = isSSL ? uWS.SSLApp(appOptions) : uWS.App(appOptions)
@@ -126,6 +143,16 @@ class ClientManager {
           }
         },
       })
+
+      this.#localSocket.options(
+        "/*",
+        this.#handleRequestWithCors((res) => res.end())
+      )
+
+      this.#localSocket.post(
+        "/login",
+        this.#handleRequestWithCors((res, req) => HttpAuthController.login(res, req))
+      )
 
       this.#localSocket.listen(port, listenOptions, (listenSocket) => {
         if (listenSocket) {

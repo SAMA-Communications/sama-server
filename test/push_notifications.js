@@ -259,7 +259,7 @@ describe("PushNotification functions", async () => {
       assert.strictEqual(responseData.response.success, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: "Incorrect deviceId.",
+        message: "Incorrect device id.",
       })
     })
   })
@@ -438,7 +438,7 @@ describe("PushNotification functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: `'deviceId' is required.`,
+        message: `'device_id' is required.`,
       })
     })
   })
