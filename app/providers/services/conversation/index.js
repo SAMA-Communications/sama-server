@@ -111,9 +111,11 @@ class ConversationService {
   }
 
   async updateParticipants(conversation, addParticipants, removeParticipants, currentParticipantIds) {
+    console.log("1", currentParticipantIds)
     if (!currentParticipantIds) {
       currentParticipantIds = await this.findConversationParticipants(conversation._id)
     }
+    console.log("2", currentParticipantIds)
 
     const addedIds = await this.addParticipants(conversation, addParticipants, currentParticipantIds)
 
@@ -140,8 +142,10 @@ class ConversationService {
       (pId) => !currentParticipantIds.find((currentPId) => this.helpers.isEqualsNativeIds(currentPId, pId))
     )
 
+    console.log("3", participantIds)
     const participantsCount = participantIds.length + currentParticipantIds.length
 
+    console.log("3participantsCount", participantsCount, participantIds.length, currentParticipantIds.length)
     if (participantsCount > this.CONVERSATION_MAX_PARTICIPANTS) {
       throw new Error(ERROR_STATUES.PARTICIPANTS_LIMIT.message, {
         cause: ERROR_STATUES.PARTICIPANTS_LIMIT,
