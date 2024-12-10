@@ -1,5 +1,4 @@
 import { CONSTANTS as MAIN_CONSTANTS } from "../../../../constants/constants.js"
-import { slice } from "@sama/utils/req_res_utils.js"
 
 class UserSearchOperation {
   constructor(sessionService, userService) {
@@ -17,7 +16,7 @@ class UserSearchOperation {
         : searchParams.limit || MAIN_CONSTANTS.LIMIT_MAX
 
     const users = await this.userService.userRepo.search(
-      { match: searchParams.login, ignoreIds, timeFromUpdate: searchParams.updated_at?.gt },
+      { match: searchParams.keyword, ignoreIds, timeFromUpdate: searchParams.updated_at?.gt },
       limit
     )
 

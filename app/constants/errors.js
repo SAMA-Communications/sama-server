@@ -1,6 +1,6 @@
 export const ERROR_STATUES = {
   // Default -->
-  UNAUTHORIZED: { status: 404, message: "Unauthorized." },
+  UNAUTHORIZED: { status: 401, message: "Unauthorized." },
   FORBIDDEN: { status: 403, message: "Forbidden." },
   BAD_REQUEST: { status: 400, message: "Bad Request." },
   INVALID_DATA_FORMAT: {

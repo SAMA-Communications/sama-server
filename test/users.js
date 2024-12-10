@@ -604,7 +604,7 @@ describe("User cycle", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.strictEqual(responseData.response.success, undefined)
       assert.deepEqual(responseData.response.error, {
-        status: 404,
+        status: 401,
         message: "Unauthorized.",
       })
     })
@@ -626,7 +626,7 @@ describe("User cycle", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.strictEqual(responseData.response.success, undefined)
       assert.deepEqual(responseData.response.error, {
-        status: 404,
+        status: 401,
         message: "Unauthorized.",
       })
 
