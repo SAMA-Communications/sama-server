@@ -6,6 +6,13 @@ import { ERROR_STATUES } from "../../../../app/constants/errors.js"
 import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
 class HttpAuthController extends BaseHttpController {
+  #setRefreshTokenCookie(res, token) {
+    res.writeHeader(
+      "Set-Cookie",
+      `refresh_token=${token}; Max-Age=${process.env.JWT_REFRESH_TOKEN_EXPIRES_IN}; HttpOnly; SameSite=Lax; Secure;`
+    )
+  }
+
   async login(res, req) {
     const cookieHeader = this.getCookie(req)
     const refresh_token = extractRefreshTokenFromCookie(cookieHeader)
@@ -49,7 +56,7 @@ class HttpAuthController extends BaseHttpController {
         new Date(accessToken.created_at).getTime() + process.env.JWT_ACCESS_TOKEN_EXPIRES_IN * 1000
 
       if (newRefreshToken) {
-        this.setRefreshTokenCookie(res, newRefreshToken.token)
+        this.#setRefreshTokenCookie(res, newRefreshToken.token)
       }
 
       this.sendSuccess(res, { user, access_token: accessToken.token, expired_at: accessTokenExpiredAt })

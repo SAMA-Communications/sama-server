@@ -23,10 +23,6 @@ export default class BaseHttpController extends BaseController {
     return req.getHeader("cookie")
   }
 
-  setRefreshTokenCookie(res, token) {
-    res.writeHeader("Set-Cookie", `refresh_token=${token}; HttpOnly; SameSite=Lax;`)
-  }
-
   sendError(res, status, message) {
     if (!res.aborted) res.writeStatus(status.toString()).end(JSON.stringify({ message }))
   }
