@@ -79,10 +79,7 @@ class HttpAuthController extends BaseHttpController {
       const sessionService = ServiceLocatorContainer.use("SessionService")
       const userTokenRepo = ServiceLocatorContainer.use("UserTokenRepository")
 
-      const tmpToken =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWExMzJkZWMyOGY1ZmEwYjZmZjJlOGIiLCJuYXRpdmVfaWQiOiI2NWExMzJkZWMyOGY1ZmEwYjZmZjJlOGIiLCJsb2dpbiI6IjEyMyIsInR5cGUiOiJyZWZyZXNoIiwiaWF0IjoxNzMzODc3NDcyLCJleHAiOjE3MzM4Nzg2ODF9.UFiN-Uj5Q2yiMlCM7ZcH0qMFPSnpo7cVWHfsjVjrk8g"
-
-      const refreshTokenRecord = await userTokenRepo.findToken(tmpToken, device_id, "refresh") // tmpToken => refresh_token
+      const refreshTokenRecord = await userTokenRepo.findToken(refresh_token, device_id, "refresh")
       if (!refreshTokenRecord) {
         throw new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
           cause: { status: ERROR_STATUES.INCORRECT_TOKEN.status, message: ERROR_STATUES.INCORRECT_TOKEN.message },
