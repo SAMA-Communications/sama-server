@@ -1,5 +1,7 @@
 import BaseHttpController from "./base.js"
 
+import signature from "cookie-signature"
+
 import extractRefreshTokenFromCookie from "../../../JSON/utils/extract_refresh_token_from_cookie.js"
 import { ERROR_STATUES } from "../../../../app/constants/errors.js"
 
@@ -7,21 +9,38 @@ import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
 class HttpAuthController extends BaseHttpController {
   #setRefreshTokenCookie(res, token, isRemove = false) {
+    console.log(res, token, isRemove)
+
+    const signedToken = `s:` + signature.sign(token, process.env.SIGNATURE_SECRET)
     res.writeHeader(
       "Set-Cookie",
-      `refresh_token=${token}; Max-Age=${isRemove ? 0 : process.env.JWT_REFRESH_TOKEN_EXPIRES_IN}; HttpOnly; SameSite=Lax; Secure;`
+      `refresh_token=${signedToken}; Max-Age=${isRemove ? 0 : process.env.JWT_REFRESH_TOKEN_EXPIRES_IN}; HttpOnly; SameSite=Lax; Secure;`
     )
   }
 
   #getRefreshTokenCookie(req) {
     const cookieHeader = this.getCookie(req)
-    return extractRefreshTokenFromCookie(cookieHeader)
+
+    const signedToken = extractRefreshTokenFromCookie(cookieHeader)
+    if (!signedToken) return null
+
+    const unsignedToken = signature.unsign(signedToken.slice(2), process.env.SIGNATURE_SECRET)
+    if (unsignedValue !== false) {
+      return unsignedToken
+    } else {
+      throw new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
+        cause: {
+          status: ERROR_STATUES.INCORRECT_TOKEN.status,
+          message: ERROR_STATUES.INCORRECT_TOKEN.message,
+        },
+      })
+    }
   }
 
   async login(res, req) {
-    const refresh_token = this.#getRefreshTokenCookie(req)
-
     try {
+      const refresh_token = this.#getRefreshTokenCookie(req)
+
       const { login, password, access_token, device_id } = await this.parseJsonBody(res)
       if (!device_id) {
         throw new Error(ERROR_STATUES.DEVICE_ID_MISSED.message, {
@@ -71,9 +90,9 @@ class HttpAuthController extends BaseHttpController {
   }
 
   async logout(res, req) {
-    const refresh_token = this.#getRefreshTokenCookie(req)
-
     try {
+      const refresh_token = this.#getRefreshTokenCookie(req)
+
       const { device_id } = await this.parseJsonBody(res)
 
       const sessionService = ServiceLocatorContainer.use("SessionService")
