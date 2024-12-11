@@ -73,6 +73,10 @@ export const routes = {
     UsersController.middleware(authGuardMiddleware, ws, json)
       .validate(json.user_login, usersSchemaValidation.login)
       .login(ws, json),
+  /**
+   * @deprecated **WARNING**: `user_logout` request is deprecated
+   * Therefore, we recommend using the new http route `/logout` to log the user out of the system.
+   */
   user_logout: (ws, json) =>
     UsersController.middleware(authGuardMiddleware, ws, json)
       .validate(json.user_logout, usersSchemaValidation.logout)

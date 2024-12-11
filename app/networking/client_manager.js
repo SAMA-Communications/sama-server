@@ -154,6 +154,11 @@ class ClientManager {
         this.#handleRequestWithCors((res, req) => HttpAuthController.login(res, req))
       )
 
+      this.#localSocket.post(
+        "/logout",
+        this.#handleRequestWithCors((res, req) => HttpAuthController.logout(res, req))
+      )
+
       this.#localSocket.listen(port, listenOptions, (listenSocket) => {
         if (listenSocket) {
           console.log(

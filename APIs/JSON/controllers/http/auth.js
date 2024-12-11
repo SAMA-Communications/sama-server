@@ -6,16 +6,20 @@ import { ERROR_STATUES } from "../../../../app/constants/errors.js"
 import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
 class HttpAuthController extends BaseHttpController {
-  #setRefreshTokenCookie(res, token) {
+  #setRefreshTokenCookie(res, token, isRemove = false) {
     res.writeHeader(
       "Set-Cookie",
-      `refresh_token=${token}; Max-Age=${process.env.JWT_REFRESH_TOKEN_EXPIRES_IN}; HttpOnly; SameSite=Lax; Secure;`
+      `refresh_token=${token}; Max-Age=${isRemove ? 0 : process.env.JWT_REFRESH_TOKEN_EXPIRES_IN}; HttpOnly; SameSite=Lax; Secure;`
     )
   }
 
-  async login(res, req) {
+  #getRefreshTokenCookie(req) {
     const cookieHeader = this.getCookie(req)
-    const refresh_token = extractRefreshTokenFromCookie(cookieHeader)
+    return extractRefreshTokenFromCookie(cookieHeader)
+  }
+
+  async login(res, req) {
+    const refresh_token = this.#getRefreshTokenCookie(req)
 
     try {
       const { login, password, access_token, device_id } = await this.parseJsonBody(res)
@@ -62,7 +66,41 @@ class HttpAuthController extends BaseHttpController {
       this.sendSuccess(res, { user, access_token: accessToken.token, expired_at: accessTokenExpiredAt })
     } catch (err) {
       console.log(err)
+      this.sendError(res, err.cause?.status || 500, err.cause?.message || ERROR_STATUES.INTERNAL_SERVER.message)
+    }
+  }
 
+  async logout(res, req) {
+    const refresh_token = this.#getRefreshTokenCookie(req)
+
+    try {
+      const { device_id } = await this.parseJsonBody(res)
+
+      const sessionService = ServiceLocatorContainer.use("SessionService")
+      const userTokenRepo = ServiceLocatorContainer.use("UserTokenRepository")
+
+      const tmpToken =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWExMzJkZWMyOGY1ZmEwYjZmZjJlOGIiLCJuYXRpdmVfaWQiOiI2NWExMzJkZWMyOGY1ZmEwYjZmZjJlOGIiLCJsb2dpbiI6IjEyMyIsInR5cGUiOiJyZWZyZXNoIiwiaWF0IjoxNzMzODc3NDcyLCJleHAiOjE3MzM4Nzg2ODF9.UFiN-Uj5Q2yiMlCM7ZcH0qMFPSnpo7cVWHfsjVjrk8g"
+
+      const refreshTokenRecord = await userTokenRepo.findToken(tmpToken, device_id, "refresh") // tmpToken => refresh_token
+      if (!refreshTokenRecord) {
+        throw new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
+          cause: { status: ERROR_STATUES.INCORRECT_TOKEN.status, message: ERROR_STATUES.INCORRECT_TOKEN.message },
+        })
+      }
+
+      const userId = refreshTokenRecord?.user_id
+
+      const ws = sessionService.getUserDevices(userId).find((el) => el.deviceId === device_id)?.ws
+
+      const userLogoutOperation = ServiceLocatorContainer.use("UserLogoutOperation")
+      await userLogoutOperation.perform(ws)
+
+      this.#setRefreshTokenCookie(res, tmpToken, true)
+
+      this.sendSuccess(res, { success: true })
+    } catch (err) {
+      console.log(err)
       this.sendError(res, err.cause?.status || 500, err.cause?.message || ERROR_STATUES.INTERNAL_SERVER.message)
     }
   }

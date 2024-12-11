@@ -144,6 +144,28 @@ Later, the subsequent logins can be done via `token`:
 
 ### Logout
 
+**WARNING**: `user_logout` request is deprecated
+
+_! Therefore, we recommend using the new http route `/logout` to log the user out of the system. !_
+
+Http request example:
+
+- `POST /logout` Request parameters:
+
+```
+{ device_id: "device_u1" }
+```
+
+Response:
+
+```
+{ success: true }
+```
+
+Please note that if you do not pass an actual refresh_token in the http request credentials, then use hard session cleanup using a web socket request.
+
+Old websocket requests examples:
+
 ```
 {
   request: {
