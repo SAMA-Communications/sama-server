@@ -25,7 +25,7 @@ class HttpAuthController extends BaseHttpController {
     if (!signedToken) return null
 
     const unsignedToken = signature.unsign(signedToken.slice(2), process.env.SIGNATURE_SECRET)
-    if (unsignedValue !== false) {
+    if (unsignedToken !== false) {
       return unsignedToken
     } else {
       throw new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
