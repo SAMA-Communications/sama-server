@@ -16,7 +16,7 @@ class HttpAuthController extends BaseHttpController {
     )
   }
 
-  #getRefreshTokenCookie(req) {
+  #getRefreshTokenCookie(res, req) {
     const cookieHeader = this.getCookie(req)
 
     const signedToken = extractRefreshTokenFromCookie(cookieHeader)
@@ -26,6 +26,7 @@ class HttpAuthController extends BaseHttpController {
     if (unsignedToken !== false) {
       return unsignedToken
     } else {
+      this.#setRefreshTokenCookie(res, signedToken, true)
       throw new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
         cause: {
           status: ERROR_STATUES.INCORRECT_TOKEN.status,
@@ -37,7 +38,7 @@ class HttpAuthController extends BaseHttpController {
 
   async login(res, req) {
     try {
-      const refresh_token = this.#getRefreshTokenCookie(req)
+      const refresh_token = this.#getRefreshTokenCookie(res, req)
 
       const { login, password, access_token, device_id } = await this.parseJsonBody(res)
       if (!device_id) {
@@ -89,7 +90,7 @@ class HttpAuthController extends BaseHttpController {
 
   async logout(res, req) {
     try {
-      const refresh_token = this.#getRefreshTokenCookie(req)
+      const refresh_token = this.#getRefreshTokenCookie(res, req)
 
       const { device_id } = await this.parseJsonBody(res)
 
