@@ -96,7 +96,7 @@ class HttpAuthController extends BaseHttpController {
       const userLogoutOperation = ServiceLocatorContainer.use("UserLogoutOperation")
       await userLogoutOperation.perform(ws)
 
-      this.#setRefreshTokenCookie(res, tmpToken, true)
+      this.#setRefreshTokenCookie(res, refreshTokenRecord.token, true)
 
       this.sendSuccess(res, { success: true })
     } catch (err) {
