@@ -9,8 +9,6 @@ import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
 class HttpAuthController extends BaseHttpController {
   #setRefreshTokenCookie(res, token, isRemove = false) {
-    console.log(res, token, isRemove)
-
     const signedToken = `s:` + signature.sign(token, process.env.SIGNATURE_SECRET)
     res.writeHeader(
       "Set-Cookie",
