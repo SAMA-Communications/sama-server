@@ -37,25 +37,8 @@ class HttpAuthController extends BaseHttpController {
   }
 
   #getAccessTokenFromHeader(req) {
-    const authHeader = req.getHeader("authorization")
-
-    if (!authHeader) {
-      throw new Error(ERROR_STATUES.MISSING_AUTH_CREDENTIALS.message, {
-        cause: {
-          status: ERROR_STATUES.MISSING_AUTH_CREDENTIALS.status,
-          message: ERROR_STATUES.MISSING_AUTH_CREDENTIALS.message,
-        },
-      })
-    }
-
-    const parts = authHeader.split(" ")
-    if (parts.length !== 2 || parts[0] !== "Bearer") {
-      throw new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
-        cause: { status: ERROR_STATUES.INCORRECT_TOKEN.status, message: ERROR_STATUES.INCORRECT_TOKEN.message },
-      })
-    }
-
-    return parts[1]
+    const token = req.getHeader("authorization")?.split(" ")?.[1]
+    return token || null
   }
 
   async login(res, req) {
