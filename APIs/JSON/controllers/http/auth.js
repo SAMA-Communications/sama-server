@@ -9,7 +9,7 @@ import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
 class HttpAuthController extends BaseHttpController {
   #setRefreshTokenCookie(res, token, isRemove = false) {
-    const signedToken = `s:` + signature.sign(token, process.env.SIGNATURE_SECRET)
+    const signedToken = `s:` + signature.sign(token, process.env.COOKIE_SECRET)
     res.writeHeader(
       "Set-Cookie",
       `refresh_token=${signedToken}; Max-Age=${isRemove ? 0 : process.env.JWT_REFRESH_TOKEN_EXPIRES_IN}; HttpOnly; SameSite=Lax; Secure;`
@@ -22,7 +22,7 @@ class HttpAuthController extends BaseHttpController {
     const signedToken = extractRefreshTokenFromCookie(cookieHeader)
     if (!signedToken) return null
 
-    const unsignedToken = signature.unsign(signedToken.slice(2), process.env.SIGNATURE_SECRET)
+    const unsignedToken = signature.unsign(signedToken.slice(2), process.env.COOKIE_SECRET)
     if (unsignedToken !== false) {
       return unsignedToken
     } else {
@@ -36,11 +36,34 @@ class HttpAuthController extends BaseHttpController {
     }
   }
 
+  #getAccessTokenFromHeader(req) {
+    const authHeader = req.getHeader("authorization")
+
+    if (!authHeader) {
+      throw new Error(ERROR_STATUES.MISSING_AUTH_CREDENTIALS.message, {
+        cause: {
+          status: ERROR_STATUES.MISSING_AUTH_CREDENTIALS.status,
+          message: ERROR_STATUES.MISSING_AUTH_CREDENTIALS.message,
+        },
+      })
+    }
+
+    const parts = authHeader.split(" ")
+    if (parts.length !== 2 || parts[0] !== "Bearer") {
+      throw new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
+        cause: { status: ERROR_STATUES.INCORRECT_TOKEN.status, message: ERROR_STATUES.INCORRECT_TOKEN.message },
+      })
+    }
+
+    return parts[1]
+  }
+
   async login(res, req) {
     try {
       const refresh_token = this.#getRefreshTokenCookie(res, req)
+      const access_token = this.#getAccessTokenFromHeader(req)
 
-      const { login, password, access_token, device_id } = await this.parseJsonBody(res)
+      const { login, password, device_id } = await this.parseJsonBody(res)
       if (!device_id) {
         throw new Error(ERROR_STATUES.DEVICE_ID_MISSED.message, {
           cause: { status: ERROR_STATUES.DEVICE_ID_MISSED.status, message: ERROR_STATUES.DEVICE_ID_MISSED.message },
@@ -91,13 +114,22 @@ class HttpAuthController extends BaseHttpController {
   async logout(res, req) {
     try {
       const refresh_token = this.#getRefreshTokenCookie(res, req)
-
-      const { device_id } = await this.parseJsonBody(res)
+      const access_token = this.#getAccessTokenFromHeader(req)
 
       const sessionService = ServiceLocatorContainer.use("SessionService")
       const userTokenRepo = ServiceLocatorContainer.use("UserTokenRepository")
 
-      const refreshTokenRecord = await userTokenRepo.findToken(refresh_token, device_id, "refresh")
+      const accessTokenRecord = await userTokenRepo.findToken(access_token, null, "access")
+      if (!accessTokenRecord) {
+        throw new Error(ERROR_STATUES.MISSING_AUTH_CREDENTIALS.message, {
+          cause: {
+            status: ERROR_STATUES.MISSING_AUTH_CREDENTIALS.status,
+            message: ERROR_STATUES.MISSING_AUTH_CREDENTIALS.message,
+          },
+        })
+      }
+
+      const refreshTokenRecord = await userTokenRepo.findToken(refresh_token, accessTokenRecord.device_id, "refresh")
       if (!refreshTokenRecord) {
         throw new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
           cause: { status: ERROR_STATUES.INCORRECT_TOKEN.status, message: ERROR_STATUES.INCORRECT_TOKEN.message },
