@@ -111,21 +111,18 @@ class HttpAuthController extends BaseHttpController {
           },
         })
       }
-      console.log(accessTokenRecord, accessTokenRecord.device_id, typeof accessTokenRecord.device_id)
 
       const refreshTokenRecord = await userTokenRepo.findToken(refresh_token, accessTokenRecord.device_id, "refresh")
 
-      console.log(refresh_token, refreshTokenRecord)
       if (!refreshTokenRecord) {
         throw new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
           cause: { status: ERROR_STATUES.INCORRECT_TOKEN.status, message: ERROR_STATUES.INCORRECT_TOKEN.message },
         })
       }
-      console.log("good")
 
       const userId = refreshTokenRecord?.user_id
 
-      const ws = sessionService.getUserDevices(userId).find((el) => el.deviceId === device_id)?.ws
+      const ws = sessionService.getUserDevices(userId).find((el) => el.deviceId === refreshTokenRecord.device_id)?.ws
 
       const userLogoutOperation = ServiceLocatorContainer.use("UserLogoutOperation")
       await userLogoutOperation.perform(ws)
