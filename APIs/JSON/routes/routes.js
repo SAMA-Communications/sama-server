@@ -52,6 +52,10 @@ export const routes = {
     MessagesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.system_message, messagesSchemaValidation.system)
       .sendSystem(ws, json),
+  connect: (ws, json) =>
+    UsersController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.connect, usersSchemaValidation.connect)
+      .connect(ws, json),
   user_create: (ws, json) =>
     UsersController.middleware(authGuardMiddleware, ws, json)
       .validate(json.user_create, usersSchemaValidation.create)
@@ -61,10 +65,18 @@ export const routes = {
       .validate(json.user_edit, usersSchemaValidation.edit)
       .middleware(authGuardMiddleware, ws, json)
       .edit(ws, json),
+  /**
+   * @deprecated **WARNING**: `user_login` request is deprecated
+   * Therefore, we recommend using the new http route `/login` for user authorization.
+   */
   user_login: (ws, json) =>
     UsersController.middleware(authGuardMiddleware, ws, json)
       .validate(json.user_login, usersSchemaValidation.login)
       .login(ws, json),
+  /**
+   * @deprecated **WARNING**: `user_logout` request is deprecated
+   * Therefore, we recommend using the new http route `/logout` to log the user out of the system.
+   */
   user_logout: (ws, json) =>
     UsersController.middleware(authGuardMiddleware, ws, json)
       .validate(json.user_logout, usersSchemaValidation.logout)
