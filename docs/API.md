@@ -50,12 +50,7 @@ Http request examples:
 }
 ```
 
-```
-{
-  token: "access_token",
-  device_id: "device_u1"
-}
-```
+When you use `access_token` for authorization:
 
 ```
 {
@@ -63,8 +58,9 @@ Http request examples:
 }
 ```
 
-In the 3rd variant, there can be only `device_id`, but `refresh_token` must be included in the request cookie.
-Also, don't forget that in the 1st and 3rd variants of the request, `refresh_token` will be **embedded in the response cookie**
+- `access_token` must be put in the request header.
+
+If the authorization was performed using `login & password` or `refresh_token`, a new `refresh_token` will be **embedded in the response cookie**.
 
 All variations of the query will have the same response:
 
@@ -152,8 +148,16 @@ Http request example:
 
 - `POST /logout` Request parameters:
 
+The `body` of the request can be empty, but you need to put the `access_token` in the request header, for example:
+
 ```
-{ device_id: "device_u1" }
+{
+  ...
+  headers: {
+    Authorization: `Bearer ${accessToken}`,
+    ...
+  }
+}
 ```
 
 Response:
@@ -162,7 +166,7 @@ Response:
 { success: true }
 ```
 
-Please note that if you do not pass an actual refresh_token in the http request credentials, then use hard session cleanup using a web socket request.
+Please note that if you do not pass an actual `refresh_token` in the http request credentials, then use hard session cleanup using a web socket request.
 
 Old websocket requests examples:
 
