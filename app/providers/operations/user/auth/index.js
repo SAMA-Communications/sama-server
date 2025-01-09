@@ -24,7 +24,7 @@ class UserAuthOperation {
       user,
       "access",
       process.env.JWT_ACCESS_SECRET,
-      process.env.JWT_ACCESS_TOKEN_EXPIRES_IN
+      +process.env.JWT_ACCESS_TOKEN_EXPIRES_IN
     )
 
     const updatedToken = await this.userTokenRepo.updateToken(token, user.native_id, deviceId, jwtAccessToken, "access")
@@ -86,7 +86,7 @@ class UserAuthOperation {
       user,
       "refresh",
       process.env.JWT_REFRESH_SECRET,
-      process.env.JWT_REFRESH_TOKEN_EXPIRES_IN
+      +process.env.JWT_REFRESH_TOKEN_EXPIRES_IN
     )
 
     return await this.userTokenRepo.updateToken(null, user.native_id, deviceId, jwtToken, "refresh")
