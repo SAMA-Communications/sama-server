@@ -5,7 +5,8 @@
 1. **Install JMeter**: Ensure JMeter is installed and the `bin` directory is accessible in your system PATH.
 2. **Required Plugin**: Install the following JMeter plugin locally:
    - WebSocket Sampler
-3. **Java Version**: To run the tests, ensure that you are using Java version 20 or lower.
+3. **SAMA server is running**: Put your server address in `ws create conenction` -> `Server name or IP` & `Port`.
+4. **Java Version**: To run the tests, ensure that you are using Java version 20 or lower.
    - All tests were performed using Java 17.
 
 Useful installation link for Mac users: [How to Install Apache JMeter on macOS](https://tejaksha-k.medium.com/a-step-by-step-guide-how-to-install-apache-jmeter-on-macos-6a9eb8bf3463)
