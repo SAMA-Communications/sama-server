@@ -83,9 +83,7 @@ class HttpAuthController extends BaseHttpController {
       const accessTokenExpiredAt =
         new Date(accessToken.updated_at).getTime() + process.env.JWT_ACCESS_TOKEN_EXPIRES_IN * 1000
 
-      if (newRefreshToken) {
-        this.#setRefreshTokenCookie(res, newRefreshToken.token)
-      }
+      this.#setRefreshTokenCookie(res, newRefreshToken ? newRefreshToken.token : refresh_token)
 
       this.sendSuccess(res, { user, access_token: accessToken.token, expired_at: accessTokenExpiredAt })
     } catch (err) {
