@@ -28,7 +28,7 @@ class UserTokenRepository extends BaseRepository {
           device_id: deviceId,
           type: tokenType,
         },
-        { $set: { token: jwtToken } }
+        { $set: { token: jwtToken, updated_at: new Date() } }
       )
 
       existedToken.set("token", jwtToken)
