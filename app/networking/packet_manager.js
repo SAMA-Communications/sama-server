@@ -12,6 +12,7 @@ import { CONSTANTS } from "../constants/constants.js"
 
 class PacketManager {
   async deliverToUserOnThisNode(ws, userId, packet, deviceId, senderInfo) {
+    const currentNodeUrl = buildWsEndpoint(RuntimeDefinedContext.APP_IP, RuntimeDefinedContext.CLUSTER_PORT)
     const sessionService = ServiceLocatorContainer.use("SessionService")
     const activeDevices = sessionService.getUserDevices(userId)
 
@@ -19,7 +20,13 @@ class PacketManager {
 
     for (const recipient of wsRecipient) {
       try {
-        const recipientInfo = { userId, deviceId: recipient.deviceId }
+        const recipientInfo = {
+          apiType: recipient.ws?.apiType,
+          session: sessionService.getSession(recipient.ws),
+          deviceId: recipient.deviceId,
+          node: currentNodeUrl,
+        }
+
         const mappedMessage = await packetMapper.mapPacket(
           ws?.apiType,
           recipient.ws?.apiType,
@@ -46,11 +53,11 @@ class PacketManager {
       apiType: ws?.apiType,
       session: senderUserSession,
       deviceId: senderDeviceId,
-      node: currentNodeUrl,
     }
 
     Object.entries(nodeConnections).forEach(async ([nodeDeviceId, extraParams]) => {
       const nodeUrl = extraParams[CONSTANTS.SESSION_NODE_KEY]
+      senderInfo.node = nodeUrl
 
       if (currentNodeUrl === nodeUrl) {
         if (currentDeviceId !== nodeDeviceId) {
