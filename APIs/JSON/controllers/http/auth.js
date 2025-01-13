@@ -55,14 +55,12 @@ class HttpAuthController extends BaseHttpController {
 
       const userAuthOperation = ServiceLocatorContainer.use("UserAuthOperation")
       const userInfo = { device_id }
-      let needToUpdateRefreshToken = true
 
       if (login && password) {
         userInfo.login = login
         userInfo.password = password
       } else if (access_token) {
         userInfo.token = access_token
-        needToUpdateRefreshToken = false
       } else if (refresh_token) {
         userInfo.token = refresh_token
       } else {
@@ -76,14 +74,12 @@ class HttpAuthController extends BaseHttpController {
 
       const { user, token: accessToken } = await userAuthOperation.perform(null, userInfo)
 
-      const newRefreshToken = needToUpdateRefreshToken
-        ? await userAuthOperation.createRefreshToken(user, device_id)
-        : null
+      const newRefreshToken = await userAuthOperation.createRefreshToken(user, device_id)
 
       const accessTokenExpiredAt =
         new Date(accessToken.updated_at).getTime() + process.env.JWT_ACCESS_TOKEN_EXPIRES_IN * 1000
 
-      this.#setRefreshTokenCookie(res, newRefreshToken ? newRefreshToken.token : refresh_token)
+      this.#setRefreshTokenCookie(res, newRefreshToken.token)
 
       this.sendSuccess(res, { user, access_token: accessToken.token, expired_at: accessTokenExpiredAt })
     } catch (err) {
