@@ -46,6 +46,8 @@ class UserAuthOperation {
   }
 
   async #authByToken(tokenJwt, deviceId) {
+    console.log("tokenToFind", tokenJwt, deviceId) //removeBeforeDeploy
+
     const token = await this.userTokenRepo.findToken(tokenJwt, deviceId)
 
     if (!token) {

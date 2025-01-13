@@ -46,6 +46,9 @@ class HttpAuthController extends BaseHttpController {
       const refresh_token = this.#getRefreshTokenCookie(res, req)
       const access_token = this.#getAccessTokenFromHeader(req)
 
+      console.log("refresh_token", refresh_token) //removeBeforeDeploy
+      console.log("access_token", access_token) //removeBeforeDeploy
+
       const { login, password, device_id } = await this.parseJsonBody(res)
       if (!device_id) {
         throw new Error(ERROR_STATUES.DEVICE_ID_MISSED.message, {
@@ -57,12 +60,9 @@ class HttpAuthController extends BaseHttpController {
       const userInfo = { device_id }
 
       if (login && password) {
-        userInfo.login = login
-        userInfo.password = password
-      } else if (access_token) {
-        userInfo.token = access_token
-      } else if (refresh_token) {
-        userInfo.token = refresh_token
+        Object.assign(userInfo, { login, password })
+      } else if (access_token || refresh_token) {
+        userInfo.token = access_token || refresh_token
       } else {
         throw new Error(ERROR_STATUES.MISSING_AUTH_CREDENTIALS.message, {
           cause: {
