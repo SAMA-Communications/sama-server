@@ -12,13 +12,20 @@ class MessageDeleteOperation {
     const { cid: cId, ids: mIds, type } = deleteMessageParams
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
-    const participantIds = await this.#hasAccess(cId, currentUserId)
+    const { conversation, participantIds } = await this.#hasAccess(cId, currentUserId)
 
     const isDeleteAll = type === "all"
     await this.messageService.deleteMessages(currentUserId, mIds, isDeleteAll)
 
+    const deleteMessageFields = {
+      messageIds: mIds,
+      cid: cId,
+      c_type: conversation.type,
+      from: currentUserId
+    }
+
     const deletedMessages = isDeleteAll
-      ? new DeleteMessagesPublicFields({ messageIds: mIds, cid: cId, from: currentUserId })
+      ? new DeleteMessagesPublicFields(deleteMessageFields)
       : null
 
     return { deletedMessages, participantIds }
@@ -42,7 +49,7 @@ class MessageDeleteOperation {
       })
     }
 
-    return participantIds
+    return { conversation, participantIds }
   }
 }
 

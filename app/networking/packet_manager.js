@@ -34,7 +34,18 @@ class PacketManager {
           senderInfo,
           recipientInfo
         )
-        recipient.ws.send(mappedMessage)
+
+        if (!mappedMessage) {
+          continue
+        }
+        
+        if (Array.isArray(mappedMessage)) {
+          for (const message of mappedMessage) {
+            recipient.ws.send(message)
+          }
+        } else {
+          recipient.ws.send(mappedMessage)
+        }
       } catch (err) {
         console.error(`[PacketProcessor] send on socket error`, err)
       }
