@@ -87,9 +87,9 @@ class ClientManager {
     res.writeHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
   }
 
-  #handleRequestWithCors(handler) {
+  #handleHttpRequest(handler, withCors = false) {
     return (res, req) => {
-      this.#setCorsHeaders(res)
+      withCors && this.#setCorsHeaders(res)
       res.onAborted(() => (res.aborted = true))
       handler(res, req)
     }
@@ -146,12 +146,18 @@ class ClientManager {
 
       this.#localSocket.options(
         "/*",
-        this.#handleRequestWithCors((res) => res.end())
+        this.#handleHttpRequest((res) => res.end(), true)
       )
 
-      this.#localSocket.post("/login", (res, req) => HttpAuthController.login(res, req))
+      this.#localSocket.post(
+        "/login",
+        this.#handleHttpRequest((res, req) => HttpAuthController.login(res, req))
+      )
 
-      this.#localSocket.post("/logout", (res, req) => HttpAuthController.logout(res, req))
+      this.#localSocket.post(
+        "/logout",
+        this.#handleHttpRequest((res, req) => HttpAuthController.logout(res, req))
+      )
 
       this.#localSocket.listen(port, listenOptions, (listenSocket) => {
         if (listenSocket) {
