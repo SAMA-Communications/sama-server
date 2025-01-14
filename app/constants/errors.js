@@ -148,11 +148,11 @@ export const ERROR_STATUES = {
   },
   INTERNAL_SERVER: {
     status: 500,
-    message: "Internal server error",
+    message: "Internal server error.",
   },
   MISSING_AUTH_CREDENTIALS: {
     status: 401,
-    message: "Missing authentication credentials",
+    message: "Missing authentication credentials.",
   },
 }
 

@@ -8,14 +8,6 @@ import { ERROR_STATUES } from "../../../../app/constants/errors.js"
 import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
 class HttpAuthController extends BaseHttpController {
-  #setRefreshTokenCookie(res, token, isRemove = false) {
-    const signedToken = `s:` + signature.sign(token, process.env.COOKIE_SECRET)
-    res.writeHeader(
-      "Set-Cookie",
-      `refresh_token=${signedToken}; Max-Age=${isRemove ? 0 : process.env.JWT_REFRESH_TOKEN_EXPIRES_IN}; HttpOnly; SameSite=Lax; Secure;`
-    )
-  }
-
   #getRefreshTokenCookie(res, req) {
     const cookieHeader = this.getCookie(req)
 
@@ -26,7 +18,7 @@ class HttpAuthController extends BaseHttpController {
     if (unsignedToken !== false) {
       return unsignedToken
     } else {
-      this.#setRefreshTokenCookie(res, signedToken, true)
+      // this.#setRefreshTokenCookie(res, signedToken, true)
       throw new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
         cause: {
           status: ERROR_STATUES.INCORRECT_TOKEN.status,
@@ -45,9 +37,6 @@ class HttpAuthController extends BaseHttpController {
     try {
       const refresh_token = this.#getRefreshTokenCookie(res, req)
       const access_token = this.#getAccessTokenFromHeader(req)
-
-      console.log("refresh_token", refresh_token) //removeBeforeDeploy
-      console.log("access_token", access_token) //removeBeforeDeploy
 
       const { login, password, device_id } = await this.parseJsonBody(res)
       if (!device_id) {
@@ -79,12 +68,14 @@ class HttpAuthController extends BaseHttpController {
       const accessTokenExpiredAt =
         new Date(accessToken.updated_at).getTime() + process.env.JWT_ACCESS_TOKEN_EXPIRES_IN * 1000
 
-      this.#setRefreshTokenCookie(res, newRefreshToken.token)
-
-      this.sendSuccess(res, { user, access_token: accessToken.token, expired_at: accessTokenExpiredAt })
+      this.setStatus(res, 200)
+        .setRefreshToken(res, newRefreshToken.token)
+        .sendResponse(res, { user, access_token: accessToken.token, expired_at: accessTokenExpiredAt })
     } catch (err) {
       console.log(err)
-      this.sendError(res, err.cause?.status || 500, err.cause?.message || ERROR_STATUES.INTERNAL_SERVER.message)
+      this.setStatus(res, err.cause?.status || 500).sendResponse(res, {
+        message: err.cause?.message || ERROR_STATUES.INTERNAL_SERVER.message,
+      })
     }
   }
 
@@ -121,12 +112,12 @@ class HttpAuthController extends BaseHttpController {
       const userLogoutOperation = ServiceLocatorContainer.use("UserLogoutOperation")
       await userLogoutOperation.perform(ws)
 
-      this.#setRefreshTokenCookie(res, refreshTokenRecord.token, true)
-
-      this.sendSuccess(res, { success: true })
+      this.setStatus(res, 200).setRefreshToken(res, refreshTokenRecord.token, true).sendResponse(res, { success: true })
     } catch (err) {
       console.log(err)
-      this.sendError(res, err.cause?.status || 500, err.cause?.message || ERROR_STATUES.INTERNAL_SERVER.message)
+      this.setStatus(res, err.cause?.status || 500).sendResponse(res, {
+        message: err.cause?.message || ERROR_STATUES.INTERNAL_SERVER.message,
+      })
     }
   }
 }
