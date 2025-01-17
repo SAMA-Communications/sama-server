@@ -10,6 +10,6 @@ export const statusSchemaValidation = {
           cause: ERROR_STATUES.CID_REQUIRED,
         })
       ),
-    status: Joi.string().allow("start", "stop").optional()
+    status: Joi.string().allow("start", "stop").optional(),
   }).required(),
 }

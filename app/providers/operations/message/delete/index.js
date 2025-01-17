@@ -21,12 +21,10 @@ class MessageDeleteOperation {
       messageIds: mIds,
       cid: cId,
       c_type: conversation.type,
-      from: currentUserId
+      from: currentUserId,
     }
 
-    const deletedMessages = isDeleteAll
-      ? new DeleteMessagesPublicFields(deleteMessageFields)
-      : null
+    const deletedMessages = isDeleteAll ? new DeleteMessagesPublicFields(deleteMessageFields) : null
 
     return { deletedMessages, participantIds }
   }

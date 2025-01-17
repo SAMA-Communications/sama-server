@@ -38,7 +38,7 @@ class PacketManager {
         if (!mappedMessage) {
           continue
         }
-        
+
         if (Array.isArray(mappedMessage)) {
           for (const message of mappedMessage) {
             recipient.ws.send(message)

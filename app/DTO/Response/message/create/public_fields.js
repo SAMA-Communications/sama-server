@@ -3,8 +3,8 @@ class MessagePublicFields {
     this._id = messageModel._id
 
     this.cid = messageModel.cid
-    this.c_type = messageModel.x.c_type
-    delete messageModel.x.c_type
+    this.c_type = messageModel.x?.c_type
+    delete messageModel.x?.c_type
 
     this.from = messageModel.from
 

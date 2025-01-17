@@ -20,7 +20,7 @@ class StatusTypingOperation {
         c_type: conversation.type,
         from: currentUserId,
         t: currentTs,
-        status
+        status,
       },
     }
 
