@@ -17,6 +17,19 @@ class UsersController extends BaseJSONController {
     return new Response().addBackMessage({ response: { id: requestId, user: user.visibleParams() } })
   }
 
+  async connect(ws, data) {
+    const { id: requestId, connect: userConnectionParams } = data
+
+    const userConnectSocketOperation = ServiceLocatorContainer.use("UserConnectSocketOperation")
+    const { user } = await userConnectSocketOperation.perform(ws, userConnectionParams)
+
+    return new Response()
+      .addBackMessage({ response: { id: requestId, success: true } })
+      .updateLastActivityStatus(
+        new LastActivityStatusResponse(user.native_id, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE)
+      )
+  }
+
   async login(ws, data) {
     const { id: requestId, user_login: userInfo } = data
 
