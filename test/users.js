@@ -26,7 +26,7 @@ describe("User cycle", async () => {
             email: "email_1",
             phone: "phone_1",
             password: "user_paswword_1",
-            deviceId: "deveice1",
+            device_id: "deveice1",
           },
           id: "1_1",
         },
@@ -50,7 +50,7 @@ describe("User cycle", async () => {
           user_create: {
             login: "test_register",
             password: "user_paswword_1",
-            deviceId: "deveice1",
+            device_id: "deveice1",
           },
           id: "1_2_0",
         },
@@ -65,7 +65,7 @@ describe("User cycle", async () => {
           user_create: {
             login: "TeSt_REGISTER",
             password: "user_paswword_2",
-            deviceId: "deveice1",
+            device_id: "deveice1",
           },
           id: "1_2_0",
         },
@@ -90,7 +90,7 @@ describe("User cycle", async () => {
             login: "test_login",
             email: "email_1",
             password: "user_paswword_1",
-            deviceId: "deveice1",
+            device_id: "deveice1",
           },
           id: "1_2",
         },
@@ -115,7 +115,7 @@ describe("User cycle", async () => {
             login: "test_login",
             phone: "phone_1",
             password: "user_paswword_1",
-            deviceId: "deveice1",
+            device_id: "deveice1",
           },
           id: "1_2",
         },
@@ -139,7 +139,7 @@ describe("User cycle", async () => {
           user_create: {
             login: userLogin,
             password: "user_paswword_1",
-            deviceId: "deveice1",
+            device_id: "deveice1",
           },
           id: "1_2",
         },
@@ -163,7 +163,7 @@ describe("User cycle", async () => {
       const requestData = {
         request: {
           user_login: {
-            deviceId: "PC",
+            device_id: "PC",
             login: "user_testtttt",
             password: "user_paswword_1",
           },
@@ -186,7 +186,7 @@ describe("User cycle", async () => {
       const requestData = {
         request: {
           user_login: {
-            deviceId: "PC",
+            device_id: "PC",
             login: userLogin,
             password: "Invalid_password213",
           },
@@ -206,7 +206,7 @@ describe("User cycle", async () => {
       })
     })
 
-    it(`should fail 'deviceId' is required.`, async () => {
+    it(`should fail 'device_id' is required.`, async () => {
       const requestData = {
         request: {
           user_login: {
@@ -224,7 +224,7 @@ describe("User cycle", async () => {
       assert.strictEqual(responseData.response.success, undefined)
       assert.deepEqual(responseData.response.error, {
         status: 422,
-        message: `'deviceId' is required.`,
+        message: `'device_id' is required.`,
       })
     })
 
@@ -232,7 +232,7 @@ describe("User cycle", async () => {
       const requestData = {
         request: {
           user_login: {
-            deviceId: "PC",
+            device_id: "PC",
             login: userLogin,
             password: "user_paswword_1",
           },
@@ -338,7 +338,7 @@ describe("User cycle", async () => {
       const requestData = {
         request: {
           user_login: {
-            deviceId: "123",
+            device_id: "123",
             login: userLogin,
             password: "312sad",
           },
@@ -471,7 +471,7 @@ describe("User cycle", async () => {
             password: "new_pasw31",
             email: "copyemail@email.com",
             phone: "copy_phone",
-            deviceId: "pc",
+            device_id: "pc",
           },
           id: "5_2",
         },
@@ -633,7 +633,7 @@ describe("User cycle", async () => {
       requestData = {
         request: {
           user_login: {
-            deviceId: "PC",
+            device_id: "PC",
             login: userLogin,
             password: "312sad",
           },
