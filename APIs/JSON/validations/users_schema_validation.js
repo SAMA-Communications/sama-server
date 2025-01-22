@@ -81,7 +81,7 @@ export const usersSchemaValidation = {
   logout: Joi.object({}).required(),
   delete: Joi.object({}).required(),
   search: Joi.object({
-    login: Joi.string().required(),
+    keyword: Joi.string().required(),
     limit: Joi.number().min(1).max(100),
     updated_at: Joi.object({
       gt: Joi.date(),

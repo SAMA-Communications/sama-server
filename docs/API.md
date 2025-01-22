@@ -228,7 +228,7 @@ Old websocket requests examples:
 {
   request: {
     user_search: {
-      login: "sam",
+      keyword: "sam",
       limit: 100,
       updated_at: {
         gt: timestamp_in_ms,
