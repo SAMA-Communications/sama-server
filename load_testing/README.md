@@ -61,3 +61,7 @@ The test will terminate if the CPU load exceeds 70% for the last 15 minutes. You
 
 - Use larger user numbers cautiously, keeping an eye on CPU and memory usage.
 - Increase ramp-up time if threads are starting too quickly.
+
+## Test Results on Different Machines
+
+You can see in the file - [RESULTS.md](RESULTS.md)
