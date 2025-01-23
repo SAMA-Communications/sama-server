@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.28.0
+
+### Feature
+
+- Implemented a progressive authentication flow to enhance security
+- Added a load testing scheme
+
+### Updated
+
+- Updated `user_search` query param (`login` -> `keyword`)
+- Changed status for `Unauthorized` error
+
 ## 0.27.0
 
 ### Improvements
