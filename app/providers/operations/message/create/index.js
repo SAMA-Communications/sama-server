@@ -37,6 +37,12 @@ class MessageCreateOperation {
 
     const message = await this.messageService.create(currentUser, conversation, blockedUserIds, createMessageParams)
 
+    if (!message.x) {
+      message.set("x", {})
+    }
+
+    message.x.c_type = conversation.type
+
     if (conversation.type === "u") {
       const missedParticipantIds = await this.conversationService.restorePrivateConversation(
         conversation,
