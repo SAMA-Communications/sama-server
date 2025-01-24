@@ -1,5 +1,5 @@
 import RegisterProvider from "../../../common/RegisterProvider.js"
-import UserToken from "../../../new_models/user_token.js"
+import UserToken from "../../../models/user_token.js"
 import UserTokenRepository from "./index.js"
 
 const name = "UserTokenRepository"

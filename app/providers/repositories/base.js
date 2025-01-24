@@ -219,6 +219,16 @@ export default class BaseRepository {
   }
 
   async deleteMany(query) {
+    if (query._id) {
+      if (query._id.$in) {
+        query._id.$in = this.castObjectIds(query._id.$in)
+      }
+      query._id = this.castObjectId(query._id)
+    }
+    if (query.user_id) {
+      query.user_id = this.castObjectId(query.user_id)
+    }
+
     await this.collectionCursor.deleteMany(query)
   }
 

@@ -1,5 +1,5 @@
 import RegisterProvider from "../../../common/RegisterProvider.js"
-import User from "../../../new_models/user.js"
+import User from "../../../models/user.js"
 import UserRepository from "./index.js"
 
 const name = "UserRepository"
