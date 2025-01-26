@@ -14,7 +14,7 @@ class ContactService {
   }
 
   async delete(ownerId, contactId) {
-    await this.deleteUserContact(ownerId, contactId)
+    await this.contactRepo.deleteUserContact(ownerId, contactId)
   }
 
   async list(ownerId, queryParams, limit) {

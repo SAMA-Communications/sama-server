@@ -1,6 +1,12 @@
 import BaseRepository from "../base.js"
 
 class ContactRepository extends BaseRepository {
+  async prepareParams(params) {
+    params.user_id = this.castObjectId(params.user_id)
+
+    return await super.prepareParams(params)
+  }
+
   async findByIdAndUpdate(contactId, updateParams) {
     const contact = await this.findOneAndUpdate({ _id: contactId }, { $set: updateParams })
 

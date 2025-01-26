@@ -12,15 +12,15 @@ class ContactEditOperation {
 
     await this.contactService.matchContactWithUser(contactUpdate)
 
-    const updatedResult = await this.contactService.findByIdAndUpdate(contactId, contactUpdate)
+    const updatedContact = await this.contactService.findByIdAndUpdate(contactId, contactUpdate)
 
-    if (!updatedResult.ok) {
+    if (!updatedContact) {
       throw new Error(ERROR_STATUES.CONTACT_NOT_FOUND.message, {
         cause: ERROR_STATUES.CONTACT_NOT_FOUND,
       })
     }
 
-    return updatedResult.value
+    return updatedContact
   }
 }
 

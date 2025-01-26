@@ -5,6 +5,7 @@ import UserMapperProvider from "./utils/mappers/user/Provider.js"
 import ConversationMapperProvider from "./utils/mappers/conversation/Provider.js"
 import MessageMapperProvider from "./utils/mappers/message/Provider.js"
 
+import ClusterNodeRepositoryProvider from "./repositories/cluster_node/Provider.js"
 import UserRepoProvider from "./repositories/user/Provider.js"
 import UserTokenRepoProvider from "./repositories/user_token/Provider.js"
 import BlockedUserRepoProvider from "./repositories/blocked_user/Provider.js"
@@ -13,7 +14,12 @@ import ConversationRepoProvider from "./repositories/conversation/Provider.js"
 import ConversationParticipantRepoProvider from "./repositories/conversation_participants/Provider.js"
 import MessageRepoProvider from "./repositories/message/Provider.js"
 import MessageStatusRepoProvider from "./repositories/message_status/Provider.js"
+import ContactRepositoryProvider from "./repositories/contact/Provider.js"
+import OperationsLogRepositoryProvider from "./repositories/operations_log/Provider.js"
+import PushEventRepositoryProvider from "./repositories/push_event/Provider.js"
+import PushSubscriptionRepositoryProvider from "./repositories/push_subscriptions/Provider.js"
 
+import ClusterNodeServiceProvider from "./services/cluster_node/Provider.js"
 import SessionServiceProvider from "./services/session/Provider.js"
 import UserServiceProvider from "./services/user/Provider.js"
 import BlockListServiceProvider from "./services/block_list/Provider.js"
@@ -22,6 +28,7 @@ import ActivityManagerServiceProvider from "./services/activity_manager/Provider
 import ConversationServiceProvider from "./services/conversation/Provider.js"
 import MessageServiceProvider from "./services/message/Provider.js"
 import ConversationNotificationProvider from "./services/conversation_notification/Provider.js"
+import ContactServiceProvider from "./services/contacts/Provider.js"
 
 import UserAuthOperationProvider from "./operations/user/auth/Provider.js"
 import UserLogoutOperationProvider from "./operations/user/logout/Provider.js"
@@ -56,6 +63,11 @@ import MessageSendSystemOperationProvider from "./operations/message/system/Prov
 
 import StatusTypingOperationProvider from "./operations/status/typing/Provider.js"
 
+import ContactCreateOperationProvider from "./operations/contact/create/Provider.js"
+import ContactEditOperationProvider from "./operations/contact/edit/Provider.js"
+import ContactListOperationProvider from "./operations/contact/list/Provider.js"
+import ContactDeleteOperationProvider from "./operations/contact/delete/Provider.js"
+
 const providers = [
   HelpersProvider,
 
@@ -64,6 +76,7 @@ const providers = [
   ConversationMapperProvider,
   MessageMapperProvider,
 
+  ClusterNodeRepositoryProvider,
   UserRepoProvider,
   UserTokenRepoProvider,
   BlockedUserRepoProvider,
@@ -72,7 +85,12 @@ const providers = [
   ConversationParticipantRepoProvider,
   MessageRepoProvider,
   MessageStatusRepoProvider,
+  ContactRepositoryProvider,
+  OperationsLogRepositoryProvider,
+  PushEventRepositoryProvider,
+  PushSubscriptionRepositoryProvider,
 
+  ClusterNodeServiceProvider,
   SessionServiceProvider,
   UserServiceProvider,
   BlockListServiceProvider,
@@ -81,6 +99,7 @@ const providers = [
   ConversationServiceProvider,
   MessageServiceProvider,
   ConversationNotificationProvider,
+  ContactServiceProvider,
 
   UserAuthOperationProvider,
   UserLogoutOperationProvider,
@@ -114,6 +133,11 @@ const providers = [
   MessageSendSystemOperationProvider,
 
   StatusTypingOperationProvider,
+
+  ContactCreateOperationProvider,
+  ContactEditOperationProvider,
+  ContactListOperationProvider,
+  ContactDeleteOperationProvider,
 ]
 
 export default providers

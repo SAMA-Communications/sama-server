@@ -16,7 +16,7 @@ class ContactAddOperation {
 
   async singleAdd(currentUserId, contactData) {
     await this.contactService.matchContactWithUser(contactData)
-    contactData.user_id = ObjectId(currentUserId)
+    contactData.user_id = currentUserId
 
     const contact = await this.contactService.create(contactData)
 
