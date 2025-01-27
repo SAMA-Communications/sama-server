@@ -149,7 +149,7 @@ const providers = [
   PushEventCreateOperationProvider,
   PushSubscriptionCreateOperationProvider,
   PushSubscriptionDeleteOperationProvider,
-  PushSubscriptionListOperationProvider
+  PushSubscriptionListOperationProvider,
 ]
 
 export default providers

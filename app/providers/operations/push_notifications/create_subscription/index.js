@@ -9,7 +9,11 @@ class PushSubscriptionCreateOperation {
 
     const currentUserId = this.sessionService.getSessionUserId(ws)
 
-    const upsertSubscription = await this.pushNotificationService.upsertSubscription(currentUserId, device_udid, createSubscriptionParams)
+    const upsertSubscription = await this.pushNotificationService.upsertSubscription(
+      currentUserId,
+      device_udid,
+      createSubscriptionParams
+    )
 
     return upsertSubscription
   }
