@@ -24,6 +24,7 @@ import SessionServiceProvider from "./services/session/Provider.js"
 import UserServiceProvider from "./services/user/Provider.js"
 import BlockListServiceProvider from "./services/block_list/Provider.js"
 import StorageServiceProvider from "./services/storage/Provider.js"
+import OperationsLogServiceProvider from "./services/operation_logs/Provider.js"
 import ActivityManagerServiceProvider from "./services/activity_manager/Provider.js"
 import ConversationServiceProvider from "./services/conversation/Provider.js"
 import MessageServiceProvider from "./services/message/Provider.js"
@@ -65,6 +66,8 @@ import MessageDeleteOperationProvider from "./operations/message/delete/Provider
 import MessageListOperationProvider from "./operations/message/list/Provider.js"
 import MessageSendSystemOperationProvider from "./operations/message/system/Provider.js"
 
+import OpLogsListOperationProvider from "./operations/operation_logs/list/Provider.js"
+
 import StatusTypingOperationProvider from "./operations/status/typing/Provider.js"
 
 import ContactCreateOperationProvider from "./operations/contact/create/Provider.js"
@@ -104,6 +107,7 @@ const providers = [
   UserServiceProvider,
   BlockListServiceProvider,
   StorageServiceProvider,
+  OperationsLogServiceProvider,
   ActivityManagerServiceProvider,
   ConversationServiceProvider,
   MessageServiceProvider,
@@ -144,6 +148,8 @@ const providers = [
   MessageDeleteOperationProvider,
   MessageListOperationProvider,
   MessageSendSystemOperationProvider,
+
+  OpLogsListOperationProvider,
 
   StatusTypingOperationProvider,
 

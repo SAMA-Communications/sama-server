@@ -2,8 +2,6 @@ import RuntimeDefinedContext from "../store/RuntimeDefinedContext.js"
 
 import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
-import operationsLogRepository from "../repositories/operations_log_repository.js"
-
 import clusterManager from "../cluster/cluster_manager.js"
 import packetMapper from "./packet_mapper.js"
 
@@ -89,6 +87,7 @@ class PacketManager {
 
   async deliverToUserOrUsers(ws, packet, pushQueueMessage, usersIds, notSaveInOfflineStorage) {
     const sessionService = ServiceLocatorContainer.use("SessionService")
+    const opLogsService = ServiceLocatorContainer.use("OperationLogsService")
 
     if (!usersIds?.length) {
       return
@@ -102,7 +101,7 @@ class PacketManager {
 
       if (isNoConnections) {
         if (!notSaveInOfflineStorage) {
-          operationsLogRepository.savePacket(userId, packet)
+          opLogsService.savePacket(userId, packet)
         }
 
         offlineUsersByPackets.push(userId)

@@ -19,7 +19,7 @@ class ContactRepository extends BaseRepository {
     email && query.$or.push({ [`phone.value`]: phone })
     phone && query.$or.push({ [`email.value`]: email })
 
-    const contacts = await this.findAll(query, null, limit)
+    const contacts = await this.findAll(query, null, limit, { sort: -1 })
 
     return contacts
   }
