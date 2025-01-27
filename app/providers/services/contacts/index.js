@@ -1,8 +1,5 @@
 class ContactService {
-  constructor(
-    contactRepo,
-    userRepo
-  ) {
+  constructor(contactRepo, userRepo) {
     this.contactRepo = contactRepo
     this.userRepo = userRepo
   }

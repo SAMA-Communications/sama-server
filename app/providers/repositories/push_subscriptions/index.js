@@ -1,16 +1,22 @@
 import BaseRepository from "../base.js"
 
 class PushSubscriptionsRepository extends BaseRepository {
-  async create(userId, fileObj) {
-    const file = await super.create(fileObj)
+  async prepareParams(params) {
+    params.user_id = this.castObjectId(params.user_id)
 
-    return file
+    return await super.prepareParams(params)
   }
 
-  async findUserFile(userId, objectId) {
-    const file = await this.findOne({ object_id: objectId })
+  async findAndUpdate(userId, deviceId, updateParams) {
+    const subscription = await this.findOneAndUpdate({ user_id: userId, device_udid: deviceId }, { $set: updateParams })
 
-    return file
+    return subscription
+  }
+
+  async findUserSubscription(userId, deviceId) {
+    const subscription = await this.findOne({ user_id: userId, device_udid: deviceId })
+
+    return subscription
   }
 }
 

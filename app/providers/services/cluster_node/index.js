@@ -19,7 +19,7 @@ class ClusterNodeService {
 
   async upsert(addressParams, optionalParams) {
     const existedNode = await this.clusterNodeRepo.findOne(addressParams)
-    
+
     if (existedNode) {
       await this.clusterNodeRepo.updateStats(existedNode._id, optionalParams)
 

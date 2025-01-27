@@ -61,7 +61,7 @@ class ClusterSyncer {
     }
 
     const optionalParams = {
-      users_count: usersCount
+      users_count: usersCount,
     }
 
     await clusterNodeService.create(addressParams, optionalParams)

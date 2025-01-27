@@ -29,6 +29,7 @@ import ConversationServiceProvider from "./services/conversation/Provider.js"
 import MessageServiceProvider from "./services/message/Provider.js"
 import ConversationNotificationProvider from "./services/conversation_notification/Provider.js"
 import ContactServiceProvider from "./services/contacts/Provider.js"
+import PushNotificationServiceProvider from "./services/push_notifications/Provider.js"
 
 import UserAuthOperationProvider from "./operations/user/auth/Provider.js"
 import UserLogoutOperationProvider from "./operations/user/logout/Provider.js"
@@ -68,6 +69,11 @@ import ContactEditOperationProvider from "./operations/contact/edit/Provider.js"
 import ContactListOperationProvider from "./operations/contact/list/Provider.js"
 import ContactDeleteOperationProvider from "./operations/contact/delete/Provider.js"
 
+import PushEventCreateOperationProvider from "./operations/push_notifications/create_event/Provider.js"
+import PushSubscriptionCreateOperationProvider from "./operations/push_notifications/create_subscription/Provider.js"
+import PushSubscriptionDeleteOperationProvider from "./operations/push_notifications/delete_subscription/Provider.js"
+import PushSubscriptionListOperationProvider from "./operations/push_notifications/list_subscriptions/Provider.js"
+
 const providers = [
   HelpersProvider,
 
@@ -100,6 +106,7 @@ const providers = [
   MessageServiceProvider,
   ConversationNotificationProvider,
   ContactServiceProvider,
+  PushNotificationServiceProvider,
 
   UserAuthOperationProvider,
   UserLogoutOperationProvider,
@@ -138,6 +145,11 @@ const providers = [
   ContactEditOperationProvider,
   ContactListOperationProvider,
   ContactDeleteOperationProvider,
+
+  PushEventCreateOperationProvider,
+  PushSubscriptionCreateOperationProvider,
+  PushSubscriptionDeleteOperationProvider,
+  PushSubscriptionListOperationProvider
 ]
 
 export default providers

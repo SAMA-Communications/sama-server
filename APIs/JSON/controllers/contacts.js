@@ -49,10 +49,7 @@ class ContactsController extends BaseJSONController {
   }
 
   async contact_delete(ws, data) {
-    const {
-      id: requestId,
-      contact_delete,
-    } = data
+    const { id: requestId, contact_delete } = data
 
     const contactDeleteOperation = ServiceLocatorContainer.use("ContactDeleteOperation")
 

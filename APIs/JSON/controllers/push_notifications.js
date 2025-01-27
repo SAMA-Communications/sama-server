@@ -1,41 +1,16 @@
 import BaseJSONController from "./base.js"
 
-import { ERROR_STATUES } from "@sama/constants/errors.js"
-
-import RuntimeDefinedContext from "@sama/store/RuntimeDefinedContext.js"
 import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
-import PushSubscription from "@sama/models/push_subscription.js"
-
-import { ObjectId } from "@sama/lib/db.js"
-
 import Response from "@sama/networking/models/Response.js"
-import CreatePushEventOptions from "@sama/lib/push_queue/models/CreatePushEventOptions.js"
 
 class PushNotificationsController extends BaseJSONController {
   async push_subscription_create(ws, data) {
-    const {
-      id: requestId,
-      push_subscription_create: { web_endpoint, web_key_auth, web_key_p256dh, device_token, device_udid },
-    } = data
+    const { id: requestId, push_subscription_create } = data
 
-    const sessionService = ServiceLocatorContainer.use("SessionService")
+    const pushSubscriptionCreateOperation = ServiceLocatorContainer.use("PushSubscriptionCreateOperation")
 
-    const userId = sessionService.getSessionUserId(ws)
-    let pushSubscription = new PushSubscription(
-      (
-        await PushSubscription.findOneAndUpdate(
-          { user_id: userId, device_udid },
-          { $set: { web_endpoint, web_key_auth, web_key_p256dh, device_token } }
-        )
-      )?.value
-    )
-
-    if (!pushSubscription.params) {
-      data.push_subscription_create["user_id"] = new ObjectId(userId)
-      pushSubscription = new PushSubscription(data.push_subscription_create)
-      await pushSubscription.save()
-    }
+    const pushSubscription = await pushSubscriptionCreateOperation.perform(ws, push_subscription_create)
 
     return new Response().addBackMessage({
       response: {
@@ -46,65 +21,31 @@ class PushNotificationsController extends BaseJSONController {
   }
 
   async push_subscription_list(ws, data) {
-    const {
-      id: requestId,
-      push_subscription_list: { user_id },
-    } = data
+    const { id: requestId } = data
 
-    const subscriptions = await PushSubscription.findAll({ user_id })
+    const pushSubscriptionListOperation = ServiceLocatorContainer.use("PushSubscriptionListOperation")
+
+    const subscriptions = await pushSubscriptionListOperation.perform(ws, {})
 
     return new Response().addBackMessage({ response: { id: requestId, subscriptions } })
   }
 
   async push_subscription_delete(ws, data) {
-    const {
-      id: requestId,
-      push_subscription_delete: { device_udid },
-    } = data
+    const { id: requestId, push_subscription_delete } = data
 
-    const sessionService = ServiceLocatorContainer.use("SessionService")
+    const pushSubscriptionDeleteOperation = ServiceLocatorContainer.use("PushSubscriptionDeleteOperation")
 
-    const userId = sessionService.getSessionUserId(ws)
-    const pushSubscriptionRecord = await PushSubscription.findOne({
-      device_udid,
-      user_id: userId,
-    })
-    if (!pushSubscriptionRecord) {
-      throw new Error(ERROR_STATUES.NOTIFICATION_NOT_FOUND.message, {
-        cause: ERROR_STATUES.NOTIFICATION_NOT_FOUND,
-      })
-    }
-
-    await pushSubscriptionRecord.delete()
+    await pushSubscriptionDeleteOperation.perform(ws, push_subscription_delete)
 
     return new Response().addBackMessage({ response: { id: requestId, success: true } })
   }
 
   async push_event_create(ws, data) {
-    const {
-      id: requestId,
-      push_event_create: { recipients_ids, message },
-    } = data
+    const { id: requestId, push_event_create } = data
 
-    const userService = ServiceLocatorContainer.use("UserService")
+    const pushEventCreateOperation = ServiceLocatorContainer.use("PushEventCreateOperation")
 
-    const recipients = await userService.userRepo.retrieveExistedIds(recipients_ids)
-
-    if (!recipients.length) {
-      throw new Error(ERROR_STATUES.RECIPIENTS_NOT_FOUND.message, {
-        cause: ERROR_STATUES.RECIPIENTS_NOT_FOUND,
-      })
-    }
-
-    const sessionService = ServiceLocatorContainer.use("SessionService")
-
-    const userId = sessionService.getSessionUserId(ws)
-
-    const createPushEventOptions = new CreatePushEventOptions(userId, message, {
-      user_ids: recipients_ids,
-    })
-
-    const pushEvent = await RuntimeDefinedContext.PUSH_QUEUE_DRIVER.createPushEvent(createPushEventOptions)
+    const pushEvent = await pushEventCreateOperation.perform(ws, push_event_create)
 
     return new Response().addBackMessage({ response: { id: requestId, event: pushEvent.visibleParams() } })
   }

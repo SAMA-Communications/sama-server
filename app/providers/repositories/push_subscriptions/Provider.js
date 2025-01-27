@@ -13,4 +13,7 @@ class PushSubscriptionsRepositoryRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new PushSubscriptionsRepositoryRegisterProvider({ name, implementationName: PushSubscriptionsRepository.name })
+export default new PushSubscriptionsRepositoryRegisterProvider({
+  name,
+  implementationName: PushSubscriptionsRepository.name,
+})
