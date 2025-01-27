@@ -44,6 +44,9 @@ import BlockListUnblockOperationProvider from "./operations/block_list/unblock/P
 import BlockListEnableOperationProvider from "./operations/block_list/enable/Provider.js"
 import BlockListRetrieveOperationProvider from "./operations/block_list/list/Provider.js"
 
+import FileCreateOperationProvider from "./operations/file/create/Provider.js"
+import FileDownloadOperationProvider from "./operations/file/download/Provider.js"
+
 import ActivityUserRetrieveOperationProvider from "./operations/activity/retrieve/Provider.js"
 import ActivityUserSubscribeOperationProvider from "./operations/activity/subscribe/Provider.js"
 import ActivityUserUnsubscribeOperationProvider from "./operations/activity/unsubscribe/Provider.js"
@@ -120,6 +123,9 @@ const providers = [
   BlockListUnblockOperationProvider,
   BlockListEnableOperationProvider,
   BlockListRetrieveOperationProvider,
+
+  FileCreateOperationProvider,
+  FileDownloadOperationProvider,
 
   ActivityUserRetrieveOperationProvider,
   ActivityUserSubscribeOperationProvider,

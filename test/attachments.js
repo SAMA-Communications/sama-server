@@ -2,8 +2,6 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
-import File from "../app/models/file.js"
-import OpLog from "./../app/models/operations_log.js"
 import { createConversation, createUserArray, mockedWS, sendLogin, sendLogout } from "./utils.js"
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
@@ -12,6 +10,8 @@ const conversationRepo = ServiceLocatorContainer.use("ConversationRepository")
 const conversationParticipantRepo = ServiceLocatorContainer.use("ConversationParticipantRepository")
 const messageRepo = ServiceLocatorContainer.use("MessageRepository")
 const messageStatusRepo = ServiceLocatorContainer.use("MessageStatusRepository")
+const fileRepo = ServiceLocatorContainer.use("FileRepository")
+const opLogsRepo = ServiceLocatorContainer.use("OperationsLogRepository")
 
 let currentUserToken = ""
 let usersIds = []
@@ -20,7 +20,7 @@ let files
 
 describe("Attachments", async () => {
   before(async () => {
-    await File.clearCollection()
+    await fileRepo.deleteMany({})
     usersIds = await createUserArray(3)
 
     currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user.token
@@ -267,9 +267,8 @@ describe("Attachments", async () => {
     await messageStatusRepo.deleteMany({})
     await conversationRepo.deleteMany({})
     await conversationParticipantRepo.deleteMany({})
-
-    await File.clearCollection()
-    await OpLog.clearCollection()
+    await fileRepo.deleteMany({})
+    await opLogsRepo.deleteMany({})
 
     usersIds = []
   })
