@@ -49,7 +49,9 @@ class ConversationService {
   }
 
   async conversationsList(user, options, limit) {
-    const conversationIds = await this.conversationParticipantRepo.findParticipantConversations(user.native_id, limit)
+    const conversationIds = await (options.ids?.length
+      ? this.validateConvIdsWhichUserHasAccess(options.ids, user.native_id)
+      : this.conversationParticipantRepo.findParticipantConversations(user.native_id, limit))
 
     const filterOptions = {}
     if (options.updatedAt?.gt) {
@@ -92,6 +94,15 @@ class ConversationService {
     )
 
     return conversationsParticipants.map((participant) => participant.user_id)
+  }
+
+  async validateConvIdsWhichUserHasAccess(conversationIds, userId) {
+    const verifiedConversationIds = await this.conversationParticipantRepo.findUserConversationIds(
+      conversationIds,
+      userId
+    )
+
+    return verifiedConversationIds
   }
 
   async hasAccessToConversation(conversationId, userId) {

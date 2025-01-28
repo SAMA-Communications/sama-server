@@ -6,7 +6,7 @@ async function sendLogin(ws, login, device) {
   const requestData = {
     request: {
       user_login: {
-        deviceId: device || `${login}${Math.round(Math.random() * 10000)}`,
+        device_id: device || `${login}${Math.round(Math.random() * 10000)}`,
         login: login,
         password: "1um",
       },
@@ -47,7 +47,7 @@ async function createUserArray(count, currentCountOfUsers, email, phone) {
           password: "1um",
           email: email || `email_${i}`,
           phone: phone || `phone_${i}`,
-          deviceId: "Computer",
+          device_id: "Computer",
         },
         id: "UserCreate",
       },

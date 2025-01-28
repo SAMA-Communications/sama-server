@@ -12,7 +12,7 @@ services:
     volumes:
       - data:/data
     env_file:
-      - ../../../.env.local
+      - ../../../.env.docker
     command: server --address 0.0.0.0:9000 --console-address :9001 /data
     healthcheck:
       test: ["CMD", "mc", "ready", "local"]
@@ -29,7 +29,7 @@ services:
       s3:
         condition: service_healthy
     env_file:
-      - ../../../.env.local
+      - ../../../.env.docker
     entrypoint: >
       /bin/sh -c "
       /usr/bin/mc alias set sama http://s3:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD};

@@ -4,22 +4,26 @@ import CreateChatAlertEventOptions from "./models/CreateChatAlertEventOptions.js
 import CreatePushEventOptions from "./models/CreatePushEventOptions.js"
 
 export default class BasePushQueue {
-  async buildPushEvents(createPushEventOptions) {
-    const pushEvents = await pushNotificationsRepository.createPushEvents(
+  async buildPushEvent(createPushEventOptions) {
+    const pushEvent = await pushNotificationsRepository.createPushEvent(
       createPushEventOptions.user_id,
       createPushEventOptions.user_ids,
       createPushEventOptions.payload,
       {}
     )
 
-    return pushEvents
+    return pushEvent
+  }
+
+  async getSubscriptionsByUid(user_id) {
+    return await pushNotificationsRepository.getSubscriptionsByUid(user_id)
   }
 
   async createPush(pushQueueMessage) {
     if (pushQueueMessage instanceof CreateChatAlertEventOptions) {
-      await this.createChatAlert(pushQueueMessage)
+      return await this.createChatAlert(pushQueueMessage)
     } else if (pushQueueMessage instanceof CreatePushEventOptions) {
-      await this.createPushEvents(pushQueueMessage)
+      return await this.createPushEvent(pushQueueMessage)
     }
 
     throw new Error("Unknown push message type")
@@ -29,7 +33,7 @@ export default class BasePushQueue {
     throw new Error("Not implemented")
   }
 
-  async createPushEvents() {
+  async createPushEvent() {
     throw new Error("Not implemented")
   }
 }

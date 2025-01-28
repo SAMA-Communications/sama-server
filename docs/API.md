@@ -23,16 +23,79 @@
   response: {
     id: "421cda83-7f39-45a9-81e8-5f83cfa0733c",
     user: {
-      created_at: "2022-10-13T13:11:04.447Z",
-      updated_at: "2022-10-13T13:11:04.447Z",
+      _id: "63480e68f4794709f802a2fa",
       login :"user_1",
-      id: "63480e68f4794709f802a2fa"
+      created_at: "2022-10-13T13:11:04.447Z",
+      updated_at: "2022-10-13T13:11:04.447Z"
     }
   }
 }
 ```
 
 ### Login
+
+**WARNING**: `user_login` request is deprecated
+
+_! Therefore, we recommend using the new http route `/login` for user authorization. !_
+
+Http request examples:
+
+- `POST /login` Possible variations of request parameters:
+
+```
+{
+  login: "login_u1",
+  password: "u1_password",
+  device_id: "device_u1"
+}
+```
+
+When you use `access_token` for authorization:
+
+```
+{
+  device_id: "device_u1"
+}
+```
+
+- `access_token` must be put in the request header.
+
+If the authorization was performed using `login & password` or `refresh_token`, a new `refresh_token` will be **embedded in the response cookie**.
+
+All variations of the query will have the same response:
+
+```
+{
+  user: {
+      _id: "63480e68f4794709f802a2fa",
+      login :"login_u1",
+      created_at: "2022-10-13T13:11:04.447Z",
+      updated_at: "2022-10-13T13:11:04.447Z"
+    },
+  access_token: "...",
+  expired_at: timestamp_in_ms
+}
+```
+
+`expired_at` - the time when the `access_token` will expire
+
+After receiving the `access_token`, the client must send a request to connect the socket to the server and link it to the current access_token:
+
+```
+{
+  request: {
+    connect: {
+      token: "access_token",
+      device_id: "device_u1"
+    },
+    id: "connect_request"
+  }
+}
+
+{ response: { id: "connect_request", success: true } }
+```
+
+Old websocket requests examples:
 
 ```
 {
@@ -50,10 +113,10 @@
   response: {
     id: "421cda83-7f39-45a9-81e8-5f83cfa0733c",
     user: {
+      _id: "63480e68f4794709f802a2fa",
       created_at: "2022-10-13T13:11:04.447Z",
       updated_at: "2022-10-13T13:11:04.447Z",
-      login :"user_1",
-      id: "63480e68f4794709f802a2fa"
+      login :"user_1"
     },
     token: "..."
   }
@@ -76,6 +139,36 @@ Later, the subsequent logins can be done via `token`:
 ```
 
 ### Logout
+
+**WARNING**: `user_logout` request is deprecated
+
+_! Therefore, we recommend using the new http route `/logout` to log the user out of the system. !_
+
+Http request example:
+
+- `POST /logout` Request parameters:
+
+The `body` of the request can be empty, but you need to put the `access_token` in the request header, for example:
+
+```
+{
+  ...
+  headers: {
+    Authorization: `Bearer ${accessToken}`,
+    ...
+  }
+}
+```
+
+Response:
+
+```
+{ success: true }
+```
+
+Please note that if you do not pass an actual `refresh_token` in the http request credentials, then use hard session cleanup using a web socket request.
+
+Old websocket requests examples:
 
 ```
 {
@@ -135,7 +228,7 @@ Later, the subsequent logins can be done via `token`:
 {
   request: {
     user_search: {
-      login: "sam",
+      keyword: "sam",
       limit: 100,
       updated_at: {
         gt: timestamp_in_ms,
@@ -332,6 +425,10 @@ Later, the subsequent logins can be done via `token`:
     id: "54",
    },
 };
+
+You can also add the `ids` parameter if you need to get the target chat objects. The maximum number of ids in a request is 10.
+For example: ["63480e68f4794709f802a2fa", "63480e68f4794709f802a2fy"]
+
 
 {
   response: {
@@ -1040,11 +1137,14 @@ If users are offline, they will receive a message once became online.
       web_endpoint: 'enpoint',
       web_key_auth: 'auth',
       web_key_p256dh: 'p256dh',
+      device_token: "..."
       device_udid: "deviceId"
     },
     id: "1",
   },
 };
+
+The [`web_endpoint`, `web_key_auth`, `web_key_p256dh`] and `device_token` fields are interchangeable for different devices
 
 {
   response: {

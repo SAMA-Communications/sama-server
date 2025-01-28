@@ -26,7 +26,7 @@ export const usersSchemaValidation = {
     email: Joi.string(),
     // .pattern(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/),
     phone: Joi.string().min(3).max(15),
-    deviceId: Joi.alternatives().try(Joi.number().max(255).required(), Joi.string().max(255).required()),
+    device_id: Joi.alternatives().try(Joi.number().max(255).required(), Joi.string().max(255).required()),
   }),
   edit: Joi.object({
     current_password: Joi.string().error(
@@ -47,6 +47,17 @@ export const usersSchemaValidation = {
       file_blur_hash: Joi.string().max(255),
     }),
   }).with("current_password", "current_password"),
+  connect: Joi.object({
+    token: Joi.string(),
+    device_id: Joi.alternatives()
+      .try(Joi.number(), Joi.string().max(255))
+      .required()
+      .error(
+        new Error(ERROR_STATUES.DEVICE_ID_MISSED.message, {
+          cause: ERROR_STATUES.DEVICE_ID_MISSED,
+        })
+      ),
+  }),
   login: Joi.object({
     login: Joi.string().error(
       new Error(ERROR_STATUES.USER_LOGIN_OR_PASS.message, {
@@ -55,7 +66,7 @@ export const usersSchemaValidation = {
     ),
     token: Joi.string(),
     password: Joi.string(),
-    deviceId: Joi.alternatives()
+    device_id: Joi.alternatives()
       .try(Joi.number(), Joi.string().max(255))
       .required()
       .error(
@@ -70,7 +81,7 @@ export const usersSchemaValidation = {
   logout: Joi.object({}).required(),
   delete: Joi.object({}).required(),
   search: Joi.object({
-    login: Joi.string().required(),
+    keyword: Joi.string().required(),
     limit: Joi.number().min(1).max(100),
     updated_at: Joi.object({
       gt: Joi.date(),

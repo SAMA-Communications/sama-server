@@ -1,5 +1,41 @@
 # Changelog
 
+## 0.28.0
+
+### Feature
+
+- Implemented a progressive authentication flow to enhance security
+- Added a load testing scheme
+
+### Updated
+
+- Updated `user_search` query param (`login` -> `keyword`)
+- Changed status for `Unauthorized` error
+
+## 0.27.0
+
+### Improvements
+
+- Extended the conversation_list request to allow requesting conversations by ids
+
+### Updated
+
+- Updated indexes of the `push_subscriptions` collection
+- Removed the `platform` field from the `pushEvent` object
+
+## 0.26.0
+
+### Features
+
+- Implemented a new docker flow for the project build
+- Added `device_token` field for `push_sbuscription_create` request
+
+### Updated
+
+- Сhanged development flow
+- Updated environment variables
+- Updated tests for status typing
+
 ## 0.25.0
 
 ### Features
