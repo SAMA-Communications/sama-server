@@ -7,33 +7,17 @@ on:
 
 jobs:
   run_tests:
-    runs-on: ubuntu-22.04
-
+    runs-on: self-hosted
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v2
-
-      - name: Install Docker Compose
-        run: |
-          mkdir -p ~/.docker/cli-plugins/
-          curl -SL https://github.com/docker/compose/releases/download/v2.3.3/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
-          chmod +x ~/.docker/cli-plugins/docker-compose
-          docker compose version
-
-      - name: Build and Start Services
+      - uses: actions/checkout@v3
+      - name: Build the SAMA resources
         run: docker compose -f docker-compose-full.yml up -d --build
 
       - name: Run migrations
         run: docker compose exec sama-server sh -c "MONGODB_URL=mongodb://172.25.0.4/samatests npm run migrate-mongo-up"
-        continue-on-error: false
 
-      - name: Run Tests
+      - name: Run tests
         run: docker compose exec sama-server sh -c "MONGODB_URL=mongodb://172.25.0.4/samatests npm run test"
-        continue-on-error: false
 
-      - name: Stop Services
-        if: always()
-        run: docker compose down
+      - name: Stop the SAMA resources
+        run: docker compose -f docker-compose-full.yml down -v --rmi all
