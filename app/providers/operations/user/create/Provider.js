@@ -1,15 +1,14 @@
 import RegisterProvider from "../../../../common/RegisterProvider.js"
 import UserCreateOperation from "./index.js"
 
-import contactsMatchRepository from "../../../../repositories/contact_match_repository.js"
-
 const name = "UserCreateOperation"
 
 class UserCreateOperationRegisterProvider extends RegisterProvider {
   register(slc) {
     const userService = slc.use("UserService")
+    const contactService = slc.use("ContactService")
 
-    return new UserCreateOperation(userService, contactsMatchRepository)
+    return new UserCreateOperation(userService, contactService)
   }
 }
 

@@ -1,14 +1,6 @@
 import BaseJSONController from "./base.js"
 
-import { ERROR_STATUES } from "@sama/constants/errors.js"
-
 import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
-
-import Contact from "@sama/models/contact.js"
-
-import contactsMatchRepository from "@sama/repositories/contact_match_repository.js"
-
-import { ObjectId } from "@sama/lib/db.js"
 
 import Response from "@sama/networking/models/Response.js"
 
@@ -16,15 +8,9 @@ class ContactsController extends BaseJSONController {
   async contact_add(ws, data) {
     const { id: requestId, contact_add: contactData } = data
 
-    const sessionService = ServiceLocatorContainer.use("SessionService")
+    const contactAddOperation = ServiceLocatorContainer.use("ContactAddOperation")
 
-    const currentUser = sessionService.getSessionUserId(ws)
-
-    await contactsMatchRepository.matchContactWithUser(contactData)
-    contactData.user_id = ObjectId(currentUser)
-
-    const contact = new Contact(contactData)
-    await contact.save()
+    const contact = await contactAddOperation.perform(ws, contactData, false)
 
     return new Response().addBackMessage({ response: { id: requestId, contact: contact.visibleParams() } })
   }
@@ -35,66 +21,39 @@ class ContactsController extends BaseJSONController {
       contact_batch_add: { contacts },
     } = data
 
-    const contactsList = []
-    for (let u of contacts) {
-      if (!u.email || !u.phone) {
-        continue
-      }
+    const contactAddOperation = ServiceLocatorContainer.use("ContactAddOperation")
 
-      const contact = (await this.contact_add(ws, { contact_add: u, id: "contact_batch_add" })).backMessages.at(0)
-        .response.contact
-      contactsList.push(contact)
-    }
+    const contactsList = await contactAddOperation.perform(ws, contacts, true)
 
     return new Response().addBackMessage({ response: { id: requestId, contacts: contactsList } })
   }
 
   async contact_update(ws, data) {
     const { id: requestId, contact_update: updatedData } = data
-    const recordId = updatedData.id
-    delete updatedData["id"]
 
-    await contactsMatchRepository.matchContactWithUser(updatedData)
+    const contactEditOperation = ServiceLocatorContainer.use("ContactEditOperation")
 
-    const updatedResult = await Contact.findOneAndUpdate({ _id: recordId }, { $set: updatedData })
+    const updatedContact = await contactEditOperation.perform(ws, updatedData)
 
-    if (!updatedResult.ok) {
-      throw new Error(ERROR_STATUES.CONTACT_NOT_FOUND.message, {
-        cause: ERROR_STATUES.CONTACT_NOT_FOUND,
-      })
-    }
-
-    return new Response().addBackMessage({ response: { id: requestId, contact: updatedResult.value } })
+    return new Response().addBackMessage({ response: { id: requestId, contact: updatedContact } })
   }
 
   async contact_list(ws, data) {
     const { id: requestId, contact_list: query } = data
 
-    const sessionService = ServiceLocatorContainer.use("SessionService")
+    const contactListOperation = ServiceLocatorContainer.use("ContactListOperation")
 
-    const currentUser = sessionService.getSessionUserId(ws).toString()
-
-    const queryParams = { user_id: currentUser.toString() }
-    if (query.updated_at) {
-      queryParams.updated_at = { $gt: new Date(query.updated_at) }
-    }
-
-    const contacts = await Contact.findAll(queryParams, null, query.limit)
+    const contacts = await contactListOperation.perform(ws, query)
 
     return new Response().addBackMessage({ response: { id: requestId, contacts } })
   }
 
   async contact_delete(ws, data) {
-    const {
-      id: requestId,
-      contact_delete: { id },
-    } = data
+    const { id: requestId, contact_delete } = data
 
-    const sessionService = ServiceLocatorContainer.use("SessionService")
+    const contactDeleteOperation = ServiceLocatorContainer.use("ContactDeleteOperation")
 
-    const userId = sessionService.getSessionUserId(ws)
-    const contact = await Contact.findOne({ _id: id, user_id: userId })
-    contact && (await contact.delete())
+    await contactDeleteOperation.perform(ws, contact_delete)
 
     return new Response().addBackMessage({ response: { id: requestId, success: true } })
   }
