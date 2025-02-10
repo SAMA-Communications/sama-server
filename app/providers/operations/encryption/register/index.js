@@ -10,7 +10,7 @@ class EncryptionRegisterOperation {
     const existingDevice = await this.encryptionService.encryptionRepo.findByDeviceId(deviceId)
 
     if (existingDevice) {
-      await this.encryptionService.update(existingDevice, registerDeviceParams)
+      await this.encryptionService.update(existingDevice, { user_id: userId, ...registerDeviceParams })
     } else {
       await this.encryptionService.encryptionRepo.create({
         user_id: userId,

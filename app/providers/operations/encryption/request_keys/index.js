@@ -11,7 +11,7 @@ class EncryptionRequestKeysOperation {
 
     const deviceList = await this.encryptionService.encryptionRepo.getUsersDevices(existUserIds)
 
-    await this.encryptionService.removeFirstOneTimeKey(userIds)
+    await this.encryptionService.removeFirstOneTimeKey(deviceList)
 
     return deviceList
   }
