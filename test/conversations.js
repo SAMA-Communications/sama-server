@@ -13,6 +13,7 @@ const conversationParticipantRepo = ServiceLocatorContainer.use("ConversationPar
 let currentUserToken = ""
 let usersIds = []
 let filterUpdatedAt = ""
+let filterUpdatedAtTo = ""
 let currentConversationId = ""
 let ArrayOfTmpConversaionts = []
 let lastMessageInChat = ""
@@ -565,6 +566,7 @@ describe("Conversation functions", async () => {
         responseData = responseData.backMessages.at(0).response.conversation
 
         i == 1 ? (filterUpdatedAt = responseData.updated_at) : true
+        i == 2 ? (filterUpdatedAtTo = responseData.updated_at) : true
         ArrayOfTmpConversaionts.push(responseData._id.toString())
       }
 
@@ -628,7 +630,7 @@ describe("Conversation functions", async () => {
       assert.equal(responseData.response.error, undefined)
     })
 
-    it("should work with a time parameter", async () => {
+    it("should work with a time parameter gt", async () => {
       const numberOf = 2
       const requestData = {
         request: {
@@ -638,6 +640,31 @@ describe("Conversation functions", async () => {
             },
           },
           id: "3_1",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      const count = responseData.response.conversations.length
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.notEqual(responseData.response.conversations, undefined)
+      assert(count <= numberOf, "limit filter does not work")
+      assert.equal(responseData.response.error, undefined)
+    })
+
+    it("should work with a time parameter lt", async () => {
+      const numberOf = 2
+      const requestData = {
+        request: {
+          conversation_list: {
+            updated_at: {
+              lt: filterUpdatedAtTo,
+            },
+          },
+          id: "3_1_1",
         },
       }
 
