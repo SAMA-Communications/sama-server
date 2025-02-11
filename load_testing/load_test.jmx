@@ -21,6 +21,8 @@
           </elementProp>
         </collectionProp>
       </elementProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
     </TestPlan>
     <hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group">
@@ -34,7 +36,7 @@
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="set thread group params">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="set thread group params" enabled="true">
           <stringProp name="cacheKey">true</stringProp>
           <stringProp name="filename"></stringProp>
           <stringProp name="parameters"></stringProp>
@@ -51,7 +53,7 @@ vars.put(&quot;chatId&quot;, chatId.toString())
           <stringProp name="scriptLanguage">groovy</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <eu.luminis.jmeter.wssampler.OpenWebSocketSampler guiclass="eu.luminis.jmeter.wssampler.OpenWebSocketSamplerGui" testclass="eu.luminis.jmeter.wssampler.OpenWebSocketSampler" testname="ws create connection">
+        <eu.luminis.jmeter.wssampler.OpenWebSocketSampler guiclass="eu.luminis.jmeter.wssampler.OpenWebSocketSamplerGui" testclass="eu.luminis.jmeter.wssampler.OpenWebSocketSampler" testname="ws create connection" enabled="true">
           <boolProp name="TLS">false</boolProp>
           <stringProp name="server">127.0.0.1</stringProp>
           <stringProp name="port">9001</stringProp>
@@ -60,12 +62,12 @@ vars.put(&quot;chatId&quot;, chatId.toString())
           <stringProp name="readTimeout">6000</stringProp>
         </eu.luminis.jmeter.wssampler.OpenWebSocketSampler>
         <hashTree/>
-        <eu.luminis.jmeter.wssampler.PingPongSampler guiclass="eu.luminis.jmeter.wssampler.PingPongSamplerGui" testclass="eu.luminis.jmeter.wssampler.PingPongSampler" testname="ws Ping/Pong">
+        <eu.luminis.jmeter.wssampler.PingPongSampler guiclass="eu.luminis.jmeter.wssampler.PingPongSamplerGui" testclass="eu.luminis.jmeter.wssampler.PingPongSampler" testname="ws Ping/Pong" enabled="true">
           <stringProp name="type">PingPong</stringProp>
           <stringProp name="readTimeout">6000</stringProp>
         </eu.luminis.jmeter.wssampler.PingPongSampler>
         <hashTree/>
-        <eu.luminis.jmeter.wssampler.RequestResponseWebSocketSampler guiclass="eu.luminis.jmeter.wssampler.RequestResponseWebSocketSamplerGui" testclass="eu.luminis.jmeter.wssampler.RequestResponseWebSocketSampler" testname="ws user_create">
+        <eu.luminis.jmeter.wssampler.RequestResponseWebSocketSampler guiclass="eu.luminis.jmeter.wssampler.RequestResponseWebSocketSamplerGui" testclass="eu.luminis.jmeter.wssampler.RequestResponseWebSocketSampler" testname="ws user_create" enabled="true">
           <boolProp name="createNewConnection">false</boolProp>
           <boolProp name="TLS">false</boolProp>
           <stringProp name="server"></stringProp>
@@ -79,7 +81,7 @@ vars.put(&quot;chatId&quot;, chatId.toString())
           <stringProp name="dataFile"></stringProp>
         </eu.luminis.jmeter.wssampler.RequestResponseWebSocketSampler>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="ws http login">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="ws http login" enabled="true">
           <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port">9001</stringProp>
           <stringProp name="HTTPSampler.path">/login</stringProp>
@@ -125,7 +127,7 @@ vars.put(&quot;chatId&quot;, chatId.toString())
           </BeanShellAssertion>
           <hashTree/>
         </hashTree>
-        <eu.luminis.jmeter.wssampler.RequestResponseWebSocketSampler guiclass="eu.luminis.jmeter.wssampler.RequestResponseWebSocketSamplerGui" testclass="eu.luminis.jmeter.wssampler.RequestResponseWebSocketSampler" testname="ws connect">
+        <eu.luminis.jmeter.wssampler.RequestResponseWebSocketSampler guiclass="eu.luminis.jmeter.wssampler.RequestResponseWebSocketSamplerGui" testclass="eu.luminis.jmeter.wssampler.RequestResponseWebSocketSampler" testname="ws connect" enabled="true">
           <boolProp name="createNewConnection">false</boolProp>
           <boolProp name="TLS">false</boolProp>
           <stringProp name="server"></stringProp>
@@ -139,13 +141,13 @@ vars.put(&quot;chatId&quot;, chatId.toString())
           <stringProp name="dataFile"></stringProp>
         </eu.luminis.jmeter.wssampler.RequestResponseWebSocketSampler>
         <hashTree/>
-        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If Controller">
+        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If Controller" enabled="true">
           <stringProp name="IfController.condition">${__jexl3(${threadNumber} % ${GROUP_SIZE} == 0)}</stringProp>
           <boolProp name="IfController.evaluateAll">false</boolProp>
           <boolProp name="IfController.useExpression">true</boolProp>
         </IfController>
         <hashTree>
-          <eu.luminis.jmeter.wssampler.RequestResponseWebSocketSampler guiclass="eu.luminis.jmeter.wssampler.RequestResponseWebSocketSamplerGui" testclass="eu.luminis.jmeter.wssampler.RequestResponseWebSocketSampler" testname="ws conversation_create">
+          <eu.luminis.jmeter.wssampler.RequestResponseWebSocketSampler guiclass="eu.luminis.jmeter.wssampler.RequestResponseWebSocketSamplerGui" testclass="eu.luminis.jmeter.wssampler.RequestResponseWebSocketSampler" testname="ws conversation_create" enabled="true">
             <boolProp name="createNewConnection">false</boolProp>
             <boolProp name="TLS">false</boolProp>
             <stringProp name="server"></stringProp>
@@ -195,18 +197,18 @@ vars.put(&quot;chatId&quot;, chatId.toString())
             </BeanShellAssertion>
             <hashTree/>
           </hashTree>
-          <DebugSampler guiclass="TestBeanGUI" testclass="DebugSampler" testname="debug viewer">
+          <DebugSampler guiclass="TestBeanGUI" testclass="DebugSampler" testname="debug viewer" enabled="true">
             <boolProp name="displayJMeterProperties">true</boolProp>
             <boolProp name="displayJMeterVariables">false</boolProp>
             <boolProp name="displaySystemProperties">false</boolProp>
           </DebugSampler>
           <hashTree/>
         </hashTree>
-        <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While Controller">
+        <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While Controller" enabled="true">
           <stringProp name="WhileController.condition"></stringProp>
         </WhileController>
         <hashTree>
-          <eu.luminis.jmeter.wssampler.SingleWriteWebSocketSampler guiclass="eu.luminis.jmeter.wssampler.SingleWriteWebSocketSamplerGui" testclass="eu.luminis.jmeter.wssampler.SingleWriteWebSocketSampler" testname="ws send message">
+          <eu.luminis.jmeter.wssampler.SingleWriteWebSocketSampler guiclass="eu.luminis.jmeter.wssampler.SingleWriteWebSocketSamplerGui" testclass="eu.luminis.jmeter.wssampler.SingleWriteWebSocketSampler" testname="ws send message" enabled="true">
             <boolProp name="TLS">false</boolProp>
             <stringProp name="server"></stringProp>
             <stringProp name="port">80</stringProp>
@@ -225,13 +227,13 @@ vars.put(&quot;chatId&quot;, chatId.toString())
             <stringProp name="dataFile"></stringProp>
           </eu.luminis.jmeter.wssampler.SingleWriteWebSocketSampler>
           <hashTree/>
-          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer">
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer" enabled="true">
             <stringProp name="ConstantTimer.delay">5000</stringProp>
           </ConstantTimer>
           <hashTree/>
         </hashTree>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group" enabled="true">
         <intProp name="ThreadGroup.num_threads">1</intProp>
         <intProp name="ThreadGroup.ramp_time">1</intProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
@@ -275,21 +277,21 @@ def getCpuLoad() {
             log.error(&quot;Failed to get CPU load on Windows using PowerShell: ${e.message}&quot;)
         }
     } else if (os.contains(&quot;nix&quot;) || os.contains(&quot;nux&quot;) || os.contains(&quot;mac&quot;)) {
-        try {
-            def process = Runtime.getRuntime().exec([&quot;top&quot;, &quot;-bn1&quot;, &quot;|&quot;, &quot;grep&quot;, &quot;&apos;Cpu(s)&apos;&quot;])
-            def reader = new BufferedReader(new InputStreamReader(process.getInputStream()))
-            def line = reader.readLine()
-            if (line) {
-                def match = line =~ /(\d+\.\d+)%id/
-                if (match) {
-                    def idleCpu = match[0][1].toDouble()
-                    cpuLoad = 100 - idleCpu
-                }
-            }
-        } catch (Exception e) {
-            log.error(&quot;Failed to get CPU load on Linux/Mac: ${e.message}&quot;)
-        }
-    }
+	    try {
+	        def process = Runtime.getRuntime().exec([&quot;bash&quot;, &quot;-c&quot;, &quot;top -bn1 | grep &apos;Cpu(s)&apos;&quot;])
+	        def reader = new BufferedReader(new InputStreamReader(process.getInputStream()))
+	        def line = reader.readLine()
+	        if (line) {
+	            def match = line =~ /(\d+\.\d+)%id/
+	            if (match) {
+	                def idleCpu = match[0][1].toDouble()
+	                cpuLoad = 100 - idleCpu
+	            }
+	        }
+	    } catch (Exception e) {
+	        log.error(&quot;Failed to get CPU load on Linux/Mac: ${e.message}&quot;)
+	    }
+	}
     return cpuLoad
 }
 
@@ -319,7 +321,7 @@ log.info(&quot;Current CPU Load: ${cpuLoad}%&quot;)
           <hashTree/>
         </hashTree>
       </hashTree>
-      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>
