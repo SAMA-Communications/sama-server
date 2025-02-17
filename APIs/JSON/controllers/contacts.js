@@ -18,10 +18,10 @@ class ContactsController extends BaseJSONController {
 
     const sessionService = ServiceLocatorContainer.use("SessionService")
 
-    const currentUser = sessionService.getSessionUserId(ws)
+    const currentUserId = sessionService.getSessionUserId(ws)
 
     await contactsMatchRepository.matchContactWithUser(contactData)
-    contactData.user_id = ObjectId(currentUser)
+    contactData.user_id = new ObjectId(currentUserId)
 
     const contact = new Contact(contactData)
     await contact.save()
