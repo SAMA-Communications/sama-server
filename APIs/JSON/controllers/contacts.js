@@ -56,15 +56,15 @@ class ContactsController extends BaseJSONController {
 
     await contactsMatchRepository.matchContactWithUser(updatedData)
 
-    const updatedResult = await Contact.findOneAndUpdate({ _id: recordId }, { $set: updatedData })
+    const updatedContact = await Contact.findOneAndUpdate({ _id: recordId }, { $set: updatedData })
 
-    if (!updatedResult.ok) {
+    if (updatedContact.message) {
       throw new Error(ERROR_STATUES.CONTACT_NOT_FOUND.message, {
         cause: ERROR_STATUES.CONTACT_NOT_FOUND,
       })
     }
 
-    return new Response().addBackMessage({ response: { id: requestId, contact: updatedResult.value } })
+    return new Response().addBackMessage({ response: { id: requestId, contact: updatedContact } })
   }
 
   async contact_list(ws, data) {
