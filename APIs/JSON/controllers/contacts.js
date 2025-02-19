@@ -18,10 +18,10 @@ class ContactsController extends BaseJSONController {
 
     const sessionService = ServiceLocatorContainer.use("SessionService")
 
-    const currentUser = sessionService.getSessionUserId(ws)
+    const currentUserId = sessionService.getSessionUserId(ws)
 
     await contactsMatchRepository.matchContactWithUser(contactData)
-    contactData.user_id = ObjectId(currentUser)
+    contactData.user_id = new ObjectId(currentUserId)
 
     const contact = new Contact(contactData)
     await contact.save()
@@ -56,15 +56,15 @@ class ContactsController extends BaseJSONController {
 
     await contactsMatchRepository.matchContactWithUser(updatedData)
 
-    const updatedResult = await Contact.findOneAndUpdate({ _id: recordId }, { $set: updatedData })
+    const updatedContact = await Contact.findOneAndUpdate({ _id: recordId }, { $set: updatedData })
 
-    if (!updatedResult.ok) {
+    if (updatedContact.message) {
       throw new Error(ERROR_STATUES.CONTACT_NOT_FOUND.message, {
         cause: ERROR_STATUES.CONTACT_NOT_FOUND,
       })
     }
 
-    return new Response().addBackMessage({ response: { id: requestId, contact: updatedResult.value } })
+    return new Response().addBackMessage({ response: { id: requestId, contact: updatedContact } })
   }
 
   async contact_list(ws, data) {
