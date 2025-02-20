@@ -778,8 +778,14 @@ When a user leaves the group chat, the next message will also be sent to all use
       {
         _id: "63480e68f4794709f802a2fa",
         login: "breadpit"
-      }
-    ]
+      },
+      ...
+    ],
+    conversations: {
+       635a3b4cb15254ebe43e76ff: [634ec51c0b65918393dca5bf, 63480e68f4794709f802a2fa],
+       63563a2ad745dc1c6ad01b5f: [63480e68f4794709f802a2fa, 507f191e810c19729de860ea, 507f191e810c19729de880ee],
+       ...
+    }
   }
 }
 ```
