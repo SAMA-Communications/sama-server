@@ -21,9 +21,24 @@ class ConversationParticipantRepository extends BaseRepository {
     })
     const availableConversationIds = availableConversationParticipants.map((participant) => participant.conversation_id)
 
-    const conversationsParticipants = await this.findAll({ conversation_id: { $in: availableConversationIds } })
+    const conversationsParticipants = await this.aggregate([
+      { $match: { conversation_id: { $in: availableConversationIds } } },
+      { $group: { _id: "$conversation_id", users: { $push: "$user_id" } } },
+      {
+        $project: {
+          _id: 0,
+          conversation_id: { $toString: "$_id" },
+          users: { $map: { input: "$users", as: "u", in: { $toString: "$$u" } } },
+        },
+      },
+    ])
 
-    return conversationsParticipants
+    const conversationsParticipantsByIds = conversationsParticipants.reduce((arr, { conversation_id, users }) => {
+      arr[conversation_id] = users
+      return arr
+    }, {})
+
+    return conversationsParticipantsByIds
   }
 
   async findUserConversationIds(conversationIds, user_id) {

@@ -120,10 +120,10 @@ class ConversationsController extends BaseJSONController {
     const { id: requestId, get_participants_by_cids: options } = data
 
     const conversationListParticipantsOperation = ServiceLocatorContainer.use("ConversationListParticipantsOperation")
-    const users = await conversationListParticipantsOperation.perform(ws, options)
+    const { users, conversations } = await conversationListParticipantsOperation.perform(ws, options)
 
     return new Response().addBackMessage({
-      response: { id: requestId, users: users },
+      response: { id: requestId, users, conversations },
     })
   }
 

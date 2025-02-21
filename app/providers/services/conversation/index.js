@@ -81,7 +81,9 @@ class ConversationService {
       user.native_id
     )
 
-    return conversationsParticipants.map((participant) => participant.user_id)
+    const participantIds = [...new Set(Object.values(conversationsParticipants).flat())]
+
+    return { participantIds, participantsIdsByCids: conversationsParticipants }
   }
 
   async validateConvIdsWhichUserHasAccess(conversationIds, userId) {
