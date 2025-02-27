@@ -6,6 +6,7 @@ import MessageResponse from "@sama/DTO/Response/message/create/response.js"
 import SystemMessageResponse from "@sama/DTO/Response/message/system/response.js"
 import EditMessageResponse from "@sama/DTO/Response/message/edit/response.js"
 import ReadMessagesResponse from "@sama/DTO/Response/message/read/response.js"
+import DecryptionFailedMessagesResponse from "@sama/DTO/Response/message/decryption_failed/response.js"
 import DeleteMessagesResponse from "@sama/DTO/Response/message/delete/response.js"
 
 import DeliverMessage from "@sama/networking/models/DeliverMessage.js"
@@ -84,6 +85,27 @@ class MessagesController extends BaseJSONController {
       const { userId, readMessages } = readMessagesGroup
       response.addDeliverMessage(new DeliverMessage([userId], new ReadMessagesResponse(readMessages)))
     }
+
+    return response.addBackMessage({
+      response: {
+        id: requestId,
+        success: true,
+      },
+    })
+  }
+
+  async decryption_failed(ws, data) {
+    const { id: requestId, message_decryption_failed: messagesDecryptionFailedOptions } = data
+
+    const messageDecryptionFailedOperation = ServiceLocatorContainer.use("MessageDecryptionFailedOperation")
+    const { receiverUserId, statuses } = await messageDecryptionFailedOperation.perform(
+      ws,
+      messagesDecryptionFailedOptions
+    )
+
+    const response = new Response()
+
+    response.addDeliverMessage(new DeliverMessage([receiverUserId], new DecryptionFailedMessagesResponse(statuses)))
 
     return response.addBackMessage({
       response: {

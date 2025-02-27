@@ -1019,6 +1019,36 @@ Then, all the users whose messages we read will receive the following message:
 }
 ```
 
+### Decryption failed status
+
+```
+{
+  request: {
+    message_decryption_failed: {
+      cid: "63077ad836b78c3d82af0813",
+      ids: [63480e68f4794709f802a2fb, 63077ad836b78c3d82af0866]
+    },
+    id: "4"
+  }
+}
+
+{ response: { id: "4", success: true } }
+```
+
+The `ids` field is required.
+
+Then, all the users whose messages we read will receive the following message:
+
+```
+{
+  message_decryption_failed: {
+    cid: "63077ad836b78c3d82af0813",
+    ids: ["63480e68f4794709f802a2fb", "63077ad836b78c3d82af0866"],
+    from: "634ec51c0b65918393dca5bf"
+  }
+}
+```
+
 ### Typing status
 
 A user either can send typing or stop typing packets:
@@ -1452,6 +1482,125 @@ TBA
   response: {
     id: "5",
     users: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"]
+  }
+}
+```
+
+## Encryption API
+
+### Device register
+
+```
+{
+  request: {
+    device_register: {
+      identity_key: "identity_key",
+      signed_key: "signed_key",
+      one_time_pre_keys: ["key_1", "key_2", "key_3", "key_4", ...] || {
+        AAAAAAAAAA4: "...",
+        ...
+      },
+    },
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
+  }
+}
+
+{
+  response: {
+    success: true,
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
+  }
+}
+```
+
+### Your own list of devices
+
+```
+{
+  request: {
+    device_list: {},
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
+  }
+}
+
+{
+  response: {
+    devices: [
+      {
+        identity_key: "device_1",
+        signed_key: "signed_key1",
+        device_id: "device_1"
+      },
+      {
+        identity_key: "identity_key2",
+        signed_key: "signed_key2",
+        device_id: "device_2"
+      },
+      ...
+    ],
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
+  }
+}
+```
+
+### List of device keys by user IDs
+
+```
+{
+  request: {
+    request_keys: {
+      user_ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"]
+    },
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
+  }
+}
+
+{
+  response: {
+    devices: {
+      "63077ad836b78c3d82af0812": [
+        {
+          identity_key: "identity_key1",
+          signed_key: "signed_key1",
+          one_time_pre_keys: ["key_1", "key_2", "key_3", "key_4", ...],
+        }
+      ],
+      "63077ad836b78c3d82af0813": [
+        {
+          identity_key: "identity_key2",
+          signed_key: "signed_key2",
+          one_time_pre_keys: ["key_1", "key_2", "key_3", "key_4", ...],
+        },
+        {
+          identity_key: "identity_key1",
+          signed_key: "signed_key1",
+          one_time_pre_keys: ["key_1", "key_2", "key_3", "key_4", ...],
+        },
+        ...
+      ],
+      ...
+    },
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
+  }
+}
+```
+
+### Remove the device
+
+```
+{
+  request: {
+    device_delete: {
+      device_id: "63077ad836b78c3d82af0813",
+    },
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
+  }
+}
+
+{
+  response: {
+    success: true,
+    id: "421cda83-7f39-45a9-81e8-5f83cfa0733c"
   }
 }
 ```
