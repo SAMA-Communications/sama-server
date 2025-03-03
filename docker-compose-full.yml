@@ -10,6 +10,9 @@ networks:
 
 services:
   nginx:
+    depends_on:
+      - sama-client
+      - sama-server
     networks:
       sama_network:
         ipv4_address: 172.25.0.8
@@ -19,18 +22,26 @@ services:
       dockerfile: Dockerfile.nginx
     ports:
       - "9000:9000"
+      - "10000:10000"
+    volumes:
+      - sama-client-dist:/usr/share/nginx/html:ro
 
   sama-client:
     build:
       context: ./prefs/client
       dockerfile: Dockerfile.frontend
+      args:
+        VITE_SOCKET_CONNECT: ws://localhost:9000
+        VITE_HTTP_CONNECT: http://localhost:9000
+        VITE_PUBLIC_VAPID_KEY: BNeoP95lfdpIEMTBay5bkjn3VgQHR0fg5feo375mQ7h8kpVh_43HXtISrQnzZwrja83cjCGlBA9FtIOzHeqy4dE
+        VITE_MESSAGES_COUNT_TO_PRELOAD: 30
+        BRANCH: development
     networks:
       sama_network:
         ipv4_address: 172.25.0.9
-    ports:
-      - "3000:3000"
     volumes:
-      - ./prefs/client/.env.frontend:/app/.env
+      - sama-client-dist:/dist
+    command: [ "echo", "Static files are ready" ]
 
   sama-server:
     build:
@@ -166,3 +177,4 @@ services:
 volumes:
   data:
   mongo:
+  sama-client-dist:

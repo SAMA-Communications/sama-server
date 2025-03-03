@@ -86,7 +86,7 @@ If you are encountering issues with attachments in the web client, it suggests t
 Now you can access apps at the following addresses:
 
 - [Server-API](http://localhost:9000)
-- [Web-Client](http://localhost:3000)
+- [Web-Client](http://localhost:10000)
 - [Minio-API](http://localhost:9010)
 - [Minio-Client](http://localhost:9011)
 - [Push-dashboard](http://localhost:3001/ui)
