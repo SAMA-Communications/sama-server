@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.29.0
+
+### Updated
+
+- Migrated server to Node v22.14
+- Updated mongoDB to v6.0
+- Removed notification when creating a 1-1 chat
+
+### Improvements
+
+- Added suport for `lt` for `conversation_list` request
+- Added `conversation` field to the response to the `get_participants_by_cids` request
+
+### Docker
+
+- Improved logic for building the Docker container
+
 ## 0.28.0
 
 ### Feature
