@@ -2,8 +2,7 @@ version: "3.8"
 
 services:
   mongo:
-    platform: linux/x86_64
-    image: mongo:6.0
+    image: mongo:6.0.11
     networks:
       sama_network:
         ipv4_address: 172.25.0.4
@@ -16,7 +15,7 @@ services:
     ports:
       - "27017:27017"
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongo localhost:27017/samadb --quiet
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/samadb --quiet
       interval: 30s
       timeout: 20s
       retries: 3
