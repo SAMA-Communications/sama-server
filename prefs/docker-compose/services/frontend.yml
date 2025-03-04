@@ -1,15 +1,36 @@
 version: "3.8"
 
+volumes:
+  sama-client-dist:
+
 services:
   sama-client:
     build:
       context: ../../client
       dockerfile: Dockerfile.frontend
-    container_name: "sama-client"
+      args:
+        VITE_SOCKET_CONNECT: ws://localhost:9000
+        VITE_HTTP_CONNECT: http://localhost:9000
+        VITE_PUBLIC_VAPID_KEY: BNeoP95lfdpIEMTBay5bkjn3VgQHR0fg5feo375mQ7h8kpVh_43HXtISrQnzZwrja83cjCGlBA9FtIOzHeqy4dE
+        VITE_MESSAGES_COUNT_TO_PRELOAD: 30
+        BRANCH: development
+    volumes:
+      - sama-client-dist:/dist
+    command: ["echo", "Static files are ready"]
+
+  nginx:
+    depends_on:
+      - sama-client
+      - sama-server
+    container_name: sama-front-nginx
     networks:
       sama_network:
         ipv4_address: 172.25.0.8
+    restart: always
+    build:
+      context: ../../nginx
+      dockerfile: Dockerfile.nginx
     ports:
-      - "3000:3000"
+      - "10000:10000"
     volumes:
-      - ../../client/.env.frontend:/app/.env
+      - sama-client-dist:/usr/share/nginx/html:ro
