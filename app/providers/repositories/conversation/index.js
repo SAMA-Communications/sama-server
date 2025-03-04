@@ -52,8 +52,11 @@ class ConversationRepository extends BaseRepository {
       _id: { $in: conversationIds },
     }
 
-    if (options.updatedAtFrom) {
-      query.updated_at = this.mergeOperators(query.updated_at, { $gt: options.updatedAtFrom })
+    if (options.updatedAtFrom || options.updatedAtTo) {
+      query.updated_at = this.mergeOperators(query.updated_at, {
+        ...(options.updatedAtFrom && { $gt: options.updatedAtFrom }),
+        ...(options.updatedAtTo && { $lt: options.updatedAtTo }),
+      })
     }
 
     const conversations = await this.findAll(query, null, limit)

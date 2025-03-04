@@ -14,6 +14,11 @@ services:
       file: ./prefs/docker-compose/services/frontend.yml
       service: sama-client
 
+  nginx:
+    extends:
+      file: ./prefs/docker-compose/services/frontend.yml
+      service: nginx
+
   sama-server:
     extends:
       file: ./prefs/docker-compose/services/backend.yml
@@ -52,3 +57,4 @@ services:
 volumes:
   data:
   mongo:
+  sama-client-dist:
