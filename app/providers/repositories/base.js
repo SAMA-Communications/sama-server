@@ -183,7 +183,7 @@ export default class BaseRepository {
       .findOneAndUpdate(query, update, { returnDocument: "after" })
       .catch((error) => error)
 
-    const model = record.message ? null : this.wrapRawRecordInModel(record)
+    const model = record ? this.wrapRawRecordInModel(record) : null
 
     return model
   }
