@@ -5,6 +5,7 @@ import UserMapperProvider from "./utils/mappers/user/Provider.js"
 import ConversationMapperProvider from "./utils/mappers/conversation/Provider.js"
 import MessageMapperProvider from "./utils/mappers/message/Provider.js"
 
+import ClusterNodeRepositoryProvider from "./repositories/cluster_node/Provider.js"
 import UserRepoProvider from "./repositories/user/Provider.js"
 import UserTokenRepoProvider from "./repositories/user_token/Provider.js"
 import BlockedUserRepoProvider from "./repositories/blocked_user/Provider.js"
@@ -13,15 +14,23 @@ import ConversationRepoProvider from "./repositories/conversation/Provider.js"
 import ConversationParticipantRepoProvider from "./repositories/conversation_participants/Provider.js"
 import MessageRepoProvider from "./repositories/message/Provider.js"
 import MessageStatusRepoProvider from "./repositories/message_status/Provider.js"
+import ContactRepositoryProvider from "./repositories/contact/Provider.js"
+import OperationsLogRepositoryProvider from "./repositories/operations_log/Provider.js"
+import PushEventRepositoryProvider from "./repositories/push_event/Provider.js"
+import PushSubscriptionRepositoryProvider from "./repositories/push_subscriptions/Provider.js"
 
+import ClusterNodeServiceProvider from "./services/cluster_node/Provider.js"
 import SessionServiceProvider from "./services/session/Provider.js"
 import UserServiceProvider from "./services/user/Provider.js"
 import BlockListServiceProvider from "./services/block_list/Provider.js"
 import StorageServiceProvider from "./services/storage/Provider.js"
+import OperationsLogServiceProvider from "./services/operation_logs/Provider.js"
 import ActivityManagerServiceProvider from "./services/activity_manager/Provider.js"
 import ConversationServiceProvider from "./services/conversation/Provider.js"
 import MessageServiceProvider from "./services/message/Provider.js"
 import ConversationNotificationProvider from "./services/conversation_notification/Provider.js"
+import ContactServiceProvider from "./services/contacts/Provider.js"
+import PushNotificationServiceProvider from "./services/push_notifications/Provider.js"
 
 import UserAuthOperationProvider from "./operations/user/auth/Provider.js"
 import UserLogoutOperationProvider from "./operations/user/logout/Provider.js"
@@ -36,6 +45,9 @@ import BlockListBlockOperationProvider from "./operations/block_list/block/Provi
 import BlockListUnblockOperationProvider from "./operations/block_list/unblock/Provider.js"
 import BlockListEnableOperationProvider from "./operations/block_list/enable/Provider.js"
 import BlockListRetrieveOperationProvider from "./operations/block_list/list/Provider.js"
+
+import FileCreateOperationProvider from "./operations/file/create/Provider.js"
+import FileDownloadOperationProvider from "./operations/file/download/Provider.js"
 
 import ActivityUserRetrieveOperationProvider from "./operations/activity/retrieve/Provider.js"
 import ActivityUserSubscribeOperationProvider from "./operations/activity/subscribe/Provider.js"
@@ -55,7 +67,19 @@ import MessageDeleteOperationProvider from "./operations/message/delete/Provider
 import MessageListOperationProvider from "./operations/message/list/Provider.js"
 import MessageSendSystemOperationProvider from "./operations/message/system/Provider.js"
 
+import OpLogsListOperationProvider from "./operations/operation_logs/list/Provider.js"
+
 import StatusTypingOperationProvider from "./operations/status/typing/Provider.js"
+
+import ContactCreateOperationProvider from "./operations/contact/create/Provider.js"
+import ContactEditOperationProvider from "./operations/contact/edit/Provider.js"
+import ContactListOperationProvider from "./operations/contact/list/Provider.js"
+import ContactDeleteOperationProvider from "./operations/contact/delete/Provider.js"
+
+import PushEventCreateOperationProvider from "./operations/push_notifications/create_event/Provider.js"
+import PushSubscriptionCreateOperationProvider from "./operations/push_notifications/create_subscription/Provider.js"
+import PushSubscriptionDeleteOperationProvider from "./operations/push_notifications/delete_subscription/Provider.js"
+import PushSubscriptionListOperationProvider from "./operations/push_notifications/list_subscriptions/Provider.js"
 
 const providers = [
   HelpersProvider,
@@ -65,6 +89,7 @@ const providers = [
   ConversationMapperProvider,
   MessageMapperProvider,
 
+  ClusterNodeRepositoryProvider,
   UserRepoProvider,
   UserTokenRepoProvider,
   BlockedUserRepoProvider,
@@ -73,15 +98,23 @@ const providers = [
   ConversationParticipantRepoProvider,
   MessageRepoProvider,
   MessageStatusRepoProvider,
+  ContactRepositoryProvider,
+  OperationsLogRepositoryProvider,
+  PushEventRepositoryProvider,
+  PushSubscriptionRepositoryProvider,
 
+  ClusterNodeServiceProvider,
   SessionServiceProvider,
   UserServiceProvider,
   BlockListServiceProvider,
   StorageServiceProvider,
+  OperationsLogServiceProvider,
   ActivityManagerServiceProvider,
   ConversationServiceProvider,
   MessageServiceProvider,
   ConversationNotificationProvider,
+  ContactServiceProvider,
+  PushNotificationServiceProvider,
 
   UserAuthOperationProvider,
   UserLogoutOperationProvider,
@@ -96,6 +129,9 @@ const providers = [
   BlockListUnblockOperationProvider,
   BlockListEnableOperationProvider,
   BlockListRetrieveOperationProvider,
+
+  FileCreateOperationProvider,
+  FileDownloadOperationProvider,
 
   ActivityUserRetrieveOperationProvider,
   ActivityUserSubscribeOperationProvider,
@@ -115,7 +151,19 @@ const providers = [
   MessageListOperationProvider,
   MessageSendSystemOperationProvider,
 
+  OpLogsListOperationProvider,
+
   StatusTypingOperationProvider,
+
+  ContactCreateOperationProvider,
+  ContactEditOperationProvider,
+  ContactListOperationProvider,
+  ContactDeleteOperationProvider,
+
+  PushEventCreateOperationProvider,
+  PushSubscriptionCreateOperationProvider,
+  PushSubscriptionDeleteOperationProvider,
+  PushSubscriptionListOperationProvider,
 ]
 
 export default providers

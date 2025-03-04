@@ -1,22 +1,21 @@
-import pushNotificationsRepository from "../../repositories/push_notifications_repository.js"
+import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
 import CreateChatAlertEventOptions from "./models/CreateChatAlertEventOptions.js"
 import CreatePushEventOptions from "./models/CreatePushEventOptions.js"
 
 export default class BasePushQueue {
   async buildPushEvent(createPushEventOptions) {
-    const pushEvent = await pushNotificationsRepository.createPushEvent(
-      createPushEventOptions.user_id,
-      createPushEventOptions.user_ids,
-      createPushEventOptions.payload,
-      {}
-    )
+    const pushEventRepository = ServiceLocatorContainer.use("PushEventRepository")
+
+    const pushEvent = await pushEventRepository.create(createPushEventOptions)
 
     return pushEvent
   }
 
   async getSubscriptionsByUid(user_id) {
-    return await pushNotificationsRepository.getSubscriptionsByUid(user_id)
+    const pushSubscriptionRepo = ServiceLocatorContainer.use("PushSubscriptionsRepository")
+
+    return await pushSubscriptionRepo.findAll({ user_id: user_id })
   }
 
   async createPush(pushQueueMessage) {

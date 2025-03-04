@@ -1,5 +1,5 @@
 import RegisterProvider from "../../../common/RegisterProvider.js"
-import ConversationParticipant from "../../../new_models/conversation_participants.js"
+import ConversationParticipant from "../../../models/conversation_participants.js"
 import ConversationParticipantRepository from "./index.js"
 
 const name = "ConversationParticipantRepository"

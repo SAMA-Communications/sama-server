@@ -1,5 +1,5 @@
 import RegisterProvider from "../../../common/RegisterProvider.js"
-import File from "../../../new_models/file.js"
+import File from "../../../models/file.js"
 import FileRepository from "./index.js"
 
 const name = "FileRepository"

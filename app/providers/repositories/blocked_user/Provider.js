@@ -1,5 +1,5 @@
 import RegisterProvider from "../../../common/RegisterProvider.js"
-import BlockedUser from "../../../new_models/blocked_user.js"
+import BlockedUser from "../../../models/blocked_user.js"
 import BlockedUserRepository from "./index.js"
 
 const name = "BlockedUserRepository"

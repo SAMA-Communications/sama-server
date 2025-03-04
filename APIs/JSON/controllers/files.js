@@ -6,44 +6,23 @@ import Response from "@sama/networking/models/Response.js"
 
 class FilesController extends BaseJSONController {
   async create_url(ws, data) {
-    const { id: requestId, create_files: reqFiles } = data
+    const { id: requestId, create_files } = data
 
-    const sessionService = ServiceLocatorContainer.use("SessionService")
-    const storageService = ServiceLocatorContainer.use("StorageService")
+    const fileCreateOperation = ServiceLocatorContainer.use("FileCreateOperation")
 
-    const currentUserId = sessionService.getSessionUserId(ws)
+    const createdFiles = await fileCreateOperation.perform(ws, create_files)
 
-    const resFiles = []
-
-    for (const reqFile of reqFiles) {
-      const { file, upload_url } = await storageService.createFile(currentUserId, reqFile)
-
-      resFiles.push({ ...file, upload_url })
-    }
-
-    return new Response().addBackMessage({ response: { id: requestId, files: resFiles } })
+    return new Response().addBackMessage({ response: { id: requestId, files: createdFiles } })
   }
 
   async get_download_url(ws, data) {
-    const {
-      id: requestId,
-      get_file_urls: { file_ids: objectIds },
-    } = data
+    const { id: requestId, get_file_urls } = data
 
-    const sessionService = ServiceLocatorContainer.use("SessionService")
-    const storageService = ServiceLocatorContainer.use("StorageService")
+    const fileDownloadOperation = ServiceLocatorContainer.use("FileDownloadOperation")
 
-    const currentUserId = sessionService.getSessionUserId(ws)
+    const downloadUrls = await fileDownloadOperation.perform(ws, get_file_urls)
 
-    const urls = {}
-
-    for (const fileObjectId of objectIds) {
-      const downloadUrl = await storageService.getFileDownloadUrl(currentUserId, fileObjectId)
-
-      urls[fileObjectId] = downloadUrl
-    }
-
-    return new Response().addBackMessage({ response: { id: requestId, file_urls: urls } })
+    return new Response().addBackMessage({ response: { id: requestId, file_urls: downloadUrls } })
   }
 }
 

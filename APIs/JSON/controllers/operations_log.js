@@ -22,23 +22,12 @@ const mapOpLogsMessage = async function (mapper) {
 
 class OperationsLogController extends BaseJSONController {
   async logs(ws, data) {
-    const {
-      id: requestId,
-      op_log_list: {
-        created_at: { gt, lt },
-      },
-    } = data
+    const { id: requestId, op_log_list } = data
 
-    const sessionService = ServiceLocatorContainer.use("SessionService")
+    const opLogsListOperation = ServiceLocatorContainer.use("OpLogsListOperation")
 
-    const currentUserId = sessionService.getSessionUserId(ws)
+    const opLogs = await opLogsListOperation.perform(ws, op_log_list)
 
-    const query = {
-      user_id: currentUserId,
-      created_at: gt ? { $gt: new Date(gt) } : { $lt: new Date(lt) },
-    }
-
-    const opLogs = await OpLog.findAll(query, ["user_id", "packet"])
     const packet = { response: { id: requestId, logs: opLogs } }
 
     return new Response().addBackMessage(new MappableMessage(packet, mapOpLogsMessage))

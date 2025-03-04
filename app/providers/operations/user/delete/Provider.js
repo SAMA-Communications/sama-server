@@ -1,8 +1,6 @@
 import RegisterProvider from "../../../../common/RegisterProvider.js"
 import UserDeleteOperation from "./index.js"
 
-import contactsMatchRepository from "../../../../repositories/contact_match_repository.js"
-
 const name = "UserDeleteOperation"
 
 class UserDeleteOperationRegisterProvider extends RegisterProvider {
@@ -11,13 +9,14 @@ class UserDeleteOperationRegisterProvider extends RegisterProvider {
     const userService = slc.use("UserService")
     const activityManagerService = slc.use("ActivityManagerService")
     const blockListService = slc.use("BlockListService")
+    const contactService = slc.use("ContactService")
 
     return new UserDeleteOperation(
       sessionService,
       userService,
       activityManagerService,
       blockListService,
-      contactsMatchRepository
+      contactService
     )
   }
 }

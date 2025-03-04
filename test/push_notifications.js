@@ -2,13 +2,13 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
-import PushEvent from "./../app/models/push_event.js"
-import PushSubscription from "./../app/models/push_subscription.js"
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
 import { createUserArray, mockedWS, sendLogin } from "./utils.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")
+const pushEventRepo = ServiceLocatorContainer.use("PushEventRepository")
+const pushSubscriptionRepo = ServiceLocatorContainer.use("PushSubscriptionsRepository")
 
 let usersIds = []
 
@@ -545,7 +545,7 @@ describe("PushNotification functions", async () => {
       const event = responseData.response.event
 
       assert.strictEqual(requestData.request.id, responseData.response.id)
-      assert.strictEqual(event.user_ids[0], usersIds[0].toString())
+      assert.strictEqual(event.user_ids[0].toString(), usersIds[0].toString())
     })
 
     it("should fail, recipients ids not found", async () => {
@@ -578,8 +578,8 @@ describe("PushNotification functions", async () => {
 
   after(async () => {
     await userRepo.deleteMany({})
-    await PushSubscription.clearCollection()
-    await PushEvent.clearCollection()
+    await pushEventRepo.deleteMany({})
+    await pushSubscriptionRepo.deleteMany({})
 
     usersIds = []
   })

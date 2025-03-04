@@ -20,4 +20,5 @@ jobs:
         run: docker compose exec sama-server sh -c "MONGODB_URL=mongodb://172.25.0.4/samatests npm run test"
 
       - name: Stop the SAMA resources
+        if: always()
         run: docker compose -f docker-compose-full.yml down -v --rmi all

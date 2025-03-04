@@ -2,26 +2,25 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
-import OpLog from "./../app/models/operations_log.js"
-import operationsLogRepository from "./../app/repositories/operations_log_repository.js"
-
 import { createUserArray, mockedWS, sendLogin } from "./utils.js"
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")
+const opLogsService = ServiceLocatorContainer.use("OperationLogsService")
+const opLogRepository = ServiceLocatorContainer.use("OperationsLogRepository")
 
 let timeWhenUserOff = null
 let usersIds = []
 
 describe("Operations Log functions", async () => {
   before(async () => {
-    await OpLog.clearCollection()
+    await opLogRepository.deleteMany({})
     usersIds = await createUserArray(2)
 
     await sendLogin(mockedWS, "user_1")
 
     for (let i = 0; i < 2; i++) {
-      await operationsLogRepository.savePacket(
+      await opLogsService.savePacket(
         usersIds[1],
         JSON.stringify({
           message_update: {
@@ -78,7 +77,7 @@ describe("Operations Log functions", async () => {
       responseData = responseData.backMessages.at(0).packet
 
       for (let i = 2; i < 6; i++) {
-        await operationsLogRepository.savePacket(
+        await opLogsService.savePacket(
           usersIds[1],
           JSON.stringify({
             message_update: {
@@ -118,7 +117,7 @@ describe("Operations Log functions", async () => {
 
   after(async () => {
     await userRepo.deleteMany({})
-    await OpLog.clearCollection()
+    await opLogRepository.deleteMany({})
 
     usersIds = []
   })
