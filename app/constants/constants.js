@@ -1,5 +1,5 @@
 export const CONSTANTS = {
-  LIMIT_MAX: 100,
+  LIMIT_MAX: 20, //only for test, change it before commit 100
   LAST_ACTIVITY_STATUS: {
     ONLINE: "online",
     OFFLINE: "offline",

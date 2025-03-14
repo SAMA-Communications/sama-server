@@ -41,14 +41,14 @@ class ConversationService {
   }
 
   async conversationsList(user, options, limit) {
-    const conversationIds = await (options.ids?.length
-      ? this.validateConvIdsWhichUserHasAccess(options.ids, user.native_id)
-      : this.conversationParticipantRepo.findParticipantConversations(user.native_id, limit))
-
     const filterOptions = {
       ...(options.updatedAt?.gt && { updatedAtFrom: new Date(options.updatedAt.gt) }),
       ...(options.updatedAt?.lt && { updatedAtTo: new Date(options.updatedAt.lt) }),
     }
+
+    const conversationIds = await (options.ids?.length
+      ? this.validateConvIdsWhichUserHasAccess(options.ids, user.native_id)
+      : this.conversationParticipantRepo.findParticipantConversations(user.native_id, filterOptions, limit))
 
     const conversations = await this.conversationRepo.list(conversationIds, filterOptions, limit)
 
