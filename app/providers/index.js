@@ -32,6 +32,8 @@ import ConversationNotificationProvider from "./services/conversation_notificati
 import ContactServiceProvider from "./services/contacts/Provider.js"
 import PushNotificationServiceProvider from "./services/push_notifications/Provider.js"
 
+// WS Operations Providers
+
 import UserAuthOperationProvider from "./operations/user/auth/Provider.js"
 import UserLogoutOperationProvider from "./operations/user/logout/Provider.js"
 import UserCreateOperationProvider from "./operations/user/create/Provider.js"
@@ -81,6 +83,10 @@ import PushSubscriptionCreateOperationProvider from "./operations/push_notificat
 import PushSubscriptionDeleteOperationProvider from "./operations/push_notifications/delete_subscription/Provider.js"
 import PushSubscriptionListOperationProvider from "./operations/push_notifications/list_subscriptions/Provider.js"
 
+// Http Operations Providers
+
+import HttpMessageCreateOperationProvider from "./operations/http/message/create/Provider.js"
+
 const providers = [
   HelpersProvider,
 
@@ -115,6 +121,8 @@ const providers = [
   ConversationNotificationProvider,
   ContactServiceProvider,
   PushNotificationServiceProvider,
+
+  // WS Operations Providers
 
   UserAuthOperationProvider,
   UserLogoutOperationProvider,
@@ -164,6 +172,10 @@ const providers = [
   PushSubscriptionCreateOperationProvider,
   PushSubscriptionDeleteOperationProvider,
   PushSubscriptionListOperationProvider,
+
+  // Http Operations Providers
+
+  HttpMessageCreateOperationProvider,
 ]
 
 export default providers

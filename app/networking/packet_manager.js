@@ -109,7 +109,7 @@ class PacketManager {
       }
 
       const isInactive = Object.values(userNodeData).some((extraParams) =>
-        sessionService.isUserInactive(ws, extraParams)
+        sessionService.isUserInactive(null, extraParams)
       )
       if (isInactive) {
         offlineUsersByPackets.push(userId)
