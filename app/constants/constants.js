@@ -1,5 +1,5 @@
 export const CONSTANTS = {
-  LIMIT_MAX: 20, //only for test, change it before commit 100
+  LIMIT_MAX: proccess.env.CONVERSATION_PRELOAD_COUNT,
   LAST_ACTIVITY_STATUS: {
     ONLINE: "online",
     OFFLINE: "offline",
