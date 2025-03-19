@@ -1,5 +1,5 @@
 import RegisterProvider from "../../../common/RegisterProvider.js"
-import Message from "../../../new_models/message.js"
+import Message from "../../../models/message.js"
 import MessageRepository from "./index.js"
 
 const name = "MessageRepository"

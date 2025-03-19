@@ -502,7 +502,7 @@ describe("User cycle", async () => {
       })
     })
 
-    it("should fail login is already in use", async () => {
+    it("should fail email is already in use", async () => {
       const requestData = {
         request: {
           user_edit: {

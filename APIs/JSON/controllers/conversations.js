@@ -12,9 +12,8 @@ class ConversationsController extends BaseJSONController {
     const conversationCreateOperation = ServiceLocatorContainer.use("ConversationCreateOperation")
     const { conversation, event } = await conversationCreateOperation.perform(ws, conversationParams)
 
-    const deliverMessage = new DeliverMessage(event.participantIds, event.message).addPushQueueMessage(
-      event.notification
-    )
+    const deliverMessage = new DeliverMessage(event.participantIds, event.message)
+    conversation.type !== "u" && deliverMessage.addPushQueueMessage(event.notification)
 
     return new Response()
       .addBackMessage({
@@ -120,10 +119,10 @@ class ConversationsController extends BaseJSONController {
     const { id: requestId, get_participants_by_cids: options } = data
 
     const conversationListParticipantsOperation = ServiceLocatorContainer.use("ConversationListParticipantsOperation")
-    const users = await conversationListParticipantsOperation.perform(ws, options)
+    const { users, conversations } = await conversationListParticipantsOperation.perform(ws, options)
 
     return new Response().addBackMessage({
-      response: { id: requestId, users: users },
+      response: { id: requestId, users, conversations },
     })
   }
 

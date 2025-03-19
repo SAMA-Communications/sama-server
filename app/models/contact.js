@@ -1,10 +1,6 @@
 import BaseModel from "./base.js"
 
 export default class Contact extends BaseModel {
-  constructor(params) {
-    super(params)
-  }
-
   static get collection() {
     return "contacts"
   }

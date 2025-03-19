@@ -20,11 +20,20 @@ const mapOpLogsMessage = async function (mapper) {
 
 class OperationsLogController extends BaseJSONController {
   async logs(ws, data) {
+<<<<<<< HEAD
     const { id: requestId, op_log_list: opLogParams } = data
 
     const operationLogLogsOperation = ServiceLocatorContainer.use("OperationLogLogsOperation")
     const opLogs = await operationLogLogsOperation.perform(opLogParams)
 
+=======
+    const { id: requestId, op_log_list } = data
+
+    const opLogsListOperation = ServiceLocatorContainer.use("OpLogsListOperation")
+
+    const opLogs = await opLogsListOperation.perform(ws, op_log_list)
+
+>>>>>>> development
     const packet = { response: { id: requestId, logs: opLogs } }
 
     return new Response().addBackMessage(new MappableMessage(packet, mapOpLogsMessage))

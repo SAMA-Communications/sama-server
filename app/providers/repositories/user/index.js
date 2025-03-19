@@ -76,7 +76,7 @@ class UserRepository extends BaseRepository {
   async update(userId, updateParams) {
     const user = await this.findOneAndUpdate({ _id: userId }, { $set: updateParams })
 
-    return user
+    return user.errorResponse ? null : user
   }
 
   async updateActivity(userId, recentActivity) {

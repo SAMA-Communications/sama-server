@@ -2,7 +2,7 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
-import { ObjectId } from "../app/lib/db.js"
+import { ObjectId } from "@sama/lib/db.js"
 import { createConversation, createUserArray, mockedWS, sendLogin, sendLogout } from "./utils.js"
 
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
@@ -402,7 +402,6 @@ describe("Message function", async () => {
               cid: currentConversationId,
               type: "all",
               ids: [`messageID_${i + 1}`],
-              from: usersIds[0],
             },
             id: "00",
           },
@@ -446,7 +445,6 @@ describe("Message function", async () => {
               cid: currentConversationId,
               type: "all",
               ids: [`messageID_${i + 1}`],
-              from: usersIds[0],
             },
             id: "00",
           },
@@ -466,7 +464,7 @@ describe("Message function", async () => {
             id: `include_${i + 1}`,
             body: "hey how is going?",
             cid: currentConversationId,
-            deleted_for: [ObjectId(usersIds[2])],
+            deleted_for: [new ObjectId(usersIds[2])],
           },
         }
 
@@ -858,7 +856,7 @@ describe("Message function", async () => {
     describe("--> getLastReadMessageByUserForCid", () => {
       it("should work for u1", async () => {
         const responseData = await messageStatusRepo.findLastReadMessageByUserForCid(
-          [ObjectId(currentConversationId)],
+          [new ObjectId(currentConversationId)],
           usersIds[0]
         )
         assert.strictEqual(responseData[currentConversationId], undefined)
@@ -866,7 +864,7 @@ describe("Message function", async () => {
 
       it("should work for u2", async () => {
         const responseData = await messageStatusRepo.findLastReadMessageByUserForCid(
-          [ObjectId(currentConversationId)],
+          [new ObjectId(currentConversationId)],
           usersIds[1]
         )
 
@@ -875,7 +873,7 @@ describe("Message function", async () => {
 
       it("should work for u3", async () => {
         const responseData = await messageStatusRepo.findLastReadMessageByUserForCid(
-          [ObjectId(currentConversationId)],
+          [new ObjectId(currentConversationId)],
           usersIds[2]
         )
         assert.strictEqual(responseData[currentConversationId], undefined)
@@ -885,7 +883,7 @@ describe("Message function", async () => {
     describe("--> getCountOfUnredMessagesByCid", () => {
       it("should work for sender user (u1)", async () => {
         const responseData = await messageService.aggregateCountOfUnreadMessagesByCid(
-          [ObjectId(currentConversationId)],
+          [new ObjectId(currentConversationId)],
           { native_id: usersIds[0] }
         )
 
@@ -894,7 +892,7 @@ describe("Message function", async () => {
 
       it("should work for u2 (read 3/6 messages)", async () => {
         const responseData = await messageService.aggregateCountOfUnreadMessagesByCid(
-          [ObjectId(currentConversationId)],
+          [new ObjectId(currentConversationId)],
           { native_id: usersIds[1] }
         )
 
@@ -903,7 +901,7 @@ describe("Message function", async () => {
 
       it("should work for u3 (read 0/6 messages)", async () => {
         const responseData = await messageService.aggregateCountOfUnreadMessagesByCid(
-          [ObjectId(currentConversationId)],
+          [new ObjectId(currentConversationId)],
           { native_id: usersIds[2] }
         )
 
@@ -928,7 +926,9 @@ describe("Message function", async () => {
 
     describe("--> getLastMessageForConversation", () => {
       it("should work", async () => {
-        const responseData = await messageService.aggregateLastMessageForConversation([ObjectId(currentConversationId)])
+        const responseData = await messageService.aggregateLastMessageForConversation([
+          new ObjectId(currentConversationId),
+        ])
         assert.strictEqual(responseData[currentConversationId]._id?.toString(), messagesIds[5].toString())
       })
     })

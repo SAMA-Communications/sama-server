@@ -53,9 +53,9 @@ class ConversationService {
       ? this.validateConvIdsWhichUserHasAccess(options.ids, user.native_id)
       : this.conversationParticipantRepo.findParticipantConversations(user.native_id, limit))
 
-    const filterOptions = {}
-    if (options.updatedAt?.gt) {
-      filterOptions.updatedAtFrom = new Date(options.updatedAt.gt)
+    const filterOptions = {
+      ...(options.updatedAt?.gt && { updatedAtFrom: new Date(options.updatedAt.gt) }),
+      ...(options.updatedAt?.lt && { updatedAtTo: new Date(options.updatedAt.lt) }),
     }
 
     const conversations = await this.conversationRepo.list(conversationIds, filterOptions, limit)
@@ -93,7 +93,9 @@ class ConversationService {
       user.native_id
     )
 
-    return conversationsParticipants.map((participant) => participant.user_id)
+    const participantIds = [...new Set(Object.values(conversationsParticipants).flat())]
+
+    return { participantIds, participantsIdsByCids: conversationsParticipants }
   }
 
   async validateConvIdsWhichUserHasAccess(conversationIds, userId) {

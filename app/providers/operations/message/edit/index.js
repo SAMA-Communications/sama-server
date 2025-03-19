@@ -17,9 +17,17 @@ class MessageEditOperation {
 
     await this.messageService.messageRepo.updateBody(messageId, newBody)
 
+    const conversation = await this.conversationService.conversationRepo.findById(message.cid)
+
     const participantIds = await this.conversationService.findConversationParticipants(message.cid)
 
-    const editedMessageParams = { messageId, body: newBody, from: currentUserId }
+    const editedMessageParams = {
+      messageId,
+      cid: message.cid,
+      c_type: conversation.type,
+      from: currentUserId,
+      body: newBody,
+    }
 
     return { editedMessage: new EditMessagePublicFields(editedMessageParams), participantIds }
   }

@@ -8,6 +8,13 @@ services:
     deploy:
       replicas: 0
 
+  nginx:
+    # Define the service here as an empty object to effectively exclude it
+    # Or simply leave it out if you want to remove it completely
+    # Example:
+    deploy:
+      replicas: 0
+
   sama-server:
     # Define the service here as an empty object to effectively exclude it
     # Or simply leave it out if you want to remove it completely
