@@ -101,21 +101,7 @@ class PacketManager {
 
       if (isNoConnections) {
         if (!notSaveInOfflineStorage) {
-<<<<<<< HEAD
-          const packetObject = JSON.parse(packet)
-
-          if (packetObject.typing) continue
-
-          if (packetObject.message?.encrypted_message_type !== undefined) {
-            const { cid, _id: mid } = packetObject.message
-            const encryptedMessageStatusService = ServiceLocatorContainer.use("EncryptedMessageStatusService")
-            await encryptedMessageStatusService.markAsNotDelivered(mid, cid, userId)
-          } else {
-            operationsLogRepository.savePacket(userId, packet)
-          }
-=======
           opLogsService.savePacket(userId, packet)
->>>>>>> development
         }
 
         offlineUsersByPackets.push(userId)

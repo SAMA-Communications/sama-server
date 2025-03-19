@@ -1,5 +1,5 @@
 import RegisterProvider from "../../../common/RegisterProvider.js"
-import EncryptedDevice from "../../../new_models/encrypted_device.js"
+import EncryptedDevice from "../../../models/encrypted_device.js"
 import EncryptionRepository from "./index.js"
 
 const name = "EncryptionRepository"

@@ -17,6 +17,7 @@ import MessageStatusRepoProvider from "./repositories/message_status/Provider.js
 import EncryptionRepoProvider from "./repositories/encryption/Provider.js"
 import EncryptedMessageStatusRepoProvider from "./repositories/encrypted_message_status/Provider.js"
 import ContactRepositoryProvider from "./repositories/contact/Provider.js"
+import OperationLogRepoProvider from "./repositories/operation_log/Provider.js"
 import OperationsLogRepositoryProvider from "./repositories/operations_log/Provider.js"
 import PushEventRepositoryProvider from "./repositories/push_event/Provider.js"
 import PushSubscriptionRepositoryProvider from "./repositories/push_subscriptions/Provider.js"
@@ -72,6 +73,8 @@ import MessageDeleteOperationProvider from "./operations/message/delete/Provider
 import MessageListOperationProvider from "./operations/message/list/Provider.js"
 import MessageSendSystemOperationProvider from "./operations/message/system/Provider.js"
 
+import OpLogsListOperationProvider from "./operations/operation_logs/list/Provider.js"
+
 import StatusTypingOperationProvider from "./operations/status/typing/Provider.js"
 
 import EncryptionRegisterOperationProvider from "./operations/encryption/register/Provider.js"
@@ -80,6 +83,7 @@ import EncryptionRequestKeysOperationProvider from "./operations/encryption/requ
 import EncryptionDeleteOperationProvider from "./operations/encryption/delete/Provider.js"
 
 import OperationLogLogsOperationProvider from "./operations/operation_log/logs/Provider.js"
+
 import ContactCreateOperationProvider from "./operations/contact/create/Provider.js"
 import ContactEditOperationProvider from "./operations/contact/edit/Provider.js"
 import ContactListOperationProvider from "./operations/contact/list/Provider.js"
@@ -110,6 +114,7 @@ const providers = [
   EncryptionRepoProvider,
   EncryptedMessageStatusRepoProvider,
   ContactRepositoryProvider,
+  OperationLogRepoProvider,
   OperationsLogRepositoryProvider,
   PushEventRepositoryProvider,
   PushSubscriptionRepositoryProvider,
@@ -164,6 +169,8 @@ const providers = [
   MessageDeleteOperationProvider,
   MessageListOperationProvider,
   MessageSendSystemOperationProvider,
+
+  OpLogsListOperationProvider,
 
   StatusTypingOperationProvider,
 

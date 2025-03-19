@@ -1,5 +1,5 @@
 import RegisterProvider from "../../../common/RegisterProvider.js"
-import EncryptedMessageStatus from "../../../new_models/encrypted_message_status.js"
+import EncryptedMessageStatus from "../../../models/encrypted_message_status.js"
 import EncryptedMessageStatusRepository from "./index.js"
 
 const name = "EncryptedMessageStatusRepository"
