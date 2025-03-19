@@ -1,9 +1,10 @@
 import { ERROR_STATUES } from "../../../../constants/errors.js"
 
 class UserLogoutOperation {
-  constructor(sessionService, userTokenRepo) {
+  constructor(sessionService, userTokenRepo, encryptionRepo) {
     this.sessionService = sessionService
     this.userTokenRepo = userTokenRepo
+    this.encryptionRepo = encryptionRepo
   }
 
   async perform(ws) {
@@ -16,6 +17,8 @@ class UserLogoutOperation {
     }
 
     const deviceId = this.sessionService.getDeviceId(ws, userId)
+
+    await this.encryptionRepo.removeByDeviceId(userId, deviceId)
 
     await this.sessionService.removeUserSession(ws, userId, deviceId)
 

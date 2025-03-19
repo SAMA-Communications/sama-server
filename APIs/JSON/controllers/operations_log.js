@@ -1,7 +1,5 @@
 import BaseJSONController from "./base.js"
 
-import OpLog from "@sama/models/operations_log.js"
-
 import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
 import MappableMessage from "@sama/networking/models/MappableMessage.js"

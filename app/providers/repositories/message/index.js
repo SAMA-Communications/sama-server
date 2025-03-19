@@ -61,19 +61,32 @@ class MessageRepository extends BaseRepository {
     return result
   }
 
+  async buildOptions(baseOptions, options) {
+    if (options.updatedAtFrom) {
+      baseOptions.updated_at = this.mergeOperators(baseOptions.updated_at, { $gt: options.updatedAtFrom })
+    }
+    if (options.updatedAtBefore) {
+      baseOptions.updated_at = this.mergeOperators(baseOptions.updated_at, { $lt: options.updatedAtBefore })
+    }
+    return baseOptions
+  }
+
   async list(conversationId, userId, options, limit) {
-    const query = {
+    let query = {
       cid: this.castObjectId(conversationId),
       deleted_for: { $nin: [this.castObjectId(userId)] },
     }
 
-    if (options.updatedAtFrom) {
-      query.updated_at = this.mergeOperators(query.updated_at, { $gt: options.updatedAtFrom })
-    }
-    if (options.updatedAtBefore) {
-      query.updated_at = this.mergeOperators(query.updated_at, { $lt: options.updatedAtBefore })
-    }
+    query = await this.buildOptions(query, options)
+    const messages = await this.findAll(query, null, limit)
 
+    return messages
+  }
+
+  async listByMids(mids, options, limit) {
+    let query = { _id: { $in: mids } }
+
+    query = await this.buildOptions(query, options)
     const messages = await this.findAll(query, null, limit)
 
     return messages
@@ -115,6 +128,10 @@ class MessageRepository extends BaseRepository {
     messageIds = this.castObjectIds(messageIds)
 
     await this.updateMany({ _id: { $in: messageIds } }, { $addToSet: { deleted_for: userId } })
+  }
+
+  async deleteMessageByMids(mids) {
+    await this.deleteMany({ _id: { $in: mids } })
   }
 }
 

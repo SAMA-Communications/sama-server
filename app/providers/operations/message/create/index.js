@@ -115,6 +115,7 @@ class MessageCreateOperation {
 
     const pushPayload = Object.assign({
       title: conversation.type === "u" ? userLogin : `${userLogin} | ${conversation.name}`,
+      is_encrypted: conversation.is_encrypted || false,
       body: message.body,
       firstAttachmentUrl,
       cid: message.cid,
