@@ -1,5 +1,5 @@
 export const CONSTANTS = {
-  LIMIT_MAX: proccess.env.CONVERSATION_PRELOAD_COUNT,
+  LIMIT_MAX: process.env.CONVERSATION_PRELOAD_COUNT,
   LAST_ACTIVITY_STATUS: {
     ONLINE: "online",
     OFFLINE: "offline",
