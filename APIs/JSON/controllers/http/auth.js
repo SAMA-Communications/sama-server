@@ -18,7 +18,7 @@ class HttpAuthController extends BaseHttpController {
     if (unsignedToken !== false) {
       return unsignedToken
     } else {
-      this.setRefreshToken(res, signedToken, true) //uncommented changes
+      this.setRefreshToken(res, signedToken, true) // uncommented changes
       throw new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
         cause: {
           status: ERROR_STATUES.INCORRECT_TOKEN.status,
