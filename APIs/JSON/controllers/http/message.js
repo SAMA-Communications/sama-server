@@ -19,7 +19,7 @@ class HttpMessageController extends BaseHttpController {
     const response = new Response()
 
     const httpMessageCreateOperation = ServiceLocatorContainer.use("HttpMessageCreateOperation")
-    const createMessageResponse = await httpMessageCreateOperation.perform(req.fakeWsSessionKey, payload)
+    const createMessageResponse = await httpMessageCreateOperation.perform(res.fakeWsSessionKey, payload)
     const { messageId, message: message, deliverMessages, participantIds } = createMessageResponse
 
     deliverMessages.forEach((event) => {
@@ -45,7 +45,7 @@ class HttpMessageController extends BaseHttpController {
     const payload = res.parsedBody
 
     const messageSendSystemOperation = ServiceLocatorContainer.use("HttpMessageSendSystemOperation")
-    const { recipientsIds, systemMessage } = await messageSendSystemOperation.perform(req.fakeWsSessionKey, payload)
+    const { recipientsIds, systemMessage } = await messageSendSystemOperation.perform(res.fakeWsSessionKey, payload)
 
     return new Response()
       .setHttpResponse(new HttpResponse(201, {}, { ask: { mid: systemMessage._id, t: systemMessage.t } }))
@@ -56,7 +56,7 @@ class HttpMessageController extends BaseHttpController {
     const payload = res.parsedBody
 
     const messageReadOperation = ServiceLocatorContainer.use("HttpMessageReadOperation")
-    const { readMessagesGroups } = await messageReadOperation.perform(req.fakeWsSessionKey, payload)
+    const { readMessagesGroups } = await messageReadOperation.perform(res.fakeWsSessionKey, payload)
 
     const response = new Response()
 
@@ -72,7 +72,7 @@ class HttpMessageController extends BaseHttpController {
     const payload = res.parsedBody
 
     const messageEditOperation = ServiceLocatorContainer.use("HttpMessageEditOperation")
-    const { editedMessage, participantIds } = await messageEditOperation.perform(req.fakeWsSessionKey, payload)
+    const { editedMessage, participantIds } = await messageEditOperation.perform(res.fakeWsSessionKey, payload)
 
     return new Response()
       .setHttpResponse(new HttpResponse(200, {}, { success: true }))
@@ -83,7 +83,7 @@ class HttpMessageController extends BaseHttpController {
     const payload = res.parsedBody
 
     const messageDeleteOperation = ServiceLocatorContainer.use("HttpMessageDeleteOperation")
-    const { deletedMessages, participantIds } = await messageDeleteOperation.perform(req.fakeWsSessionKey, payload)
+    const { deletedMessages, participantIds } = await messageDeleteOperation.perform(res.fakeWsSessionKey, payload)
 
     const response = new Response()
 

@@ -23,6 +23,8 @@
     "@aws-sdk/client-s3": "^3.327.0",
     "@aws-sdk/s3-request-presigner": "^3.328.0",
     "bull": "^4.10.4",
+    "cookie": "1.0.2",
+    "cookie-parser": "1.4.7",
     "cookie-signature": "^1.2.2",
     "dotenv": "^16.0.1",
     "joi": "^17.8.3",

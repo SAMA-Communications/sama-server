@@ -85,6 +85,9 @@ import PushSubscriptionListOperationProvider from "./operations/push_notificatio
 
 // Http Operations Providers
 
+import HttpUserAuthOperationProvider from "./operations/http/user/auth/Provider.js"
+import HttpUserLogoutOperationProvider from "./operations/http/user/logout/Provider.js"
+
 import HttpMessageCreateOperationProvider from "./operations/http/message/create/Provider.js"
 import HttpMessageSystemOperationProvider from "./operations/http/message/system/Provider.js"
 import HttpMessageReadOperationProvider from "./operations/http/message/read/Provider.js"
@@ -178,6 +181,9 @@ const providers = [
   PushSubscriptionListOperationProvider,
 
   // Http Operations Providers
+
+  HttpUserAuthOperationProvider,
+  HttpUserLogoutOperationProvider,
 
   HttpMessageCreateOperationProvider,
   HttpMessageSystemOperationProvider,

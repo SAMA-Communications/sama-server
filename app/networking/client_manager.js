@@ -4,6 +4,8 @@ import { StringDecoder } from "string_decoder"
 import { CONSTANTS as MAIN_CONSTANTS } from "../constants/constants.js"
 import { ERROR_STATUES } from "../constants/errors.js"
 
+import { parserCookies, serializeCookie } from "../../APIs/JSON/utils/cookie-tools.js"
+
 import { BASE_API, APIs, detectAPIType } from "./APIs.js"
 
 import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
@@ -40,15 +42,30 @@ const onMessage = async (ws, message) => {
   await processMessageResponse(ws, response)
 }
 
-const fakeWsSessionBindMiddleware = async (res, req) => {
+const parseBaseParamsMiddleware = async (res, req) => {
   res.fakeWsSessionKey = Symbol("Http ws fake session")
+
+  res.parsedHeaders = {}
+
+  req.forEach((headerName, value) => {
+    res.parsedHeaders[headerName] = value
+  })
+
+  res.parsedCookies = {}
+  res.parsedSignedCookies = {}
+
+  if (res.parsedHeaders["cookie"]) {
+    try {
+      const { cookies, signedCookies } = parserCookies(res.parsedHeaders["cookie"])
+      res.parsedCookies = cookies
+      res.parsedSignedCookies = signedCookies
+    } catch (error) {
+      console.log("[Http][Request][cookieParser][error]", error)
+    }
+  }
 }
 
 const corsHeadersMiddleware = async (res, req) => {
-  if (req.getMethod() !== "options") {
-    return
-  }
-
   res.writeHeader("Access-Control-Allow-Origin", process.env.CORS_ORIGIN || "*")
   res.writeHeader("Access-Control-Allow-Credentials", "true")
   res.writeHeader("Access-Control-Allow-Methods", "POST, PUT")
@@ -94,6 +111,19 @@ const processHttpResponseMiddleware = async (res, req, handlerResponse) => {
 
   const { httpResponse } = handlerResponse
 
+  if (httpResponse.cookies.length) {
+    const preparedCookies = []
+
+    for (const cookieParams of httpResponse.cookies) {
+      const preparedCookie = serializeCookie(cookieParams.name, cookieParams.value, cookieParams.options)
+      preparedCookies.push(preparedCookie)
+    }
+
+    const cookieHeaderStr = preparedCookies.join("; ")
+
+    httpResponse.addHeader("Set-Cookie", cookieHeaderStr)
+  }
+
   res.writeHeader("Content-Type", "application/json")
   for (const [headerKey, value] of Object.entries(httpResponse.headers)) {
     res.writeHeader(headerKey, value)
@@ -116,7 +146,7 @@ const onHttpRequest = (preMiddleware = [], handler) => {
         req.getHeader("content-length")
       )
 
-      await fakeWsSessionBindMiddleware(res, req)
+      await parseBaseParamsMiddleware(res, req)
       await corsHeadersMiddleware(res, req)
 
       for (const middleware of preMiddleware) {
@@ -136,8 +166,8 @@ const onHttpRequest = (preMiddleware = [], handler) => {
     } catch (error) {
       console.log("[Http][Error]", error)
 
-      res.writeStatus(`${error.cause?.status || 500}`)
-      res.end(error.message || "Server error")
+      res.writeStatus(`${error.cause?.status || ERROR_STATUES.INTERNAL_SERVER.status}`)
+      res.end(error.message || ERROR_STATUES.INTERNAL_SERVER.message)
     } finally {
       const sessionService = ServiceLocatorContainer.use("SessionService")
       await sessionService.removeAllUserSessions(res.fakeWsSessionKey)
@@ -259,10 +289,7 @@ class ClientManager {
         onHttpRequest([], () => void 0)
       )
 
-      this.#localSocket.post(
-        "/login",
-        this.#handleHttpRequest((res, req) => HttpAuthController.login(res, req))
-      )
+      this.#localSocket.post("/login", onHttpRequest([], HttpAuthController.login))
 
       this.#localSocket.post(
         "/logout",
