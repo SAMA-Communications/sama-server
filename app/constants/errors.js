@@ -13,6 +13,7 @@ export const ERROR_STATUES = {
   },
   INCORRECT_TOKEN: { status: 422, message: "Incorrect token." },
   TOKEN_EXPIRED: { status: 422, message: "The token has expired." },
+  ROUTE_NOT_FOUND: { status: 404, message: "Route not found" },
   // Users -->
   USER_ID_MISSED: { status: 422, message: "User ID missed." },
   USER_NOT_FOUND: {

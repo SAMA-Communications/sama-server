@@ -6,8 +6,8 @@ class HttpMessageCreateOperation {
     this.messageCreateOperation = messageCreateOperation
   }
 
-  async perform(fakeWsSessionKey, createMessageParams) {
-    const { senderId, message: messageParams } = createMessageParams
+  async perform(fakeWsSessionKey, payload) {
+    const { senderId, message: messageParams } = payload
 
     this.sessionService.addUserDeviceConnection(fakeWsSessionKey, senderId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
 

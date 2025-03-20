@@ -40,6 +40,10 @@ export default class BaseRepository {
   }
 
   async create(createParams) {
+    if (createParams._id) {
+      createParams._id = this.castObjectId(createParams._id)
+    }
+
     const insertParams = await this.prepareParams(createParams)
 
     const result = await this.collectionCursor.insertOne(insertParams)

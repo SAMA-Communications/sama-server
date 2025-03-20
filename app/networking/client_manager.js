@@ -92,12 +92,15 @@ const adminApiKeyValidationMiddleware = async (res, req) => {
 const processHttpResponseMiddleware = async (res, req, handlerResponse) => {
   console.log("[Http][Response]", handlerResponse)
 
-  const responseBody = handlerResponse.backMessages.at(0)
-  handlerResponse.backMessages = []
+  const { httpResponse } = handlerResponse
 
   res.writeHeader("Content-Type", "application/json")
-  res.writeStatus(`${200}`)
-  res.end(JSON.stringify(responseBody || {}))
+  for (const [headerKey, value] of Object.entries(httpResponse.headers)) {
+    res.writeHeader(headerKey, value)
+  }
+
+  res.writeStatus(`${httpResponse.status || 200}`)
+  res.end(httpResponse.stringifyBody())
 
   await processMessageResponse(res.fakeWsSessionKey, APIs[BASE_API].stringifyResponse(handlerResponse))
 }
@@ -267,8 +270,35 @@ class ClientManager {
       )
 
       this.#localSocket.post(
+        "/admin/message/system",
+        onHttpRequest([adminApiKeyValidationMiddleware], HttpMessageController.system_message)
+      )
+
+      this.#localSocket.put(
+        "/admin/message/read",
+        onHttpRequest([adminApiKeyValidationMiddleware], HttpMessageController.read)
+      )
+
+      this.#localSocket.put(
+        "/admin/message",
+        onHttpRequest([adminApiKeyValidationMiddleware], HttpMessageController.edit)
+      )
+
+      this.#localSocket.del(
+        "/admin/message",
+        onHttpRequest([adminApiKeyValidationMiddleware], HttpMessageController.delete)
+      )
+
+      this.#localSocket.post(
         "/admin/message",
         onHttpRequest([adminApiKeyValidationMiddleware], HttpMessageController.message)
+      )
+
+      this.#localSocket.any(
+        "/*",
+        onHttpRequest([], (res, req) => {
+          throw new Error(ERROR_STATUES.ROUTE_NOT_FOUND.message, { cause: ERROR_STATUES.ROUTE_NOT_FOUND })
+        })
       )
 
       this.#localSocket.listen(port, listenOptions, (listenSocket) => {

@@ -86,6 +86,10 @@ import PushSubscriptionListOperationProvider from "./operations/push_notificatio
 // Http Operations Providers
 
 import HttpMessageCreateOperationProvider from "./operations/http/message/create/Provider.js"
+import HttpMessageSystemOperationProvider from "./operations/http/message/system/Provider.js"
+import HttpMessageReadOperationProvider from "./operations/http/message/read/Provider.js"
+import HttpMessageEditOperationProvider from "./operations/http/message/edit/Provider.js"
+import HttpMessageDeleteOperationProvider from "./operations/http/message/delete/Provider.js"
 
 const providers = [
   HelpersProvider,
@@ -176,6 +180,10 @@ const providers = [
   // Http Operations Providers
 
   HttpMessageCreateOperationProvider,
+  HttpMessageSystemOperationProvider,
+  HttpMessageReadOperationProvider,
+  HttpMessageEditOperationProvider,
+  HttpMessageDeleteOperationProvider,
 ]
 
 export default providers

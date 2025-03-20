@@ -2,13 +2,15 @@ class Response {
   backMessages = []
   deliverMessages = []
   lastActivityStatusResponse = null
+  httpResponse = null
 
-  constructor(backMessages, deliverMessages, lastActivityStatusResponse) {
+  constructor(backMessages, deliverMessages, lastActivityStatusResponse, httpResponse) {
     this.backMessages = this.backMessages.concat(backMessages || [])
     this.deliverMessages = this.deliverMessages.concat(deliverMessages || [])
     this.lastActivityStatusResponse = lastActivityStatusResponse
       ? lastActivityStatusResponse
       : this.lastActivityStatusResponse
+    this.httpResponse = httpResponse ? httpResponse : this.httpResponse
   }
 
   merge(response) {
@@ -34,6 +36,11 @@ class Response {
 
   updateLastActivityStatus(statusResponse) {
     this.lastActivityStatusResponse = statusResponse
+    return this
+  }
+
+  setHttpResponse(httpResponse) {
+    this.httpResponse = httpResponse
     return this
   }
 }
