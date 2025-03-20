@@ -47,8 +47,17 @@ class ConversationParticipantRepository extends BaseRepository {
     return availableConversationParticipants.map((participant) => participant.conversation_id)
   }
 
-  async findParticipantConversations(userId, limit) {
-    const conversationParticipants = await this.findAll({ user_id: userId }, null, limit)
+  async findParticipantConversations(userId, options = {}, limit) {
+    const query = { user_id: userId }
+
+    if (options.updatedAtFrom || options.updatedAtTo) {
+      query.updated_at = this.mergeOperators(query.updated_at, {
+        ...(options.updatedAtFrom && { $gt: options.updatedAtFrom }),
+        ...(options.updatedAtTo && { $lt: options.updatedAtTo }),
+      })
+    }
+
+    const conversationParticipants = await this.findAll(query, null, limit)
 
     return conversationParticipants.map((conversationParticipant) => conversationParticipant.conversation_id)
   }

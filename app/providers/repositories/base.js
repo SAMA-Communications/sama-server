@@ -89,7 +89,7 @@ export default class BaseRepository {
     return models
   }
 
-  async findAll(query, projectionParams, limit, sortParams) {
+  async findAll(query, projectionParams, limit = 100, sortParams) {
     if (query.cid) {
       query.cid = this.castObjectId(query.cid)
     }
@@ -116,7 +116,7 @@ export default class BaseRepository {
     }, {})
 
     const records = await this.collectionCursor
-      .find(query, { limit: limit || 100 })
+      .find(query, { limit: +limit })
       .project(projection)
       .sort(sortParams || { $natural: -1 })
       .toArray()
