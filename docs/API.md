@@ -1463,3 +1463,186 @@ TBA
 ## Admin API
 
 TBA
+
+## Admin Http API
+
+All request need header `Admin-Api-Key` value is env param `HTTP_ADMIN_API_KEY`
+
+### Send Message
+
+POST `/admin/message`
+
+payload (`Content-Type`: `application/json`)
+
+```
+{
+  senderId: "63480e68f4794709f802a2fa"
+  message: {
+    id: "5а34p21m0xj23",
+    body: "hey how is going?",
+    cid: "63480e68f4794709f802a2fa",
+    x: {
+      param1: "value",
+      param2: "value"
+    },
+    attachments: [
+      { name: "file_1", size: 240, content_type: "type" },
+      { name: "file_2", size: 126, content_type: "type" }
+    ]
+  }
+}
+
+{ ask: { mid: "5а34p21m0xj23", server_mid: "63480e68f4794709f802a2fd", t: 15673838834 } }
+```
+
+All conversation's participants who is online will receive the following message in real-time:
+
+```
+{
+  message: {
+    _id: "63480e68f4794709f802a2fa",
+    t: 15673838833,
+    from: "634ec51c0b65918393dca5bf",
+    body: "hey how is going?",
+    cid: "63480e68f4794709f802a2fa",
+    x: {
+      param1: "value",
+      param2: "value"
+    },
+    attachments: [
+      { file_id: "123123_file_1", file_name: "file_1" },
+      { file_id: "653534_file_2", file_name: "file_2" }
+    ],
+    created_at: "2023-07-04T07:23:53.308Z",
+  }
+}
+```
+
+### Send System Message
+
+POST `/admin/message/system`
+
+payload (`Content-Type`: `application/json`)
+
+```
+{
+  senderId: "63480e68f4794709f802a2fa"
+  messageSystem: {
+    id: "5а34p21m0xj23",
+    uids: ["63480e68f4794709f802a2fc", "63480e68f4794709f802a2fb"],
+    x: {
+      param1: "value",
+      param2: "value"
+    },
+  }
+}
+
+{ ask: { mid: "5а34p21m0xj23", t: 15673838833 }}
+```
+
+'uids' should contain recipients user id, who is online will receive the following message in real-time:
+
+```
+{
+  system_message: {
+    _id: "5а34p21m0xj23",
+    t: 15673838833,
+    from: "634ec51c0b65918393dca5bf",
+    x: {
+      param1: "value",
+      param2: "value"
+    },
+  }
+}
+```
+
+### Read
+
+PUT `/admin/message/read`
+
+payload (`Content-Type`: `application/json`)
+
+```
+{
+  senderId: "63480e68f4794709f802a2fa"
+  messageRead: {
+    cid: "63077ad836b78c3d82af0812",
+    ids: [63480e68f4794709f802a2fa, 63077ad836b78c3d82af0866]
+  }
+}
+
+{ success: true }
+```
+
+Then, all the users whose messages we read will receive the following message:
+
+```
+{
+  message_read: {
+    cid: "63077ad836b78c3d82af0812",
+    ids: ["63480e68f4794709f802a2fa", "63077ad836b78c3d82af0866"],
+    from: "634ec51c0b65918393dca5bf"
+  }
+}
+```
+
+### Update / edit
+
+PUT `/admin/message`
+
+payload (`Content-Type`: `application/json`)
+
+```
+{
+  senderId: "63480e68f4794709f802a2fa"
+  messageEdit: {
+    id: "63077ad836b78c3d82af0812",
+    body: "updated message body"
+  }
+}
+
+{ success: true }
+```
+
+Then other users in this conversation who is online will receive the following message:
+
+```
+{
+  message_edit: {
+    id: "63077ad836b78c3d82af0812",
+    body: "updated message body",
+    from: "63480e68f4794709f802a2fa"
+  }
+}
+```
+
+### Delete
+
+DELETE `/admin/message`
+
+payload (`Content-Type`: `application/json`)
+
+```
+{
+  senderId: "63480e68f4794709f802a2fa"
+  messageDelete: {
+    cid: "63077ad836b78c3d82af0812",
+    ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
+    type: "myself" | "all"
+  }
+}
+
+{ success: true }
+```
+
+If use "all", then other users in this conversation who is online will receive the following message:
+
+```
+{
+  message_delete: {
+    cid: "63077ad836b78c3d82af0812",
+    ids: ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
+    type: "all",
+    from: "634ec51c0b65918393dca5bf"
+  }
+}
