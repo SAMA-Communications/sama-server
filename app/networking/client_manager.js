@@ -66,6 +66,11 @@ const parseBaseParamsMiddleware = async (res, req) => {
 }
 
 const corsHeadersMiddleware = async (res, req) => {
+  if (req.getMethod() !== 'options') {
+    return
+  }
+
+  res.writeStatus(`204`)
   res.writeHeader("Access-Control-Allow-Origin", process.env.CORS_ORIGIN || "*")
   res.writeHeader("Access-Control-Allow-Credentials", "true")
   res.writeHeader("Access-Control-Allow-Methods", "POST, PUT, DELETE")
@@ -135,12 +140,17 @@ const processHttpResponseMiddleware = async (res, req, handlerResponse) => {
   const bodyStr = httpResponse.stringifyBody()
 
   res.cork(() => {
+    res.writeStatus(`${httpResponse.status || 200}`)
+
+    res.writeHeader("Access-Control-Allow-Origin", process.env.CORS_ORIGIN || "*")
+    res.writeHeader("Access-Control-Allow-Credentials", "true")
+    res.writeHeader("Access-Control-Allow-Methods", "POST, PUT, DELETE")
+    res.writeHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, API-Key")
+
     res.writeHeader("Content-Type", "application/json")
     for (const [headerKey, value] of Object.entries(httpResponse.headers)) {
       res.writeHeader(headerKey, value)
     }
-
-    res.writeStatus(`${httpResponse.status || 200}`)
 
     res.end(bodyStr)
   })
@@ -174,8 +184,8 @@ const onHttpRequest = (preMiddleware = [], handler) => {
         await processHttpResponseMiddleware(res, req, handlerResponse)
       } else {
         res.cork(() => {
-          res.writeHeader("Content-Type", "text/plain")
           res.writeStatus(`200`)
+          res.writeHeader("Content-Type", "text/plain")
           res.end("Ok")
         })
       }
@@ -183,8 +193,14 @@ const onHttpRequest = (preMiddleware = [], handler) => {
       console.log("[Http][Error]", error)
 
       res.cork(() => {
-        res.writeHeader("Content-Type", "text/plain")
         res.writeStatus(`${error.cause?.status ?? ERROR_STATUES.INTERNAL_SERVER.status}`)
+
+        res.writeHeader("Access-Control-Allow-Origin", process.env.CORS_ORIGIN || "*")
+        res.writeHeader("Access-Control-Allow-Credentials", "true")
+        res.writeHeader("Access-Control-Allow-Methods", "POST, PUT, DELETE")
+        res.writeHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, API-Key")
+
+        res.writeHeader("Content-Type", "text/plain")
         res.end(error.message ?? ERROR_STATUES.INTERNAL_SERVER.message)
       })
     } finally {
