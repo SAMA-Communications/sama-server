@@ -1,17 +1,17 @@
 class HttpResponse {
   status = 200
   headers = {}
-  body = {}
   cookies = []
+  body = null
 
-  constructor(status = 200, headers = {}, body = {}) {
+  constructor(status = 200, headers = {}, body = null) {
     this.status = status ?? this.status
     this.headers = headers ?? this.headers
-    this.body = body ?? this.body
+    this.body = body
   }
 
   stringifyBody() {
-    return JSON.stringify(this.body)
+    return this.body ? JSON.stringify(this.body) : this.body
   }
 
   addHeader(name, value) {
