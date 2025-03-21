@@ -5,10 +5,12 @@ const name = "HttpUserLogoutOperation"
 
 class HttpUserLogoutOperationRegisterProvider extends RegisterProvider {
   register(slc) {
+    const helpers = slc.use("Helpers")
     const sessionService = slc.use("SessionService")
-    const messageCreateOperation = slc.use("MessageCreateOperation")
+    const userTokenRepo = slc.use("UserTokenRepository")
+    const userLogoutOperation = slc.use("UserLogoutOperation")
 
-    return new HttpUserLogoutOperation(sessionService, messageCreateOperation)
+    return new HttpUserLogoutOperation(helpers, sessionService, userTokenRepo, userLogoutOperation)
   }
 }
 

@@ -19,7 +19,7 @@ export function parserCookies(cookieStr) {
 }
 
 export function serializeCookie(name, value, options) {
-  value = options?.secure ? cookieSignature.sign(value, process.env.COOKIE_SECRET) : value
+  value = options?.secure ? `s:${cookieSignature.sign(value, process.env.COOKIE_SECRET)}` : value
 
   return cookieTool.serialize(name, value, options)
 }

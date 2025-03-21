@@ -13,7 +13,7 @@ class HttpUserAuthOperation {
     const { login, password, device_id } = payload
     if (!device_id) {
       throw new Error(ERROR_STATUES.DEVICE_ID_MISSED.message, {
-        cause: { status: ERROR_STATUES.DEVICE_ID_MISSED.status, message: ERROR_STATUES.DEVICE_ID_MISSED.message },
+        cause: ERROR_STATUES.DEVICE_ID_MISSED,
       })
     }
 
@@ -25,10 +25,7 @@ class HttpUserAuthOperation {
       userInfo.token = accessToken || refreshToken
     } else {
       throw new Error(ERROR_STATUES.MISSING_AUTH_CREDENTIALS.message, {
-        cause: {
-          status: ERROR_STATUES.MISSING_AUTH_CREDENTIALS.status,
-          message: ERROR_STATUES.MISSING_AUTH_CREDENTIALS.message,
-        },
+        cause: ERROR_STATUES.MISSING_AUTH_CREDENTIALS,
       })
     }
 

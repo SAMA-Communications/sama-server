@@ -68,32 +68,40 @@ const parseBaseParamsMiddleware = async (res, req) => {
 const corsHeadersMiddleware = async (res, req) => {
   res.writeHeader("Access-Control-Allow-Origin", process.env.CORS_ORIGIN || "*")
   res.writeHeader("Access-Control-Allow-Credentials", "true")
-  res.writeHeader("Access-Control-Allow-Methods", "POST, PUT")
+  res.writeHeader("Access-Control-Allow-Methods", "POST, PUT, DELETE")
   res.writeHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, API-Key")
 }
 
 const parseJsonBodyMiddleware = async (res, req) => {
-  if (req.getHeader("content-type") !== "application/json") {
-    return
-  }
+  res.rawBody = Buffer.alloc(0)
+  res.parsedBody = {}
 
-  const parsedBodyPromise = new Promise((resolve, reject) => {
+  const readRawBodyPromise = new Promise((resolve, reject) => {
     let buffer = Buffer.alloc(0)
     res.onData((chunk, isLast) => {
       buffer = Buffer.concat([buffer, Buffer.from(chunk)])
       if (isLast) {
-        try {
-          resolve(JSON.parse(buffer.toString()))
-        } catch (error) {
-          reject(new Error("Invalid JSON input"))
-        }
+        resolve(buffer)
       }
     })
 
     res.onAborted(() => reject(new Error("Request aborted")))
   })
 
-  res.parsedBody = await parsedBodyPromise
+  res.rawBody = await readRawBodyPromise
+
+  const contentType = res.parsedHeaders["content-type"]
+  const contentLength = +res.parsedHeaders["content-length"]
+
+  if (contentType !== "application/json" || !contentLength) {
+    return
+  }
+
+  try {
+    res.parsedBody = JSON.parse(res.rawBody.toString())
+  } catch (error) {
+    console.log('[Http][parseJSONBody][error]', error)
+  }
 }
 
 const adminApiKeyValidationMiddleware = async (res, req) => {
@@ -124,13 +132,18 @@ const processHttpResponseMiddleware = async (res, req, handlerResponse) => {
     httpResponse.addHeader("Set-Cookie", cookieHeaderStr)
   }
 
-  res.writeHeader("Content-Type", "application/json")
-  for (const [headerKey, value] of Object.entries(httpResponse.headers)) {
-    res.writeHeader(headerKey, value)
-  }
+  const bodyStr = httpResponse.stringifyBody()
 
-  res.writeStatus(`${httpResponse.status || 200}`)
-  res.end(httpResponse.stringifyBody())
+  res.cork(() => {
+    res.writeHeader("Content-Type", "application/json")
+    for (const [headerKey, value] of Object.entries(httpResponse.headers)) {
+      res.writeHeader(headerKey, value)
+    }
+
+    res.writeStatus(`${httpResponse.status || 200}`)
+
+    res.end(bodyStr)
+  })
 
   await processMessageResponse(res.fakeWsSessionKey, APIs[BASE_API].stringifyResponse(handlerResponse))
 }
@@ -160,14 +173,20 @@ const onHttpRequest = (preMiddleware = [], handler) => {
       if (handlerResponse) {
         await processHttpResponseMiddleware(res, req, handlerResponse)
       } else {
-        res.writeStatus(`200`)
-        res.end("Ok")
+        res.cork(() => {
+          res.writeHeader("Content-Type", "text/plain")
+          res.writeStatus(`200`)
+          res.end("Ok")
+        })
       }
     } catch (error) {
       console.log("[Http][Error]", error)
 
-      res.writeStatus(`${error.cause?.status || ERROR_STATUES.INTERNAL_SERVER.status}`)
-      res.end(error.message || ERROR_STATUES.INTERNAL_SERVER.message)
+      res.cork(() => {
+        res.writeHeader("Content-Type", "text/plain")
+        res.writeStatus(`${error.cause?.status ?? ERROR_STATUES.INTERNAL_SERVER.status}`)
+        res.end(error.message ?? ERROR_STATUES.INTERNAL_SERVER.message)
+      })
     } finally {
       const sessionService = ServiceLocatorContainer.use("SessionService")
       await sessionService.removeAllUserSessions(res.fakeWsSessionKey)
@@ -219,21 +238,6 @@ const processMessageResponse = async (ws, response) => {
 
 class ClientManager {
   #localSocket = null
-
-  #setCorsHeaders(res) {
-    res.writeHeader("Access-Control-Allow-Origin", process.env.CORS_ORIGIN || "*")
-    res.writeHeader("Access-Control-Allow-Credentials", "true")
-    res.writeHeader("Access-Control-Allow-Methods", "POST")
-    res.writeHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
-  }
-
-  #handleHttpRequest(handler, withCors = false) {
-    return (res, req) => {
-      withCors && this.#setCorsHeaders(res)
-      res.onAborted(() => (res.aborted = true))
-      handler(res, req)
-    }
-  }
 
   async createLocalSocket(appOptions, wsOptions, listenOptions, isSSL, port) {
     return new Promise((resolve) => {
@@ -291,10 +295,7 @@ class ClientManager {
 
       this.#localSocket.post("/login", onHttpRequest([], HttpAuthController.login))
 
-      this.#localSocket.post(
-        "/logout",
-        this.#handleHttpRequest((res, req) => HttpAuthController.logout(res, req))
-      )
+      this.#localSocket.post("/logout", onHttpRequest([], HttpAuthController.logout))
 
       this.#localSocket.post(
         "/admin/message/system",
