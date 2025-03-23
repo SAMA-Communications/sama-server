@@ -23,7 +23,7 @@ RUN npm install
 
 RUN npm install @tailwindcss/oxide lightningcss
 
-RUN npm run build --workspace=sama-sdk
+RUN npm run build --workspace=@sama-communications/sdk
 
 RUN npm run build --workspace=sama
 
