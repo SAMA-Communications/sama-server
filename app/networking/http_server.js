@@ -67,7 +67,7 @@ const parseJsonBodyMiddleware = async (res, req) => {
   try {
     res.parsedBody = JSON.parse(res.rawBody.toString())
   } catch (error) {
-    console.log('[Http][parseJSONBody][error]', error)
+    console.log("[Http][parseJSONBody][error]", error)
   }
 }
 
@@ -106,29 +106,29 @@ export default class HttpServerApp {
 
   async processHttpResponseMiddleware(res, req, handlerResponse) {
     console.log("[Http][Response]", handlerResponse)
-    
+
     const { httpResponse } = handlerResponse
-  
+
     if (httpResponse.cookies.length) {
       const preparedCookies = []
-  
+
       for (const cookieParams of httpResponse.cookies) {
         const preparedCookie = serializeCookie(cookieParams.name, cookieParams.value, cookieParams.options)
         preparedCookies.push(preparedCookie)
       }
-  
+
       const cookieHeaderStr = preparedCookies.join("; ")
-  
+
       httpResponse.addHeader("Set-Cookie", cookieHeaderStr)
     }
-  
+
     const bodyStr = httpResponse.stringifyBody()
     const emptyBody = !bodyStr
     const status = emptyBody ? 204 : httpResponse.status || 200
-  
+
     res.cork(() => {
       res.writeStatus(`${status}`)
-  
+
       addCorsHeaders(res, req)
       if (!emptyBody) {
         res.writeHeader("Content-Type", "application/json")
@@ -136,10 +136,10 @@ export default class HttpServerApp {
       for (const [headerKey, value] of Object.entries(httpResponse.headers)) {
         res.writeHeader(headerKey, value)
       }
-  
+
       emptyBody ? res.endWithoutBody() : res.end(bodyStr)
     })
-  
+
     await this.responseProcessor(res.fakeWsSessionKey, handlerResponse, true)
   }
 
@@ -153,17 +153,17 @@ export default class HttpServerApp {
           req.getHeader("content-type"),
           req.getHeader("content-length")
         )
-  
+
         await parseBaseParamsMiddleware(res, req)
-  
+
         for (const middleware of preMiddleware) {
           await middleware(res, req)
         }
-  
+
         await parseJsonBodyMiddleware(res, req)
-  
+
         const handlerResponse = await handler(res, req)
-  
+
         if (handlerResponse) {
           await this.processHttpResponseMiddleware(res, req, handlerResponse)
         } else {
@@ -178,10 +178,10 @@ export default class HttpServerApp {
         }
       } catch (error) {
         console.log("[Http][Error]", error)
-  
+
         res.cork(() => {
           res.writeStatus(`${error.cause?.status ?? ERROR_STATUES.INTERNAL_SERVER.status}`)
-  
+
           addCorsHeaders(res, req)
           res.writeHeader("Content-Type", "text/plain")
 
@@ -194,10 +194,7 @@ export default class HttpServerApp {
   }
 
   bindRoutes() {
-    this.uWSLocalSocket.options(
-      "/*",
-      this.onHttpRequestHandler([], optionsRequestHandler)
-    )
+    this.uWSLocalSocket.options("/*", this.onHttpRequestHandler([], optionsRequestHandler))
 
     this.uWSLocalSocket.post("/login", this.onHttpRequestHandler([], HttpAuthController.login))
 
