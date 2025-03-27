@@ -30,7 +30,10 @@ Read complete medium posts **Introducing SAMA** and **What is SAMA** about what 
 - https://medium.com/sama-communications/introducing-sama-simple-but-advanced-messaging-alternative-chat-server-524a532e2040
 - https://medium.com/sama-communications/what-is-sama-a6d9045fd69a
 
-Frontend app (web + mobile) is available at https://github.com/SAMA-Communications/sama-client
+
+Clients:
+- Frontend Web app https://github.com/SAMA-Communications/sama-client
+- Flutter app https://github.com/SAMA-Communications/sama-client-flutter
 
 ## Local development
 
@@ -207,7 +210,7 @@ class Controller {
 ## Community and Support
 
 Join our community for support and discussions:
-- [GitHub Issues - SAMA server](https://github.com/SAMA-Communications/sama-server/issues), [GitHub Issues - SAMA client](https://github.com/SAMA-Communications/sama-client/issues)
+- [GitHub Issues - SAMA server](https://github.com/SAMA-Communications/sama-server/issues), [GitHub Issues - SAMA client](https://github.com/SAMA-Communications/sama-client/issues), [GitHub Issues - SAMA Flutter client](https://github.com/SAMA-Communications/sama-client-flutter/issues)
 - [SAMA on Medium](https://medium.com/sama-communications)
 - Get help - [Discord 💬](https://discord.gg/bHSm9a7DpC)
 
