@@ -1,6 +1,6 @@
-import "../index.js"
+import "../../index.js"
 
-import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
+import packetJsonProcessor from "../../APIs/JSON/routes/packet_processor.js"
 
 async function sendLogin(ws, login, device) {
   const requestData = {

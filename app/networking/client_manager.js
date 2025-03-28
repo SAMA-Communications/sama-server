@@ -4,14 +4,13 @@ import { StringDecoder } from "string_decoder"
 import { CONSTANTS as MAIN_CONSTANTS } from "../constants/constants.js"
 import { ERROR_STATUES } from "../constants/errors.js"
 
-import { APIs, detectAPIType } from "./APIs.js"
+import { BASE_API, APIs, detectAPIType } from "./APIs.js"
 
 import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
-import HttpAuthController from "../../APIs/JSON/controllers/http/auth.js"
-
 import packetManager from "./packet_manager.js"
 import packetMapper from "./packet_mapper.js"
+import HttpServerApp from "./http_server.js"
 
 import activitySender from "../services/activity_sender.js"
 
@@ -35,6 +34,14 @@ const onMessage = async (ws, message) => {
 
   const api = APIs[ws.apiType]
   const response = await api.onMessage(ws, stringMessage)
+
+  await processMessageResponse(ws, response)
+}
+
+const processMessageResponse = async (ws, response, needStringify) => {
+  if (needStringify) {
+    response = APIs[BASE_API].stringifyResponse(response)
+  }
 
   if (response.lastActivityStatusResponse) {
     const sessionService = ServiceLocatorContainer.use("SessionService")
@@ -77,23 +84,14 @@ const onMessage = async (ws, message) => {
   }
 }
 
+const unbindSessionCallback = async (wsKey) => {
+  const sessionService = ServiceLocatorContainer.use("SessionService")
+  await sessionService.removeAllUserSessions(wsKey)
+}
+
 class ClientManager {
   #localSocket = null
-
-  #setCorsHeaders(res) {
-    res.writeHeader("Access-Control-Allow-Origin", process.env.CORS_ORIGIN || "*")
-    res.writeHeader("Access-Control-Allow-Credentials", "true")
-    res.writeHeader("Access-Control-Allow-Methods", "POST")
-    res.writeHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
-  }
-
-  #handleHttpRequest(handler, withCors = false) {
-    return (res, req) => {
-      withCors && this.#setCorsHeaders(res)
-      res.onAborted(() => (res.aborted = true))
-      handler(res, req)
-    }
-  }
+  #httpServerApp = null
 
   async createLocalSocket(appOptions, wsOptions, listenOptions, isSSL, port) {
     return new Promise((resolve) => {
@@ -144,20 +142,10 @@ class ClientManager {
         },
       })
 
-      this.#localSocket.options(
-        "/*",
-        this.#handleHttpRequest((res) => res.end(), true)
-      )
-
-      this.#localSocket.post(
-        "/login",
-        this.#handleHttpRequest((res, req) => HttpAuthController.login(res, req))
-      )
-
-      this.#localSocket.post(
-        "/logout",
-        this.#handleHttpRequest((res, req) => HttpAuthController.logout(res, req))
-      )
+      this.#httpServerApp = new HttpServerApp(this.#localSocket)
+      this.#httpServerApp.setResponseProcessor(processMessageResponse)
+      this.#httpServerApp.setUnbindSessionCallback(unbindSessionCallback)
+      this.#httpServerApp.bindRoutes()
 
       this.#localSocket.listen(port, listenOptions, (listenSocket) => {
         if (listenSocket) {

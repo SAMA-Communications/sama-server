@@ -9,8 +9,8 @@ export const operationsLogSchemaValidation = {
     })
       .oxor("gt", "lt")
       .error(
-        new Error(ERROR_STATUES.LOG_TIMETAMP_MISSED.message, {
-          cause: ERROR_STATUES.LOG_TIMETAMP_MISSED,
+        new Error(ERROR_STATUES.LOG_TIMESTAMP_MISSED.message, {
+          cause: ERROR_STATUES.LOG_TIMESTAMP_MISSED,
         })
       ),
   }).required(),

@@ -3,7 +3,7 @@ import assert from "assert"
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
-import { createUserArray, sendLogin, sendLogout } from "./utils.js"
+import { createUserArray, sendLogin, sendLogout } from "./tools/utils.js"
 
 const sessionService = ServiceLocatorContainer.use("SessionService")
 const userRepo = ServiceLocatorContainer.use("UserRepository")

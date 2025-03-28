@@ -11,6 +11,11 @@ class Helpers {
   isEqualsNativeIds(nativeIdA, nativeIdB) {
     return nativeIdA.toString() === nativeIdB.toString()
   }
+
+  extractAccessTokenFromAuthHeader(authHeader) {
+    const token = authHeader?.split(" ")?.at(1)
+    return token
+  }
 }
 
 export default Helpers

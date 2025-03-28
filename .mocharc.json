@@ -1,0 +1,10 @@
+{
+  "recursive": true,
+  "sort": true,
+  "color": true,
+  "allow-uncaught": true,
+  "node-option": ["experimental-loader=./sama-loader.mjs", "import=dotenv/config"],
+  "exit": true,
+  "spec": "test/**/*.spec.js",
+  "timeout": 60000
+}

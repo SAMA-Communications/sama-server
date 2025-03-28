@@ -13,6 +13,7 @@ export const ERROR_STATUES = {
   },
   INCORRECT_TOKEN: { status: 422, message: "Incorrect token." },
   TOKEN_EXPIRED: { status: 422, message: "The token has expired." },
+  ROUTE_NOT_FOUND: { status: 404, message: "Route not found" },
   // Users -->
   USER_ID_MISSED: { status: 422, message: "User ID missed." },
   USER_NOT_FOUND: {
@@ -120,7 +121,7 @@ export const ERROR_STATUES = {
   STATUS_TYPE_MISSED: { status: 422, message: "Status type missed." },
   STATUS_T_MISSED: { status: 422, message: `Status 't' missed.` },
   // Push Notification -->
-  INCORRECT_PLATFROM_TYPE: { status: 422, message: "Incorrect platform type." },
+  INCORRECT_PLATFORM_TYPE: { status: 422, message: "Incorrect platform type." },
   INCORRECT_DEVICE_ID: { status: 422, message: "Incorrect device id." },
   INCORRECT_RECIPIENTS_IDS: {
     status: 422,
@@ -137,7 +138,7 @@ export const ERROR_STATUES = {
   },
   INCORRECT_KEYS: { status: 422, message: "Incorrect keys." },
   // Other -->
-  LOG_TIMETAMP_MISSED: { status: 422, message: "Gt or lt query missed." },
+  LOG_TIMESTAMP_MISSED: { status: 422, message: "Gt or lt query missed." },
   CID_REQUIRED: {
     status: 422,
     message: `'cid' field is required.`,
