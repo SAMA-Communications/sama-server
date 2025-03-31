@@ -61,7 +61,7 @@ const parseJsonBodyMiddleware = async (res, req) => {
   const contentType = res.parsedHeaders["content-type"]
   const contentLength = +res.parsedHeaders["content-length"]
 
-  if (contentType !== "application/json" || !contentLength) {
+  if (!contentType?.includes("application/json") || !contentLength) {
     return
   }
 
