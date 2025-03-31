@@ -54,6 +54,7 @@ import FileDownloadOperationProvider from "./operations/file/download/Provider.j
 import ActivityUserRetrieveOperationProvider from "./operations/activity/retrieve/Provider.js"
 import ActivityUserSubscribeOperationProvider from "./operations/activity/subscribe/Provider.js"
 import ActivityUserUnsubscribeOperationProvider from "./operations/activity/unsubscribe/Provider.js"
+import OnlineListOperationProvider from "./operations/activity/online_list/Provider.js"
 
 import ConversationCreateOperationProvider from "./operations/conversation/create/Provider.js"
 import ConversationEditOperationProvider from "./operations/conversation/edit/Provider.js"
@@ -93,6 +94,8 @@ import HttpMessageSystemOperationProvider from "./operations/http/message/system
 import HttpMessageReadOperationProvider from "./operations/http/message/read/Provider.js"
 import HttpMessageEditOperationProvider from "./operations/http/message/edit/Provider.js"
 import HttpMessageDeleteOperationProvider from "./operations/http/message/delete/Provider.js"
+
+import HttpActivityOnlineListOperationProvider from "./operations/http/activity/online_list/Provider.js"
 
 const providers = [
   HelpersProvider,
@@ -151,6 +154,7 @@ const providers = [
   ActivityUserRetrieveOperationProvider,
   ActivityUserSubscribeOperationProvider,
   ActivityUserUnsubscribeOperationProvider,
+  OnlineListOperationProvider,
 
   ConversationCreateOperationProvider,
   ConversationEditOperationProvider,
@@ -190,6 +194,8 @@ const providers = [
   HttpMessageReadOperationProvider,
   HttpMessageEditOperationProvider,
   HttpMessageDeleteOperationProvider,
+
+  HttpActivityOnlineListOperationProvider
 ]
 
 export default providers
