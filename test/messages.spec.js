@@ -3,7 +3,7 @@ import assert from "assert"
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
 import { ObjectId } from "@sama/lib/db.js"
-import { createConversation, createUserArray, mockedWS, sendLogin, sendLogout } from "./utils.js"
+import { createConversation, createUserArray, mockedWS, sendLogin, sendLogout } from "./tools/utils.js"
 
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 

@@ -1,5 +1,0 @@
-{
-  "all": true,
-  "exclude": [],
-  "include": ["test/**"]
-}

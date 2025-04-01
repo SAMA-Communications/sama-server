@@ -2,7 +2,7 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
-import "./utils.js"
+import "./tools/utils.js"
 
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 

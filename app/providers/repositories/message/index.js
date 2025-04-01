@@ -113,6 +113,7 @@ class MessageRepository extends BaseRepository {
 
   async updateDeleteForUser(messageIds, userId) {
     messageIds = this.castObjectIds(messageIds)
+    userId = this.castObjectId(userId)
 
     await this.updateMany({ _id: { $in: messageIds } }, { $addToSet: { deleted_for: userId } })
   }

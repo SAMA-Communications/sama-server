@@ -1,9 +1,9 @@
 import assert from "assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
-import { ACTIVITY } from "./../app/store/activity.js"
+import { ACTIVITY } from "../app/store/activity.js"
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
-import { createUserArray, sendLogin, sendLogout } from "./utils.js"
+import { createUserArray, sendLogin, sendLogout } from "./tools/utils.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 const activityManagerService = ServiceLocatorContainer.use("ActivityManagerService")
