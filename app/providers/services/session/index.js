@@ -276,7 +276,7 @@ class SessionService {
     const extraParams = await this.retrieveUserExtraParams(userId, deviceId)
     console.log("[removeUserSession][extraParams]", extraParams, userId, deviceId)
 
-    await this.deleteUserDevices(userId)
+    await this.removeUserDevice(userId, deviceId)
     await this.deleteUserExtraParams(userId, deviceId)
 
     this.activeSessions.DEVICES[userId] = leftActiveConnections
