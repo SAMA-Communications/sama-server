@@ -824,6 +824,62 @@ When a user leaves the group chat, the next message will also be sent to all use
 }
 ```
 
+## Conversation Schemes API
+
+### Create
+
+```
+{
+  request: {
+    conversation_scheme_create: {
+      scheme: "...",
+      cid: "507f1f77bcf86cd799439012"
+    },
+    id: "1"
+   }
+}
+
+{ response: { id: "1", success: true } }
+```
+
+### Get
+
+```
+{
+  request: {
+    conversation_scheme_create: {
+      cid: "507f1f77bcf86cd799439012"
+    },
+    id: "2"
+   }
+}
+
+{
+  response: {
+    id: "2",
+    conversation_scheme: {
+      scheme: "...",
+      updated_by: "63480e68f4794709f802a2fa"
+    }
+  }
+}
+```
+
+### Delete
+
+```
+{
+  request: {
+    conversation_scheme_delete: {
+      cid: "507f1f77bcf86cd799439012"
+    },
+    id: "3"
+   }
+}
+
+{ response: { id: "3", success: true } }
+```
+
 ## Messages API
 
 ### Send/Receive messages

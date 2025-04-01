@@ -86,6 +86,7 @@ export const ERROR_STATUES = {
     message: `You've reached the maximum participant limit.`,
   },
   OPPONENT_NOT_FOUND: { status: 422, message: "Opponent ID not found." },
+  SCHEME_NOT_FOUND: { status: 422, message: "Scheme for this conversation not found." },
   // File -->
   FILE_IDS_MISSED: { status: 422, message: "File IDS missed." },
   FILE_LIMIT_EXCEEDED: {
