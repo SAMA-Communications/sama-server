@@ -1827,3 +1827,57 @@ Deletes one or more messages in a conversation. The deletion behavior depends on
 > ℹ️ If `type: "myself"` is used, the messages will be removed **only for the `senderId`**. No real-time event is broadcast to other users.
 
 ---
+
+
+### 📌 `POST /admin/activity/online`
+
+
+**Description**:  
+Get online users list (ids only of full model) or count online users
+
+---
+
+#### 🔐 Authorization
+- Required Header:  
+  `Admin-Api-Key: {{HTTP_ADMIN_API_KEY}}`
+
+---
+
+#### 📥 Request
+
+**Content-Type**: `application/json`
+
+```json
+{
+  "limit": 10,
+  "offset": 0,
+  "count": false,
+  "idsOnly": true
+}
+```
+
+---
+
+#### 🧾 Request Parameters
+
+| Field                      | Type               | Description                                                             |
+|----------------------------|--------------------|-------------------------------------------------------------------------|
+| `limit`                    | `int`              | limit numbers of users in response                                      |
+| `offset`                   | `int`              | users to skip for pagination                                            |
+| `count`                    | `boolean`          | receive only users count in response                                    |
+| `idsOnly`                  | `boolean`          | receive only **User ID**s array in response                             |
+
+---
+
+#### ✅ Successful Response
+
+```json
+{
+  "users":[
+    "67ed122cffed69f6d9c5ffdb",
+    "67ed11d9ffed69f6d9c5ffd5"
+  ]
+}
+```
+
+---

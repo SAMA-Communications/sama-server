@@ -19,6 +19,68 @@ describe("User activities", async () => {
     currentUserToken = (await sendLogin("line_1", "user_1")).response.user.token
   })
 
+  it("should work online list invalid limit", async () => {
+    const requestData = {
+      request: {
+        online_list: { limit: 150 },
+        id: "1_list",
+      },
+    }
+
+    let responseData = await packetJsonProcessor.processMessageOrError("line_2", JSON.stringify(requestData))
+    responseData = responseData.backMessages.at(0)
+
+    assert.strictEqual(responseData.response.id, requestData.request.id)
+    assert.ok(responseData.response.error)
+  })
+
+  it("should work online list count", async () => {
+    const requestData = {
+      request: {
+        online_list: { count: true },
+        id: "2_list",
+      },
+    }
+
+    let responseData = await packetJsonProcessor.processMessageOrError("line_2", JSON.stringify(requestData))
+    responseData = responseData.backMessages.at(0)
+
+    assert.strictEqual(responseData.response.id, requestData.request.id)
+    assert.ok(responseData.response.count >= 2)
+  })
+
+  it("should work online list idsOnly", async () => {
+    const requestData = {
+      request: {
+        online_list: { idsOnly: true },
+        id: "3_list",
+      },
+    }
+
+    let responseData = await packetJsonProcessor.processMessageOrError("line_2", JSON.stringify(requestData))
+    responseData = responseData.backMessages.at(0)
+
+    assert.strictEqual(responseData.response.id, requestData.request.id)
+    assert.ok(responseData.response.users.length >= 2)
+  })
+
+  it("should work online list", async () => {
+    const requestData = {
+      request: {
+        online_list: { limit: 10 },
+        id: "4_list",
+      },
+    }
+
+    let responseData = await packetJsonProcessor.processMessageOrError("line_2", JSON.stringify(requestData))
+    responseData = responseData.backMessages.at(0)
+
+    console.log(responseData.response.users)
+
+    assert.strictEqual(responseData.response.id, requestData.request.id)
+    assert.ok(responseData.response.users.length <= 10)
+  })
+
   it("should work subscribe", async () => {
     const requestData = {
       request: {

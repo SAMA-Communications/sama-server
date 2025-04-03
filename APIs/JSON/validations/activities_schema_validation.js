@@ -18,4 +18,10 @@ export const activitiesSchemaValidation = {
       .items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required())
       .required(),
   }).required(),
+  online_list: Joi.object({
+    count: Joi.boolean().optional(),
+    idsOnly: Joi.boolean().optional(),
+    limit: Joi.number().max(100).min(1).optional(),
+    offset: Joi.number().min(0).optional()
+  })
 }
