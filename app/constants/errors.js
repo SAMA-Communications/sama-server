@@ -44,11 +44,11 @@ export const ERROR_STATUES = {
   },
   INCORRECT_LOGIN: { status: 422, message: "The login provided is incorrect." },
   INCORRECT_CURRENT_PASSWORD: {
-    status: 422,
+    status: 401,
     message: "The current password you entered is incorrect.",
   },
   INCORRECT_LOGIN_OR_PASSWORD: {
-    status: 422,
+    status: 401,
     message: "Incorrect username or password.",
   },
   DEVICE_ID_MISSED: { status: 422, message: `'device_id' is required.` },
