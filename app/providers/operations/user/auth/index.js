@@ -10,7 +10,7 @@ class UserAuthOperation {
     this.userTokenRepo = userTokenRepo
   }
 
-  async perform(ws, userInfo) {
+  async perform(ws, userInfo, omitDeviceConnection) {
     const deviceId = userInfo.device_id.toString()
 
     const { user, token } = userInfo.token
@@ -18,7 +18,9 @@ class UserAuthOperation {
       : await this.#authByLogin(userInfo, deviceId)
 
     // TODO: close connections
-    if (ws) this.sessionService.addUserDeviceConnection(ws, user.native_id, deviceId)
+    if (!omitDeviceConnection) {
+      this.sessionService.addUserDeviceConnection(ws, user.native_id, deviceId)
+    }
 
     const jwtAccessToken = this.#generateToken(
       user,
@@ -89,7 +91,9 @@ class UserAuthOperation {
       +process.env.JWT_REFRESH_TOKEN_EXPIRES_IN
     )
 
-    return await this.userTokenRepo.updateToken(null, user.native_id, deviceId, jwtToken, "refresh")
+    const refreshToken = await this.userTokenRepo.updateToken(null, user.native_id, deviceId, jwtToken, "refresh")
+
+    return refreshToken
   }
 }
 

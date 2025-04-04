@@ -32,6 +32,8 @@ import ConversationNotificationProvider from "./services/conversation_notificati
 import ContactServiceProvider from "./services/contacts/Provider.js"
 import PushNotificationServiceProvider from "./services/push_notifications/Provider.js"
 
+// WS Operations Providers
+
 import UserAuthOperationProvider from "./operations/user/auth/Provider.js"
 import UserLogoutOperationProvider from "./operations/user/logout/Provider.js"
 import UserCreateOperationProvider from "./operations/user/create/Provider.js"
@@ -52,6 +54,7 @@ import FileDownloadOperationProvider from "./operations/file/download/Provider.j
 import ActivityUserRetrieveOperationProvider from "./operations/activity/retrieve/Provider.js"
 import ActivityUserSubscribeOperationProvider from "./operations/activity/subscribe/Provider.js"
 import ActivityUserUnsubscribeOperationProvider from "./operations/activity/unsubscribe/Provider.js"
+import OnlineListOperationProvider from "./operations/activity/online_list/Provider.js"
 
 import ConversationCreateOperationProvider from "./operations/conversation/create/Provider.js"
 import ConversationEditOperationProvider from "./operations/conversation/edit/Provider.js"
@@ -80,6 +83,19 @@ import PushEventCreateOperationProvider from "./operations/push_notifications/cr
 import PushSubscriptionCreateOperationProvider from "./operations/push_notifications/create_subscription/Provider.js"
 import PushSubscriptionDeleteOperationProvider from "./operations/push_notifications/delete_subscription/Provider.js"
 import PushSubscriptionListOperationProvider from "./operations/push_notifications/list_subscriptions/Provider.js"
+
+// Http Operations Providers
+
+import HttpUserAuthOperationProvider from "./operations/http/user/auth/Provider.js"
+import HttpUserLogoutOperationProvider from "./operations/http/user/logout/Provider.js"
+
+import HttpMessageCreateOperationProvider from "./operations/http/message/create/Provider.js"
+import HttpMessageSystemOperationProvider from "./operations/http/message/system/Provider.js"
+import HttpMessageReadOperationProvider from "./operations/http/message/read/Provider.js"
+import HttpMessageEditOperationProvider from "./operations/http/message/edit/Provider.js"
+import HttpMessageDeleteOperationProvider from "./operations/http/message/delete/Provider.js"
+
+import HttpActivityOnlineListOperationProvider from "./operations/http/activity/online_list/Provider.js"
 
 const providers = [
   HelpersProvider,
@@ -116,6 +132,8 @@ const providers = [
   ContactServiceProvider,
   PushNotificationServiceProvider,
 
+  // WS Operations Providers
+
   UserAuthOperationProvider,
   UserLogoutOperationProvider,
   UserCreateOperationProvider,
@@ -136,6 +154,7 @@ const providers = [
   ActivityUserRetrieveOperationProvider,
   ActivityUserSubscribeOperationProvider,
   ActivityUserUnsubscribeOperationProvider,
+  OnlineListOperationProvider,
 
   ConversationCreateOperationProvider,
   ConversationEditOperationProvider,
@@ -164,6 +183,19 @@ const providers = [
   PushSubscriptionCreateOperationProvider,
   PushSubscriptionDeleteOperationProvider,
   PushSubscriptionListOperationProvider,
+
+  // Http Operations Providers
+
+  HttpUserAuthOperationProvider,
+  HttpUserLogoutOperationProvider,
+
+  HttpMessageCreateOperationProvider,
+  HttpMessageSystemOperationProvider,
+  HttpMessageReadOperationProvider,
+  HttpMessageEditOperationProvider,
+  HttpMessageDeleteOperationProvider,
+
+  HttpActivityOnlineListOperationProvider
 ]
 
 export default providers

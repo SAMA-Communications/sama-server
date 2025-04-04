@@ -3,10 +3,10 @@ import uWS from "uWebSockets.js"
 import assert from "assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
-import clusterManager from "./../app/cluster/cluster_manager.js"
-import { createConversation, createUserArray, mockedWS, sendLogin } from "./utils.js"
+import clusterManager from "../app/cluster/cluster_manager.js"
+import { createConversation, createUserArray, mockedWS, sendLogin } from "./tools/utils.js"
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
-import packetManager from "./../app/networking/packet_manager.js"
+import packetManager from "../app/networking/packet_manager.js"
 
 const sessionService = ServiceLocatorContainer.use("SessionService")
 const userRepo = ServiceLocatorContainer.use("UserRepository")

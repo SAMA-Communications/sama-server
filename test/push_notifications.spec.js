@@ -4,7 +4,7 @@ import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
-import { createUserArray, mockedWS, sendLogin } from "./utils.js"
+import { createUserArray, mockedWS, sendLogin } from "./tools/utils.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 const pushEventRepo = ServiceLocatorContainer.use("PushEventRepository")
