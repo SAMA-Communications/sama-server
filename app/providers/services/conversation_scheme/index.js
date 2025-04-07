@@ -1,3 +1,5 @@
+import { ERROR_STATUES } from "../../../constants/errors.js"
+
 class ConversationSchemeService {
   constructor(conversationSchemeRepo) {
     this.conversationSchemeRepo = conversationSchemeRepo
@@ -21,7 +23,35 @@ class ConversationSchemeService {
     await this.conversationSchemeRepo.deleteById(record_id)
   }
 
-  async runConversationScheme(message, user, resolve, reject) {}
+  async prepareAndExecuteConversationScheme(code, message, user) {
+    let compilationResult = { data: {}, errorMessage: null }
+
+    const options = {
+      allowFetch: false,
+      allowFs: false,
+      env: {
+        MESSAGE: message,
+        USER: user,
+        RESOLVE: (value) => (compilationResult.data = value || {}),
+        REJECT: (value) => (compilationResult.errorMessage = value),
+      },
+    }
+
+    await this.conversationSchemeRepo.runCodeViaSandbox(code, options)
+
+    if (compilationResult.errorMessage) {
+      const isStringError = typeof compilationResult.errorMessage === "string"
+      const errorMessage = isStringError
+        ? compilationResult.errorMessage
+        : ERROR_STATUES.MESSAGE_BLOCKED_BY_SCHEME.message
+
+      const errorCause = isStringError ? compilationResult.errorMessage : ERROR_STATUES.MESSAGE_BLOCKED_BY_SCHEME
+
+      throw new Error(errorMessage, { cause: errorCause })
+    }
+
+    return compilationResult.data
+  }
 }
 
 export default ConversationSchemeService

@@ -19,8 +19,9 @@ class ConversationSchemeGetOperation {
         cause: ERROR_STATUES.SCHEME_NOT_FOUND,
       })
     }
+    const { scheme, updated_by, updated_at } = conversationScheme
 
-    return { scheme: conversationScheme.scheme, updated_by: conversationScheme.updated_by }
+    return { scheme, updated_by, updated_at }
   }
 
   async #hasAccess(conversationId, userId) {
