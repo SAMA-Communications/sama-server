@@ -89,6 +89,7 @@ class PacketManager {
   async deliverToUserOrUsers(ws, packet, pushQueueMessage, usersIds, notSaveInOfflineStorage) {
     const sessionService = ServiceLocatorContainer.use("SessionService")
     const opLogsService = ServiceLocatorContainer.use("OperationLogsService")
+    const pushQueueService = ServiceLocatorContainer.use("PushQueueService")
 
     if (!usersIds?.length) {
       return
@@ -122,7 +123,7 @@ class PacketManager {
 
     if (pushQueueMessage && offlineUsersByPackets.length) {
       pushQueueMessage.setRecipientIds(offlineUsersByPackets)
-      await RuntimeDefinedContext.PUSH_QUEUE_DRIVER.createPush(pushQueueMessage)
+      await pushQueueService.createPush(pushQueueMessage)
     }
   }
 

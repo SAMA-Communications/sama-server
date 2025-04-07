@@ -31,6 +31,7 @@ import MessageServiceProvider from "./services/message/Provider.js"
 import ConversationNotificationProvider from "./services/conversation_notification/Provider.js"
 import ContactServiceProvider from "./services/contacts/Provider.js"
 import PushNotificationServiceProvider from "./services/push_notifications/Provider.js"
+import PushQueueServiceProvider from "./services/push_queue_service/Provider.js"
 
 // WS Operations Providers
 
@@ -131,6 +132,7 @@ const providers = [
   ConversationNotificationProvider,
   ContactServiceProvider,
   PushNotificationServiceProvider,
+  PushQueueServiceProvider,
 
   // WS Operations Providers
 
@@ -195,7 +197,7 @@ const providers = [
   HttpMessageEditOperationProvider,
   HttpMessageDeleteOperationProvider,
 
-  HttpActivityOnlineListOperationProvider
+  HttpActivityOnlineListOperationProvider,
 ]
 
 export default providers

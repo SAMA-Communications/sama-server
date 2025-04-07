@@ -291,15 +291,15 @@ class SessionService {
 
   async onlineUsersList(offset, limit) {
     const matchPattern = "user:*"
-    
+
     const userKeys = await this.redisConnection.scanWithPagination("set", matchPattern, offset, limit)
 
-    return userKeys.map(userKey => userKey.replace("user:", ""))
+    return userKeys.map((userKey) => userKey.replace("user:", ""))
   }
 
   async onlineUsersCount() {
     const matchPattern = "user:*"
-    
+
     const count = await this.redisConnection.countWithMatch("set", matchPattern)
 
     return count

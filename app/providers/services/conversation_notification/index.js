@@ -1,5 +1,5 @@
 import { CONVERSATION_EVENTS } from "../../../constants/conversation.js"
-import CreatePushEventOptions from "@sama/lib/push_queue/models/CreatePushEventOptions.js"
+import CreatePushEventOptions from "@sama/providers/services/push_queue_service/models/CreatePushEventOptions.js"
 
 import MessagePublicFields from "@sama/DTO/Response/message/create/public_fields.js"
 import MessageResponse from "@sama/DTO/Response/message/create/response.js"

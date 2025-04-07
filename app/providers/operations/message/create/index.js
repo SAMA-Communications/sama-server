@@ -1,6 +1,6 @@
 import { ERROR_STATUES } from "../../../../constants/errors.js"
 import { CONVERSATION_EVENTS } from "../../../../constants/conversation.js"
-import CreateChatAlertEventOptions from "@sama/lib/push_queue/models/CreateChatAlertEventOptions.js"
+import CreateChatAlertEventOptions from "@sama/providers/services/push_queue_service/models/CreateChatAlertEventOptions.js"
 import MessagePublicFields from "@sama/DTO/Response/message/create/public_fields.js"
 
 class MessageCreateOperation {
