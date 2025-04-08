@@ -13,6 +13,10 @@ class ConversationNotificationService {
     this.messageService = messageService
   }
 
+  isEnabled() {
+    return process.env.CONVERSATION_NOTIFICATIONS === "true"
+  }
+
   async actionEvent(eventType, conversation, user) {
     const userDisplayName = this.helpers.getDisplayName(user)
     const eventParams = CONVERSATION_EVENTS.EVENT_TYPE_PARAMS[eventType]
