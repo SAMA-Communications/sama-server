@@ -19,8 +19,6 @@ import Minio from "./app/lib/storage/minio.js"
 import S3 from "./app/lib/storage/s3.js"
 import Spaces from "./app/lib/storage/spaces.js"
 
-import SamaNativePushQueue from "./app/lib/push_queue/sama_native_queue.js"
-
 import { connectToDBPromise, getDb } from "./app/lib/db.js"
 import RedisClient from "./app/lib/redis.js"
 
@@ -38,16 +36,6 @@ switch (process.env.STORAGE_DRIVER) {
     break
   default:
     RuntimeDefinedContext.STORAGE_DRIVER = new S3()
-    break
-}
-
-switch (process.env.PUSH_QUEUE_DRIVER) {
-  case "sama_native":
-  default:
-    RuntimeDefinedContext.PUSH_QUEUE_DRIVER = new SamaNativePushQueue(
-      process.env.SAMA_NATIVE_PUSH_QUEUE_NAME,
-      process.env.REDIS_URL
-    )
     break
 }
 

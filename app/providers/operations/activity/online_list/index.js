@@ -14,7 +14,7 @@ class OnlineListOperation {
     }
 
     const userIds = await this.sessionService.onlineUsersList(offset, limit)
-    
+
     if (idsOnly) {
       return userIds
     }

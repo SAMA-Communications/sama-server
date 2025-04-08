@@ -22,6 +22,6 @@ export const activitiesSchemaValidation = {
     count: Joi.boolean().optional(),
     idsOnly: Joi.boolean().optional(),
     limit: Joi.number().max(100).min(1).optional(),
-    offset: Joi.number().min(0).optional()
-  })
+    offset: Joi.number().min(0).optional(),
+  }),
 }

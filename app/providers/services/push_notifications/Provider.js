@@ -5,11 +5,12 @@ const name = "PushNotificationService"
 
 class PushNotificationServiceRegisterProvider extends RegisterProvider {
   register(slc) {
-    const RuntimeDefinedContext = slc.use("RuntimeDefinedContext")
     const pushEventRepo = slc.use("PushEventRepository")
     const pushSubscriptionsRepo = slc.use("PushSubscriptionsRepository")
 
-    return new PushNotificationService(RuntimeDefinedContext, pushEventRepo, pushSubscriptionsRepo)
+    const pushQueueService = slc.use("PushQueueService")
+
+    return new PushNotificationService(pushEventRepo, pushSubscriptionsRepo, pushQueueService)
   }
 }
 

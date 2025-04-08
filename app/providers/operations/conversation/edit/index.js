@@ -22,15 +22,15 @@ class ConversationEditOperation {
   async perform(ws, conversationParams) {
     const { id: conversationId, participants: updateParticipants, ...updateFields } = conversationParams
 
-    let conversationEvents = []
-
     const currentUserId = this.sessionService.getSessionUserId(ws)
 
     const { participantIds: currentParticipantIds } = await this.#hasAccess(conversationId, currentUserId)
 
     const updatedConversation = await this.conversationService.conversationRepo.update(conversationId, updateFields)
 
-    if (updateParticipants && updatedConversation.type !== "u") {
+    const result = { currentUserId, conversation: updatedConversation }
+
+    if (updateParticipants && updatedConversation.type !== "u" && this.conversationNotificationService.isEnabled()) {
       const { isEmptyAndDeleted, addedIds, removedIds, currentIds } = await this.#updateParticipants(
         updatedConversation,
         updateParticipants,
@@ -54,10 +54,11 @@ class ConversationEditOperation {
         isUpdateConversationFields,
         isUpdateConversationImage
       )
-      conversationEvents = createdEvents
+
+      result.conversationEvents = createdEvents
     }
 
-    return { currentUserId, conversation: updatedConversation, conversationEvents }
+    return result
   }
 
   async #hasAccess(conversationId, userId) {
