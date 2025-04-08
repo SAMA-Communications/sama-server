@@ -40,12 +40,15 @@ class ConversationSchemeService {
     await this.conversationSchemeRepo.runCodeViaSandbox(code, options)
 
     if (compilationResult.errorMessage) {
-      const isStringError = typeof compilationResult.errorMessage === "string"
-      const errorMessage = isStringError
-        ? compilationResult.errorMessage
-        : ERROR_STATUES.MESSAGE_BLOCKED_BY_SCHEME.message
+      const errorMessage =
+        typeof compilationResult.errorMessage === "string"
+          ? compilationResult.errorMessage
+          : compilationResult.errorMessage?.message || ERROR_STATUES.MESSAGE_BLOCKED_BY_SCHEME.message
 
-      const errorCause = isStringError ? compilationResult.errorMessage : ERROR_STATUES.MESSAGE_BLOCKED_BY_SCHEME
+      const errorCause = {
+        ...ERROR_STATUES.MESSAGE_BLOCKED_BY_SCHEME,
+        message: errorMessage || ERROR_STATUES.MESSAGE_BLOCKED_BY_SCHEME.message,
+      }
 
       throw new Error(errorMessage, { cause: errorCause })
     }

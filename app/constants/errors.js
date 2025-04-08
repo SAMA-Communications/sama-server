@@ -120,7 +120,7 @@ export const ERROR_STATUES = {
   STATUS_ID_MISSED: { status: 422, message: "Status ID missed." },
   STATUS_TYPE_MISSED: { status: 422, message: "Status type missed." },
   STATUS_T_MISSED: { status: 422, message: `Status 't' missed.` },
-  MESSAGE_BLOCKED_BY_SCHEME: { status: 403, message: "Message blocked by conversation rules." },
+  MESSAGE_BLOCKED_BY_SCHEME: { status: 422, message: "Message blocked by conversation rules." },
   // Push Notification -->
   INCORRECT_PLATFROM_TYPE: { status: 422, message: "Incorrect platform type." },
   INCORRECT_DEVICE_ID: { status: 422, message: "Incorrect device id." },
