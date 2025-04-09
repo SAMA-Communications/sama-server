@@ -27,8 +27,8 @@ class ConversationSchemeService {
     let compilationResult = { data: {}, errorMessage: null }
 
     const options = {
-      allowFetch: false,
-      allowFs: false,
+      allowFetch: true,
+      allowFs: true,
       env: {
         MESSAGE: message,
         USER: user,
