@@ -3,5 +3,5 @@ export const up = async (db, client) => {
 }
 
 export const down = async (db, client) => {
-  await db.collection("conversation_scheme").dropIndex({ cid: 1 })
+  await db.collection("conversation_schemes").dropIndex({ cid: 1 })
 }
