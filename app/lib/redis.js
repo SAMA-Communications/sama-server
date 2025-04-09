@@ -8,12 +8,47 @@ class RedisManager {
   }
 
   async connect() {
-    try {
-      await this.client.connect()
-      console.log("[connectToRedis] Ok")
-    } catch (err) {
-      console.log("[connectToRedis] Fail", err)
-    }
+    await this.client.connect()
+  }
+
+  async scanWithPagination(type = "string", matchPattern = "*", offset = 0, limit = 10) {
+    let cursor = 0
+    let results = []
+    let scanned = 0
+
+    do {
+        const response = await this.client.scan(cursor, { MATCH: matchPattern, TYPE: type })
+
+        cursor = Number(response.cursor)
+        const items = response.keys
+
+        for (const item of items) {
+            if (scanned >= offset) {
+                results.push(item)
+                if (results.length >= limit) {
+                    return results
+                }
+            }
+            scanned++
+        }
+    } while (cursor !== 0 || !!cursor)
+
+    return results
+  }
+
+  async countWithMatch(type = "string", matchPattern = "*") {
+    let cursor = 0;
+    let matchCount = 0;
+
+    do {
+        const response = await this.client.scan(cursor, { MATCH: matchPattern, TYPE: type })
+
+        cursor = Number(response.cursor);
+        matchCount += response.keys.length
+
+    } while (cursor !== 0 || !!cursor)
+
+    return matchCount
   }
 }
 

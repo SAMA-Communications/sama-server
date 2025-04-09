@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.30.0
+
+### Improvements
+
+- Added message admin api
+- Minor fixes for validation in the `conversation_list` query
+
+### Docker
+
+- Improved logic for building the Docker container
+
 ## 0.29.0
 
 ### Updated

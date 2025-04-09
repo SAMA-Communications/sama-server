@@ -276,7 +276,7 @@ class SessionService {
     const extraParams = await this.retrieveUserExtraParams(userId, deviceId)
     console.log("[removeUserSession][extraParams]", extraParams, userId, deviceId)
 
-    await this.deleteUserDevices(userId)
+    await this.removeUserDevice(userId, deviceId)
     await this.deleteUserExtraParams(userId, deviceId)
 
     this.activeSessions.DEVICES[userId] = leftActiveConnections
@@ -287,6 +287,22 @@ class SessionService {
       const [, nodeId, nodePort] = splitWsEndpoint(nodeEndpoint)
       await this.removeUserDeviceFromNode(nodeId, nodePort, userId, deviceId)
     }
+  }
+
+  async onlineUsersList(offset, limit) {
+    const matchPattern = "user:*"
+    
+    const userKeys = await this.redisConnection.scanWithPagination("set", matchPattern, offset, limit)
+
+    return userKeys.map(userKey => userKey.replace("user:", ""))
+  }
+
+  async onlineUsersCount() {
+    const matchPattern = "user:*"
+    
+    const count = await this.redisConnection.countWithMatch("set", matchPattern)
+
+    return count
   }
 }
 

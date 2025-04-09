@@ -155,6 +155,10 @@ export const routes = {
     LastActivityiesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.user_last_activity, activitiesSchemaValidation.get_user_status)
       .get_user_status(ws, json),
+  online_list: (ws, json) =>
+    LastActivityiesController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.online_list, activitiesSchemaValidation.online_list)
+      .online_list(ws, json),
   get_participants_by_cids: (ws, json) =>
     ConversationsController.middleware(authGuardMiddleware, ws, json)
       .validate(json.get_participants_by_cids, conversationsSchemaValidation.get_participants_by_cids)

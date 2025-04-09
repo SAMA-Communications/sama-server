@@ -2,7 +2,7 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
-import "./utils.js"
+import "./tools/utils.js"
 
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
@@ -177,7 +177,7 @@ describe("User cycle", async () => {
 
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
-        status: 422,
+        status: 401,
         message: "Incorrect username or password.",
       })
     })
@@ -201,7 +201,7 @@ describe("User cycle", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
-        status: 422,
+        status: 401,
         message: "Incorrect username or password.",
       })
     })
@@ -374,7 +374,7 @@ describe("User cycle", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
-        status: 422,
+        status: 401,
         message: "The current password you entered is incorrect.",
       })
     })
@@ -396,7 +396,7 @@ describe("User cycle", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.strictEqual(responseData.response.user, undefined)
       assert.deepEqual(responseData.response.error, {
-        status: 422,
+        status: 401,
         message: "The current password you entered is incorrect.",
       })
     })

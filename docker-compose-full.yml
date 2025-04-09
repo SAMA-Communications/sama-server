@@ -35,13 +35,13 @@ services:
         VITE_HTTP_CONNECT: http://localhost:9000
         VITE_PUBLIC_VAPID_KEY: BNeoP95lfdpIEMTBay5bkjn3VgQHR0fg5feo375mQ7h8kpVh_43HXtISrQnzZwrja83cjCGlBA9FtIOzHeqy4dE
         VITE_MESSAGES_COUNT_TO_PRELOAD: 30
-        BRANCH: development
+        BRANCH: main
     networks:
       sama_network:
         ipv4_address: 172.25.0.9
     volumes:
       - sama-client-dist:/dist
-    command: [ "echo", "Static files are ready" ]
+    command: ["echo", "Static files are ready"]
 
   sama-server:
     build:

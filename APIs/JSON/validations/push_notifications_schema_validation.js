@@ -27,8 +27,8 @@ export const pushNotificationsSchemaValidation = {
           default:
             switch (error.local.key) {
               case "platform":
-                return new Error(ERROR_STATUES.INCORRECT_PLATFROM_TYPE.message, {
-                  cause: ERROR_STATUES.INCORRECT_PLATFROM_TYPE,
+                return new Error(ERROR_STATUES.INCORRECT_PLATFORM_TYPE.message, {
+                  cause: ERROR_STATUES.INCORRECT_PLATFORM_TYPE,
                 })
               case "web_endpoint":
                 return new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {

@@ -1519,3 +1519,421 @@ TBA
 ## Admin API
 
 TBA
+
+## Admin Http API
+
+### 📌 `POST /admin/message`
+
+**Description**:  
+Sends a message to a specific conversation. The message can include text, attachments, and optional metadata. All online participants of the conversation will receive the message in real-time.
+
+---
+
+#### 🔐 Authorization
+- Required Header:  
+  `Admin-Api-Key: {{HTTP_ADMIN_API_KEY}}`
+
+---
+
+#### 📥 Request
+
+**Content-Type**: `application/json`
+
+```json
+{
+  "senderId": "63480e68f4794709f802a2fa",
+  "message": {
+    "id": "5а34p21m0xj23",
+    "body": "hey how is going?",
+    "cid": "63480e68f4794709f802a2fa",
+    "x": {
+      "param1": "value",
+      "param2": "value"
+    },
+    "attachments": [
+      { "name": "file_1", "size": 240, "content_type": "type" },
+      { "name": "file_2", "size": 126, "content_type": "type" }
+    ]
+  }
+}
+```
+
+---
+
+#### 🧾 Request Parameters
+
+| Field                    | Type              | Description                                                                 |
+|--------------------------|-------------------|-----------------------------------------------------------------------------|
+| `senderId`               | `string`          | **User ID** of the sender                                                   |
+| `message.id`             | `string`          | Unique **message ID received from the server** (i.e., `server_mid` from a previous response), used for tracking and acknowledgment  |
+| `message.body`           | `string`          | The message text                                                            |
+| `message.cid`            | `string`          | **Conversation ID** the message belongs to                                  |
+| `message.x`              | `object`          | Custom parameters, e.g. `{ "new_friend_connected": true }`                  |
+| `message.attachments`    | `array` of `object`| Array of attachment metadata                                               |
+
+---
+
+#### ✅ Successful Response
+
+```json
+{
+  "ask": {
+    "mid": "5а34p21m0xj23",
+    "server_mid": "63480e68f4794709f802a2fd",
+    "t": 15673838834
+  }
+}
+```
+
+---
+
+#### 📡 Real-time Message (Broadcasted to Online Participants)
+
+```json
+{
+  "message": {
+    "_id": "63480e68f4794709f802a2fa",
+    "t": 15673838833,
+    "from": "634ec51c0b65918393dca5bf",
+    "body": "hey how is going?",
+    "cid": "63480e68f4794709f802a2fa",
+    "x": {
+      "param1": "value",
+      "param2": "value"
+    },
+    "attachments": [
+      { "file_id": "123123_file_1", "file_name": "file_1" },
+      { "file_id": "653534_file_2", "file_name": "file_2" }
+    ],
+    "created_at": "2023-07-04T07:23:53.308Z"
+  }
+}
+```
+
+---
+
+### 📌 `POST /admin/message/system`
+
+**Description**:  
+Sends a **system message** to a specific list of user IDs. These are typically non-conversational messages (e.g., notifications, status updates). Only the specified online recipients will receive the message in real-time. For now, the admin/message/system message can only be caught in the console. 
+
+---
+
+#### 🔐 Authorization
+- Required Header:  
+  `Admin-Api-Key: {{HTTP_ADMIN_API_KEY}}`
+
+---
+
+#### 📥 Request
+
+**Content-Type**: `application/json`
+
+```json
+{
+  "senderId": "63480e68f4794709f802a2fa",
+  "messageSystem": {
+    "id": "5а34p21m0xj23",
+    "uids": ["63480e68f4794709f802a2fc", "63480e68f4794709f802a2fb"],
+    "x": {
+      "param1": "value",
+      "param2": "value"
+    }
+  }
+}
+```
+
+---
+
+#### 🧾 Request Parameters
+
+| Field                     | Type               | Description                                                            |
+|---------------------------|--------------------|------------------------------------------------------------------------|
+| `senderId`               | `string`            | **User ID** of the sender                                              |
+| `messageSystem.id`       | `string`            | Unique message ID received from the server                             |
+| `messageSystem.uids`     | `array[string]`     | List of **recipient user IDs** (only online users will receive it)     |
+| `messageSystem.x`        | `object`            | Custom metadata parameters (optional), e.g. `{ "event_type": "X" }`    |
+
+---
+
+#### ✅ Successful Response
+
+```json
+{
+  "ack": {
+    "mid": "5а34p21m0xj23",
+    "t": 15673838833
+  }
+}
+```
+
+---
+
+#### 📡 Real-time Message (Sent to Online Recipients)
+
+```json
+{
+  "system_message": {
+    "_id": "5а34p21m0xj23",
+    "t": 15673838833,
+    "from": "634ec51c0b65918393dca5bf",
+    "x": {
+      "param1": "value",
+      "param2": "value"
+    }
+  }
+}
+```
+
+---
+
+### 📌 `PUT /admin/message/read`
+
+**Description**:  
+Marks one or more messages as **read** in a specific conversation. All users whose messages were marked as read will receive a real-time update.
+
+---
+
+#### 🔐 Authorization
+- Required Header:  
+  `Admin-Api-Key: {{HTTP_ADMIN_API_KEY}}`
+
+---
+
+#### 📥 Request
+
+**Content-Type**: `application/json`
+
+```json
+{
+  "senderId": "63480e68f4794709f802a2fa",
+  "messageRead": {
+    "cid": "63077ad836b78c3d82af0812",
+    "ids": ["63480e68f4794709f802a2fa", "63077ad836b78c3d82af0866"]
+  }
+}
+```
+
+---
+
+#### 🧾 Request Parameters
+
+| Field                    | Type                | Description                                                       |
+|--------------------------|---------------------|-------------------------------------------------------------------|
+| `senderId`              | `string`            | **User ID** marking the messages as read                         |
+| `messageRead.cid`       | `string`            | **Conversation ID**                                               |
+| `messageRead.ids`       | `array[string]`     | List of **Message IDs** that are being marked as read             |
+
+---
+
+#### ✅ Successful Response
+
+```json
+{
+  "success": true
+}
+```
+
+---
+
+#### 📡 Real-time Message (Sent to Original Senders)
+
+```json
+{
+  "message_read": {
+    "cid": "63077ad836b78c3d82af0812",
+    "ids": ["63480e68f4794709f802a2fa", "63077ad836b78c3d82af0866"],
+    "from": "634ec51c0b65918393dca5bf"
+  }
+}
+```
+
+---
+
+### 📌 `PUT /admin/message`
+
+**Description**:  
+Updates the body of a previously sent message. Only the sender can edit the message. All online participants of the conversation will receive the updated message in real-time.
+
+---
+
+#### 🔐 Authorization
+- Required Header:  
+  `Admin-Api-Key: {{HTTP_ADMIN_API_KEY}}`
+
+---
+
+#### 📥 Request
+
+**Content-Type**: `application/json`
+
+```json
+{
+  "senderId": "63480e68f4794709f802a2fa",
+  "messageEdit": {
+    "id": "63077ad836b78c3d82af0812",
+    "body": "updated message body"
+  }
+}
+```
+
+---
+
+#### 🧾 Request Parameters
+
+| Field                     | Type     | Description                                                             |
+|---------------------------|----------|-------------------------------------------------------------------------|
+| `senderId`               | `string` | **User ID** of the sender (must match the original message sender)     |
+| `messageEdit.id`         | `string` | **Message ID** to be edited                                             |
+| `messageEdit.body`       | `string` | New content for the message body                                        |
+
+---
+
+#### ✅ Successful Response
+
+```json
+{
+  "success": true
+}
+```
+
+---
+
+#### 📡 Real-time Message (Broadcasted to Other Online Participants)
+
+```json
+{
+  "message_edit": {
+    "id": "63077ad836b78c3d82af0812",
+    "body": "updated message body",
+    "from": "63480e68f4794709f802a2fa"
+  }
+}
+```
+
+---
+
+### 📌 `DELETE /admin/message`
+
+
+**Description**:  
+Deletes one or more messages in a conversation. The deletion behavior depends on the `type` field:
+- `"myself"`: messages are deleted **only for the sender**
+- `"all"`: messages are deleted **for all participants**, and a real-time notification is sent to online users in the conversation.
+
+---
+
+#### 🔐 Authorization
+- Required Header:  
+  `Admin-Api-Key: {{HTTP_ADMIN_API_KEY}}`
+
+---
+
+#### 📥 Request
+
+**Content-Type**: `application/json`
+
+```json
+{
+  "senderId": "63480e68f4794709f802a2fa",
+  "messageDelete": {
+    "cid": "63077ad836b78c3d82af0812",
+    "ids": ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
+    "type": "myself"
+  }
+}
+```
+
+---
+
+#### 🧾 Request Parameters
+
+| Field                       | Type               | Description                                                             |
+|-----------------------------|--------------------|-------------------------------------------------------------------------|
+| `senderId`                 | `string`           | **User ID** performing the deletion                                     |
+| `messageDelete.cid`        | `string`           | **Conversation ID**                                                    |
+| `messageDelete.ids`        | `array[string]`    | List of **Message IDs** to delete                                      |
+| `messageDelete.type`       | `"myself" \| "all"`| Deletion type: for sender only (`myself`) or for all users (`all`)      |
+
+---
+
+#### ✅ Successful Response
+
+```json
+{
+  "success": true
+}
+```
+
+---
+
+#### 📡 Real-time Message (if `type: "all"`)
+
+```json
+{
+  "message_delete": {
+    "cid": "63077ad836b78c3d82af0812",
+    "ids": ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
+    "type": "all",
+    "from": "634ec51c0b65918393dca5bf"
+  }
+}
+```
+
+> ℹ️ If `type: "myself"` is used, the messages will be removed **only for the `senderId`**. No real-time event is broadcast to other users.
+
+---
+
+
+### 📌 `POST /admin/activity/online`
+
+
+**Description**:  
+Get online users list (ids only of full model) or count online users
+
+---
+
+#### 🔐 Authorization
+- Required Header:  
+  `Admin-Api-Key: {{HTTP_ADMIN_API_KEY}}`
+
+---
+
+#### 📥 Request
+
+**Content-Type**: `application/json`
+
+```json
+{
+  "limit": 10,
+  "offset": 0,
+  "count": false,
+  "idsOnly": true
+}
+```
+
+---
+
+#### 🧾 Request Parameters
+
+| Field                      | Type               | Description                                                             |
+|----------------------------|--------------------|-------------------------------------------------------------------------|
+| `limit`                    | `int`              | limit numbers of users in response                                      |
+| `offset`                   | `int`              | users to skip for pagination                                            |
+| `count`                    | `boolean`          | receive only users count in response                                    |
+| `idsOnly`                  | `boolean`          | receive only **User ID**s array in response                             |
+
+---
+
+#### ✅ Successful Response
+
+```json
+{
+  "users":[
+    "67ed122cffed69f6d9c5ffdb",
+    "67ed11d9ffed69f6d9c5ffd5"
+  ]
+}
+```
+
+---
