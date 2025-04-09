@@ -264,6 +264,8 @@ class SessionService {
     userId = userId ?? this.getSessionUserId(ws)
     deviceId = deviceId ?? this.getDeviceId(ws, userId)
 
+    console.log("[removeUserSession]", userId, deviceId)
+
     const leftActiveConnections = this.getUserDevices(userId).filter(
       ({ deviceId: activeDeviceId }) => activeDeviceId !== deviceId
     )
@@ -273,16 +275,19 @@ class SessionService {
       return
     }
 
+    this.activeSessions.DEVICES[userId] = leftActiveConnections
+    this.activeSessions.SESSIONS.delete(ws)
+
+    if (!deviceId) {
+      return
+    }
+
     const extraParams = await this.retrieveUserExtraParams(userId, deviceId)
-    console.log("[removeUserSession][extraParams]", extraParams, userId, deviceId)
 
     await this.removeUserDevice(userId, deviceId)
     await this.deleteUserExtraParams(userId, deviceId)
 
-    this.activeSessions.DEVICES[userId] = leftActiveConnections
-    this.activeSessions.SESSIONS.delete(ws)
-
-    const nodeEndpoint = extraParams[CONSTANTS.SESSION_NODE_KEY]
+    const nodeEndpoint = extraParams?.[CONSTANTS.SESSION_NODE_KEY]
     if (nodeEndpoint) {
       const [, nodeId, nodePort] = splitWsEndpoint(nodeEndpoint)
       await this.removeUserDeviceFromNode(nodeId, nodePort, userId, deviceId)
