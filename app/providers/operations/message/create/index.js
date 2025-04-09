@@ -10,6 +10,7 @@ class MessageCreateOperation {
     blockListService,
     userService,
     conversationService,
+    conversationSchemeService,
     conversationNotificationService,
     messageService
   ) {
@@ -18,12 +19,14 @@ class MessageCreateOperation {
     this.blockListService = blockListService
     this.userService = userService
     this.conversationService = conversationService
+    this.conversationSchemeService = conversationSchemeService
     this.conversationNotificationService = conversationNotificationService
     this.messageService = messageService
   }
 
   async perform(ws, createMessageParams) {
     const deliverMessages = []
+    let modifiedFields = null
 
     const messageId = createMessageParams.id
     delete createMessageParams.id
@@ -34,6 +37,21 @@ class MessageCreateOperation {
       createMessageParams.cid,
       currentUserId
     )
+
+    const conversationScheme = await this.conversationSchemeService.getSchemeByConversationId(conversation._id)
+    if (conversationScheme) {
+      const scheme = conversationScheme.scheme
+      const data = await this.conversationSchemeService.prepareAndExecuteConversationScheme(
+        scheme,
+        createMessageParams,
+        currentUser
+      )
+
+      if (data.body && typeof data.body === "string") {
+        createMessageParams.body = data.body
+        modifiedFields = { body: data.body }
+      }
+    }
 
     const message = await this.messageService.create(currentUser, conversation, blockedUserIds, createMessageParams)
 
@@ -62,7 +80,7 @@ class MessageCreateOperation {
 
     await this.conversationService.conversationRepo.updateLastActivity(conversation._id, message.created_at)
 
-    return { messageId, message: message, deliverMessages, participantIds }
+    return { messageId, message: message, deliverMessages, participantIds, modifiedFields }
   }
 
   async #hasAccess(conversationId, currentUserId) {
