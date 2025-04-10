@@ -264,8 +264,6 @@ class SessionService {
     userId = userId ?? this.getSessionUserId(ws)
     deviceId = deviceId ?? this.getDeviceId(ws, userId)
 
-    console.log("[removeUserSession]", userId, deviceId)
-
     const leftActiveConnections = this.getUserDevices(userId).filter(
       ({ deviceId: activeDeviceId }) => activeDeviceId !== deviceId
     )
@@ -288,10 +286,12 @@ class SessionService {
     await this.deleteUserExtraParams(userId, deviceId)
 
     const nodeEndpoint = extraParams?.[CONSTANTS.SESSION_NODE_KEY]
-    if (nodeEndpoint) {
-      const [, nodeId, nodePort] = splitWsEndpoint(nodeEndpoint)
-      await this.removeUserDeviceFromNode(nodeId, nodePort, userId, deviceId)
+    if (!nodeEndpoint) {
+      return
     }
+
+    const [, nodeId, nodePort] = splitWsEndpoint(nodeEndpoint)
+    await this.removeUserDeviceFromNode(nodeId, nodePort, userId, deviceId)
   }
 
   async onlineUsersList(offset, limit) {
