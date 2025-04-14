@@ -13,7 +13,7 @@ class MessageSendSystemOperation {
   async perform(ws, createSystemMessageParams) {
     const { id, cid, uids, x } = createSystemMessageParams
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     let recipientsIds = []
 

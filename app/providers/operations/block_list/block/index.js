@@ -7,7 +7,7 @@ class BlockListBlockOperation {
   async perform(ws, blockParams) {
     const { ids: targetUserIds } = blockParams
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     const blockedUsers = await this.blockListService.blockMany(currentUserId, targetUserIds)
 

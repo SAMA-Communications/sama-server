@@ -5,7 +5,7 @@ class ContactAddOperation {
   }
 
   async perform(ws, contactData, isBatch) {
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     if (!isBatch) {
       return this.singleAdd(currentUserId, contactData)

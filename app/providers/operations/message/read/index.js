@@ -12,7 +12,7 @@ class MessageReadOperation {
   async perform(ws, messageParams) {
     const { cid, ids: mids } = messageParams
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
     const unreadMessages = await this.messageService.readMessagesInConversation(cid, currentUser, mids)

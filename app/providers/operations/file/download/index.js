@@ -7,7 +7,7 @@ class FileDownloadOperation {
   async perform(ws, files) {
     const { file_ids: objectIds } = files
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     const downloadUrls = {}
 

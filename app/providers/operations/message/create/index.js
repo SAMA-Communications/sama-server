@@ -28,7 +28,7 @@ class MessageCreateOperation {
     const messageId = createMessageParams.id
     delete createMessageParams.id
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
     const { conversation, blockedUserIds, participantIds } = await this.#hasAccess(
       createMessageParams.cid,

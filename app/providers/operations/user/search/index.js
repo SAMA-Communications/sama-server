@@ -7,7 +7,7 @@ class UserSearchOperation {
   }
 
   async perform(ws, searchParams) {
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const ignoreIds = [currentUserId, ...searchParams.ignore_ids]
 
     const limit =

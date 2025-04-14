@@ -8,7 +8,7 @@ class StatusTypingOperation {
 
   async perform(ws, statusTypingParams) {
     const { cid: conversationId, status } = statusTypingParams
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     const { conversation, participantIds } = await this.#hasAccess(conversationId, currentUserId)
 

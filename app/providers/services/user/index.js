@@ -7,8 +7,8 @@ class UserService {
     this.storageService = storageService
   }
 
-  async findByLogin(userInfo) {
-    const user = await this.userRepo.findByLogin(userInfo.login)
+  async findByLogin(organizationId, login) {
+    const user = await this.userRepo.findByLogin(organizationId, login)
 
     return user
   }

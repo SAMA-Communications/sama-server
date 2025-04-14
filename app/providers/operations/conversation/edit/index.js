@@ -24,7 +24,7 @@ class ConversationEditOperation {
 
     let conversationEvents = []
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     const { participantIds: currentParticipantIds } = await this.#hasAccess(conversationId, currentUserId)
 

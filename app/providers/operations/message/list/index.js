@@ -14,7 +14,7 @@ class MessageListOperation {
   async perform(ws, messageListParams) {
     const { cid: cId, limit, updated_at } = messageListParams
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
     await this.#hasAccess(cId, currentUserId)

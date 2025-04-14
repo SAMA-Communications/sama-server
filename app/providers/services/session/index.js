@@ -20,7 +20,7 @@ class SessionService {
     return this.activeSessions.SESSIONS.size
   }
 
-  addUserDeviceConnection(ws, userId, deviceId) {
+  addUserDeviceConnection(ws, organizationId, userId, deviceId) {
     const activeConnections = this.activeSessions.DEVICES[userId]
     const wsToClose = []
 
@@ -38,7 +38,7 @@ class SessionService {
       this.activeSessions.DEVICES[userId] = [{ ws, deviceId }]
     }
 
-    this.setSessionUserId(ws, userId)
+    this.setSessionUserId(ws, organizationId, userId)
 
     return wsToClose
   }
@@ -182,11 +182,11 @@ class SessionService {
     await this.deleteNodeConnections(void 0, void 0, nodeUrl)
   }
 
-  setSessionUserId(ws, userId) {
+  setSessionUserId(ws, organizationId, userId) {
     const session = this.getSession(ws)
 
     if (!session) {
-      this.setSession(ws, userId)
+      this.setSession(ws, organizationId, userId)
       return
     }
 
@@ -195,8 +195,8 @@ class SessionService {
     return session
   }
 
-  setSession(ws, userId, extraParams = {}) {
-    this.activeSessions.SESSIONS.set(ws, { userId, extraParams })
+  setSession(ws, organizationId, userId, extraParams = {}) {
+    this.activeSessions.SESSIONS.set(ws, { organizationId, userId, extraParams })
   }
 
   getSessionUserId(ws) {
@@ -291,15 +291,15 @@ class SessionService {
 
   async onlineUsersList(offset, limit) {
     const matchPattern = "user:*"
-    
+
     const userKeys = await this.redisConnection.scanWithPagination("set", matchPattern, offset, limit)
 
-    return userKeys.map(userKey => userKey.replace("user:", ""))
+    return userKeys.map((userKey) => userKey.replace("user:", ""))
   }
 
   async onlineUsersCount() {
     const matchPattern = "user:*"
-    
+
     const count = await this.redisConnection.countWithMatch("set", matchPattern)
 
     return count

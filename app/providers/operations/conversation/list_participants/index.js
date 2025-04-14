@@ -8,7 +8,7 @@ class ConversationListParticipantsOperation {
   async perform(ws, options) {
     const { cids } = options
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
     const { participantIds, participantsIdsByCids } = await this.conversationService.findConversationsParticipantIds(

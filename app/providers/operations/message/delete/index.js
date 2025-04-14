@@ -11,7 +11,7 @@ class MessageDeleteOperation {
   async perform(ws, deleteMessageParams) {
     const { cid: cId, ids: mIds, type } = deleteMessageParams
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const { conversation, participantIds } = await this.#hasAccess(cId, currentUserId)
 
     const isDeleteAll = type === "all"

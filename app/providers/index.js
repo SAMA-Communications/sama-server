@@ -195,7 +195,7 @@ const providers = [
   HttpMessageEditOperationProvider,
   HttpMessageDeleteOperationProvider,
 
-  HttpActivityOnlineListOperationProvider
+  HttpActivityOnlineListOperationProvider,
 ]
 
 export default providers

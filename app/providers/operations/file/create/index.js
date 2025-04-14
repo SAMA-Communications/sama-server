@@ -5,7 +5,7 @@ class FileCreateOperation {
   }
 
   async perform(ws, createFiles) {
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     const fileUploadInfo = []
 

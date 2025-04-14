@@ -8,6 +8,7 @@ export default class PushSubscription extends BaseModel {
   static get visibleFields() {
     return [
       "_id",
+      "organization_id",
 
       "user_id",
       "platform",

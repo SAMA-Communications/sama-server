@@ -10,7 +10,7 @@ class PushEventCreateOperation {
   async perform(ws, createPushEventParams) {
     const { recipients_ids, message } = createPushEventParams
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     const recipients = await this.userService.userRepo.retrieveExistedIds(recipients_ids)
 

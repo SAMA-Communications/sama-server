@@ -1,8 +1,8 @@
 import BaseRepository from "../base.js"
 
 class UserRepository extends BaseRepository {
-  async findByLogin(login) {
-    const user = await this.findOne({ login })
+  async findByLogin(organizationId, login) {
+    const user = await this.findOne({ organization_id: organizationId, login })
 
     return user
   }
