@@ -14,7 +14,7 @@ class ConversationNotificationService {
   }
 
   isEnabled() {
-    return process.env.CONVERSATION_NOTIFICATIONS === "true"
+    return process.env.CONVERSATION_NOTIFICATIONS_ENABLED === "true"
   }
 
   async actionEvent(eventType, conversation, user) {
