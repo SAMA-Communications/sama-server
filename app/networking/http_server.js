@@ -88,6 +88,12 @@ const optionsRequestHandler = async (res, req) => {
   return new Response().setHttpResponse(httpResponse)
 }
 
+const healthCheckHandler = async (res, req) => {
+  const httpResponse = new HttpResponse(200, { "Content-Type": "application/json" }, { status: "ok" })
+
+  return new Response().setHttpResponse(httpResponse)
+}
+
 export default class HttpServerApp {
   uWSLocalSocket = null
   responseProcessor = null
@@ -196,6 +202,8 @@ export default class HttpServerApp {
 
   bindRoutes() {
     this.uWSLocalSocket.options("/*", this.onHttpRequestHandler([], optionsRequestHandler))
+
+    this.uWSLocalSocket.get("/health", this.onHttpRequestHandler([], healthCheckHandler))
 
     this.uWSLocalSocket.post("/login", this.onHttpRequestHandler([], HttpAuthController.login))
 
