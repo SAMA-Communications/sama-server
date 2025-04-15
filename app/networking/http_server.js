@@ -6,6 +6,7 @@ import { parserCookies, serializeCookie } from "../../APIs/JSON/utils/cookie-too
 import HttpAuthController from "../../APIs/JSON/controllers/http/auth.js"
 import HttpMessageController from "../../APIs/JSON/controllers/http/message.js"
 import HttpActivityController from "../../APIs/JSON/controllers/http/activity.js"
+import HttpOrganizationController from "../../APIs/JSON/controllers/http/organization.js"
 
 import HttpResponse from "@sama/networking/models/HttpResponse.js"
 import Response from "@sama/networking/models/Response.js"
@@ -208,6 +209,11 @@ export default class HttpServerApp {
     this.uWSLocalSocket.post("/login", this.onHttpRequestHandler([], HttpAuthController.login))
 
     this.uWSLocalSocket.post("/logout", this.onHttpRequestHandler([], HttpAuthController.logout))
+    
+    this.uWSLocalSocket.post(
+      "/admin/organization",
+      this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpOrganizationController.create)
+    )
 
     this.uWSLocalSocket.post(
       "/admin/message/system",
