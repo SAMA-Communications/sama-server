@@ -5,12 +5,14 @@ import ServiceLocatorContainer from "../../app/common/ServiceLocatorContainer.js
 import { createUserArray, sendLogin } from "../tools/utils.js"
 import HttpActivityController from "../../APIs/JSON/controllers/http/activity.js"
 
+const redisClient = ServiceLocatorContainer.use("RedisClient")
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 
 let usersIds = []
 
 describe("Http Activity", async () => {
   before(async () => {
+    await redisClient.client.flushAll()
     await userRepo.deleteMany({})
 
     usersIds = await createUserArray(3)
