@@ -7,8 +7,8 @@ class UserRepository extends BaseRepository {
     return user
   }
 
-  async findByIds(ids) {
-    const users = await this.findAll({ _id: { $in: ids } }, [], 100)
+  async findWithOrScopeByIds(organizationId, ids) {
+    const users = await this.findAll({ _id: { $in: ids }, organization_id: organizationId }, [], 100)
 
     return users
   }
@@ -35,12 +35,13 @@ class UserRepository extends BaseRepository {
     return existedUserIds
   }
 
-  async search({ match, ignoreIds, timeFromUpdate }, limit) {
+  async search(organizationId, { match, ignoreIds, timeFromUpdate }, limit) {
     const escapedMatch = match.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
     const regexPattern = new RegExp(`${escapedMatch}.*`, "i")
 
     const query = {
       _id: { $nin: ignoreIds },
+      organization_id: organizationId,
       $or: [
         { login: { $regex: regexPattern } },
         { first_name: { $regex: regexPattern } },
@@ -57,7 +58,7 @@ class UserRepository extends BaseRepository {
     return users
   }
 
-  async matchUserContact(emails, phones) {
+  async matchUserContact(organizationId, emails, phones) {
     const orQuery = []
 
     if (emails?.length) {
@@ -68,7 +69,7 @@ class UserRepository extends BaseRepository {
       orQuery.push({ phone: { $in: phones } })
     }
 
-    const users = await this.findAll({ $or: orQuery })
+    const users = await this.findAll({ organization_id: organizationId, $or: orQuery })
 
     return users
   }

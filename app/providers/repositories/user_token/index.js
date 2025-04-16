@@ -4,7 +4,6 @@ class UserTokenRepository extends BaseRepository {
   async findToken(jwtToken, deviceId, tokenType) {
     const params = { token: jwtToken }
 
-    organizationId && (params["organizationId"] = organizationId)
     deviceId && (params["device_id"] = deviceId)
     tokenType && (params["type"] = tokenType)
 

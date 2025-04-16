@@ -15,12 +15,12 @@ class UserAuthOperation {
     const deviceId = userInfo.device_id.toString()
 
     const { user, token } = userInfo.token
-      ? await this.#authByToken(organizationId, userInfo.token, deviceId)
+      ? await this.#authByToken(userInfo.token, deviceId)
       : await this.#authByLogin(organizationId, userInfo, deviceId)
 
     // TODO: close connections
     if (!omitDeviceConnection) {
-      this.sessionService.addUserDeviceConnection(ws, organizationId, user.native_id, deviceId)
+      this.sessionService.addUserDeviceConnection(ws, user.organization_id, user.native_id, deviceId)
     }
 
     const jwtAccessToken = this.#generateToken(
@@ -55,8 +55,8 @@ class UserAuthOperation {
     return jwt.sign({ _id: user._id, native_id: user.native_id, login: user.login, type }, secret, { expiresIn })
   }
 
-  async #authByToken(organizationId, tokenJwt, deviceId) {
-    const token = await this.userTokenRepo.findToken(organizationId, tokenJwt, deviceId)
+  async #authByToken(tokenJwt, deviceId) {
+    const token = await this.userTokenRepo.findToken(tokenJwt, deviceId)
 
     if (!token) {
       throw new Error(ERROR_STATUES.TOKEN_EXPIRED.message, {

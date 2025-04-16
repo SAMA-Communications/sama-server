@@ -12,7 +12,7 @@ class HttpUserLogoutOperation {
     const refreshToken = cookies["refresh_token"]
     const accessToken = this.helpers.extractAccessTokenFromAuthHeader(headers["authorization"])
 
-    const accessTokenRecord = await this.userTokenRepo.findToken(null, accessToken, null, "access")
+    const accessTokenRecord = await this.userTokenRepo.findToken(accessToken, null, "access")
     if (!accessTokenRecord) {
       throw new Error(ERROR_STATUES.MISSING_AUTH_CREDENTIALS.message, {
         cause: ERROR_STATUES.MISSING_AUTH_CREDENTIALS,
@@ -20,7 +20,6 @@ class HttpUserLogoutOperation {
     }
 
     const refreshTokenRecord = await this.userTokenRepo.findToken(
-      accessTokenRecord.organization_id,
       refreshToken,
       accessTokenRecord.device_id,
       "refresh"

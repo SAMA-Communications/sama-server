@@ -9,7 +9,7 @@ class BlockListBlockOperation {
 
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    const blockedUsers = await this.blockListService.blockMany(currentUserId, targetUserIds)
+    const blockedUsers = await this.blockListService.blockMany(organizationId, currentUserId, targetUserIds)
 
     return blockedUsers
   }

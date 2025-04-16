@@ -5,18 +5,20 @@ class StorageService {
     this.fileRepo = fileRepo
   }
 
-  async createFile(userId, fileObj) {
+  async createFile(organizationId, userId, fileObj) {
     const { objectId, url } = await this.storageDriverClient.getUploadUrl(fileObj.name)
 
+    file.organization_id = organizationId
+    file.user_id = userId
     fileObj.object_id = objectId
 
-    const fileModel = await this.fileRepo.create(userId, fileObj)
+    const fileModel = await this.fileRepo.create(fileObj)
 
     return { file: fileModel.visibleParams(), upload_url: url }
   }
 
-  async getFileDownloadUrl(userId, fileObjectId) {
-    const file = await this.fileRepo.findUserFile(userId, fileObjectId)
+  async getFileDownloadUrl(organizationId, fileObjectId) {
+    const file = await this.fileRepo.findByIdWithOrgScope(organizationId, fileObjectId)
 
     if (!file) {
       throw new Error(`Can't find file`)

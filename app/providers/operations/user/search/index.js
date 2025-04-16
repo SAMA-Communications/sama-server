@@ -16,7 +16,12 @@ class UserSearchOperation {
         : searchParams.limit || MAIN_CONSTANTS.LIMIT_MAX
 
     const users = await this.userService.userRepo.search(
-      { match: searchParams.keyword, ignoreIds, timeFromUpdate: searchParams.updated_at?.gt },
+      organizationId,
+      {
+        match: searchParams.keyword,
+        ignoreIds,
+        timeFromUpdate: searchParams.updated_at?.gt
+      },
       limit
     )
 

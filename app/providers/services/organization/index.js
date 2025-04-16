@@ -8,6 +8,12 @@ class OrganizationService {
 
     return organization
   }
+
+  async isExist(orgId) {
+    const organization = await this.organizationRepo.findById(orgId)
+
+    return !!organization
+  }
 }
 
 export default OrganizationService

@@ -27,6 +27,10 @@ export default class BaseRepository {
     return ids.map((id) => this.castObjectId(id))
   }
 
+  castOrganizationId(id) {
+    return this.castObjectId(id)
+  }
+
   async prepareParams(params) {
     const currentDate = new Date()
 
@@ -42,6 +46,10 @@ export default class BaseRepository {
   async create(createParams) {
     if (createParams._id) {
       createParams._id = this.castObjectId(createParams._id)
+    }
+
+    if (createParams.organization_id) {
+      createParams.organization_id = this.castOrganizationId(createParams.organization_id)
     }
 
     const insertParams = await this.prepareParams(createParams)
@@ -97,6 +105,9 @@ export default class BaseRepository {
     if (query.cid) {
       query.cid = this.castObjectId(query.cid)
     }
+    if (query.organization_id) {
+      query.organization_id = this.castOrganizationId(query.organization_id)
+    }
     if (query._id) {
       query._id.$nin && (query._id.$nin = this.castObjectIds(query._id.$nin))
       query._id.$in && (query._id.$in = this.castObjectIds(query._id.$in))
@@ -134,6 +145,9 @@ export default class BaseRepository {
     if (query._id) {
       query._id = this.castObjectId(query._id)
     }
+    if (query.organization_id) {
+      query.organization_id = this.castOrganizationId(query.organization_id)
+    }
     if (query.user_id) {
       query.user_id = this.castObjectId(query.user_id)
     }
@@ -149,6 +163,9 @@ export default class BaseRepository {
   }
 
   async count(query) {
+    if (query.organization_id) {
+      query.organization_id = this.castOrganizationId(query.organization_id)
+    }
     if (query.conversation_id) {
       query.conversation_id = this.castObjectId(query.conversation_id)
     }
@@ -171,6 +188,9 @@ export default class BaseRepository {
     if (query._id) {
       query._id = this.castObjectId(query._id)
     }
+    if (query.organization_id) {
+      query.organization_id = this.castOrganizationId(query.organization_id)
+    }
 
     await this.collectionCursor.updateOne(query, update)
   }
@@ -178,6 +198,9 @@ export default class BaseRepository {
   async findOneAndUpdate(query, update) {
     if (query._id) {
       query._id = this.castObjectId(query._id)
+    }
+    if (query.organization_id) {
+      query.organization_id = this.castOrganizationId(query.organization_id)
     }
     if (query.user_id) {
       query.user_id = this.castObjectId(query.user_id)
@@ -228,6 +251,9 @@ export default class BaseRepository {
         query._id.$in = this.castObjectIds(query._id.$in)
       }
       query._id = this.castObjectId(query._id)
+    }
+    if (query.organization_id) {
+      query.organization_id = this.castOrganizationId(query.organization_id)
     }
     if (query.user_id) {
       query.user_id = this.castObjectId(query.user_id)

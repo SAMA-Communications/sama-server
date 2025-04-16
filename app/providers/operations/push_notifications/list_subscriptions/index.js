@@ -5,7 +5,7 @@ class PushSubscriptionListOperation {
   }
 
   async perform(ws, queryParams) {
-    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
+    const { userId: currentUserId } = this.sessionService.getSession(ws)
 
     const pushSubscriptions = await this.pushNotificationService.listSubscriptions(currentUserId)
 

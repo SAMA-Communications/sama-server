@@ -7,14 +7,14 @@ class ContactRepository extends BaseRepository {
     return await super.prepareParams(params)
   }
 
-  async findByIdAndUpdate(contactId, updateParams) {
-    const contact = await this.findOneAndUpdate({ _id: contactId }, { $set: updateParams })
+  async findByIdAndUpdate(userId, contactId, updateParams) {
+    const contact = await this.findOneAndUpdate({ _id: contactId, user_id: userId }, { $set: updateParams })
 
     return contact
   }
 
-  async findByEmailPhone(email, phone, limit) {
-    const query = { $or: [] }
+  async findByEmailPhone(organizationId, email, phone, limit) {
+    const query = { organization_id: organizationId, $or: [] }
 
     email && query.$or.push({ [`phone.value`]: phone })
     phone && query.$or.push({ [`email.value`]: email })

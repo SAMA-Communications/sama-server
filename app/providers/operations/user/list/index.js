@@ -4,9 +4,11 @@ class UserListOperation {
   }
 
   async perform(ws, userListParams) {
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
+
     const { ids: userIds } = userListParams
 
-    const users = await this.userService.userRepo.findAllByIds(userIds)
+    const users = await this.userService.userRepo.findWithOrScopeByIds(organizationId, userIds)
 
     const usersWithAvatars = await this.userService.addAvatarUrl(users)
 

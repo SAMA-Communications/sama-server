@@ -12,7 +12,7 @@ class PushSubscriptionCreateOperation {
     const upsertSubscription = await this.pushNotificationService.upsertSubscription(
       currentUserId,
       device_udid,
-      createSubscriptionParams
+      Object.assign(createSubscriptionParams, { organization_id: organizationId })
     )
 
     return upsertSubscription

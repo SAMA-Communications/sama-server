@@ -20,7 +20,7 @@ class PushEventCreateOperation {
       })
     }
 
-    const pushEvent = await this.pushNotificationService.createEvent(currentUserId, recipients_ids, message)
+    const pushEvent = await this.pushNotificationService.createEvent(organizationId, currentUserId, recipients_ids, message)
 
     return pushEvent
   }
