@@ -10,7 +10,7 @@ class MessageCreateOperation {
     blockListService,
     userService,
     conversationService,
-    conversationSchemeService,
+    conversationHandlerService,
     conversationNotificationService,
     messageService
   ) {
@@ -19,7 +19,7 @@ class MessageCreateOperation {
     this.blockListService = blockListService
     this.userService = userService
     this.conversationService = conversationService
-    this.conversationSchemeService = conversationSchemeService
+    this.conversationHandlerService = conversationHandlerService
     this.conversationNotificationService = conversationNotificationService
     this.messageService = messageService
   }
@@ -38,11 +38,11 @@ class MessageCreateOperation {
       currentUserId
     )
 
-    const conversationScheme = await this.conversationSchemeService.getSchemeByConversationId(conversation._id)
-    if (conversationScheme) {
-      const scheme = conversationScheme.scheme
-      const data = await this.conversationSchemeService.prepareAndExecuteConversationScheme(
-        scheme,
+    const conversationHandler = await this.conversationHandlerService.getHandlerByConversationId(conversation._id)
+    if (conversationHandler) {
+      const handler = conversationHandler.content
+      const data = await this.conversationHandlerService.prepareAndExecuteConversationHandler(
+        handler,
         createMessageParams,
         currentUser
       )

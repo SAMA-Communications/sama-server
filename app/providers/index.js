@@ -11,7 +11,7 @@ import UserTokenRepoProvider from "./repositories/user_token/Provider.js"
 import BlockedUserRepoProvider from "./repositories/blocked_user/Provider.js"
 import FileRepoProvider from "./repositories/file/Provider.js"
 import ConversationRepoProvider from "./repositories/conversation/Provider.js"
-import ConversationSchemeRepoProvider from "./repositories/conversation_scheme/Provider.js"
+import ConversationHandlerRepoProvider from "./repositories/conversation_handler/Provider.js"
 import ConversationParticipantRepoProvider from "./repositories/conversation_participants/Provider.js"
 import MessageRepoProvider from "./repositories/message/Provider.js"
 import MessageStatusRepoProvider from "./repositories/message_status/Provider.js"
@@ -28,7 +28,7 @@ import StorageServiceProvider from "./services/storage/Provider.js"
 import OperationsLogServiceProvider from "./services/operation_logs/Provider.js"
 import ActivityManagerServiceProvider from "./services/activity_manager/Provider.js"
 import ConversationServiceProvider from "./services/conversation/Provider.js"
-import ConversationSchemeServiceProvider from "./services/conversation_scheme/Provider.js"
+import ConversationHandlerServiceProvider from "./services/conversation_handler/Provider.js"
 import MessageServiceProvider from "./services/message/Provider.js"
 import ConversationNotificationProvider from "./services/conversation_notification/Provider.js"
 import ContactServiceProvider from "./services/contacts/Provider.js"
@@ -65,9 +65,9 @@ import ConversationListParticipantsOperationProvider from "./operations/conversa
 import ConversationDeleteOperationProvider from "./operations/conversation/delete/Provider.js"
 import ConversationSearchOperationProvider from "./operations/conversation/search/Provider.js"
 
-import ConversationSchemeCreateOperationProvider from "./operations/conversation_schemes/create/Provider.js"
-import ConversationSchemeGetOperationProvider from "./operations/conversation_schemes/get/Provider.js"
-import ConversationSchemeDeleteOperationProvider from "./operations/conversation_schemes/delete/Provider.js"
+import ConversationHandlerCreateOperationProvider from "./operations/conversation_handlers/create/Provider.js"
+import ConversationHandlerGetOperationProvider from "./operations/conversation_handlers/get/Provider.js"
+import ConversationHandlerDeleteOperationProvider from "./operations/conversation_handlers/delete/Provider.js"
 
 import MessageCreateOperationProvider from "./operations/message/create/Provider.js"
 import MessageEditOperationProvider from "./operations/message/edit/Provider.js"
@@ -117,7 +117,7 @@ const providers = [
   BlockedUserRepoProvider,
   FileRepoProvider,
   ConversationRepoProvider,
-  ConversationSchemeRepoProvider,
+  ConversationHandlerRepoProvider,
   ConversationParticipantRepoProvider,
   MessageRepoProvider,
   MessageStatusRepoProvider,
@@ -134,7 +134,7 @@ const providers = [
   OperationsLogServiceProvider,
   ActivityManagerServiceProvider,
   ConversationServiceProvider,
-  ConversationSchemeServiceProvider,
+  ConversationHandlerServiceProvider,
   MessageServiceProvider,
   ConversationNotificationProvider,
   ContactServiceProvider,
@@ -171,9 +171,9 @@ const providers = [
   ConversationDeleteOperationProvider,
   ConversationSearchOperationProvider,
 
-  ConversationSchemeCreateOperationProvider,
-  ConversationSchemeGetOperationProvider,
-  ConversationSchemeDeleteOperationProvider,
+  ConversationHandlerCreateOperationProvider,
+  ConversationHandlerGetOperationProvider,
+  ConversationHandlerDeleteOperationProvider,
 
   MessageCreateOperationProvider,
   MessageEditOperationProvider,
@@ -207,7 +207,7 @@ const providers = [
   HttpMessageEditOperationProvider,
   HttpMessageDeleteOperationProvider,
 
-  HttpActivityOnlineListOperationProvider
+  HttpActivityOnlineListOperationProvider,
 ]
 
 export default providers

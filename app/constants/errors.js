@@ -87,7 +87,7 @@ export const ERROR_STATUES = {
     message: `You've reached the maximum participant limit.`,
   },
   OPPONENT_NOT_FOUND: { status: 422, message: "Opponent ID not found." },
-  SCHEME_NOT_FOUND: { status: 422, message: "Scheme for this conversation not found." },
+  HANDLER_NOT_FOUND: { status: 422, message: "Handler for this conversation not found." },
   // File -->
   FILE_IDS_MISSED: { status: 422, message: "File IDS missed." },
   FILE_LIMIT_EXCEEDED: {
@@ -121,7 +121,7 @@ export const ERROR_STATUES = {
   STATUS_ID_MISSED: { status: 422, message: "Status ID missed." },
   STATUS_TYPE_MISSED: { status: 422, message: "Status type missed." },
   STATUS_T_MISSED: { status: 422, message: `Status 't' missed.` },
-  MESSAGE_BLOCKED_BY_SCHEME: { status: 422, message: "Message blocked by conversation rules." },
+  MESSAGE_BLOCKED_BY_HANDLER: { status: 422, message: "Message blocked by conversation rules." },
   // Push Notification -->
   INCORRECT_PLATFORM_TYPE: { status: 422, message: "Incorrect platform type." },
   INCORRECT_DEVICE_ID: { status: 422, message: "Incorrect device id." },

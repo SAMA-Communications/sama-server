@@ -1,9 +1,9 @@
 import Joi from "joi"
 
-export const conversationSchemesSchemaValidation = {
+export const conversationHandlersSchemaValidation = {
   create: Joi.object({
     cid: Joi.string().required(),
-    scheme: Joi.string().required(),
+    content: Joi.string().required(),
   }),
   get: Joi.object({
     cid: Joi.string().required(),

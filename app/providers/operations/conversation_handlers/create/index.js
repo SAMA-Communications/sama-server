@@ -1,27 +1,24 @@
 import { ERROR_STATUES } from "../../../../constants/errors.js"
 
-class ConversationSchemeGetOperation {
-  constructor(sessionService, conversationService, conversationSchemeService) {
+class ConversationHandlerCreateOperation {
+  constructor(sessionService, conversationService, conversationHandlerService) {
     this.sessionService = sessionService
     this.conversationService = conversationService
-    this.conversationSchemeService = conversationSchemeService
+    this.conversationHandlerService = conversationHandlerService
   }
 
-  async perform(ws, schemeGetOptions) {
-    const { cid } = schemeGetOptions
+  async perform(ws, schemeParams) {
+    const { cid, content } = schemeParams
     const currentUserId = this.sessionService.getSessionUserId(ws)
 
     await this.#hasAccess(cid, currentUserId)
 
-    const conversationScheme = await this.conversationSchemeService.getSchemeByConversationId(cid)
-    if (!conversationScheme) {
-      throw new Error(ERROR_STATUES.SCHEME_NOT_FOUND.message, {
-        cause: ERROR_STATUES.SCHEME_NOT_FOUND,
-      })
+    const existedHandlerForConversation = await this.conversationHandlerService.getHandlerByConversationId(cid)
+    if (existedHandlerForConversation) {
+      await this.conversationHandlerService.updateExistedConversationHandler(cid, content, currentUserId)
+    } else {
+      await this.conversationHandlerService.createHandlerByConversationId(cid, content, currentUserId)
     }
-    const { scheme, updated_by, updated_at } = conversationScheme
-
-    return { scheme, updated_by, updated_at }
   }
 
   async #hasAccess(conversationId, userId) {
@@ -41,4 +38,4 @@ class ConversationSchemeGetOperation {
   }
 }
 
-export default ConversationSchemeGetOperation
+export default ConversationHandlerCreateOperation

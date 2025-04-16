@@ -8,7 +8,7 @@ import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 const conversationRepo = ServiceLocatorContainer.use("ConversationRepository")
 const conversationParticipantRepo = ServiceLocatorContainer.use("ConversationParticipantRepository")
-const conversationSchemeRepo = ServiceLocatorContainer.use("ConversationSchemeRepository")
+const conversationHandlerRepo = ServiceLocatorContainer.use("ConversationHandlerRepository")
 
 let currentConversationId = ""
 let currentUserToken = ""
@@ -26,7 +26,7 @@ describe("Conversation scheme functions", async () => {
     it("should work, create conversation scheme", async () => {
       const requestData = {
         request: {
-          conversation_scheme_create: {
+          conversation_handler_create: {
             scheme: "test",
             cid: currentConversationId,
           },
@@ -45,7 +45,7 @@ describe("Conversation scheme functions", async () => {
     it("should work, update conversation scheme", async () => {
       const requestData = {
         request: {
-          conversation_scheme_create: {
+          conversation_handler_create: {
             scheme: "test1",
             cid: currentConversationId,
           },
@@ -64,7 +64,7 @@ describe("Conversation scheme functions", async () => {
     it("should fail, cid field is required", async () => {
       const requestData = {
         request: {
-          conversation_scheme_create: {
+          conversation_handler_create: {
             scheme: "test",
           },
           id: "1",
@@ -82,7 +82,7 @@ describe("Conversation scheme functions", async () => {
     it("should fail, scheme field is required", async () => {
       const requestData = {
         request: {
-          conversation_scheme_create: {
+          conversation_handler_create: {
             cid: currentConversationId,
           },
           id: "1",
@@ -100,7 +100,7 @@ describe("Conversation scheme functions", async () => {
     it("should fail, cid is incorrect", async () => {
       const requestData = {
         request: {
-          conversation_scheme_create: {
+          conversation_handler_create: {
             scheme: "test",
             cid: "123",
           },
@@ -119,7 +119,7 @@ describe("Conversation scheme functions", async () => {
     it("should fail, scheme incorrect format", async () => {
       const requestData = {
         request: {
-          conversation_scheme_create: {
+          conversation_handler_create: {
             scheme: {},
             cid: "123",
           },
@@ -140,7 +140,7 @@ describe("Conversation scheme functions", async () => {
     it("should work, get conversation scheme", async () => {
       const requestData = {
         request: {
-          get_conversation_scheme: {
+          get_conversation_handler: {
             cid: currentConversationId,
           },
           id: "1",
@@ -151,15 +151,15 @@ describe("Conversation scheme functions", async () => {
 
       responseData = responseData.backMessages.at(0)
 
-      assert.strictEqual(responseData.response.conversation_scheme.scheme, "test1")
-      assert.strictEqual(responseData.response.conversation_scheme.updated_by.toString(), userId[0].toString())
+      assert.strictEqual(responseData.response.conversation_handler.scheme, "test1")
+      assert.strictEqual(responseData.response.conversation_handler.updated_by.toString(), userId[0].toString())
       assert.strictEqual(responseData.response.error, undefined)
     })
 
     it("should fail, incorrect cid", async () => {
       const requestData = {
         request: {
-          get_conversation_scheme: {
+          get_conversation_handler: {
             cid: "currentConversationId",
           },
           id: "1",
@@ -170,14 +170,14 @@ describe("Conversation scheme functions", async () => {
 
       responseData = responseData.backMessages.at(0)
 
-      assert.strictEqual(responseData.response.conversation_scheme, undefined)
+      assert.strictEqual(responseData.response.conversation_handler, undefined)
       assert.deepEqual(responseData.response.error, { status: 400, message: "Bad Request." })
     })
 
     it("should fail, cid field is missed", async () => {
       const requestData = {
         request: {
-          get_conversation_scheme: {},
+          get_conversation_handler: {},
           id: "1",
         },
       }
@@ -186,7 +186,7 @@ describe("Conversation scheme functions", async () => {
 
       responseData = responseData.backMessages.at(0)
 
-      assert.strictEqual(responseData.response.conversation_scheme, undefined)
+      assert.strictEqual(responseData.response.conversation_handler, undefined)
       assert.strictEqual(responseData.response.error, '"cid" is required')
     })
 
@@ -194,13 +194,13 @@ describe("Conversation scheme functions", async () => {
       await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify({
-          request: { conversation_scheme_delete: { cid: currentConversationId }, id: "1" },
+          request: { conversation_handler_delete: { cid: currentConversationId }, id: "1" },
         })
       )
 
       const requestData = {
         request: {
-          get_conversation_scheme: {
+          get_conversation_handler: {
             cid: currentConversationId,
           },
           id: "1",
@@ -211,7 +211,7 @@ describe("Conversation scheme functions", async () => {
 
       responseData = responseData.backMessages.at(0)
 
-      assert.strictEqual(responseData.response.conversation_scheme, undefined)
+      assert.strictEqual(responseData.response.conversation_handler, undefined)
       assert.deepEqual(responseData.response.error, {
         message: "Scheme for this conversation not found.",
         status: 422,
@@ -220,7 +220,7 @@ describe("Conversation scheme functions", async () => {
       await packetJsonProcessor.processMessageOrError(
         mockedWS,
         JSON.stringify({
-          request: { conversation_scheme_create: { scheme: "test1", cid: currentConversationId }, id: "1" },
+          request: { conversation_handler_create: { scheme: "test1", cid: currentConversationId }, id: "1" },
         })
       )
     })
@@ -230,7 +230,7 @@ describe("Conversation scheme functions", async () => {
     it("should work, delete conversation scheme", async () => {
       const requestData = {
         request: {
-          conversation_scheme_delete: {
+          conversation_handler_delete: {
             cid: currentConversationId,
           },
           id: "1",
@@ -248,7 +248,7 @@ describe("Conversation scheme functions", async () => {
     it("should fail, no scheme", async () => {
       const requestData = {
         request: {
-          get_conversation_scheme: {
+          get_conversation_handler: {
             cid: currentConversationId,
           },
           id: "1",
@@ -269,7 +269,7 @@ describe("Conversation scheme functions", async () => {
     it("should fail, cid is incorrect", async () => {
       const requestData = {
         request: {
-          get_conversation_scheme: {
+          get_conversation_handler: {
             cid: "asdasdasd",
           },
           id: "1",
@@ -290,7 +290,7 @@ describe("Conversation scheme functions", async () => {
     it("should fail, cid field is missed", async () => {
       const requestData = {
         request: {
-          get_conversation_scheme: {},
+          get_conversation_handler: {},
           id: "1",
         },
       }
@@ -299,7 +299,7 @@ describe("Conversation scheme functions", async () => {
 
       responseData = responseData.backMessages.at(0)
 
-      assert.strictEqual(responseData.response.conversation_scheme, undefined)
+      assert.strictEqual(responseData.response.conversation_handler, undefined)
       assert.strictEqual(responseData.response.error, '"cid" is required')
     })
   })
@@ -311,7 +311,7 @@ describe("Conversation scheme functions", async () => {
 
       const requestData = {
         request: {
-          conversation_scheme_create: {
+          conversation_handler_create: {
             scheme: "test3",
             cid: currentConversationId,
           },
@@ -333,7 +333,7 @@ describe("Conversation scheme functions", async () => {
     it("should fail, get conversation scheme", async () => {
       const requestData = {
         request: {
-          get_conversation_scheme: {
+          get_conversation_handler: {
             cid: currentConversationId,
           },
           id: "1",
@@ -354,7 +354,7 @@ describe("Conversation scheme functions", async () => {
     it("should fail, delete conversation scheme", async () => {
       const requestData = {
         request: {
-          conversation_scheme_delete: {
+          conversation_handler_delete: {
             cid: currentConversationId,
           },
           id: "1",
@@ -376,7 +376,7 @@ describe("Conversation scheme functions", async () => {
   after(async () => {
     await userRepo.deleteMany({})
     await conversationRepo.deleteMany({})
-    await conversationSchemeRepo.deleteMany({})
+    await conversationHandlerRepo.deleteMany({})
     await conversationParticipantRepo.deleteMany({})
   })
 })
