@@ -41,10 +41,15 @@ class ConversationCreateOperation {
       normalizedParticipants = participantIds
     }
 
-    const conversationEvent = await this.#createActionEvent(conversation, currentUserId)
-    conversationEvent.participantIds = normalizedParticipants
+    const result = { conversation }
 
-    return { conversation, event: conversationEvent }
+    if (this.conversationNotificationService.isEnabled()) {
+      const conversationEvent = await this.#createActionEvent(conversation, currentUserId)
+      conversationEvent.participantIds = normalizedParticipants
+      result.event = conversationEvent
+    }
+
+    return result
   }
 
   async #createPrivateConversation(user, conversationParams, participantIds) {
