@@ -1,6 +1,13 @@
 import BaseRepository from "../base.js"
 
 class UserTokenRepository extends BaseRepository {
+  async prepareParams(params) {
+    params.organization_id = this.castOrganizationId(params.organization_id)
+    params.user_id = this.castObjectId(params.user_id)
+
+    return await super.prepareParams(params)
+  }
+
   async findToken(jwtToken, deviceId, tokenType) {
     const params = { token: jwtToken }
 

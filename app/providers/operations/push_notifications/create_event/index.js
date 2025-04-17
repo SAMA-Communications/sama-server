@@ -12,7 +12,7 @@ class PushEventCreateOperation {
 
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    const recipients = await this.userService.userRepo.retrieveExistedIds(recipients_ids)
+    const recipients = await this.userService.userRepo.retrieveExistedIds(organizationId, recipients_ids)
 
     if (!recipients.length) {
       throw new Error(ERROR_STATUES.RECIPIENTS_NOT_FOUND.message, {
@@ -20,7 +20,7 @@ class PushEventCreateOperation {
       })
     }
 
-    const pushEvent = await this.pushNotificationService.createEvent(organizationId, currentUserId, recipients_ids, message)
+    const pushEvent = await this.pushNotificationService.createEvent(currentUserId, recipients, message)
 
     return pushEvent
   }

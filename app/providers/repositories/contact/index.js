@@ -3,6 +3,7 @@ import BaseRepository from "../base.js"
 class ContactRepository extends BaseRepository {
   async prepareParams(params) {
     params.user_id = this.castObjectId(params.user_id)
+    params.organization_id = this.castOrganizationId(params.organization_id)
 
     return await super.prepareParams(params)
   }

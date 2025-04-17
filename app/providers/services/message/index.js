@@ -9,6 +9,7 @@ class MessageService {
     messageParams.cid = conversation._id
     messageParams.deleted_for = blockedUserIds
     messageParams.from = user.native_id
+    messageParams.organization_id = user.organization_id
 
     messageParams.t = this.helpers.currentTimeStamp()
 

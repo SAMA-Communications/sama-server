@@ -24,7 +24,7 @@ class ConversationEditOperation {
 
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    const { participantIds: currentParticipantIds } = await this.#hasAccess(conversationId, currentUserId)
+    const { participantIds: currentParticipantIds } = await this.#hasAccess(conversationId, currentUserId, organizationId)
 
     const updatedConversation = await this.conversationService.conversationRepo.update(conversationId, updateFields)
 
@@ -61,10 +61,11 @@ class ConversationEditOperation {
     return result
   }
 
-  async #hasAccess(conversationId, userId) {
+  async #hasAccess(conversationId, userId, organizationId) {
     const { conversation, asOwner, participantIds } = await this.conversationService.hasAccessToConversation(
       conversationId,
-      userId
+      userId,
+      organizationId
     )
     if (!conversation) {
       throw new Error(ERROR_STATUES.BAD_REQUEST.message, {
@@ -85,11 +86,11 @@ class ConversationEditOperation {
     let { add: addUsers, remove: removeUsers } = updateParticipants
 
     if (addUsers?.length) {
-      addUsers = await this.userService.userRepo.retrieveExistedIds(addUsers)
+      addUsers = await this.userService.userRepo.retrieveExistedIds(conversation.organization_id, addUsers)
     }
 
     if (removeUsers?.length) {
-      removeUsers = await this.userService.userRepo.retrieveExistedIds(removeUsers)
+      removeUsers = await this.userService.userRepo.retrieveExistedIds(conversation.organization_id, removeUsers)
     }
 
     addUsers ??= []

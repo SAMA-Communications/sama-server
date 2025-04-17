@@ -13,7 +13,7 @@ class ConversationDeleteOperation {
   async perform(ws, conversationId) {
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    const { conversation, participantIds } = await this.#getConversationDetails(conversationId, currentUserId)
+    const { conversation, participantIds } = await this.#getConversationDetails(conversationId, currentUserId, organizationId)
 
     await this.conversationService.removeParticipants(conversation, [currentUserId], participantIds)
 
@@ -31,10 +31,11 @@ class ConversationDeleteOperation {
     return result
   }
 
-  async #getConversationDetails(conversationId, userId) {
+  async #getConversationDetails(conversationId, userId, organizationId) {
     const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
       conversationId,
-      userId
+      userId,
+      organizationId
     )
     if (!conversation) {
       throw new Error(ERROR_STATUES.BAD_REQUEST.message, {

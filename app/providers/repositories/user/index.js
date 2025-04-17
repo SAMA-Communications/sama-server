@@ -1,6 +1,12 @@
 import BaseRepository from "../base.js"
 
 class UserRepository extends BaseRepository {
+  async prepareParams(params) {
+    params.organization_id = this.castOrganizationId(params.organization_id)
+
+    return await super.prepareParams(params)
+  }
+
   async findByLogin(organizationId, login) {
     const user = await this.findOne({ organization_id: organizationId, login })
 
@@ -29,8 +35,8 @@ class UserRepository extends BaseRepository {
     return user
   }
 
-  async retrieveExistedIds(userIds) {
-    const existedUserIds = await this.getAllIdsBy({ _id: { $in: userIds } })
+  async retrieveExistedIds(organizationId, userIds) {
+    const existedUserIds = await this.getAllIdsBy({ organization_id: organizationId, _id: { $in: userIds } })
 
     return existedUserIds
   }

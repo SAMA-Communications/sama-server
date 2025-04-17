@@ -4,6 +4,7 @@ class ConversationParticipantRepository extends BaseRepository {
   async prepareParams(params) {
     params.conversation_id = this.castObjectId(params.conversation_id)
     params.user_id = this.castObjectId(params.user_id)
+    params.organization_id = this.castOrganizationId(params.organization_id)
 
     return await super.prepareParams(params)
   }

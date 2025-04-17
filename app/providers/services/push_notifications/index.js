@@ -41,7 +41,7 @@ class PushNotificationService {
     return subscription
   }
 
-  async createEvent(organizationId, userId, recipientIds, message) {
+  async createEvent(userId, recipientIds, message) {
     const createPushEventOptions = new CreatePushEventOptions(userId, message, {
       user_ids: recipientIds,
     })

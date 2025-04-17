@@ -17,7 +17,7 @@ class MessageListOperation {
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
-    await this.#hasAccess(cId, currentUserId)
+    await this.#hasAccess(cId, currentUserId, organizationId)
 
     const normalizedLimit = this.#normalizeLimitParam(limit)
 
@@ -33,10 +33,11 @@ class MessageListOperation {
     return messagesWithStatus.map((message) => new MessagePublicFields(message))
   }
 
-  async #hasAccess(conversationId, currentUserId) {
+  async #hasAccess(conversationId, currentUserId, organizationId) {
     const { conversation, asParticipant } = await this.conversationService.hasAccessToConversation(
       conversationId,
-      currentUserId
+      currentUserId,
+      organizationId
     )
 
     if (!conversation) {

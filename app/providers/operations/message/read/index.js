@@ -1,3 +1,4 @@
+import { ERROR_STATUES } from "../../../../constants/errors.js"
 import groupBy from "@sama/utils/groupBy.js"
 import ReadMessagesPublicFields from "@sama/DTO/Response/message/read/public_fields.js"
 
@@ -15,6 +16,8 @@ class MessageReadOperation {
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
+    await this.#hasAccess(cId, currentUserId, organizationId)
+
     const unreadMessages = await this.messageService.readMessagesInConversation(cid, currentUser, mids)
 
     const unreadMessagesGroupedByFrom = groupBy(unreadMessages, "from")
@@ -29,6 +32,26 @@ class MessageReadOperation {
     })
 
     return { readMessagesGroups }
+  }
+
+  async #hasAccess(conversationId, currentUserId, organizationId) {
+    const { conversation, asParticipant } = await this.conversationService.hasAccessToConversation(
+      conversationId,
+      currentUserId,
+      organizationId
+    )
+
+    if (!conversation) {
+      throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {
+        cause: ERROR_STATUES.CONVERSATION_NOT_FOUND,
+      })
+    }
+
+    if (!asParticipant) {
+      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+        cause: ERROR_STATUES.FORBIDDEN,
+      })
+    }
   }
 }
 

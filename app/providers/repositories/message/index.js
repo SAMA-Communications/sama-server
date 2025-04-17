@@ -7,6 +7,7 @@ class MessageRepository extends BaseRepository {
     }
     params.from = this.castObjectId(params.from)
     params.cid = this.castObjectId(params.cid)
+    params.organization_id = this.castOrganizationId(params.organization_id)
 
     return await super.prepareParams(params)
   }

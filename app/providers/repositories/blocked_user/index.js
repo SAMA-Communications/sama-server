@@ -4,6 +4,7 @@ class BlockedUserRepository extends BaseRepository {
   async prepareParams(params) {
     params.enabled = !!params.enabled
 
+    params.organization_id = this.castOrganizationId(params.organization_id)
     params.user_id = this.castObjectId(params.user_id)
     params.blocked_user_id = this.castObjectId(params.blocked_user_id)
 
