@@ -16,7 +16,7 @@ class MessageReadOperation {
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
-    await this.#hasAccess(cId, currentUserId, organizationId)
+    await this.#hasAccess(cid, currentUserId, organizationId)
 
     const unreadMessages = await this.messageService.readMessagesInConversation(cid, currentUser, mids)
 

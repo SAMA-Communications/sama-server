@@ -33,7 +33,7 @@ class MessageCreateOperation {
     const { conversation, blockedUserIds, participantIds } = await this.#hasAccess(
       createMessageParams.cid,
       currentUserId,
-      organizationId,
+      organizationId
     )
 
     const message = await this.messageService.create(currentUser, conversation, blockedUserIds, createMessageParams)
@@ -72,7 +72,11 @@ class MessageCreateOperation {
   }
 
   async #hasAccess(conversationId, currentUserId, organizationId) {
-    const { conversation, participantIds } = await this.#hasAccessToConversation(conversationId, currentUserId, organizationId)
+    const { conversation, participantIds } = await this.#hasAccessToConversation(
+      conversationId,
+      currentUserId,
+      organizationId
+    )
 
     const blockedUserIds = await this.#checkBlocked(conversation, currentUserId, participantIds)
 

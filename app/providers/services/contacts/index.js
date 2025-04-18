@@ -74,7 +74,7 @@ class ContactService {
       email && (updateParam["email"] = await this.#updateFieldOnCreate(contact.email, userId, email))
       phone && (updateParam["phone"] = await this.#updateFieldOnCreate(contact.phone, userId, phone))
 
-      await this.findByIdAndUpdate(userId, contact._id, updateParam)
+      await this.findByIdAndUpdate(contact.user_id, contact._id, updateParam)
     }
   }
 
@@ -98,7 +98,7 @@ class ContactService {
       email && (updateParam["email"] = await this.#updateFieldOnUpdate(contact.email, userId, email, oldEmail))
       phone && (updateParam["phone"] = await this.#updateFieldOnUpdate(contact.phone, userId, phone, oldPhone))
 
-      await this.findByIdAndUpdate(userId, contact._id, updateParam)
+      await this.findByIdAndUpdate(contact.user_id, contact._id, updateParam)
     }
   }
 
@@ -126,7 +126,7 @@ class ContactService {
       email && (updateParam["email"] = await this.#updateFieldOnDelete(contact.email, email))
       phone && (updateParam["phone"] = await this.#updateFieldOnDelete(contact.phone, phone))
 
-      await this.findByIdAndUpdate(userId, contact._id, updateParam)
+      await this.findByIdAndUpdate(contact.user_id, contact._id, updateParam)
     }
   }
 

@@ -14,7 +14,10 @@ class ConversationCreateOperation {
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
-    const paramsParticipantIds = await this.userService.userRepo.retrieveExistedIds(organizationId, conversationParams.participants)
+    const paramsParticipantIds = await this.userService.userRepo.retrieveExistedIds(
+      organizationId,
+      conversationParams.participants
+    )
     delete conversationParams.participants
     conversationParams.owner_id = currentUserId
 

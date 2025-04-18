@@ -19,11 +19,7 @@ class HttpUserLogoutOperation {
       })
     }
 
-    const refreshTokenRecord = await this.userTokenRepo.findToken(
-      refreshToken,
-      accessTokenRecord.device_id,
-      "refresh"
-    )
+    const refreshTokenRecord = await this.userTokenRepo.findToken(refreshToken, accessTokenRecord.device_id, "refresh")
     if (!refreshTokenRecord) {
       throw new Error(ERROR_STATUES.INCORRECT_TOKEN.message, {
         cause: ERROR_STATUES.INCORRECT_TOKEN,

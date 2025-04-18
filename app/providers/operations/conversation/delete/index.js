@@ -13,7 +13,11 @@ class ConversationDeleteOperation {
   async perform(ws, conversationId) {
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    const { conversation, participantIds } = await this.#getConversationDetails(conversationId, currentUserId, organizationId)
+    const { conversation, participantIds } = await this.#getConversationDetails(
+      conversationId,
+      currentUserId,
+      organizationId
+    )
 
     await this.conversationService.removeParticipants(conversation, [currentUserId], participantIds)
 

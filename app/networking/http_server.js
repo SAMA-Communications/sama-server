@@ -209,7 +209,7 @@ export default class HttpServerApp {
     this.uWSLocalSocket.post("/login", this.onHttpRequestHandler([], HttpAuthController.login))
 
     this.uWSLocalSocket.post("/logout", this.onHttpRequestHandler([], HttpAuthController.logout))
-    
+
     this.uWSLocalSocket.post(
       "/admin/organization",
       this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpOrganizationController.create)

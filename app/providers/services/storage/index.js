@@ -8,8 +8,8 @@ class StorageService {
   async createFile(organizationId, userId, fileObj) {
     const { objectId, url } = await this.storageDriverClient.getUploadUrl(fileObj.name)
 
-    file.organization_id = organizationId
-    file.user_id = userId
+    fileObj.organization_id = organizationId
+    fileObj.user_id = userId
     fileObj.object_id = objectId
 
     const fileModel = await this.fileRepo.create(fileObj)

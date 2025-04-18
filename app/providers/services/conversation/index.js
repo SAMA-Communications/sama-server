@@ -156,7 +156,7 @@ class ConversationService {
       const createParticipantsParams = participantIds.map((participantId) => ({
         conversation_id: conversation._id,
         user_id: participantId,
-        organization_id: conversation.organization_id
+        organization_id: conversation.organization_id,
       }))
 
       await this.conversationParticipantRepo.createMany(createParticipantsParams)

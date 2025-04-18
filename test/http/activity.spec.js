@@ -2,12 +2,13 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../../app/common/ServiceLocatorContainer.js"
 
-import { createUserArray, sendLogin } from "../tools/utils.js"
+import { generateNewOrganizationId, createUserArray, sendLogin } from "../tools/utils.js"
 import HttpActivityController from "../../APIs/JSON/controllers/http/activity.js"
 
 const redisClient = ServiceLocatorContainer.use("RedisClient")
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 
+let orgId = void 0
 let usersIds = []
 
 describe("Http Activity", async () => {
@@ -15,11 +16,12 @@ describe("Http Activity", async () => {
     await redisClient.client.flushAll()
     await userRepo.deleteMany({})
 
-    usersIds = await createUserArray(3)
+    orgId = await generateNewOrganizationId()
+    usersIds = await createUserArray(orgId, 3)
 
-    await sendLogin("u1", "user_1")
-    await sendLogin("u2", "user_2")
-    await sendLogin("u3", "user_3")
+    await sendLogin("u1", orgId, "user_1")
+    await sendLogin("u2", orgId, "user_2")
+    await sendLogin("u3", orgId, "user_3")
   })
 
   it("online list count", async () => {

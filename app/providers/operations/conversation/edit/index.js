@@ -24,7 +24,11 @@ class ConversationEditOperation {
 
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    const { participantIds: currentParticipantIds } = await this.#hasAccess(conversationId, currentUserId, organizationId)
+    const { participantIds: currentParticipantIds } = await this.#hasAccess(
+      conversationId,
+      currentUserId,
+      organizationId
+    )
 
     const updatedConversation = await this.conversationService.conversationRepo.update(conversationId, updateFields)
 

@@ -3,20 +3,22 @@ import assert from "assert"
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 import { ACTIVITY } from "../app/store/activity.js"
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
-import { createUserArray, sendLogin, sendLogout } from "./tools/utils.js"
+import { generateNewOrganizationId, createUserArray, sendLogin, sendLogout } from "./tools/utils.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 const activityManagerService = ServiceLocatorContainer.use("ActivityManagerService")
 
+let orgId = void 0
 let currentUserToken1 = ""
 let currentUserToken = ""
 let usersIds = []
 
 describe("User activities", async () => {
   before(async () => {
-    usersIds = await createUserArray(3)
-    currentUserToken1 = (await sendLogin("line_2", "user_3")).response.user.token
-    currentUserToken = (await sendLogin("line_1", "user_1")).response.user.token
+    orgId = await generateNewOrganizationId()
+    usersIds = await createUserArray(orgId, 3)
+    currentUserToken1 = (await sendLogin("line_2", orgId, "user_3")).response.user.token
+    currentUserToken = (await sendLogin("line_1", orgId, "user_1")).response.user.token
   })
 
   it("should work online list invalid limit", async () => {
@@ -74,8 +76,6 @@ describe("User activities", async () => {
 
     let responseData = await packetJsonProcessor.processMessageOrError("line_2", JSON.stringify(requestData))
     responseData = responseData.backMessages.at(0)
-
-    console.log(responseData.response.users)
 
     assert.strictEqual(responseData.response.id, requestData.request.id)
     assert.ok(responseData.response.users.length <= 10)

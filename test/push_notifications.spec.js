@@ -4,18 +4,22 @@ import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
-import { createUserArray, mockedWS, sendLogin } from "./tools/utils.js"
+import { generateNewOrganizationId, createUserArray, mockedWS, sendLogin, sendLogout } from "./tools/utils.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 const pushEventRepo = ServiceLocatorContainer.use("PushEventRepository")
 const pushSubscriptionRepo = ServiceLocatorContainer.use("PushSubscriptionsRepository")
 
+let orgId = void 0
 let usersIds = []
 
 describe("PushNotification functions", async () => {
   before(async () => {
-    usersIds = await createUserArray(2)
-    await sendLogin(mockedWS, "user_1")
+    orgId = await generateNewOrganizationId()
+    usersIds = await createUserArray(orgId, 2)
+
+    await sendLogout(mockedWS)
+    await sendLogin(mockedWS, orgId, "user_1")
   })
 
   describe("Create method", async () => {

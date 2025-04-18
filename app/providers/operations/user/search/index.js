@@ -20,7 +20,7 @@ class UserSearchOperation {
       {
         match: searchParams.keyword,
         ignoreIds,
-        timeFromUpdate: searchParams.updated_at?.gt
+        timeFromUpdate: searchParams.updated_at?.gt,
       },
       limit
     )

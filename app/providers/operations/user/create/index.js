@@ -12,7 +12,7 @@ class UserCreateOperation {
 
     if (!isOrgExist) {
       throw new Error(ERROR_STATUES.ORG_NOT_FOUND.message, {
-        cause: ERROR_STATUES.ORG_NOT_FOUND
+        cause: ERROR_STATUES.ORG_NOT_FOUND,
       })
     }
 

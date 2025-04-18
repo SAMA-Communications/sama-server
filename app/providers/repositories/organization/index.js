@@ -1,7 +1,5 @@
 import BaseRepository from "../base.js"
 
-class OrganizationRepository extends BaseRepository {
-  
-}
+class OrganizationRepository extends BaseRepository {}
 
 export default OrganizationRepository

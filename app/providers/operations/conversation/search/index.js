@@ -1,7 +1,8 @@
 import { CONSTANTS as MAIN_CONSTANTS } from "../../../../constants/constants.js"
 
 class ConversationSearchOperation {
-  constructor(conversationService) {
+  constructor(sessionService, conversationService) {
+    this.sessionService = sessionService
     this.conversationService = conversationService
   }
 

@@ -38,7 +38,7 @@ class MessageSendSystemOperation {
     const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
       conversationId,
       currentUserId,
-      organizationId,
+      organizationId
     )
 
     if (!conversation) {

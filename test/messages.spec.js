@@ -3,7 +3,14 @@ import assert from "assert"
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
 import { ObjectId } from "@sama/lib/db.js"
-import { createConversation, createUserArray, mockedWS, sendLogin, sendLogout } from "./tools/utils.js"
+import {
+  generateNewOrganizationId,
+  createConversation,
+  createUserArray,
+  mockedWS,
+  sendLogin,
+  sendLogout,
+} from "./tools/utils.js"
 
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
@@ -14,6 +21,7 @@ const messageRepo = ServiceLocatorContainer.use("MessageRepository")
 const messageStatusRepo = ServiceLocatorContainer.use("MessageStatusRepository")
 const messageService = ServiceLocatorContainer.use("MessageService")
 
+let orgId = void 0
 let filterUpdatedAt = ""
 let currentUserToken = ""
 let currentConversationId = ""
@@ -23,10 +31,12 @@ let messageId1 = ""
 
 describe("Message function", async () => {
   before(async () => {
-    usersIds = await createUserArray(3)
+    orgId = await generateNewOrganizationId()
+    usersIds = await createUserArray(orgId, 3)
 
-    await sendLogin(mockedWS, "user_2")
-    currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user._id
+    await sendLogout(mockedWS)
+    await sendLogin(mockedWS, orgId, "user_2")
+    currentUserToken = (await sendLogin(mockedWS, orgId, "user_1")).response.user._id
 
     currentConversationId = await createConversation(mockedWS, null, null, "g", [usersIds[1], usersIds[0]])
   })
@@ -110,7 +120,7 @@ describe("Message function", async () => {
     })
 
     it("should fail participant not found", async () => {
-      currentUserToken = (await sendLogin(mockedWS, "user_3")).response.user.token
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_3")).response.user.token
 
       const requestData = {
         message: {
@@ -129,7 +139,7 @@ describe("Message function", async () => {
       responseData = responseData.backMessages.at(0)
 
       await sendLogout(mockedWS, currentUserToken)
-      currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user.token
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_1")).response.user.token
 
       assert.equal(responseData.ask, undefined)
       assert.deepEqual(responseData.message.error, {
@@ -412,7 +422,7 @@ describe("Message function", async () => {
 
     it("should fail user haven`t permission", async () => {
       await sendLogout(mockedWS, currentUserToken)
-      currentUserToken = (await sendLogin(mockedWS, "user_3")).response.user
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_3")).response.user
 
       const requestData = {
         request: {
@@ -434,7 +444,7 @@ describe("Message function", async () => {
       })
 
       await sendLogout(mockedWS, currentUserToken)
-      currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_1")).response.user
     })
 
     after(async () => {
@@ -746,7 +756,7 @@ describe("Message function", async () => {
     })
 
     it("should fail active_user is not owner message", async () => {
-      await sendLogin(mockedWS, "user_3")
+      await sendLogin(mockedWS, orgId, "user_3")
       const requestData = {
         request: {
           message_edit: {
@@ -784,6 +794,7 @@ describe("Message function", async () => {
         const requestDataCreate = {
           request: {
             user_create: {
+              organization_id: orgId,
               login: `user_${i + 1}`,
               email: `email_${i + 1}`,
               phone: `phone_${i + 1}`,
@@ -799,7 +810,7 @@ describe("Message function", async () => {
         responseData = responseData.backMessages.at(0)
         usersIds[i] = responseData.response.user._id
       }
-      currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user._id.toString()
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_1")).response.user._id.toString()
 
       let requestData = {
         request: {
@@ -836,7 +847,7 @@ describe("Message function", async () => {
       }
 
       // read 3/6 messages by u2
-      currentUserToken = (await sendLogin(mockedWS, "user_2")).response.user._id
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_2")).response.user._id
 
       requestData = {
         request: {
