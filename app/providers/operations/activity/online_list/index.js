@@ -7,6 +7,8 @@ class OnlineListOperation {
   async perform(ws, onlineListParams) {
     const { count: isCountRequest, idsOnly, offset, limit } = onlineListParams
 
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
+
     if (isCountRequest) {
       const count = await this.sessionService.onlineUsersCount()
 

@@ -25,7 +25,7 @@ describe("Http Activity", async () => {
   })
 
   it("online list count", async () => {
-    const requestData = { count: true }
+    const requestData = { organizationId: orgId, userId: usersIds.at(0), count: true }
 
     const req = {}
     const res = {
@@ -41,7 +41,7 @@ describe("Http Activity", async () => {
   })
 
   it("online list (idsOnly)", async () => {
-    const requestData = { limit: 10, idsOnly: true }
+    const requestData = { organizationId: orgId, userId: usersIds.at(0), limit: 10, idsOnly: true }
 
     const req = {}
     const res = {
@@ -57,7 +57,7 @@ describe("Http Activity", async () => {
   })
 
   it("online list", async () => {
-    const requestData = { limit: 15 }
+    const requestData = { organizationId: orgId, userId: usersIds.at(0), limit: 15 }
 
     const req = {}
     const res = {

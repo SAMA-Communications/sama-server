@@ -6,6 +6,6 @@ export default class PushEvent extends BaseModel {
   }
 
   static get visibleFields() {
-    return ["_id", "organization_id", "platform", "user_id", "user_ids", "message", "created_at", "updated_at"]
+    return ["_id", "platform", "user_id", "user_ids", "message", "created_at", "updated_at"]
   }
 }

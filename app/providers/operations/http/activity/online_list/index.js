@@ -1,3 +1,5 @@
+import { CONSTANTS as MAIN_CONSTANTS } from "../../../../../constants/constants.js"
+
 class HttpActivityOnlineListOperation {
   constructor(sessionService, onlineListOperation) {
     this.sessionService = sessionService
@@ -5,7 +7,16 @@ class HttpActivityOnlineListOperation {
   }
 
   async perform(fakeWsSessionKey, payload) {
-    const operationResponse = await this.onlineListOperation.perform(fakeWsSessionKey, payload)
+    const { organizationId, userId, ...requestData } = payload
+
+    this.sessionService.addUserDeviceConnection(
+      fakeWsSessionKey,
+      organizationId,
+      userId,
+      MAIN_CONSTANTS.HTTP_DEVICE_ID
+    )
+
+    const operationResponse = await this.onlineListOperation.perform(fakeWsSessionKey, requestData)
 
     return operationResponse
   }

@@ -1,7 +1,9 @@
+import { ERROR_STATUES } from "../../../../constants/errors.js"
 import { CONSTANTS as MAIN_CONSTANTS } from "../../../../constants/constants.js"
 
 class ActivityUserSubscribeOperation {
-  constructor(sessionService, activityManagerService, userService) {
+  constructor(helpers, sessionService, activityManagerService, userService) {
+    this.helpers = helpers
     this.sessionService = sessionService
     this.activityManagerService = activityManagerService
     this.userService = userService
@@ -9,6 +11,14 @@ class ActivityUserSubscribeOperation {
 
   async perform(ws, targetUserId) {
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
+
+    const targetUser = await this.userService.userRepo.findById(targetUserId)
+
+    if (!this.helpers.isEqualsNativeIds(targetUser.organization_id, organizationId)) {
+      throw new Error(ERROR_STATUES.INCORRECT_USER.message, {
+        cause: ERROR_STATUES.INCORRECT_USER,
+      })
+    }
 
     await this.activityManagerService.subscribeObserverToTarget(currentUserId, targetUserId)
 
@@ -18,7 +28,6 @@ class ActivityUserSubscribeOperation {
     if (activeSessions?.length) {
       targetUserActivityStatus = MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE
     } else {
-      const targetUser = await this.userService.userRepo.findById(targetUserId)
       targetUserActivityStatus = targetUser.recent_activity
     }
 

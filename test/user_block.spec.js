@@ -2,7 +2,7 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
-import { generateNewOrganizationId, createUserArray, mockedWS, sendLogin } from "./tools/utils.js"
+import { generateNewOrganizationId, createUserArray, mockedWS, sendLogin, sendLogout } from "./tools/utils.js"
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")
@@ -20,6 +20,7 @@ describe("UserBlocked functions", async () => {
     orgId = await generateNewOrganizationId()
     usersIds = await createUserArray(orgId, 5)
 
+    await sendLogout(mockedWS)
     await sendLogin(mockedWS, orgId, "user_1")
   })
 
