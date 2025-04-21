@@ -37,11 +37,11 @@ describe("Http Activity", async () => {
     const httpResponse = responseData.httpResponse
     const { count } = httpResponse.body
 
-    assert.ok(count >= 3)
+    assert.ok(count === 3)
   })
 
   it("online list (idsOnly)", async () => {
-    const requestData = { organizationId: orgId, userId: usersIds.at(0), limit: 10, idsOnly: true }
+    const requestData = { organizationId: orgId, userId: usersIds.at(0), limit: 2, idsOnly: true }
 
     const req = {}
     const res = {
@@ -53,11 +53,11 @@ describe("Http Activity", async () => {
     const httpResponse = responseData.httpResponse
     const { users } = httpResponse.body
 
-    assert.ok(users.length <= 10)
+    assert.ok(users.length === 2)
   })
 
   it("online list", async () => {
-    const requestData = { organizationId: orgId, userId: usersIds.at(0), limit: 15 }
+    const requestData = { organizationId: orgId, userId: usersIds.at(0), offset: 1, limit: 15 }
 
     const req = {}
     const res = {
@@ -69,9 +69,11 @@ describe("Http Activity", async () => {
     const httpResponse = responseData.httpResponse
     const { users } = httpResponse.body
 
+    console.log(users)
+
     const user = users.at(0)
 
-    assert.ok(users.length <= 15)
+    assert.ok(users.length === 2)
     assert.ok(user.login)
   })
 

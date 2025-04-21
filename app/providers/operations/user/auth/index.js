@@ -42,6 +42,7 @@ class UserAuthOperation {
     await this.sessionService.storeUserNodeData(
       this.RuntimeDefinedContext.APP_IP,
       this.RuntimeDefinedContext.CLUSTER_PORT,
+      user.organization_id,
       user.native_id,
       deviceId
     )

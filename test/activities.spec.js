@@ -48,7 +48,7 @@ describe("User activities", async () => {
     responseData = responseData.backMessages.at(0)
 
     assert.strictEqual(responseData.response.id, requestData.request.id)
-    assert.ok(responseData.response.count >= 2)
+    assert.ok(responseData.response.count === 2)
   })
 
   it("should work online list idsOnly", async () => {
@@ -63,7 +63,7 @@ describe("User activities", async () => {
     responseData = responseData.backMessages.at(0)
 
     assert.strictEqual(responseData.response.id, requestData.request.id)
-    assert.ok(responseData.response.users.length >= 2)
+    assert.ok(responseData.response.users.length === 2)
   })
 
   it("should work online list", async () => {
@@ -78,7 +78,7 @@ describe("User activities", async () => {
     responseData = responseData.backMessages.at(0)
 
     assert.strictEqual(responseData.response.id, requestData.request.id)
-    assert.ok(responseData.response.users.length <= 10)
+    assert.ok(responseData.response.users.length === 2)
   })
 
   it("should work subscribe", async () => {

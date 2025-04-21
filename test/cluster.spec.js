@@ -54,7 +54,7 @@ describe("Cluster Message function", async () => {
         secondSocketResponse = data
       },
     }
-    await sessionService.storeUserNodeData(ip.address(), secondClusterPort, usersIds[1], deviceId)
+    await sessionService.storeUserNodeData(ip.address(), secondClusterPort, orgId, usersIds[1], deviceId)
   })
 
   describe("Send Message to other node", async () => {

@@ -26,6 +26,7 @@ class UserConnectSocketOperation {
     await this.sessionService.storeUserNodeData(
       this.RuntimeDefinedContext.APP_IP,
       this.RuntimeDefinedContext.CLUSTER_PORT,
+      token.organization_id,
       user.native_id,
       deviceId
     )

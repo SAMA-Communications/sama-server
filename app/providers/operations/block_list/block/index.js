@@ -10,10 +10,7 @@ class BlockListBlockOperation {
 
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    const normalizedIds = await this.userService.userRepo.retrieveExistedIds(
-      organizationId,
-      targetUserIds
-    )
+    const normalizedIds = await this.userService.userRepo.retrieveExistedIds(organizationId, targetUserIds)
 
     const blockedUsers = await this.blockListService.blockMany(organizationId, currentUserId, normalizedIds)
 
