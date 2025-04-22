@@ -21,9 +21,14 @@ class ConversationDeleteOperation {
       (participantId) => !this.helpers.isEqualsNativeIds(participantId, currentUserId)
     )
 
-    const conversationEvents = await this.#createActionEvents(conversation, currentUserId, filteredParticipants)
+    const result = { currentUserId }
 
-    return { currentUserId, conversationEvents }
+    if (this.conversationNotificationService.isEnabled()) {
+      const conversationEvents = await this.#createActionEvents(conversation, currentUserId, filteredParticipants)
+      result.conversationEvents = conversationEvents
+    }
+
+    return result
   }
 
   async #getConversationDetails(conversationId, userId) {

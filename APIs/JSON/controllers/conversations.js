@@ -12,17 +12,20 @@ class ConversationsController extends BaseJSONController {
     const conversationCreateOperation = ServiceLocatorContainer.use("ConversationCreateOperation")
     const { conversation, event } = await conversationCreateOperation.perform(ws, conversationParams)
 
-    const deliverMessage = new DeliverMessage(event.participantIds, event.message)
-    conversation.type !== "u" && deliverMessage.addPushQueueMessage(event.notification)
+    const response = new Response().addBackMessage({
+      response: {
+        id: requestId,
+        conversation: conversation.visibleParams(),
+      },
+    })
 
-    return new Response()
-      .addBackMessage({
-        response: {
-          id: requestId,
-          conversation: conversation.visibleParams(),
-        },
-      })
-      .addDeliverMessage(deliverMessage)
+    if (event) {
+      const deliverMessage = new DeliverMessage(event.participantIds, event.message)
+      conversation.type !== "u" && deliverMessage.addPushQueueMessage(event.notification)
+      response.addDeliverMessage(deliverMessage)
+    }
+
+    return response
   }
 
   async update(ws, data) {
@@ -42,7 +45,7 @@ class ConversationsController extends BaseJSONController {
       })
     }
 
-    const { currentUserId, conversation, conversationEvents } = updatedConversationResult
+    const { currentUserId, conversation, conversationEvents = [] } = updatedConversationResult
 
     conversationEvents.forEach((event) => {
       const deliverMessage = new DeliverMessage(event.participantIds, event.message).addPushQueueMessage(
@@ -91,7 +94,7 @@ class ConversationsController extends BaseJSONController {
     const conversationDeleteOperation = ServiceLocatorContainer.use("ConversationDeleteOperation")
     const deletedConversationResult = await conversationDeleteOperation.perform(ws, conversationId)
 
-    const { currentUserId, conversationEvents } = deletedConversationResult
+    const { currentUserId, conversationEvents = [] } = deletedConversationResult
 
     conversationEvents.forEach((event) => {
       const deliverMessage = new DeliverMessage(event.participantIds, event.message).addPushQueueMessage(
