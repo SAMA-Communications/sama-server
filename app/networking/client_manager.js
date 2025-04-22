@@ -1,7 +1,6 @@
 import uWS from "uWebSockets.js"
 import { StringDecoder } from "string_decoder"
 
-import { CONSTANTS as MAIN_CONSTANTS } from "../constants/constants.js"
 import { ERROR_STATUES } from "../constants/errors.js"
 
 import { BASE_API, APIs, detectAPIType } from "./APIs.js"
@@ -48,7 +47,7 @@ const processMessageResponse = async (ws, response, needStringify) => {
 
     const userId = response.lastActivityStatusResponse.userId || sessionService.getSessionUserId(ws)
     console.log("[UPDATE_LAST_ACTIVITY]", userId, response.lastActivityStatusResponse)
-    const responses = await activitySender.updateAndSendUserActivity(
+    const responses = await activitySender.updateAndBuildUserActivity(
       ws,
       userId,
       response.lastActivityStatusResponse.status
@@ -118,29 +117,7 @@ class ClientManager {
 
           await sessionService.removeUserSession(ws, userId)
 
-          const responses = await activitySender.updateAndSendUserActivity(
-            ws,
-            userId,
-            MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE
-          )
-          for (const response of responses) {
-            try {
-              await Promise.all(
-                response.deliverMessages.map(async (deliverMessage) => {
-                  console.log("[DELIVER]", deliverMessage)
-                  await packetManager.deliverToUserOrUsers(
-                    deliverMessage.ws || ws,
-                    deliverMessage.packet,
-                    deliverMessage.pushQueueMessage,
-                    deliverMessage.userIds,
-                    deliverMessage.notSaveInOfflineStorage
-                  )
-                })
-              )
-            } catch (e) {
-              console.error("[ClientManager] connection with client ws is lost", e)
-            }
-          }
+          await processMessageResponse(ws, activitySender.buildOfflineActivityResponse(userId), true)
         },
 
         message: async (ws, message, isBinary) => {
