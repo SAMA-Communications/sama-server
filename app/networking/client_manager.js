@@ -118,7 +118,29 @@ class ClientManager {
 
           await sessionService.removeUserSession(ws, userId)
 
-          await activitySender.updateAndSendUserActivity(ws, userId, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE)
+          const responses = await activitySender.updateAndSendUserActivity(
+            ws,
+            userId,
+            MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE
+          )
+          for (const response of responses) {
+            try {
+              await Promise.all(
+                response.deliverMessages.map(async (deliverMessage) => {
+                  console.log("[DELIVER]", deliverMessage)
+                  await packetManager.deliverToUserOrUsers(
+                    deliverMessage.ws || ws,
+                    deliverMessage.packet,
+                    deliverMessage.pushQueueMessage,
+                    deliverMessage.userIds,
+                    deliverMessage.notSaveInOfflineStorage
+                  )
+                })
+              )
+            } catch (e) {
+              console.error("[ClientManager] connection with client ws is lost", e)
+            }
+          }
         },
 
         message: async (ws, message, isBinary) => {
