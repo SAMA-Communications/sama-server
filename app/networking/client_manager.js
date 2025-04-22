@@ -1,7 +1,6 @@
 import uWS from "uWebSockets.js"
 import { StringDecoder } from "string_decoder"
 
-import { CONSTANTS as MAIN_CONSTANTS } from "../constants/constants.js"
 import { ERROR_STATUES } from "../constants/errors.js"
 
 import { BASE_API, APIs, detectAPIType } from "./APIs.js"
@@ -48,7 +47,7 @@ const processMessageResponse = async (ws, response, needStringify) => {
 
     const userId = response.lastActivityStatusResponse.userId || sessionService.getSessionUserId(ws)
     console.log("[UPDATE_LAST_ACTIVITY]", userId, response.lastActivityStatusResponse)
-    const responses = await activitySender.updateAndSendUserActivity(
+    const responses = await activitySender.updateAndBuildUserActivity(
       ws,
       userId,
       response.lastActivityStatusResponse.status
@@ -118,7 +117,7 @@ class ClientManager {
 
           await sessionService.removeUserSession(ws, userId)
 
-          await activitySender.updateAndSendUserActivity(ws, userId, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE)
+          await processMessageResponse(ws, activitySender.buildOfflineActivityResponse(userId), true)
         },
 
         message: async (ws, message, isBinary) => {
