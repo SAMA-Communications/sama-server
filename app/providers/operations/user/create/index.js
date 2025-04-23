@@ -17,6 +17,7 @@ class UserCreateOperation {
     }
 
     const existingUser = await this.userService.userRepo.findRegistered(
+      createUserParams.organization_id,
       createUserParams.login,
       createUserParams.email,
       createUserParams.phone

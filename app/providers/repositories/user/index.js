@@ -19,7 +19,7 @@ class UserRepository extends BaseRepository {
     return users
   }
 
-  async findRegistered(login, email, phone) {
+  async findRegistered(organizationId, login, email, phone) {
     const query = [{ login }]
 
     if (email) {
@@ -30,7 +30,7 @@ class UserRepository extends BaseRepository {
       query.push({ phone })
     }
 
-    const user = await this.findOne({ $or: query })
+    const user = await this.findOne({ organization_id: organizationId, $or: query })
 
     return user
   }
@@ -83,7 +83,7 @@ class UserRepository extends BaseRepository {
   async update(userId, updateParams) {
     const user = await this.findOneAndUpdate({ _id: userId }, { $set: updateParams })
 
-    return user.errorResponse ? null : user
+    return user
   }
 
   async updateActivity(userId, recentActivity) {

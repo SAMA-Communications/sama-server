@@ -3,9 +3,9 @@ import BaseRepository from "../base.js"
 class ConversationRepository extends BaseRepository {
   async prepareParams(params) {
     params.organization_id = this.castOrganizationId(params.organization_id)
-    params.owner_id = this.castObjectId(params.owner_id)
+    params.owner_id = this.castUserId(params.owner_id)
     if (params.opponent_id) {
-      params.opponent_id = this.castObjectId(params.opponent_id)
+      params.opponent_id = this.castUserId(params.opponent_id)
     }
 
     return await super.prepareParams(params)

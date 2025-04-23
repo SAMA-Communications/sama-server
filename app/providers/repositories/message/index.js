@@ -3,9 +3,9 @@ import BaseRepository from "../base.js"
 class MessageRepository extends BaseRepository {
   async prepareParams(params) {
     if (params.deleted_for?.length) {
-      params.deleted_for = this.castObjectIds(params.deleted_for)
+      params.deleted_for = this.castUserIds(params.deleted_for)
     }
-    params.from = this.castObjectId(params.from)
+    params.from = this.castUserId(params.from)
     params.cid = this.castObjectId(params.cid)
     params.organization_id = this.castOrganizationId(params.organization_id)
 
@@ -35,7 +35,7 @@ class MessageRepository extends BaseRepository {
 
   async findLastMessageForConversations(cids, userId) {
     cids = this.castObjectIds(cids)
-    userId = this.castObjectId(userId)
+    userId = this.castUserId(userId)
 
     const $match = {
       cid: { $in: cids },
@@ -65,7 +65,7 @@ class MessageRepository extends BaseRepository {
   async list(conversationId, userId, options, limit) {
     const query = {
       cid: this.castObjectId(conversationId),
-      deleted_for: { $nin: [this.castObjectId(userId)] },
+      deleted_for: { $nin: [this.castUserId(userId)] },
     }
 
     if (options.updatedAtFrom) {
@@ -82,7 +82,7 @@ class MessageRepository extends BaseRepository {
 
   async countUnreadMessagesByCids(cids, userId, lastReadMessageByUserForCids) {
     const arrayParams = cids.map((cid) => {
-      const query = { cid: this.castObjectId(cid), from: { $ne: this.castObjectId(userId) } }
+      const query = { cid: this.castObjectId(cid), from: { $ne: this.castUserId(userId) } }
       if (lastReadMessageByUserForCids[cid]) {
         query._id = { $gt: lastReadMessageByUserForCids[cid] }
       }
@@ -114,7 +114,7 @@ class MessageRepository extends BaseRepository {
 
   async updateDeleteForUser(messageIds, userId) {
     messageIds = this.castObjectIds(messageIds)
-    userId = this.castObjectId(userId)
+    userId = this.castUserId(userId)
 
     await this.updateMany({ _id: { $in: messageIds } }, { $addToSet: { deleted_for: userId } })
   }

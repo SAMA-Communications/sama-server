@@ -3,7 +3,7 @@ import BaseRepository from "../base.js"
 class FileRepository extends BaseRepository {
   async prepareParams(params) {
     params.organization_id = this.castOrganizationId(params.organization_id)
-    params.user_id = this.castObjectId(params.user_id)
+    params.user_id = this.castUserId(params.user_id)
 
     return await super.prepareParams(params)
   }
