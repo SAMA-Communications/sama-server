@@ -14,12 +14,11 @@ class BlockListService {
 
     const params = blockUserIds.map((blockedUserId) => ({
       enabled: true,
-      organization_id: organizationId,
       user_id: userId,
       blocked_user_id: blockedUserId,
     }))
 
-    const blockedUsers = await this.blockedUserRepo.createMany(params)
+    const blockedUsers = await this.blockedUserRepo.createMany(organizationId, params)
 
     return blockedUsers
   }

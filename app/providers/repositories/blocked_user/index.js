@@ -1,10 +1,24 @@
 import BaseRepository from "../base.js"
 
 class BlockedUserRepository extends BaseRepository {
+  async create(organizationId, params) {
+    params.organization_id = organizationId
+
+    return await super.create(params)
+  }
+
+  async createMany(organizationId, bulkCreateParams) {
+    bulkCreateParams.forEach((params) => {
+      params.organization_id = organizationId
+    })
+
+    return await super.createMany(bulkCreateParams)
+  }
+
   async prepareParams(params) {
     params.enabled = !!params.enabled
 
-    params.application_id = this.castOrganizationId(params.application_id)
+    params.organization_id = this.castOrganizationId(params.organization_id)
     params.user_id = this.castUserId(params.user_id)
     params.blocked_user_id = this.castObjectId(params.blocked_user_id)
 
