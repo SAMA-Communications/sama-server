@@ -97,7 +97,7 @@ class ConversationService {
     return verifiedConversationIds
   }
 
-  async hasAccessToConversation(conversationId, userId, organizationId) {
+  async hasAccessToConversation(organizationId, conversationId, userId) {
     const result = { conversation: null, asParticipant: false, asOwner: false, participantIds: null }
 
     result.conversation = await this.conversationRepo.findByIdWithOrgScope(organizationId, conversationId)

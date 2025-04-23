@@ -31,9 +31,9 @@ class MessageCreateOperation {
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
     const { conversation, blockedUserIds, participantIds } = await this.#hasAccess(
+      organizationId,
       createMessageParams.cid,
-      currentUserId,
-      organizationId
+      currentUserId
     )
 
     const message = await this.messageService.create(currentUser, conversation, blockedUserIds, createMessageParams)
@@ -71,11 +71,11 @@ class MessageCreateOperation {
     return { messageId, message: message, deliverMessages, participantIds }
   }
 
-  async #hasAccess(conversationId, currentUserId, organizationId) {
+  async #hasAccess(organizationId, conversationId, currentUserId) {
     const { conversation, participantIds } = await this.#hasAccessToConversation(
+      organizationId,
       conversationId,
-      currentUserId,
-      organizationId
+      currentUserId
     )
 
     const blockedUserIds = await this.#checkBlocked(conversation, currentUserId, participantIds)
@@ -83,11 +83,11 @@ class MessageCreateOperation {
     return { conversation, blockedUserIds, participantIds }
   }
 
-  async #hasAccessToConversation(conversationId, currentUserId, organizationId) {
+  async #hasAccessToConversation(organizationId, conversationId, currentUserId) {
     const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
+      organizationId,
       conversationId,
-      currentUserId,
-      organizationId
+      currentUserId
     )
 
     if (!conversation) {

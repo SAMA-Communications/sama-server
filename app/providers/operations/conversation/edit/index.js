@@ -25,9 +25,9 @@ class ConversationEditOperation {
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     const { participantIds: currentParticipantIds } = await this.#hasAccess(
+      organizationId,
       conversationId,
-      currentUserId,
-      organizationId
+      currentUserId
     )
 
     const updatedConversation = await this.conversationService.conversationRepo.update(conversationId, updateFields)
@@ -65,11 +65,11 @@ class ConversationEditOperation {
     return result
   }
 
-  async #hasAccess(conversationId, userId, organizationId) {
+  async #hasAccess(organizationId, conversationId, userId) {
     const { conversation, asOwner, participantIds } = await this.conversationService.hasAccessToConversation(
+      organizationId,
       conversationId,
-      userId,
-      organizationId
+      userId
     )
     if (!conversation) {
       throw new Error(ERROR_STATUES.BAD_REQUEST.message, {

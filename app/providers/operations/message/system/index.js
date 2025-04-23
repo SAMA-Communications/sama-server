@@ -18,7 +18,7 @@ class MessageSendSystemOperation {
     let recipientsIds = []
 
     if (cid) {
-      recipientsIds = await this.#conversationParticipants(cid, currentUserId, organizationId)
+      recipientsIds = await this.#conversationParticipants(organizationId, cid, currentUserId)
     } else {
       recipientsIds = await this.userService.userRepo.retrieveExistedIds(organizationId, uids)
     }
@@ -34,11 +34,11 @@ class MessageSendSystemOperation {
     return { recipientsIds, systemMessage: new SystemMessagePublicFields(systemMessageParams) }
   }
 
-  async #conversationParticipants(conversationId, currentUserId, organizationId) {
+  async #conversationParticipants(organizationId, conversationId, currentUserId) {
     const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
+      organizationId,
       conversationId,
-      currentUserId,
-      organizationId
+      currentUserId
     )
 
     if (!conversation) {

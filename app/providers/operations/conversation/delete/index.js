@@ -14,9 +14,9 @@ class ConversationDeleteOperation {
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     const { conversation, participantIds } = await this.#getConversationDetails(
+      organizationId,
       conversationId,
-      currentUserId,
-      organizationId
+      currentUserId
     )
 
     await this.conversationService.removeParticipants(conversation, [currentUserId], participantIds)
@@ -35,11 +35,11 @@ class ConversationDeleteOperation {
     return result
   }
 
-  async #getConversationDetails(conversationId, userId, organizationId) {
+  async #getConversationDetails(organizationId, conversationId, userId) {
     const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
+      organizationId,
       conversationId,
-      userId,
-      organizationId
+      userId
     )
     if (!conversation) {
       throw new Error(ERROR_STATUES.BAD_REQUEST.message, {

@@ -16,7 +16,7 @@ class MessageReadOperation {
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
-    await this.#hasAccess(cid, currentUserId, organizationId)
+    await this.#hasAccess(organizationId, cid, currentUserId)
 
     const unreadMessages = await this.messageService.readMessagesInConversation(cid, currentUser, mids)
 
@@ -34,11 +34,11 @@ class MessageReadOperation {
     return { readMessagesGroups }
   }
 
-  async #hasAccess(conversationId, currentUserId, organizationId) {
+  async #hasAccess(organizationId, conversationId, currentUserId) {
     const { conversation, asParticipant } = await this.conversationService.hasAccessToConversation(
+      organizationId,
       conversationId,
-      currentUserId,
-      organizationId
+      currentUserId
     )
 
     if (!conversation) {
