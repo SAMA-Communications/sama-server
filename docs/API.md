@@ -12,6 +12,7 @@
 {
   request: {
     user_create: {
+      organization_id: "680a2fae96cc69d78861f101",
       login: "user_1",
       password: "user_paswword_1"
     },
@@ -44,6 +45,7 @@ Http request examples:
 
 ```
 {
+  organizationId: "680a2fae96cc69d78861f101",
   login: "login_u1",
   password: "u1_password",
   device_id: "device_u1"
@@ -101,6 +103,7 @@ Old websocket requests examples:
 {
   request: {
     user_login: {
+      organization_id: "680a2fae96cc69d78861f101",
       login: "user_1",
       password: "user_paswword_1",
       device_id: "xxx-yyy-zzz"
@@ -1485,6 +1488,7 @@ Sends a message to a specific conversation. The message can include text, attach
 
 ```json
 {
+  "organizationId": "680a2fae96cc69d78861f101",
   "senderId": "63480e68f4794709f802a2fa",
   "message": {
     "id": "5а34p21m0xj23",
@@ -1508,6 +1512,7 @@ Sends a message to a specific conversation. The message can include text, attach
 
 | Field                    | Type              | Description                                                                 |
 |--------------------------|-------------------|-----------------------------------------------------------------------------|
+| `organizationId`         | `string`          | **OrganizationId** performing request                                       |
 | `senderId`               | `string`          | **User ID** of the sender                                                   |
 | `message.id`             | `string`          | Unique **message ID received from the server** (i.e., `server_mid` from a previous response), used for tracking and acknowledgment  |
 | `message.body`           | `string`          | The message text                                                            |
@@ -1575,6 +1580,7 @@ Sends a **system message** to a specific list of user IDs. These are typically n
 
 ```json
 {
+  "organizationId": "680a2fae96cc69d78861f101",
   "senderId": "63480e68f4794709f802a2fa",
   "messageSystem": {
     "id": "5а34p21m0xj23",
@@ -1593,10 +1599,11 @@ Sends a **system message** to a specific list of user IDs. These are typically n
 
 | Field                     | Type               | Description                                                            |
 |---------------------------|--------------------|------------------------------------------------------------------------|
-| `senderId`               | `string`            | **User ID** of the sender                                              |
-| `messageSystem.id`       | `string`            | Unique message ID received from the server                             |
-| `messageSystem.uids`     | `array[string]`     | List of **recipient user IDs** (only online users will receive it)     |
-| `messageSystem.x`        | `object`            | Custom metadata parameters (optional), e.g. `{ "event_type": "X" }`    |
+| `organizationId`          | `string`            | **OrganizationId** performing request                                 |
+| `senderId`                | `string`            | **User ID** of the sender                                             |
+| `messageSystem.id`        | `string`            | Unique message ID received from the server                            |
+| `messageSystem.uids`      | `array[string]`     | List of **recipient user IDs** (only online users will receive it)    |
+| `messageSystem.x`         | `object`            | Custom metadata parameters (optional), e.g. `{ "event_type": "X" }`   |
 
 ---
 
@@ -1650,6 +1657,7 @@ Marks one or more messages as **read** in a specific conversation. All users who
 
 ```json
 {
+  "organizationId": "680a2fae96cc69d78861f101",
   "senderId": "63480e68f4794709f802a2fa",
   "messageRead": {
     "cid": "63077ad836b78c3d82af0812",
@@ -1664,9 +1672,10 @@ Marks one or more messages as **read** in a specific conversation. All users who
 
 | Field                    | Type                | Description                                                       |
 |--------------------------|---------------------|-------------------------------------------------------------------|
-| `senderId`              | `string`            | **User ID** marking the messages as read                         |
-| `messageRead.cid`       | `string`            | **Conversation ID**                                               |
-| `messageRead.ids`       | `array[string]`     | List of **Message IDs** that are being marked as read             |
+| `organizationId`         | `string`            | **OrganizationId** performing request                             |
+| `senderId`               | `string`            | **User ID** marking the messages as read                          |
+| `messageRead.cid`        | `string`            | **Conversation ID**                                               |
+| `messageRead.ids`        | `array[string]`     | List of **Message IDs** that are being marked as read             |
 
 ---
 
@@ -1713,6 +1722,7 @@ Updates the body of a previously sent message. Only the sender can edit the mess
 
 ```json
 {
+  "organizationId": "680a2fae96cc69d78861f101",
   "senderId": "63480e68f4794709f802a2fa",
   "messageEdit": {
     "id": "63077ad836b78c3d82af0812",
@@ -1727,9 +1737,10 @@ Updates the body of a previously sent message. Only the sender can edit the mess
 
 | Field                     | Type     | Description                                                             |
 |---------------------------|----------|-------------------------------------------------------------------------|
-| `senderId`               | `string` | **User ID** of the sender (must match the original message sender)     |
-| `messageEdit.id`         | `string` | **Message ID** to be edited                                             |
-| `messageEdit.body`       | `string` | New content for the message body                                        |
+| `organizationId`          | `string` | **OrganizationId** performing request                                   |
+| `senderId`                | `string` | **User ID** of the sender (must match the original message sender)      |
+| `messageEdit.id`          | `string` | **Message ID** to be edited                                             |
+| `messageEdit.body`        | `string` | New content for the message body                                        |
 
 ---
 
@@ -1779,6 +1790,7 @@ Deletes one or more messages in a conversation. The deletion behavior depends on
 
 ```json
 {
+  "organizationId": "680a2fae96cc69d78861f101",
   "senderId": "63480e68f4794709f802a2fa",
   "messageDelete": {
     "cid": "63077ad836b78c3d82af0812",
@@ -1794,10 +1806,11 @@ Deletes one or more messages in a conversation. The deletion behavior depends on
 
 | Field                       | Type               | Description                                                             |
 |-----------------------------|--------------------|-------------------------------------------------------------------------|
-| `senderId`                 | `string`           | **User ID** performing the deletion                                     |
-| `messageDelete.cid`        | `string`           | **Conversation ID**                                                    |
-| `messageDelete.ids`        | `array[string]`    | List of **Message IDs** to delete                                      |
-| `messageDelete.type`       | `"myself" \| "all"`| Deletion type: for sender only (`myself`) or for all users (`all`)      |
+| `organizationId`            | `string`           | **OrganizationId** performing request                                   |
+| `senderId`                  | `string`           | **User ID** performing the deletion                                     |
+| `messageDelete.cid`         | `string`           | **Conversation ID**                                                     |
+| `messageDelete.ids`         | `array[string]`    | List of **Message IDs** to delete                                       |
+| `messageDelete.type`        | `"myself" \| "all"`| Deletion type: for sender only (`myself`) or for all users (`all`)      |
 
 ---
 
@@ -1849,6 +1862,8 @@ Get online users list (ids only of full model) or count online users
 
 ```json
 {
+  "organizationId": "680a2fae96cc69d78861f101",
+  "userId": "63077ad836b78c3d82af0815",
   "limit": 10,
   "offset": 0,
   "count": false,
@@ -1862,6 +1877,8 @@ Get online users list (ids only of full model) or count online users
 
 | Field                      | Type               | Description                                                             |
 |----------------------------|--------------------|-------------------------------------------------------------------------|
+| `organizationId`           | `string`           | **OrganizationId** performing request                                   |
+| `userId`                   | `string`           | **User ID** performing the deletion                                     |
 | `limit`                    | `int`              | limit numbers of users in response                                      |
 | `offset`                   | `int`              | users to skip for pagination                                            |
 | `count`                    | `boolean`          | receive only users count in response                                    |
