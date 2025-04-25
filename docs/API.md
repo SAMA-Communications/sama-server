@@ -837,8 +837,7 @@ When a user leaves the group chat, the next message will also be sent to all use
       param2: "value"
     },
     attachments: [
-      { name: "file_1", size: 240, content_type: "type" },
-      { name: "file_2", size: 126, content_type: "type" }
+      { file_name: "screenshot.png", file_id: "905244e690b012917a6f4c6e", file_blur_hash: "UjI6cvtQNGkC0LfiRjWB~Vjuf7ofELayj[oL" },
     ]
   }
 }
@@ -859,8 +858,7 @@ All conversation's participants who is online will receive the following message
       param2: "value"
     },
     attachments: [
-      { file_id: "123123_file_1", file_name: "file_1" },
-      { file_id: "653534_file_2", file_name: "file_2" }
+      { file_name: "screenshot.png", file_id: "905244e690b012917a6f4c6e", file_blur_hash: "UjI6cvtQNGkC0LfiRjWB~Vjuf7ofELayj[oL" }
     ],
     created_at: "2023-07-04T07:23:53.308Z",
   }
