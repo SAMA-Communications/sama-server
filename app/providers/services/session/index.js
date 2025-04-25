@@ -191,14 +191,11 @@ class SessionService {
   setSessionUserId(ws, organizationId, userId) {
     const session = this.getSession(ws)
 
-    if (!session) {
-      this.setSession(ws, organizationId, userId)
-      return
+    if (session) {
+      this.activeSessions.SESSIONS.delete(ws)
     }
 
-    session.userId = userId
-
-    return session
+    this.setSession(ws, organizationId, userId)
   }
 
   setSession(ws, organizationId, userId, extraParams = {}) {
