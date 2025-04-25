@@ -573,28 +573,26 @@ After adding users to a conversation, if they are online, they will receive the 
 The following message will also be sent to all users who are online and saved in the `Message` collection:
 
 ```
-
 {
-\_id: "655b479fe980b3e36f402234",
-body: "Ivan Ivanovich has been added to the group",
-cid: "646e2092d80fe5c4e688dfa0",
-from: "646c82947b3aceab988c0073",
-status: "sent"
-t: 1700480927,
-x: {
-type: "added_participant",
-user: {
-\_id: "64cb6b2def440b9c5bf18d6d",
-login: "ivan1991",
-recent_activity: 1700149064,
-first_name: "Ivan",
-last_name: "Ivanovich",
-email: "DonateforUkraine@gmail.com"
+   "_id":"655b479fe980b3e36f402234",
+   "body":"Sam Samuels has been added to the group",
+   "cid":"646e2092d80fe5c4e688dfa0",
+   "from":"646c82947b3aceab988c0073",
+   "status":"sent",
+   "t":1700480927,
+   "x":{
+      "type":"added_participant",
+      "user":{
+         "_id":"64cb6b2def440b9c5bf18d6d",
+         "login":"sam1991",
+         "recent_activity":1700149064,
+         "first_name":"Sam",
+         "last_name":"Samuelson",
+         "email":"DonateforUkraine@gmail.com"
+      }
+   },
+   "created_at":"2023-05-24T14:34:58.066Z"
 }
-},
-created_at: "2023-05-24T14:34:58.066Z"
-}
-
 ```
 
 After kicking users out of the conversation, if they are online, they will receive the following event:
@@ -626,7 +624,7 @@ The following message will also be sent to all users who are online and saved in
 ```
 {
   _id: "655b479fe980b3e36f402234",
-  body: "Ivan Ivanovich has been added to the group",
+  body: "Sam Samuels has been added to the group",
   cid: "646e2092d80fe5c4e688dfa0",
   from: "646c82947b3aceab988c0073",
   status: "sent"
@@ -635,10 +633,10 @@ The following message will also be sent to all users who are online and saved in
     type: "added_participant",
     user: {
       _id: "64cb6b2def440b9c5bf18d6d",
-      login: "ivan1991",
+      login: "sam1991",
       recent_activity: 1700149064,
-      first_name: "Ivan",
-      last_name: "Ivanovich",
+      first_name: "Sam",
+      last_name: "Samuels",
       email: "DonateforUkraine@gmail.com"
     }
   },
