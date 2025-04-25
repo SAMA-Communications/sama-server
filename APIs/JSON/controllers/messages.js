@@ -18,7 +18,7 @@ class MessagesController extends BaseJSONController {
     const response = new Response()
 
     const messageCreateOperation = ServiceLocatorContainer.use("MessageCreateOperation")
-    const { messageId, message, deliverMessages, participantIds, modifiedFields } =
+    const { messageId, message, deliverMessages, participantIds, modifiedFields, botMessage } =
       await messageCreateOperation.perform(ws, messageParams)
 
     deliverMessages.forEach((event) => {
@@ -30,7 +30,7 @@ class MessagesController extends BaseJSONController {
     })
 
     return response.addBackMessage({
-      ask: { mid: messageId, server_mid: message._id, t: message.t, modified: modifiedFields },
+      ask: { mid: messageId, server_mid: message._id, t: message.t, modified: modifiedFields, bot_message: botMessage },
     })
   }
 

@@ -32,36 +32,38 @@ class ConversationHandlerService {
   }
 
   async prepareAndExecuteConversationHandler(code, message, user) {
-    let compilationResult = { data: {}, errorMessage: null }
+    const compilationResult = { accept: null, message: {}, options: {}, errorMessage: null }
 
     const options = {
       allowFetch: true,
-      allowFs: true,
+      allowFs: false,
+      executionTimeout: 3000,
       env: {
         MESSAGE: message,
         USER: user,
-        RESOLVE: (value) => (compilationResult.data = value || {}),
-        REJECT: (value) => (compilationResult.errorMessage = value),
+        ACCEPT: () => (compilationResult.accept = true),
+        RESOLVE: (messageObject, options = {}) => {
+          compilationResult.message = messageObject?.message || {}
+          compilationResult.options = options
+        },
+        REJECT: (message) => (compilationResult.errorMessage = message),
       },
     }
 
     await this.runCodeViaSandbox(code, options)
 
     if (compilationResult.errorMessage) {
-      const errorMessage =
-        typeof compilationResult.errorMessage === "string"
-          ? compilationResult.errorMessage
-          : compilationResult.errorMessage?.message || ERROR_STATUES.MESSAGE_BLOCKED_BY_HANDLER.message
+      const errorMessage = compilationResult.errorMessage || ERROR_STATUES.MESSAGE_BLOCKED_BY_HANDLER.message
 
-      const errorCause = {
-        ...ERROR_STATUES.MESSAGE_BLOCKED_BY_HANDLER,
-        message: errorMessage || ERROR_STATUES.MESSAGE_BLOCKED_BY_HANDLER.message,
-      }
-
-      throw new Error(errorMessage, { cause: errorCause })
+      throw new Error(errorMessage, {
+        cause: {
+          ...ERROR_STATUES.MESSAGE_BLOCKED_BY_HANDLER,
+          message: errorMessage,
+        },
+      })
     }
 
-    return compilationResult.data
+    return compilationResult
   }
 }
 
