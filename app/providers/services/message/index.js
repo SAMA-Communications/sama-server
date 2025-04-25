@@ -24,14 +24,14 @@ class MessageService {
     const { body } = message
     if (body && typeof body === "string") {
       if (options.isReplaceBody) {
+        const newMessageFields = { body }
+        return { newMessageFields }
+      } else {
         const existServerBot = await this.userRepo.findByLogin("server-chat-bot")
         if (existServerBot) {
           const botMessageParams = { ...baseMessage, body }
           return { botMessageParams, serverBot: existServerBot }
         }
-      } else {
-        const newMessageFields = { body }
-        return { newMessageFields }
       }
     } else {
       //error that body is must be string
