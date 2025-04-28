@@ -832,7 +832,7 @@ When a user leaves the group chat, the next message will also be sent to all use
 {
   request: {
     conversation_handler_create: {
-      scheme: "...",
+      content: "...",
       cid: "507f1f77bcf86cd799439012"
     },
     id: "1"
@@ -858,7 +858,7 @@ When a user leaves the group chat, the next message will also be sent to all use
   response: {
     id: "2",
     conversation_handler: {
-      scheme: "...",
+      content: "...",
       updated_by: "63480e68f4794709f802a2fa"
     }
   }

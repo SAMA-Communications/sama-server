@@ -11,7 +11,7 @@ class ConversationHandlerDeleteOperation {
     const { cid } = handlerParams
     const currentUserId = this.sessionService.getSessionUserId(ws)
 
-    await this.#hasAccess(cid, currentUserId)
+    await this.conversationService.validateAccessToConversation(cid, currentUserId)
 
     const existedHandlerForConversation = await this.conversationHandlerService.getHandlerByConversationId(cid)
     if (!existedHandlerForConversation) {
@@ -20,22 +20,6 @@ class ConversationHandlerDeleteOperation {
       })
     }
     await this.conversationHandlerService.deleteConversationHandler(existedHandlerForConversation._id)
-  }
-
-  async #hasAccess(conversationId, userId) {
-    const { conversation, asOwner } = await this.conversationService.hasAccessToConversation(conversationId, userId)
-
-    if (!conversation) {
-      throw new Error(ERROR_STATUES.BAD_REQUEST.message, {
-        cause: ERROR_STATUES.BAD_REQUEST,
-      })
-    }
-
-    if (!asOwner) {
-      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
-        cause: ERROR_STATUES.FORBIDDEN,
-      })
-    }
   }
 }
 

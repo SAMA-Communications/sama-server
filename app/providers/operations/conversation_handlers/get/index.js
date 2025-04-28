@@ -11,7 +11,7 @@ class ConversationHandlerGetOperation {
     const { cid } = handlerGetOptions
     const currentUserId = this.sessionService.getSessionUserId(ws)
 
-    await this.#hasAccess(cid, currentUserId)
+    await this.conversationService.validateAccessToConversation(cid, currentUserId)
 
     const conversationHandler = await this.conversationHandlerService.getHandlerByConversationId(cid)
     if (!conversationHandler) {
@@ -22,22 +22,6 @@ class ConversationHandlerGetOperation {
     const { content, updated_by, updated_at } = conversationHandler
 
     return { content, updated_by, updated_at }
-  }
-
-  async #hasAccess(conversationId, userId) {
-    const { conversation, asOwner } = await this.conversationService.hasAccessToConversation(conversationId, userId)
-
-    if (!conversation) {
-      throw new Error(ERROR_STATUES.BAD_REQUEST.message, {
-        cause: ERROR_STATUES.BAD_REQUEST,
-      })
-    }
-
-    if (!asOwner) {
-      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
-        cause: ERROR_STATUES.FORBIDDEN,
-      })
-    }
   }
 }
 
