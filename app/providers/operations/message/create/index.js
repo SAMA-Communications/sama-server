@@ -70,7 +70,7 @@ class MessageCreateOperation {
 
     const message = await this.messageService.create(currentUser, conversation, blockedUserIds, createMessageParams)
 
-    if (!message.x) message.set("x", {})
+    message.x ??= {}
     message.x.c_type = conversation.type
 
     if (conversation.type === "u") {
@@ -100,7 +100,7 @@ class MessageCreateOperation {
 
       botMessage = await this.messageService.create(serverBot, conversation, blockedUserIds, botMessageParams)
 
-      if (!botMessage.x) botMessage.set("x", {})
+      botMessage.x ??= {}
       botMessage.x.c_type = conversation.type
 
       const deliverBotMessage = await this.#createMessageNotification(conversation, serverBot, botMessageParams)

@@ -6,7 +6,7 @@ export const up = async (db, client) => {
   if (!existingBotUser) {
     const { encryptedPassword, salt } = await hashPassword(process.env.CHAT_BOT_PASSWORD)
     await db.collection("users").insertOne({
-      login: "server-chat-bot",
+      login: process.env.CHAT_BOT_LOGIN,
       first_name: "Chat",
       last_name: "Bot",
       password_salt: salt,
