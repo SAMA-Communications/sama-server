@@ -2,7 +2,7 @@ import { hashPassword } from "../app/utils/crypto_utils.js"
 
 export const up = async (db, client) => {
   await db.collection("conversation_handlers").createIndex({ conversation_id: 1 }, { unique: true })
-  const existingBotUser = await db.collection("users").findOne({ login: "server-chat-bot" })
+  const existingBotUser = await db.collection("users").findOne({ login: process.env.CHAT_BOT_LOGIN })
   if (!existingBotUser) {
     const { encryptedPassword, salt } = await hashPassword(process.env.CHAT_BOT_PASSWORD)
     await db.collection("users").insertOne({
