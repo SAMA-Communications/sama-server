@@ -65,11 +65,11 @@ class MessageListOperation {
   }
 
   #normalizeLimitParam(limit) {
-    if (limit > MAIN_CONSTANTS.LIMIT_MAX) {
-      return MAIN_CONSTANTS.LIMIT_MAX
+    if (limit > MAIN_CONSTANTS.MESSGAE_LIMIT_MAX) {
+      return MAIN_CONSTANTS.MESSGAE_LIMIT_MAX
     }
 
-    return limit || MAIN_CONSTANTS.LIMIT_MAX
+    return limit || MAIN_CONSTANTS.MESSGAE_LIMIT_MAX
   }
 }
 
