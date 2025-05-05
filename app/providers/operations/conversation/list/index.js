@@ -55,11 +55,11 @@ class ConversationListOperation {
   }
 
   #normalizeLimitParam(limit) {
-    if (limit > MAIN_CONSTANTS.LIMIT_MAX) {
-      return MAIN_CONSTANTS.LIMIT_MAX
+    if (limit > MAIN_CONSTANTS.CONVERSATION_LIMIT_MAX) {
+      return MAIN_CONSTANTS.CONVERSATION_LIMIT_MAX
     }
 
-    return limit || MAIN_CONSTANTS.LIMIT_MAX
+    return limit || MAIN_CONSTANTS.CONVERSATION_LIMIT_MAX
   }
 }
 

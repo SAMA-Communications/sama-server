@@ -824,6 +824,62 @@ When a user leaves the group chat, the next message will also be sent to all use
 }
 ```
 
+## Conversation Schemes API
+
+### Create
+
+```
+{
+  request: {
+    conversation_handler_create: {
+      content: "...",
+      cid: "507f1f77bcf86cd799439012"
+    },
+    id: "1"
+   }
+}
+
+{ response: { id: "1", success: true } }
+```
+
+### Get
+
+```
+{
+  request: {
+    conversation_handler_create: {
+      cid: "507f1f77bcf86cd799439012"
+    },
+    id: "2"
+   }
+}
+
+{
+  response: {
+    id: "2",
+    conversation_handler: {
+      content: "...",
+      updated_by: "63480e68f4794709f802a2fa"
+    }
+  }
+}
+```
+
+### Delete
+
+```
+{
+  request: {
+    conversation_handler_delete: {
+      cid: "507f1f77bcf86cd799439012"
+    },
+    id: "3"
+   }
+}
+
+{ response: { id: "3", success: true } }
+```
+
 ## Messages API
 
 ### Send/Receive messages
@@ -949,7 +1005,7 @@ All conversation's participants who is online will receive the following message
 
 On each message sent to server - a server will deliver back to client a simple packet with message id and timestamp at which the message was stored in DB so both sender & recipient will have same date sent time stored:
 
-`{ ack: { mid: "63480e68f4794709f802a2fa", server_mid: "63480e68f4794709f802a2fa", t: 15673838833}}`
+`{ ack: { mid: "63480e68f4794709f802a2fa", server_mid: "63480e68f4794709f802a2fa", t: 15673838833, modified: { body: "new body", ... }}}`
 
 ### List
 
@@ -1474,6 +1530,7 @@ Sends a message to a specific conversation. The message can include text, attach
 ---
 
 #### 🔐 Authorization
+
 - Required Header:  
   `Admin-Api-Key: {{HTTP_ADMIN_API_KEY}}`
 
@@ -1506,14 +1563,14 @@ Sends a message to a specific conversation. The message can include text, attach
 
 #### 🧾 Request Parameters
 
-| Field                    | Type              | Description                                                                 |
-|--------------------------|-------------------|-----------------------------------------------------------------------------|
-| `senderId`               | `string`          | **User ID** of the sender                                                   |
-| `message.id`             | `string`          | Unique **message ID received from the server** (i.e., `server_mid` from a previous response), used for tracking and acknowledgment  |
-| `message.body`           | `string`          | The message text                                                            |
-| `message.cid`            | `string`          | **Conversation ID** the message belongs to                                  |
-| `message.x`              | `object`          | Custom parameters, e.g. `{ "new_friend_connected": true }`                  |
-| `message.attachments`    | `array` of `object`| Array of attachment metadata                                               |
+| Field                 | Type                | Description                                                                                                                        |
+| --------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `senderId`            | `string`            | **User ID** of the sender                                                                                                          |
+| `message.id`          | `string`            | Unique **message ID received from the server** (i.e., `server_mid` from a previous response), used for tracking and acknowledgment |
+| `message.body`        | `string`            | The message text                                                                                                                   |
+| `message.cid`         | `string`            | **Conversation ID** the message belongs to                                                                                         |
+| `message.x`           | `object`            | Custom parameters, e.g. `{ "new_friend_connected": true }`                                                                         |
+| `message.attachments` | `array` of `object` | Array of attachment metadata                                                                                                       |
 
 ---
 
@@ -1559,11 +1616,12 @@ Sends a message to a specific conversation. The message can include text, attach
 ### 📌 `POST /admin/message/system`
 
 **Description**:  
-Sends a **system message** to a specific list of user IDs. These are typically non-conversational messages (e.g., notifications, status updates). Only the specified online recipients will receive the message in real-time. For now, the admin/message/system message can only be caught in the console. 
+Sends a **system message** to a specific list of user IDs. These are typically non-conversational messages (e.g., notifications, status updates). Only the specified online recipients will receive the message in real-time. For now, the admin/message/system message can only be caught in the console.
 
 ---
 
 #### 🔐 Authorization
+
 - Required Header:  
   `Admin-Api-Key: {{HTTP_ADMIN_API_KEY}}`
 
@@ -1591,12 +1649,12 @@ Sends a **system message** to a specific list of user IDs. These are typically n
 
 #### 🧾 Request Parameters
 
-| Field                     | Type               | Description                                                            |
-|---------------------------|--------------------|------------------------------------------------------------------------|
-| `senderId`               | `string`            | **User ID** of the sender                                              |
-| `messageSystem.id`       | `string`            | Unique message ID received from the server                             |
-| `messageSystem.uids`     | `array[string]`     | List of **recipient user IDs** (only online users will receive it)     |
-| `messageSystem.x`        | `object`            | Custom metadata parameters (optional), e.g. `{ "event_type": "X" }`    |
+| Field                | Type            | Description                                                         |
+| -------------------- | --------------- | ------------------------------------------------------------------- |
+| `senderId`           | `string`        | **User ID** of the sender                                           |
+| `messageSystem.id`   | `string`        | Unique message ID received from the server                          |
+| `messageSystem.uids` | `array[string]` | List of **recipient user IDs** (only online users will receive it)  |
+| `messageSystem.x`    | `object`        | Custom metadata parameters (optional), e.g. `{ "event_type": "X" }` |
 
 ---
 
@@ -1639,6 +1697,7 @@ Marks one or more messages as **read** in a specific conversation. All users who
 ---
 
 #### 🔐 Authorization
+
 - Required Header:  
   `Admin-Api-Key: {{HTTP_ADMIN_API_KEY}}`
 
@@ -1662,11 +1721,11 @@ Marks one or more messages as **read** in a specific conversation. All users who
 
 #### 🧾 Request Parameters
 
-| Field                    | Type                | Description                                                       |
-|--------------------------|---------------------|-------------------------------------------------------------------|
-| `senderId`              | `string`            | **User ID** marking the messages as read                         |
-| `messageRead.cid`       | `string`            | **Conversation ID**                                               |
-| `messageRead.ids`       | `array[string]`     | List of **Message IDs** that are being marked as read             |
+| Field             | Type            | Description                                           |
+| ----------------- | --------------- | ----------------------------------------------------- |
+| `senderId`        | `string`        | **User ID** marking the messages as read              |
+| `messageRead.cid` | `string`        | **Conversation ID**                                   |
+| `messageRead.ids` | `array[string]` | List of **Message IDs** that are being marked as read |
 
 ---
 
@@ -1702,6 +1761,7 @@ Updates the body of a previously sent message. Only the sender can edit the mess
 ---
 
 #### 🔐 Authorization
+
 - Required Header:  
   `Admin-Api-Key: {{HTTP_ADMIN_API_KEY}}`
 
@@ -1725,11 +1785,11 @@ Updates the body of a previously sent message. Only the sender can edit the mess
 
 #### 🧾 Request Parameters
 
-| Field                     | Type     | Description                                                             |
-|---------------------------|----------|-------------------------------------------------------------------------|
-| `senderId`               | `string` | **User ID** of the sender (must match the original message sender)     |
-| `messageEdit.id`         | `string` | **Message ID** to be edited                                             |
-| `messageEdit.body`       | `string` | New content for the message body                                        |
+| Field              | Type     | Description                                                        |
+| ------------------ | -------- | ------------------------------------------------------------------ |
+| `senderId`         | `string` | **User ID** of the sender (must match the original message sender) |
+| `messageEdit.id`   | `string` | **Message ID** to be edited                                        |
+| `messageEdit.body` | `string` | New content for the message body                                   |
 
 ---
 
@@ -1759,15 +1819,16 @@ Updates the body of a previously sent message. Only the sender can edit the mess
 
 ### 📌 `DELETE /admin/message`
 
-
 **Description**:  
 Deletes one or more messages in a conversation. The deletion behavior depends on the `type` field:
+
 - `"myself"`: messages are deleted **only for the sender**
 - `"all"`: messages are deleted **for all participants**, and a real-time notification is sent to online users in the conversation.
 
 ---
 
 #### 🔐 Authorization
+
 - Required Header:  
   `Admin-Api-Key: {{HTTP_ADMIN_API_KEY}}`
 
@@ -1792,12 +1853,12 @@ Deletes one or more messages in a conversation. The deletion behavior depends on
 
 #### 🧾 Request Parameters
 
-| Field                       | Type               | Description                                                             |
-|-----------------------------|--------------------|-------------------------------------------------------------------------|
-| `senderId`                 | `string`           | **User ID** performing the deletion                                     |
-| `messageDelete.cid`        | `string`           | **Conversation ID**                                                    |
-| `messageDelete.ids`        | `array[string]`    | List of **Message IDs** to delete                                      |
-| `messageDelete.type`       | `"myself" \| "all"`| Deletion type: for sender only (`myself`) or for all users (`all`)      |
+| Field                | Type                | Description                                                        |
+| -------------------- | ------------------- | ------------------------------------------------------------------ |
+| `senderId`           | `string`            | **User ID** performing the deletion                                |
+| `messageDelete.cid`  | `string`            | **Conversation ID**                                                |
+| `messageDelete.ids`  | `array[string]`     | List of **Message IDs** to delete                                  |
+| `messageDelete.type` | `"myself" \| "all"` | Deletion type: for sender only (`myself`) or for all users (`all`) |
 
 ---
 
@@ -1828,9 +1889,7 @@ Deletes one or more messages in a conversation. The deletion behavior depends on
 
 ---
 
-
 ### 📌 `POST /admin/activity/online`
-
 
 **Description**:  
 Get online users list (ids only of full model) or count online users
@@ -1838,6 +1897,7 @@ Get online users list (ids only of full model) or count online users
 ---
 
 #### 🔐 Authorization
+
 - Required Header:  
   `Admin-Api-Key: {{HTTP_ADMIN_API_KEY}}`
 
@@ -1860,12 +1920,12 @@ Get online users list (ids only of full model) or count online users
 
 #### 🧾 Request Parameters
 
-| Field                      | Type               | Description                                                             |
-|----------------------------|--------------------|-------------------------------------------------------------------------|
-| `limit`                    | `int`              | limit numbers of users in response                                      |
-| `offset`                   | `int`              | users to skip for pagination                                            |
-| `count`                    | `boolean`          | receive only users count in response                                    |
-| `idsOnly`                  | `boolean`          | receive only **User ID**s array in response                             |
+| Field     | Type      | Description                                 |
+| --------- | --------- | ------------------------------------------- |
+| `limit`   | `int`     | limit numbers of users in response          |
+| `offset`  | `int`     | users to skip for pagination                |
+| `count`   | `boolean` | receive only users count in response        |
+| `idsOnly` | `boolean` | receive only **User ID**s array in response |
 
 ---
 
@@ -1873,10 +1933,7 @@ Get online users list (ids only of full model) or count online users
 
 ```json
 {
-  "users":[
-    "67ed122cffed69f6d9c5ffdb",
-    "67ed11d9ffed69f6d9c5ffd5"
-  ]
+  "users": ["67ed122cffed69f6d9c5ffdb", "67ed11d9ffed69f6d9c5ffd5"]
 }
 ```
 
