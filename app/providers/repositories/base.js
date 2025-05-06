@@ -199,6 +199,9 @@ export default class BaseRepository {
     if (query.organization_id) {
       query.organization_id = this.castOrganizationId(query.organization_id)
     }
+    if (query.conversation_id) {
+      query.conversation_id = this.castObjectId(query.conversation_id)
+    }
 
     await this.collectionCursor.updateOne(query, update)
   }

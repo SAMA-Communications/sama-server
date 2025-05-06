@@ -32,7 +32,7 @@ export default class JsonAPI extends BaseAPI {
       last_activity: {
         [targetUserId]:
           activityStatus.status === MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE
-            ? activityStatus.status
+            ? 0
             : activityStatus.timestamp,
       },
     }

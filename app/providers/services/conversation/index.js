@@ -114,6 +114,22 @@ class ConversationService {
     return result
   }
 
+  async validateAccessToConversation(conversationId, userId) {
+    const { conversation, asOwner } = await this.hasAccessToConversation(conversationId, userId)
+
+    if (!conversation) {
+      throw new Error(ERROR_STATUES.BAD_REQUEST.message, {
+        cause: ERROR_STATUES.BAD_REQUEST,
+      })
+    }
+
+    if (!asOwner) {
+      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+        cause: ERROR_STATUES.FORBIDDEN,
+      })
+    }
+  }
+
   async updateParticipants(conversation, addParticipants, removeParticipants, currentParticipantIds) {
     if (!currentParticipantIds) {
       currentParticipantIds = await this.findConversationParticipants(conversation._id)
