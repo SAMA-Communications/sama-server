@@ -11,9 +11,9 @@ class UserSearchOperation {
     const ignoreIds = [currentUserId, ...searchParams.ignore_ids]
 
     const limit =
-      searchParams.limit > MAIN_CONSTANTS.LIMIT_MAX
-        ? MAIN_CONSTANTS.LIMIT_MAX
-        : searchParams.limit || MAIN_CONSTANTS.LIMIT_MAX
+      searchParams.limit > MAIN_CONSTANTS.SEARCH_LIMIT_MAX
+        ? MAIN_CONSTANTS.SEARCH_LIMIT_MAX
+        : searchParams.limit || MAIN_CONSTANTS.SEARCH_LIMIT_MAX
 
     const users = await this.userService.userRepo.search(
       { match: searchParams.keyword, ignoreIds, timeFromUpdate: searchParams.updated_at?.gt },
