@@ -170,7 +170,7 @@ describe("User activities", async () => {
 
     assert.strictEqual(responseData.response.id, requestData.request.id)
     assert.notEqual(responseData.response.last_activity, undefined)
-    assert.equal(responseData.response.last_activity[usersIds[2]], "online")
+    assert.equal(responseData.response.last_activity[usersIds[2]], 0)
   })
 
   it("should work unsubscribe #2", async () => {

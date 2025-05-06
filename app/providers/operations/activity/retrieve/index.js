@@ -15,7 +15,7 @@ class ActivityUserRetrieveOperation {
       const isUserOnline = !!(await this.sessionService.listUserDevice(userId))
 
       const targetUserActivityStatus = isUserOnline
-        ? MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE
+        ? 0
         : targetUser.recent_activity
 
       activities[userId] = targetUserActivityStatus
