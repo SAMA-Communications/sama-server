@@ -4,7 +4,7 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 import clusterManager from "../app/cluster/cluster_manager.js"
-import { createConversation, createUserArray, mockedWS, sendLogin } from "./tools/utils.js"
+import { generateNewOrganizationId, createConversation, createUserArray, mockedWS, sendLogin } from "./tools/utils.js"
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 import packetManager from "../app/networking/packet_manager.js"
 
@@ -15,6 +15,7 @@ const conversationParticipantRepo = ServiceLocatorContainer.use("ConversationPar
 const messageRepo = ServiceLocatorContainer.use("MessageRepository")
 const messageStatusRepo = ServiceLocatorContainer.use("MessageStatusRepository")
 
+let orgId = void 0
 let currentConversationId = ""
 let usersIds = []
 let deviceId = null
@@ -23,9 +24,10 @@ let secondSocketResponse = null
 
 describe("Cluster Message function", async () => {
   before(async () => {
-    usersIds = await createUserArray(2)
+    orgId = await generateNewOrganizationId()
+    usersIds = await createUserArray(orgId, 2)
 
-    await sendLogin(mockedWS, "user_1")
+    await sendLogin(mockedWS, orgId, "user_1")
 
     currentConversationId = await createConversation(mockedWS, null, null, "g", [usersIds[1], usersIds[0]])
 
@@ -52,7 +54,7 @@ describe("Cluster Message function", async () => {
         secondSocketResponse = data
       },
     }
-    await sessionService.storeUserNodeData(ip.address(), secondClusterPort, usersIds[1], deviceId)
+    await sessionService.storeUserNodeData(ip.address(), secondClusterPort, orgId, usersIds[1], deviceId)
   })
 
   describe("Send Message to other node", async () => {

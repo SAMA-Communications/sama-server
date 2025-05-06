@@ -11,6 +11,7 @@ export const ERROR_STATUES = {
     status: 422,
     message: "The type you entered is incorrect.",
   },
+  ORG_NOT_FOUND: { status: 404, message: "Organization not found" },
   INCORRECT_TOKEN: { status: 422, message: "Incorrect token." },
   TOKEN_EXPIRED: { status: 422, message: "The token has expired." },
   ROUTE_NOT_FOUND: { status: 404, message: "Route not found" },

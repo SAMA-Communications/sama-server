@@ -1,14 +1,20 @@
 import BaseRepository from "../base.js"
 
 class FileRepository extends BaseRepository {
-  async create(userId, fileObj) {
-    const file = await super.create(fileObj)
+  async prepareParams(params) {
+    params.organization_id = this.castOrganizationId(params.organization_id)
+    params.user_id = this.castUserId(params.user_id)
 
-    return file
+    return await super.prepareParams(params)
   }
 
-  async findUserFile(userId, objectId) {
-    const file = await this.findOne({ object_id: objectId })
+  async findByIdWithOrgScope(organizationId, objectId) {
+    const query = {
+      organization_id: organizationId,
+      object_id: objectId,
+    }
+
+    const file = await this.findOne(query)
 
     return file
   }

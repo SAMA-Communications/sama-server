@@ -2,7 +2,14 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
-import { createConversation, createUserArray, mockedWS, sendLogin, sendLogout } from "./tools/utils.js"
+import {
+  generateNewOrganizationId,
+  createConversation,
+  createUserArray,
+  mockedWS,
+  sendLogin,
+  sendLogout,
+} from "./tools/utils.js"
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")
@@ -13,6 +20,7 @@ const messageStatusRepo = ServiceLocatorContainer.use("MessageStatusRepository")
 const fileRepo = ServiceLocatorContainer.use("FileRepository")
 const opLogsRepo = ServiceLocatorContainer.use("OperationsLogRepository")
 
+let orgId = void 0
 let currentUserToken = ""
 let usersIds = []
 let currentConversationId = ""
@@ -21,9 +29,11 @@ let files
 describe("Attachments", async () => {
   before(async () => {
     await fileRepo.deleteMany({})
-    usersIds = await createUserArray(3)
 
-    currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user.token
+    orgId = await generateNewOrganizationId()
+    usersIds = await createUserArray(orgId, 3)
+
+    currentUserToken = (await sendLogin(mockedWS, orgId, "user_1")).response.user.token
 
     currentConversationId = await createConversation(mockedWS, null, null, "g", [usersIds[1], usersIds[2], usersIds[0]])
   })

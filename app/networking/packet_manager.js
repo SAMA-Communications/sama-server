@@ -98,7 +98,7 @@ class PacketManager {
     const offlineUsersByPackets = []
 
     for (const userId of usersIds) {
-      const userNodeData = await sessionService.listUserData(userId)
+      const userNodeData = await sessionService.listUserData(null, userId)
       const isNoConnections = !userNodeData || !Object.keys(userNodeData).length
 
       if (isNoConnections) {

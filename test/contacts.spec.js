@@ -2,12 +2,13 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
-import { createUserArray, mockedWS, sendLogin, sendLogout } from "./tools/utils.js"
+import { generateNewOrganizationId, createUserArray, mockedWS, sendLogin, sendLogout } from "./tools/utils.js"
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 const contactRepo = ServiceLocatorContainer.use("ContactRepository")
 
+let orgId = void 0
 let usersIds = []
 let contactIdToUpdate = ""
 let updatedAtParam = ""
@@ -15,9 +16,11 @@ let currentUserToken = ""
 
 describe("Contacts functions", async () => {
   before(async () => {
-    usersIds = await createUserArray(4)
+    orgId = await generateNewOrganizationId()
+    usersIds = await createUserArray(orgId, 4)
 
-    currentUserToken = await sendLogin(mockedWS, "user_1")
+    await sendLogout(mockedWS)
+    currentUserToken = await sendLogin(mockedWS, orgId, "user_1")
   })
 
   describe("Contact add", async () => {
@@ -461,7 +464,8 @@ describe("Contacts functions", async () => {
 
       responseData = responseData.backMessages.at(0)
 
-      usersIds = [...usersIds, (await createUserArray(1, 5, "test_matched_5_email", "test_5_phone"))[5]]
+      usersIds = [...usersIds, (await createUserArray(orgId, 1, 5, "test_matched_5_email", "test_5_phone"))[5]]
+
       requestData = {
         request: {
           contact_list: {},
@@ -519,7 +523,7 @@ describe("Contacts functions", async () => {
       responseData = responseData.backMessages.at(0)
 
       await sendLogout(mockedWS, currentUserToken)
-      currentUserToken = await sendLogin(mockedWS, "user_4")
+      currentUserToken = await sendLogin(mockedWS, orgId, "user_4")
 
       requestData = {
         request: {
@@ -536,7 +540,7 @@ describe("Contacts functions", async () => {
       responseData = responseData.backMessages.at(0)
 
       await sendLogout(mockedWS, currentUserToken)
-      currentUserToken = await sendLogin(mockedWS, "user_1")
+      currentUserToken = await sendLogin(mockedWS, orgId, "user_1")
 
       requestData = {
         request: {
@@ -562,7 +566,7 @@ describe("Contacts functions", async () => {
   describe("Contact unmatched", async () => {
     it("should work email", async () => {
       await sendLogout(mockedWS, currentUserToken)
-      currentUserToken = await sendLogin(mockedWS, "user_4")
+      currentUserToken = await sendLogin(mockedWS, orgId, "user_4")
       let requestData = {
         request: {
           user_edit: {
@@ -577,7 +581,7 @@ describe("Contacts functions", async () => {
       responseData = responseData.backMessages.at(0)
 
       await sendLogout(mockedWS, currentUserToken)
-      currentUserToken = await sendLogin(mockedWS, "user_1")
+      currentUserToken = await sendLogin(mockedWS, orgId, "user_1")
 
       requestData = {
         request: {
@@ -604,7 +608,7 @@ describe("Contacts functions", async () => {
 
     it("should work phone", async () => {
       await sendLogout(mockedWS, currentUserToken)
-      currentUserToken = await sendLogin(mockedWS, "user_4")
+      currentUserToken = await sendLogin(mockedWS, orgId, "user_4")
       let requestData = {
         request: {
           user_edit: {
@@ -619,7 +623,7 @@ describe("Contacts functions", async () => {
       responseData = responseData.backMessages.at(0)
 
       await sendLogout(mockedWS, currentUserToken)
-      currentUserToken = await sendLogin(mockedWS, "user_1")
+      currentUserToken = await sendLogin(mockedWS, orgId, "user_1")
 
       requestData = {
         request: {
@@ -643,7 +647,7 @@ describe("Contacts functions", async () => {
 
     it("should work delete user", async () => {
       await sendLogout(mockedWS, currentUserToken)
-      currentUserToken = await sendLogin(mockedWS, "user_6")
+      currentUserToken = await sendLogin(mockedWS, orgId, "user_6")
       let requestData = {
         request: {
           user_delete: {},
@@ -655,7 +659,7 @@ describe("Contacts functions", async () => {
 
       responseData = responseData.backMessages.at(0)
 
-      currentUserToken = await sendLogin(mockedWS, "user_1")
+      currentUserToken = await sendLogin(mockedWS, orgId, "user_1")
       requestData = {
         request: {
           contact_list: {},

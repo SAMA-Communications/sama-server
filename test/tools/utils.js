@@ -1,11 +1,30 @@
 import "../../index.js"
 
+import ServiceLocatorContainer from "../../app/common/ServiceLocatorContainer.js"
+
 import packetJsonProcessor from "../../APIs/JSON/routes/packet_processor.js"
 
-async function sendLogin(ws, login, device) {
+const organizationService = ServiceLocatorContainer.use("OrganizationService")
+
+async function createOrganization(params) {
+  params ??= { name: `${Math.random()}-${Math.random()}` }
+
+  const newOrganization = await organizationService.create(params)
+
+  return newOrganization
+}
+
+async function generateNewOrganizationId(params) {
+  const newOrganization = await createOrganization(params)
+
+  return newOrganization._id.toString()
+}
+
+async function sendLogin(ws, organizationId, login, device) {
   const requestData = {
     request: {
       user_login: {
+        organization_id: organizationId,
         device_id: device || `${login}${Math.round(Math.random() * 10000)}`,
         login: login,
         password: "1um",
@@ -36,13 +55,14 @@ const mockedWS = {
   },
 }
 
-async function createUserArray(count, currentCountOfUsers, email, phone) {
+async function createUserArray(organizationId, count, currentCountOfUsers, email, phone) {
   let usersIds = []
 
   for (let i = currentCountOfUsers || 0; i < count + (currentCountOfUsers || 0); i++) {
     const requestData = {
       request: {
         user_create: {
+          organization_id: organizationId,
           login: `user_${i + 1}`,
           password: "1um",
           email: email || `email_${i}`,
@@ -88,4 +108,12 @@ async function createConversation(ws, name, description, type, participants) {
   return responseData?.response.conversation._id.toString()
 }
 
-export { sendLogin, sendLogout, createUserArray, createConversation, mockedWS }
+export {
+  createOrganization,
+  generateNewOrganizationId,
+  sendLogin,
+  sendLogout,
+  createUserArray,
+  createConversation,
+  mockedWS,
+}

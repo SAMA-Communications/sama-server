@@ -2,24 +2,34 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
-import { createConversation, createUserArray, mockedWS, sendLogin, sendLogout } from "./tools/utils.js"
+import {
+  generateNewOrganizationId,
+  createConversation,
+  createUserArray,
+  mockedWS,
+  sendLogin,
+  sendLogout,
+} from "./tools/utils.js"
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 
+let orgId = void 0
 let currentConversationId = ""
 let currentUserToken = ""
 let userId = []
 
 describe(`Sending 'typing' status`, async () => {
   before(async () => {
-    userId = await createUserArray(2)
+    orgId = await generateNewOrganizationId()
+    userId = await createUserArray(orgId, 2)
 
-    currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user.token
+    await sendLogout(mockedWS)
+    currentUserToken = (await sendLogin(mockedWS, orgId, "user_1")).response.user.token
 
     currentConversationId = await createConversation(mockedWS, null, null, "g", [userId[1], userId[0]])
 
-    await sendLogout(mockedWS, currentUserToken)
+    await sendLogout(mockedWS, orgId, currentUserToken)
   })
 
   it("should fail user not login", async () => {
@@ -39,7 +49,7 @@ describe(`Sending 'typing' status`, async () => {
       message: "Unauthorized.",
     })
 
-    await sendLogin(mockedWS, "user_1")
+    await sendLogin(mockedWS, orgId, "user_1")
   })
 
   it("should fail cid or to missed", async () => {

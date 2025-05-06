@@ -22,9 +22,13 @@ class ConversationEditOperation {
   async perform(ws, conversationParams) {
     const { id: conversationId, participants: updateParticipants, ...updateFields } = conversationParams
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    const { participantIds: currentParticipantIds } = await this.#hasAccess(conversationId, currentUserId)
+    const { participantIds: currentParticipantIds } = await this.#hasAccess(
+      organizationId,
+      conversationId,
+      currentUserId
+    )
 
     const updatedConversation = await this.conversationService.conversationRepo.update(conversationId, updateFields)
 
@@ -61,8 +65,9 @@ class ConversationEditOperation {
     return result
   }
 
-  async #hasAccess(conversationId, userId) {
+  async #hasAccess(organizationId, conversationId, userId) {
     const { conversation, asOwner, participantIds } = await this.conversationService.hasAccessToConversation(
+      organizationId,
       conversationId,
       userId
     )
@@ -85,11 +90,11 @@ class ConversationEditOperation {
     let { add: addUsers, remove: removeUsers } = updateParticipants
 
     if (addUsers?.length) {
-      addUsers = await this.userService.userRepo.retrieveExistedIds(addUsers)
+      addUsers = await this.userService.userRepo.retrieveExistedIds(conversation.organization_id, addUsers)
     }
 
     if (removeUsers?.length) {
-      removeUsers = await this.userService.userRepo.retrieveExistedIds(removeUsers)
+      removeUsers = await this.userService.userRepo.retrieveExistedIds(conversation.organization_id, removeUsers)
     }
 
     addUsers ??= []

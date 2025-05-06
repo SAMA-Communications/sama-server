@@ -5,7 +5,7 @@ class BlockListRetrieveOperation {
   }
 
   async perform(ws) {
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     const blockedUsers = await this.blockListService.list(currentUserId)
 

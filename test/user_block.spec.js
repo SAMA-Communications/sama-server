@@ -2,23 +2,26 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
-import { createUserArray, mockedWS, sendLogin } from "./tools/utils.js"
+import { generateNewOrganizationId, createUserArray, mockedWS, sendLogin, sendLogout } from "./tools/utils.js"
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 const userTokenRepo = ServiceLocatorContainer.use("UserTokenRepository")
 const blockListService = ServiceLocatorContainer.use("BlockListService")
 
+let orgId = void 0
 let usersIds = []
 
 describe("UserBlocked functions", async () => {
   before(async () => {
     await userRepo.deleteMany({})
-
     await userTokenRepo.deleteMany({})
 
-    usersIds = await createUserArray(5)
-    await sendLogin(mockedWS, "user_1")
+    orgId = await generateNewOrganizationId()
+    usersIds = await createUserArray(orgId, 5)
+
+    await sendLogout(mockedWS)
+    await sendLogin(mockedWS, orgId, "user_1")
   })
 
   describe("Block method", async () => {

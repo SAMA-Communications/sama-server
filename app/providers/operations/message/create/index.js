@@ -32,9 +32,10 @@ class MessageCreateOperation {
     const messageId = createMessageParams.id
     delete createMessageParams.id
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
     const { conversation, blockedUserIds, participantIds } = await this.#hasAccess(
+      organizationId,
       createMessageParams.cid,
       currentUserId
     )
@@ -113,16 +114,21 @@ class MessageCreateOperation {
     return { messageId, message, deliverMessages, participantIds, modifiedFields, botMessage }
   }
 
-  async #hasAccess(conversationId, currentUserId) {
-    const { conversation, participantIds } = await this.#hasAccessToConversation(conversationId, currentUserId)
+  async #hasAccess(organizationId, conversationId, currentUserId) {
+    const { conversation, participantIds } = await this.#hasAccessToConversation(
+      organizationId,
+      conversationId,
+      currentUserId
+    )
 
     const blockedUserIds = await this.#checkBlocked(conversation, currentUserId, participantIds)
 
     return { conversation, blockedUserIds, participantIds }
   }
 
-  async #hasAccessToConversation(conversationId, currentUserId) {
+  async #hasAccessToConversation(organizationId, conversationId, currentUserId) {
     const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
+      organizationId,
       conversationId,
       currentUserId
     )

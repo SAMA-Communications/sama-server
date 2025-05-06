@@ -8,6 +8,7 @@ export default class Conversation extends BaseModel {
   static get visibleFields() {
     return [
       "_id",
+      "organization_id",
 
       "name",
       "type",

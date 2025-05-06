@@ -49,6 +49,12 @@ class RedisManager {
 
     return matchCount
   }
+
+  async findKeyByPattern(pattern) {
+    const keys = await this.client.keys(pattern)
+
+    return keys?.at(0)
+  }
 }
 
 const RedisClient = new RedisManager()

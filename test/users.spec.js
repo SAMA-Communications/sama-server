@@ -2,12 +2,13 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
-import "./tools/utils.js"
+import { generateNewOrganizationId } from "./tools/utils.js"
 
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 
+let orgId = void 0
 let userLogin = [...Array(30)].map(() => Math.random().toString(36)[2]).join("")
 const createdUsers = []
 const tmpUsersIds = []
@@ -15,6 +16,7 @@ const tmpUsersIds = []
 describe("User cycle", async () => {
   before(async () => {
     await userRepo.deleteMany({})
+    orgId = await generateNewOrganizationId()
   })
 
   describe("Create User", async () => {
@@ -22,6 +24,7 @@ describe("User cycle", async () => {
       const requestData = {
         request: {
           user_create: {
+            organization_id: orgId,
             login: userLogin,
             email: "email_1",
             phone: "phone_1",
@@ -48,6 +51,7 @@ describe("User cycle", async () => {
       let requestData = {
         request: {
           user_create: {
+            organization_id: orgId,
             login: "test_register",
             password: "user_paswword_1",
             device_id: "deveice1",
@@ -63,6 +67,7 @@ describe("User cycle", async () => {
       requestData = {
         request: {
           user_create: {
+            organization_id: orgId,
             login: "TeSt_REGISTER",
             password: "user_paswword_2",
             device_id: "deveice1",
@@ -87,6 +92,7 @@ describe("User cycle", async () => {
       const requestData = {
         request: {
           user_create: {
+            organization_id: orgId,
             login: "test_login",
             email: "email_1",
             password: "user_paswword_1",
@@ -112,6 +118,7 @@ describe("User cycle", async () => {
       const requestData = {
         request: {
           user_create: {
+            organization_id: orgId,
             login: "test_login",
             phone: "phone_1",
             password: "user_paswword_1",
@@ -137,6 +144,7 @@ describe("User cycle", async () => {
       const requestData = {
         request: {
           user_create: {
+            organization_id: orgId,
             login: userLogin,
             password: "user_paswword_1",
             device_id: "deveice1",
@@ -163,6 +171,7 @@ describe("User cycle", async () => {
       const requestData = {
         request: {
           user_login: {
+            organization_id: orgId,
             device_id: "PC",
             login: "user_testtttt",
             password: "user_paswword_1",
@@ -186,6 +195,7 @@ describe("User cycle", async () => {
       const requestData = {
         request: {
           user_login: {
+            organization_id: orgId,
             device_id: "PC",
             login: userLogin,
             password: "Invalid_password213",
@@ -210,6 +220,7 @@ describe("User cycle", async () => {
       const requestData = {
         request: {
           user_login: {
+            organization_id: orgId,
             login: userLogin,
             password: "Invalid_password213",
           },
@@ -232,6 +243,7 @@ describe("User cycle", async () => {
       const requestData = {
         request: {
           user_login: {
+            organization_id: orgId,
             device_id: "PC",
             login: userLogin,
             password: "user_paswword_1",
@@ -338,6 +350,7 @@ describe("User cycle", async () => {
       const requestData = {
         request: {
           user_login: {
+            organization_id: orgId,
             device_id: "123",
             login: userLogin,
             password: "312sad",
@@ -467,6 +480,7 @@ describe("User cycle", async () => {
       let requestData = {
         request: {
           user_create: {
+            organization_id: orgId,
             login: "login_12345",
             password: "new_pasw31",
             email: "copyemail@email.com",
@@ -633,6 +647,7 @@ describe("User cycle", async () => {
       requestData = {
         request: {
           user_login: {
+            organization_id: orgId,
             device_id: "PC",
             login: userLogin,
             password: "312sad",

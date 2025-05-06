@@ -7,9 +7,14 @@ class HttpMessageCreateOperation {
   }
 
   async perform(fakeWsSessionKey, payload) {
-    const { senderId, message: messageParams } = payload
+    const { organizationId, senderId, message: messageParams } = payload
 
-    this.sessionService.addUserDeviceConnection(fakeWsSessionKey, senderId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
+    this.sessionService.addUserDeviceConnection(
+      fakeWsSessionKey,
+      organizationId,
+      senderId,
+      MAIN_CONSTANTS.HTTP_DEVICE_ID
+    )
 
     const operationResponse = await this.messageCreateOperation.perform(fakeWsSessionKey, messageParams)
 

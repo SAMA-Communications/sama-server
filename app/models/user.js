@@ -28,6 +28,7 @@ export default class User extends BaseModel {
   static get originalFields() {
     return [
       "_id",
+      "organization_id",
 
       "created_at",
       "updated_at",
