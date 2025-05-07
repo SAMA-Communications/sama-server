@@ -15,6 +15,7 @@ import ConversationHandlerRepoProvider from "./repositories/conversation_handler
 import ConversationParticipantRepoProvider from "./repositories/conversation_participants/Provider.js"
 import MessageRepoProvider from "./repositories/message/Provider.js"
 import MessageStatusRepoProvider from "./repositories/message_status/Provider.js"
+import MessageReactionRepoProvider from "./repositories/message_reaction/Provider.js"
 import ContactRepositoryProvider from "./repositories/contact/Provider.js"
 import OperationsLogRepositoryProvider from "./repositories/operations_log/Provider.js"
 import PushEventRepositoryProvider from "./repositories/push_event/Provider.js"
@@ -75,6 +76,8 @@ import MessageEditOperationProvider from "./operations/message/edit/Provider.js"
 import MessageReadOperationProvider from "./operations/message/read/Provider.js"
 import MessageDeleteOperationProvider from "./operations/message/delete/Provider.js"
 import MessageListOperationProvider from "./operations/message/list/Provider.js"
+import MessageReactionsUpdateOperationProvider from "./operations/message/reactions_update/Provider.js"
+import MessageReactionsListOperationProvider from "./operations/message/reactions_list/Provider.js"
 import MessageSendSystemOperationProvider from "./operations/message/system/Provider.js"
 
 import OpLogsListOperationProvider from "./operations/operation_logs/list/Provider.js"
@@ -122,6 +125,7 @@ const providers = [
   ConversationParticipantRepoProvider,
   MessageRepoProvider,
   MessageStatusRepoProvider,
+  MessageReactionRepoProvider,
   ContactRepositoryProvider,
   OperationsLogRepositoryProvider,
   PushEventRepositoryProvider,
@@ -182,6 +186,8 @@ const providers = [
   MessageReadOperationProvider,
   MessageDeleteOperationProvider,
   MessageListOperationProvider,
+  MessageReactionsUpdateOperationProvider,
+  MessageReactionsListOperationProvider,
   MessageSendSystemOperationProvider,
 
   OpLogsListOperationProvider,

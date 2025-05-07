@@ -1,0 +1,59 @@
+import { ERROR_STATUES } from "../../../../constants/errors.js"
+import MessageReactionsUpdatePublicFields from "@sama/DTO/Response/message/reactions_update/public_fields.js"
+
+class MessageReactionsUpdateOperation {
+  constructor(sessionService, messageService, conversationService) {
+    this.sessionService = sessionService
+    this.messageService = messageService
+    this.conversationService = conversationService
+  }
+
+  async perform(ws, messageUpdateReactionParams) {
+    const { mid: messageId, add: addReaction, remove: removeReaction } = messageUpdateReactionParams
+
+    const currentUserId = this.sessionService.getSessionUserId(ws)
+
+    const message = await this.#hasAccess(messageId, currentUserId)
+
+    await this.messageService.updateReactions(message._id, currentUserId, addReaction, removeReaction)
+
+    const conversation = await this.conversationService.conversationRepo.findById(message.cid)
+
+    const participantIds = await this.conversationService.findConversationParticipants(message.cid)
+
+    const messageUpdateReactionParamsResult = {
+      mid: messageId,
+      cid: message.cid,
+      c_type: conversation.type,
+      from: currentUserId,
+
+      add: addReaction,
+      remove: removeReaction,
+    }
+
+    return {
+      messageReactionsUpdate: new MessageReactionsUpdatePublicFields(messageUpdateReactionParamsResult),
+      participantIds,
+    }
+  }
+
+  async #hasAccess(messageId, currentUserId) {
+    const { message, asOwner } = await this.messageService.hasAccessToMessage(messageId, currentUserId)
+
+    if (!message) {
+      throw new Error(ERROR_STATUES.MESSAGE_ID_NOT_FOUND.message, {
+        cause: ERROR_STATUES.MESSAGE_ID_NOT_FOUND,
+      })
+    }
+
+    if (!asOwner) {
+      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+        cause: ERROR_STATUES.FORBIDDEN,
+      })
+    }
+
+    return message
+  }
+}
+
+export default MessageReactionsUpdateOperation

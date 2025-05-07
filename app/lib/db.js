@@ -10,7 +10,7 @@ export async function connectToDBPromise() {
   const mongoURISplit = process.env.MONGODB_URL.split("/")
   const dbName = mongoURISplit[mongoURISplit.length - 1].split("?")[0]
 
-  return dbConnection = db.db(dbName)
+  return (dbConnection = db.db(dbName))
 }
 
 export function getDb() {
