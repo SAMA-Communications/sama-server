@@ -19,17 +19,11 @@ class MessageReactionsListOperation {
   }
 
   async #hasAccess(messageId, currentUserId) {
-    const { message, asOwner } = await this.messageService.hasAccessToMessage(messageId, currentUserId)
+    const { message, selfDeleted } = await this.messageService.hasAccessToMessage(messageId, currentUserId)
 
-    if (!message) {
+    if (!message || selfDeleted) {
       throw new Error(ERROR_STATUES.MESSAGE_ID_NOT_FOUND.message, {
         cause: ERROR_STATUES.MESSAGE_ID_NOT_FOUND,
-      })
-    }
-
-    if (!asOwner) {
-      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
-        cause: ERROR_STATUES.FORBIDDEN,
       })
     }
 

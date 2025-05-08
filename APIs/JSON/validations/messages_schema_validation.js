@@ -63,6 +63,7 @@ export const messagesSchemaValidation = {
   }).required(),
   reactions_update: Joi.object({
     mid: Joi.alternatives()
+      .required()
       .try(Joi.object(), Joi.string())
       .error(
         new Error(ERROR_STATUES.INCORRECT_MESSAGE_ID.message, {
@@ -85,13 +86,14 @@ export const messagesSchemaValidation = {
   }).required(),
   reactions_list: Joi.object({
     mid: Joi.alternatives()
+      .required()
       .try(Joi.object(), Joi.string())
       .error(
         new Error(ERROR_STATUES.INCORRECT_MESSAGE_ID.message, {
           cause: ERROR_STATUES.INCORRECT_MESSAGE_ID,
         })
       ),
-  }).required(),
+  }),
   read: Joi.object({
     cid: Joi.string()
       .required()

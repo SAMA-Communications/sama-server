@@ -41,7 +41,7 @@ class MessageReactionRepository extends BaseRepository {
     }
 
     const $group_accumulate = {
-      _id: "$_id.chat_message_id",
+      _id: "$_id.mid",
       total: { $addToSet: { count: "$count", reaction: "$_id.reaction" } },
     }
 
@@ -60,7 +60,7 @@ class MessageReactionRepository extends BaseRepository {
           return acc
         }, {}) || {}
 
-      acc[obj["_id"]] = { own, total }
+      acc[obj["_id"]] = { own: own.sort(), total }
 
       return acc
     }, {})
@@ -82,7 +82,7 @@ class MessageReactionRepository extends BaseRepository {
 
     const mappedResult = aggregationResult.reduce((acc, resultItem) => {
       const { _id, user_ids } = resultItem
-      acc[_id] = user_ids
+      acc[_id] = user_ids.sort()
       return acc
     }, {})
 
