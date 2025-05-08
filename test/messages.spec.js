@@ -800,6 +800,24 @@ describe("Message function", async () => {
       })
     })
 
+    it("should fail reaction is require (update)", async () => {
+      const requestData = {
+        request: {
+          message_reactions_update: {
+            mid: messageId1,
+          },
+          id: "2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.equal(responseData.response.success, undefined)
+      assert.deepEqual(responseData.response.error, '"value" must contain at least one of [add, remove]')
+    })
+
     it("should fail mid is require (list)", async () => {
       const requestData = {
         request: {
@@ -978,12 +996,23 @@ describe("Message function", async () => {
       }
 
       let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+      const deliveredMessage = responseData.deliverMessages.at(0)
 
       responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.notEqual(responseData.response.success, undefined)
       assert.equal(responseData.response.error, undefined)
+
+      assert.deepEqual(deliveredMessage.userIds, usersIds.slice(0, 2).reverse())
+      assert.deepEqual(deliveredMessage.packet.message_reactions_update, {
+        mid: messageId1.toString(),
+        cid: userRepo.castObjectId(currentConversationId),
+        c_type: "g",
+        from: usersIds.at(1),
+        add: reaction3,
+        remove: reaction2,
+      })
     })
 
     it("should add", async () => {

@@ -103,6 +103,7 @@ import HttpMessageCreateOperationProvider from "./operations/http/message/create
 import HttpMessageSystemOperationProvider from "./operations/http/message/system/Provider.js"
 import HttpMessageReadOperationProvider from "./operations/http/message/read/Provider.js"
 import HttpMessageEditOperationProvider from "./operations/http/message/edit/Provider.js"
+import HttpMessageReactionOperationProvider from "./operations/http/message/reaction/Provider.js"
 import HttpMessageDeleteOperationProvider from "./operations/http/message/delete/Provider.js"
 
 import HttpActivityOnlineListOperationProvider from "./operations/http/activity/online_list/Provider.js"
@@ -213,6 +214,7 @@ const providers = [
   HttpMessageSystemOperationProvider,
   HttpMessageReadOperationProvider,
   HttpMessageEditOperationProvider,
+  HttpMessageReactionOperationProvider,
   HttpMessageDeleteOperationProvider,
 
   HttpActivityOnlineListOperationProvider,

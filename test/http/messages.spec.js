@@ -104,6 +104,41 @@ describe("Http Messages", async () => {
     assert.deepEqual(deliveredMessages.userIds.reverse(), usersIds)
   })
 
+  it("update reaction", async () => {
+    const reaction1 = "🍪"
+    const reaction2 = "🐶"
+
+    const requestData = {
+      senderId: usersIds.at(0),
+      messageReaction: {
+        mid: createdMessageId,
+        add: reaction1,
+        remove: reaction2,
+      },
+    }
+
+    const req = {}
+    const res = {
+      fakeWsSessionKey: Symbol("Test http ws fake session"),
+      parsedBody: requestData,
+    }
+
+    const responseData = await HttpMessageController.reaction(res, req)
+    const httpResponse = responseData.httpResponse
+    const deliveredMessage = responseData.deliverMessages.at(0)
+
+    assert.deepEqual(httpResponse.body, { success: true })
+    assert.deepEqual(deliveredMessage.userIds.reverse(), usersIds)
+    assert.deepEqual(deliveredMessage.packet.message_reactions_update, {
+      mid: createdMessageId,
+      cid: userRepo.castObjectId(conversationId),
+      c_type: "u",
+      from: usersIds.at(0),
+      add: reaction1,
+      remove: reaction2,
+    })
+  })
+
   it("read", async () => {
     const requestData = {
       senderId: usersIds.at(1),

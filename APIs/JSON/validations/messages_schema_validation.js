@@ -72,7 +72,7 @@ export const messagesSchemaValidation = {
       ),
     add: Joi.string().max(10).optional(),
     remove: Joi.string().max(10).optional(),
-  }),
+  }).or("add", "remove"),
   list: Joi.object({
     cid: Joi.string()
       .required()
