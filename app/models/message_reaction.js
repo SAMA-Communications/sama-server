@@ -2,7 +2,7 @@ import BaseModel from "./base.js"
 
 export default class MessageReaction extends BaseModel {
   static get collection() {
-    return "conversations_participants"
+    return "message_reactions"
   }
 
   static get visibleFields() {
