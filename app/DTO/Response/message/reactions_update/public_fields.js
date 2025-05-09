@@ -7,8 +7,12 @@ class MessageReactionsUpdatePublicFields {
 
     this.from = messageReactionObject.from
 
-    this.add = messageReactionObject.add
-    this.remove = messageReactionObject.remove
+    if (messageReactionObject.add) {
+      this.add = messageReactionObject.add
+    }
+    if (messageReactionObject.remove) {
+      this.remove = messageReactionObject.remove
+    }
   }
 }
 

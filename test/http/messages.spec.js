@@ -135,7 +135,6 @@ describe("Http Messages", async () => {
       c_type: "u",
       from: usersIds.at(0),
       add: reaction1,
-      remove: reaction2,
     })
   })
 

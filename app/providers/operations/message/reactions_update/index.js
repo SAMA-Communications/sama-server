@@ -15,7 +15,16 @@ class MessageReactionsUpdateOperation {
 
     const message = await this.#hasAccess(messageId, currentUserId)
 
-    await this.messageService.updateReactions(message._id, currentUserId, addReaction, removeReaction)
+    const updateResult = await this.messageService.updateReactions(
+      message._id,
+      currentUserId,
+      addReaction,
+      removeReaction
+    )
+
+    if (!(updateResult.add || updateResult.remove)) {
+      return { isUpdated: false }
+    }
 
     const conversation = await this.conversationService.conversationRepo.findById(message.cid)
 
@@ -26,14 +35,20 @@ class MessageReactionsUpdateOperation {
       cid: message.cid,
       c_type: conversation.type,
       from: currentUserId,
+    }
 
-      add: addReaction,
-      remove: removeReaction,
+    if (updateResult.add) {
+      messageUpdateReactionParamsResult.add = addReaction
+    }
+
+    if (updateResult.remove) {
+      messageUpdateReactionParamsResult.remove = removeReaction
     }
 
     return {
       messageReactionsUpdate: new MessageReactionsUpdatePublicFields(messageUpdateReactionParamsResult),
       participantIds,
+      isUpdated: true,
     }
   }
 

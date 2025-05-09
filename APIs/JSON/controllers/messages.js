@@ -61,16 +61,20 @@ class MessagesController extends BaseJSONController {
     const { id: requestId, message_reactions_update: messageReactionsUpdatePayload } = data
 
     const messageReactionsUpdateOperation = ServiceLocatorContainer.use("MessageReactionsUpdateOperation")
-    const { messageReactionsUpdate, participantIds } = await messageReactionsUpdateOperation.perform(
+    const { isUpdated, messageReactionsUpdate, participantIds } = await messageReactionsUpdateOperation.perform(
       ws,
       messageReactionsUpdatePayload
     )
 
-    return new Response()
-      .addBackMessage({ response: { id: requestId, success: true } })
-      .addDeliverMessage(
+    const response = new Response().addBackMessage({ response: { id: requestId, success: true } })
+
+    if (isUpdated) {
+      response.addDeliverMessage(
         new DeliverMessage(participantIds, new MessageReactionsUpdateResponse(messageReactionsUpdate), true)
       )
+    }
+
+    return response
   }
 
   async list(ws, data) {

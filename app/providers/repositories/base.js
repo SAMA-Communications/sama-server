@@ -236,7 +236,7 @@ export default class BaseRepository {
       query.user_id = this.castObjectId(query.user_id)
     }
 
-    await this.collectionCursor.deleteMany(query)
+    return await this.collectionCursor.deleteMany(query)
   }
 
   wrapRawRecordInModel(rawRecord) {

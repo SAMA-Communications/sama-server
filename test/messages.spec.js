@@ -895,6 +895,27 @@ describe("Message function", async () => {
       assert.equal(responseData.response.error, undefined)
     })
 
+    it("should remove not existed reaction", async () => {
+      const requestData = {
+        request: {
+          message_reactions_update: {
+            mid: messageId1,
+            remove: reaction4,
+          },
+          id: "2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+      const deliveredMessage = responseData.deliverMessages
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.notEqual(responseData.response.success, undefined)
+      assert.equal(responseData.response.error, undefined)
+      assert.equal(deliveredMessage.length, 0)
+    })
+
     it("should add reaction", async () => {
       const requestData = {
         request: {

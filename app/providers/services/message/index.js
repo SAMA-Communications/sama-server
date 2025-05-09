@@ -144,14 +144,18 @@ class MessageService {
   }
 
   async updateReactions(mid, userId, addReaction, removeReaction) {
+    const updated = { add: false, remove: false }
+
     if (addReaction) {
-      const addParams = { mid, user_id: userId, reaction: addReaction }
-      await this.messageReactionRepo.add(addParams)
+      const upsert = { mid, user_id: userId, reaction: addReaction }
+      updated.add ||= await this.messageReactionRepo.upsert(upsert)
     }
 
     if (removeReaction) {
-      await this.messageReactionRepo.remove(mid, userId, removeReaction)
+      updated.remove ||= await this.messageReactionRepo.remove(mid, userId, removeReaction)
     }
+
+    return updated
   }
 
   async deleteMessages(userId, mIds, deleteAll) {

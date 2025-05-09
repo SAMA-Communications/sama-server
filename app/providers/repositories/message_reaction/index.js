@@ -19,7 +19,23 @@ class MessageReactionRepository extends BaseRepository {
       reaction: reaction,
     }
 
-    await this.deleteMany(query)
+    const result = await this.deleteMany(query)
+
+    return result.deletedCount > 0
+  }
+
+  async upsert(params) {
+    const createParams = await this.prepareParams(params)
+
+    const existed = await this.findOne(createParams)
+
+    if (existed) {
+      return false
+    }
+
+    await this.add(createParams)
+
+    return true
   }
 
   async aggregateForUserMessages(mIds, userId) {
