@@ -19,6 +19,7 @@ export default class Message extends BaseModel {
       "created_at",
 
       "status", // virtual
+      "reactions", // virtual
     ]
   }
 

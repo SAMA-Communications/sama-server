@@ -1036,6 +1036,7 @@ On each message sent to server - a server will deliver back to client a simple p
         attachments: [
           { file_id: "file_name_1", file_name: "file_1" }
         ],
+        reactions: {}
         t: 1668680757,
         created_at: "2023-05-24T14:34:58.066Z"
       }
@@ -1156,6 +1157,56 @@ Then other users in this conversation who is online will receive the following m
 ```
 
 If users are offline, they will receive a message once became online.
+
+### Update reaction
+
+User who can access message can add/remove reaction
+
+```
+{
+  request: {
+    message_reactions_update: {
+      mid: "63077ad836b78c3d82af0812",
+      add: "👍",
+      remove: "😿"
+    },
+    id: "4"
+  }
+}
+
+{ response: { id: "4", success: true } }
+```
+
+Then other users in this conversation who is online will receive the following message:
+
+```
+{
+  message_reactions_update: {
+    mid: "63077ad836b78c3d82af0812",
+    cid: "63077ad836b78c3d82af0815"
+    from: "634ec51c0b65918393dca5bf",
+    add: "👍",
+    remove: "😿"
+  }
+}
+```
+
+### List reactions
+
+Retrieve userIds who add reaction to message
+
+```
+{
+  request: {
+    message_reactions_list: {
+      mid: "63077ad836b78c3d82af0812",
+    },
+    id: "4"
+  }
+}
+
+{ response: { id: "4", reactions: { "👍": ["63480e68f4794709f802a2fc", "63480e68f4794709f802a2fb"], "😂": ["63480e68f4794709f802a2fb"] } } }
+```
 
 ## Push Subscription API
 
@@ -1711,7 +1762,7 @@ Marks one or more messages as **read** in a specific conversation. All users who
 {
   "senderId": "63480e68f4794709f802a2fa",
   "messageRead": {
-    "cid": "63077ad836b78c3d82af0812",
+    "cid": "63077ad836b78c3d82af0815",
     "ids": ["63480e68f4794709f802a2fa", "63077ad836b78c3d82af0866"]
   }
 }
@@ -1744,7 +1795,7 @@ Marks one or more messages as **read** in a specific conversation. All users who
 ```json
 {
   "message_read": {
-    "cid": "63077ad836b78c3d82af0812",
+    "cid": "63077ad836b78c3d82af0815",
     "ids": ["63480e68f4794709f802a2fa", "63077ad836b78c3d82af0866"],
     "from": "634ec51c0b65918393dca5bf"
   }
@@ -1801,16 +1852,68 @@ Updates the body of a previously sent message. Only the sender can edit the mess
 }
 ```
 
+### 📌 `PUT /admin/message/reaction`
+
+**Description**:  
+Updates the reactions of a message. Can add/remove reactions. All online participants of the conversation will receive the update reaction message in real-time.
+
+---
+
+#### 🔐 Authorization
+
+- Required Header:  
+  `Admin-Api-Key: {{HTTP_ADMIN_API_KEY}}`
+
+---
+
+#### 📥 Request
+
+**Content-Type**: `application/json`
+
+```json
+{
+  "senderId": "63480e68f4794709f802a2fa",
+  "messageReaction": {
+    "mid": "63077ad836b78c3d82af0812",
+    "add": "🤐",
+    "remove": "👍"
+  }
+}
+```
+
+---
+
+#### 🧾 Request Parameters
+
+| Field                    | Type     | Description                                                        |
+| ------------------------ | -------- | ------------------------------------------------------------------ |
+| `senderId`               | `string` | **User ID** of the user who update reaction                        |
+| `messageReaction.mid`    | `string` | **Message ID** to update reaction                                  |
+| `messageReaction.add`    | `string` | Reaction to add                                                    |
+| `messageReaction.remove` | `string` | Reaction to remove                                                 |
+
+---
+
+#### ✅ Successful Response
+
+```json
+{
+  "success": true
+}
+```
+
 ---
 
 #### 📡 Real-time Message (Broadcasted to Other Online Participants)
 
 ```json
 {
-  "message_edit": {
-    "id": "63077ad836b78c3d82af0812",
-    "body": "updated message body",
-    "from": "63480e68f4794709f802a2fa"
+  "message_reactions_update": {
+    "mid": "63077ad836b78c3d82af0812",
+    "cid": "63077ad836b78c3d82af0815",
+    "from": "63480e68f4794709f802a2fa",
+    "add": "🤐",
+    "remove": "👍"
   }
 }
 ```
@@ -1842,7 +1945,7 @@ Deletes one or more messages in a conversation. The deletion behavior depends on
 {
   "senderId": "63480e68f4794709f802a2fa",
   "messageDelete": {
-    "cid": "63077ad836b78c3d82af0812",
+    "cid": "63077ad836b78c3d82af0815",
     "ids": ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
     "type": "myself"
   }
@@ -1877,7 +1980,7 @@ Deletes one or more messages in a conversation. The deletion behavior depends on
 ```json
 {
   "message_delete": {
-    "cid": "63077ad836b78c3d82af0812",
+    "cid": "63077ad836b78c3d82af0815",
     "ids": ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
     "type": "all",
     "from": "634ec51c0b65918393dca5bf"

@@ -38,10 +38,20 @@ export const routes = {
       .middleware(authGuardMiddleware, ws, json)
       .validate(json.message_edit, messagesSchemaValidation.edit)
       .edit(ws, json),
+  message_reactions_update: (ws, json) =>
+    MessagesController.middleware(authGuardMiddleware, ws, json)
+      .middleware(authGuardMiddleware, ws, json)
+      .validate(json.message_reactions_update, messagesSchemaValidation.reactions_update)
+      .reactions_update(ws, json),
   message_list: (ws, json) =>
     MessagesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.message_list, messagesSchemaValidation.list)
       .list(ws, json),
+  message_reactions_list: (ws, json) =>
+    MessagesController.middleware(authGuardMiddleware, ws, json)
+      .middleware(authGuardMiddleware, ws, json)
+      .validate(json.message_reactions_list, messagesSchemaValidation.reactions_list)
+      .reactions_list(ws, json),
   message_read: (ws, json) =>
     MessagesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.message_read, messagesSchemaValidation.read)

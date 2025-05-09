@@ -224,6 +224,11 @@ export default class HttpServerApp {
       this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.edit)
     )
 
+    this.uWSLocalSocket.put(
+      "/admin/message/reaction",
+      this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.reaction)
+    )
+
     this.uWSLocalSocket.del(
       "/admin/message",
       this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.delete)
