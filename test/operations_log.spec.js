@@ -32,6 +32,7 @@ describe("Operations Log functions", async () => {
           },
         })
       )
+      await new Promise((resolve) => setTimeout(resolve, 100))
     }
   })
 
