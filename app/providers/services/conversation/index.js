@@ -114,8 +114,8 @@ class ConversationService {
     return result
   }
 
-  async validateAccessToConversation(conversationId, userId) {
-    const { conversation, asOwner } = await this.hasAccessToConversation(conversationId, userId)
+  async validateAccessToConversation(organizationId, conversationId, userId) {
+    const { conversation, asOwner } = await this.hasAccessToConversation(organizationId, conversationId, userId)
 
     if (!conversation) {
       throw new Error(ERROR_STATUES.BAD_REQUEST.message, {
