@@ -32,7 +32,7 @@ class ConversationService {
     const imageUrlPromises = conversations.map(async (conv) => {
       if (conv.image_object) {
         ;(conv.params ? conv.params : conv)["image_url"] = await this.storageService.getFileDownloadUrl(
-          conv._id,
+          conv.organization_id,
           conv.image_object.file_id
         )
       }
