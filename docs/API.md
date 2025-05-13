@@ -45,7 +45,7 @@ Http request examples:
 
 ```
 {
-  organizationId: "680a2fae96cc69d78861f101",
+  organization_id: "680a2fae96cc69d78861f101",
   login: "login_u1",
   password: "u1_password",
   device_id: "device_u1"
