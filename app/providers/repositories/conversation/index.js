@@ -13,23 +13,27 @@ class ConversationRepository extends BaseRepository {
   async findExistedPrivateConversation(ownerId, opponentId) {
     ownerId = this.castObjectId(ownerId)
     opponentId = this.castObjectId(opponentId)
-
     const conversation = await this.findOne({
+      type: "u",
       $or: [
-        {
-          type: "u",
-          owner_id: ownerId,
-          opponent_id: opponentId,
-        },
-        {
-          type: "u",
-          owner_id: opponentId,
-          opponent_id: ownerId,
-        },
+        { owner_id: ownerId, opponent_id: opponentId },
+        { owner_id: opponentId, opponent_id: ownerId },
       ],
     })
 
     return conversation
+  }
+
+  async findAvaiblePrivateConversation(conversationIds, user_id) {
+    const participantId = this.castObjectId(user_id)
+
+    const conversations = await this.findAll({
+      _id: { $in: conversationIds },
+      type: "u",
+      $or: [{ owner_id: participantId }, { opponent_id: participantId }],
+    })
+
+    return conversations
   }
 
   async search({ chatNameMatch, ignoreIds, timeFromUpdate }, limit) {
