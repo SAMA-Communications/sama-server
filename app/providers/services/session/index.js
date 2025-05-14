@@ -96,6 +96,11 @@ class SessionService {
     const userKey = organizationId
       ? this.#usersSetKey(organizationId, userId)
       : await this.redisConnection.findKeyByPattern(`user:*:${userId}`)
+
+    if (!userKey) {
+      return
+    }
+    
     await this.redisConnection.client.sRem(userKey, deviceId)
   }
 
@@ -103,6 +108,11 @@ class SessionService {
     const userKey = organizationId
       ? this.#usersSetKey(organizationId, userId)
       : await this.redisConnection.findKeyByPattern(`user:*:${userId}`)
+
+    if (!userKey) {
+      return []
+    }
+    
     const deviceIds = await this.redisConnection.client.sMembers(userKey)
     return deviceIds
   }
@@ -111,6 +121,11 @@ class SessionService {
     const userKey = organizationId
       ? this.#usersSetKey(organizationId, userId)
       : await this.redisConnection.findKeyByPattern(`user:*:${userId}`)
+
+    if (!userKey) {
+      return
+    }
+    
     await this.redisConnection.client.del(userKey)
   }
 

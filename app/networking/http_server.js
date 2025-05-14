@@ -68,6 +68,7 @@ const parseJsonBodyMiddleware = async (res, req) => {
 
   try {
     res.parsedBody = JSON.parse(res.rawBody.toString())
+    console.log('[Http][payload]', res.parsedBody)
   } catch (error) {
     console.log("[Http][parseJSONBody][error]", error)
   }
