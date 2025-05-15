@@ -2,7 +2,14 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
-import { createConversation, createUserArray, mockedWS, sendLogin, sendLogout, generateNewOrganizationId } from "./tools/utils.js"
+import {
+  createConversation,
+  createUserArray,
+  mockedWS,
+  sendLogin,
+  sendLogout,
+  generateNewOrganizationId,
+} from "./tools/utils.js"
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")

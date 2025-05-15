@@ -68,7 +68,7 @@ const parseJsonBodyMiddleware = async (res, req) => {
 
   try {
     res.parsedBody = JSON.parse(res.rawBody.toString())
-    console.log('[Http][payload]', res.parsedBody)
+    console.log("[Http][payload]", res.parsedBody)
   } catch (error) {
     console.log("[Http][parseJSONBody][error]", error)
   }
@@ -229,6 +229,11 @@ export default class HttpServerApp {
     this.uWSLocalSocket.put(
       "/admin/message",
       this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.edit)
+    )
+
+    this.uWSLocalSocket.put(
+      "/admin/message/reaction",
+      this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.reaction)
     )
 
     this.uWSLocalSocket.del(

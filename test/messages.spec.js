@@ -777,6 +777,347 @@ describe("Message function", async () => {
         message: "Forbidden.",
       })
     })
+  })
+
+  describe("Reactions", async () => {
+    const reaction1 = "👍"
+    const reaction2 = "🤯"
+    const reaction3 = "👩‍💻"
+    const reaction4 = "🧲"
+
+    before(async () => {
+      await sendLogin(mockedWS, orgId, "user_1")
+    })
+
+    it("should fail mid is require (update)", async () => {
+      const requestData = {
+        request: {
+          message_reactions_update: {
+            add: reaction3,
+          },
+          id: "2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.equal(responseData.response.success, undefined)
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "Incorrect message ID.",
+      })
+    })
+
+    it("should fail reaction is require (update)", async () => {
+      const requestData = {
+        request: {
+          message_reactions_update: {
+            mid: messageId1,
+          },
+          id: "2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.equal(responseData.response.success, undefined)
+      assert.deepEqual(responseData.response.error, '"value" must contain at least one of [add, remove]')
+    })
+
+    it("should fail mid is require (list)", async () => {
+      const requestData = {
+        request: {
+          message_reactions_list: {},
+          id: "2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.equal(responseData.response.success, undefined)
+      assert.deepEqual(responseData.response.error, {
+        status: 422,
+        message: "Incorrect message ID.",
+      })
+    })
+
+    it("should reactions list (0)", async () => {
+      const requestData = {
+        request: {
+          message_reactions_list: {
+            mid: messageId1,
+          },
+          id: "2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.deepEqual(responseData.response.reactions, {})
+      assert.equal(responseData.response.error, undefined)
+    })
+
+    it("should add reaction", async () => {
+      const requestData = {
+        request: {
+          message_reactions_update: {
+            mid: messageId1,
+            add: reaction1,
+          },
+          id: "2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.notEqual(responseData.response.success, undefined)
+      assert.equal(responseData.response.error, undefined)
+    })
+
+    it("should reactions list (1)", async () => {
+      const requestData = {
+        request: {
+          message_reactions_list: {
+            mid: messageId1,
+          },
+          id: "2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.deepEqual(responseData.response.reactions, { [reaction1]: [usersIds.at(0)] })
+      assert.equal(responseData.response.error, undefined)
+    })
+
+    it("should remove not existed reaction", async () => {
+      const requestData = {
+        request: {
+          message_reactions_update: {
+            mid: messageId1,
+            remove: reaction4,
+          },
+          id: "2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+      const deliveredMessage = responseData.deliverMessages
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.notEqual(responseData.response.success, undefined)
+      assert.equal(responseData.response.error, undefined)
+      assert.equal(deliveredMessage.length, 0)
+    })
+
+    it("should add reaction", async () => {
+      const requestData = {
+        request: {
+          message_reactions_update: {
+            mid: messageId1,
+            add: reaction2,
+          },
+          id: "2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.notEqual(responseData.response.success, undefined)
+      assert.equal(responseData.response.error, undefined)
+    })
+
+    it("should reactions list (2)", async () => {
+      const requestData = {
+        request: {
+          message_reactions_list: {
+            mid: messageId1,
+          },
+          id: "2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.deepEqual(responseData.response.reactions, {
+        [reaction1]: [usersIds.at(0)],
+        [reaction2]: [usersIds.at(0)],
+      })
+      assert.equal(responseData.response.error, undefined)
+    })
+
+    it("change user", async () => {
+      await sendLogin(mockedWS, orgId, "user_2")
+    })
+
+    it("should add reaction", async () => {
+      const requestData = {
+        request: {
+          message_reactions_update: {
+            mid: messageId1,
+            add: reaction2,
+          },
+          id: "2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.notEqual(responseData.response.success, undefined)
+      assert.equal(responseData.response.error, undefined)
+    })
+
+    it("should reactions list (2)", async () => {
+      const requestData = {
+        request: {
+          message_reactions_list: {
+            mid: messageId1,
+          },
+          id: "2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.deepEqual(responseData.response.reactions, {
+        [reaction1]: [usersIds.at(0)],
+        [reaction2]: [usersIds.at(0), usersIds.at(1)],
+      })
+      assert.equal(responseData.response.error, undefined)
+    })
+
+    it("should add/remove", async () => {
+      const requestData = {
+        request: {
+          message_reactions_update: {
+            mid: messageId1,
+            add: reaction3,
+            remove: reaction2,
+          },
+          id: "2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+      const deliveredMessage = responseData.deliverMessages.at(0)
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.notEqual(responseData.response.success, undefined)
+      assert.equal(responseData.response.error, undefined)
+
+      assert.deepEqual(deliveredMessage.userIds, usersIds.slice(0, 2).reverse())
+      assert.deepEqual(deliveredMessage.packet.message_reactions_update, {
+        mid: messageId1.toString(),
+        cid: userRepo.castObjectId(currentConversationId),
+        c_type: "g",
+        from: usersIds.at(1),
+        add: reaction3,
+        remove: reaction2,
+      })
+    })
+
+    it("should add", async () => {
+      const requestData = {
+        request: {
+          message_reactions_update: {
+            mid: messageId1,
+            add: reaction4,
+            remove: reaction2,
+          },
+          id: "2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.notEqual(responseData.response.success, undefined)
+      assert.equal(responseData.response.error, undefined)
+    })
+
+    it("should reactions list (4)", async () => {
+      const requestData = {
+        request: {
+          message_reactions_list: {
+            mid: messageId1,
+          },
+          id: "2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.deepEqual(responseData.response.reactions, {
+        [reaction1]: [usersIds.at(0)],
+        [reaction2]: [usersIds.at(0)],
+        [reaction3]: [usersIds.at(1)],
+        [reaction4]: [usersIds.at(1)],
+      })
+      assert.equal(responseData.response.error, undefined)
+    })
+
+    it("should list message with reactions", async () => {
+      const requestData = {
+        request: {
+          message_list: {
+            cid: currentConversationId,
+          },
+          id: "2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+
+      const {
+        response: { messages },
+      } = responseData
+
+      assert.deepEqual(messages.at(0).reactions, {
+        own: [reaction4, reaction3].sort(),
+        total: { [reaction1]: 1, [reaction4]: 1, [reaction2]: 1, [reaction3]: 1 },
+      })
+
+      assert.deepEqual(messages.at(1).reactions, {})
+    })
 
     after(async () => {
       await userRepo.deleteMany({})

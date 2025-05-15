@@ -16,6 +16,7 @@ class MessagePublicFields {
     this.created_at = messageModel.created_at
 
     this.status = messageModel.status
+    this.reactions = messageModel.reactions
   }
 }
 

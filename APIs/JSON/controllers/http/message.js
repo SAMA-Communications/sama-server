@@ -5,6 +5,7 @@ import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 import MessageResponse from "@sama/DTO/Response/message/create/response.js"
 import SystemMessageResponse from "@sama/DTO/Response/message/system/response.js"
 import EditMessageResponse from "@sama/DTO/Response/message/edit/response.js"
+import MessageReactionsUpdateResponse from "@sama/DTO/Response/message/reactions_update/response.js"
 import ReadMessagesResponse from "@sama/DTO/Response/message/read/response.js"
 import DeleteMessagesResponse from "@sama/DTO/Response/message/delete/response.js"
 
@@ -77,6 +78,22 @@ class HttpMessageController extends BaseHttpController {
     return new Response()
       .setHttpResponse(new HttpResponse(200, {}, { success: true }))
       .addDeliverMessage(new DeliverMessage(participantIds, new EditMessageResponse(editedMessage), true))
+  }
+
+  async reaction(res, req) {
+    const payload = res.parsedBody
+
+    const messageReactionOperation = ServiceLocatorContainer.use("HttpMessageReactionOperation")
+    const { messageReactionsUpdate, participantIds } = await messageReactionOperation.perform(
+      res.fakeWsSessionKey,
+      payload
+    )
+
+    return new Response()
+      .setHttpResponse(new HttpResponse(200, {}, { success: true }))
+      .addDeliverMessage(
+        new DeliverMessage(participantIds, new MessageReactionsUpdateResponse(messageReactionsUpdate), true)
+      )
   }
 
   async delete(res, req) {
