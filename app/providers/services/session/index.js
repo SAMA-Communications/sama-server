@@ -5,7 +5,7 @@ import { CONSTANTS } from "../../../constants/constants.js"
 /*
   Structs:
   SET - node:{node-endpoint} -> {userId}:{deviceId}
-  SET - user:{userId} -> {deviceId}
+  SET - user:{organizationId}:{userId} -> {deviceId}
   HASH - user:{userId}:{deviceId} -> extra params
 */
 
@@ -20,7 +20,7 @@ class SessionService {
     return this.activeSessions.SESSIONS.size
   }
 
-  addUserDeviceConnection(ws, userId, deviceId) {
+  addUserDeviceConnection(ws, organizationId, userId, deviceId) {
     const activeConnections = this.activeSessions.DEVICES[userId]
     const wsToClose = []
 
@@ -38,7 +38,7 @@ class SessionService {
       this.activeSessions.DEVICES[userId] = [{ ws, deviceId }]
     }
 
-    this.setSessionUserId(ws, userId)
+    this.setSessionUserId(ws, organizationId, userId)
 
     return wsToClose
   }
@@ -79,32 +79,53 @@ class SessionService {
     await this.redisConnection.client.del(nodeKey)
   }
 
-  #usersSetKey(userId) {
-    return `user:${userId}`
+  #usersSetKey(organizationId, userId) {
+    return `user:${organizationId}:${userId}`
   }
 
   #usersHashKey(userId, deviceId) {
     return `user:${userId}:${deviceId}`
   }
 
-  async addUserDevice(userId, deviceId) {
-    const userKey = this.#usersSetKey(userId)
+  async addUserDevice(organizationId, userId, deviceId) {
+    const userKey = this.#usersSetKey(organizationId, userId)
     await this.redisConnection.client.sAdd(userKey, deviceId)
   }
 
-  async removeUserDevice(userId, deviceId) {
-    const userKey = this.#usersSetKey(userId)
+  async removeUserDevice(organizationId, userId, deviceId) {
+    const userKey = organizationId
+      ? this.#usersSetKey(organizationId, userId)
+      : await this.redisConnection.findKeyByPattern(`user:*:${userId}`)
+
+    if (!userKey) {
+      return
+    }
+    
     await this.redisConnection.client.sRem(userKey, deviceId)
   }
 
-  async listUserDevice(userId) {
-    const userKey = this.#usersSetKey(userId)
+  async listUserDevice(organizationId, userId) {
+    const userKey = organizationId
+      ? this.#usersSetKey(organizationId, userId)
+      : await this.redisConnection.findKeyByPattern(`user:*:${userId}`)
+
+    if (!userKey) {
+      return []
+    }
+    
     const deviceIds = await this.redisConnection.client.sMembers(userKey)
     return deviceIds
   }
 
-  async deleteUserDevices(userId) {
-    const userKey = this.#usersSetKey(userId)
+  async deleteUserDevices(organizationId, userId) {
+    const userKey = organizationId
+      ? this.#usersSetKey(organizationId, userId)
+      : await this.redisConnection.findKeyByPattern(`user:*:${userId}`)
+
+    if (!userKey) {
+      return
+    }
+    
     await this.redisConnection.client.del(userKey)
   }
 
@@ -131,25 +152,25 @@ class SessionService {
     await this.redisConnection.client.del(userHashKey)
   }
 
-  async removeUserData(userId, deviceId) {
-    await this.removeUserDevice(userId, deviceId)
+  async removeUserData(organizationId, userId, deviceId) {
+    await this.removeUserDevice(organizationId, userId, deviceId)
     await this.deleteUserExtraParams(userId, deviceId)
   }
 
-  async deleteUserData(userId) {
-    const userDevices = await this.listUserDevice(userId)
+  async deleteUserData(organizationId, userId) {
+    const userDevices = await this.listUserDevice(organizationId, userId)
 
     for (const deviceId of userDevices) {
       await this.deleteUserExtraParams(userId, deviceId)
     }
 
-    await this.deleteUserDevices(userId)
+    await this.deleteUserDevices(organizationId, userId)
   }
 
-  async listUserData(userId) {
+  async listUserData(organizationId, userId) {
     const userData = {}
 
-    const userDevices = await this.listUserDevice(userId)
+    const userDevices = await this.listUserDevice(organizationId, userId)
 
     for (const deviceId of userDevices) {
       const extraParams = await this.retrieveUserExtraParams(userId, deviceId)
@@ -159,15 +180,15 @@ class SessionService {
     return userData
   }
 
-  async storeUserNodeData(nodeIp, nodePort, userId, deviceId) {
-    const userDeviceIds = await this.listUserDevice(userId)
+  async storeUserNodeData(nodeIp, nodePort, organizationId, userId, deviceId) {
+    const userDeviceIds = await this.listUserDevice(organizationId, userId)
 
     if (userDeviceIds.includes(deviceId)) {
-      await this.removeUserData(userId, deviceId)
+      await this.removeUserData(organizationId, userId, deviceId)
       await this.removeUserDeviceFromNode(nodeIp, nodePort, userId, deviceId)
     }
 
-    await this.addUserDevice(userId, deviceId)
+    await this.addUserDevice(organizationId, userId, deviceId)
     await this.addUserExtraParams(userId, deviceId, { [CONSTANTS.SESSION_NODE_KEY]: buildWsEndpoint(nodeIp, nodePort) })
     await this.addUserDeviceToNode(nodeIp, nodePort, userId, deviceId)
   }
@@ -176,27 +197,24 @@ class SessionService {
     const userConnections = await this.listNodeUserDevices(void 0, void 0, nodeUrl)
 
     for (const { userId, deviceId } of userConnections) {
-      await this.removeUserData(userId, deviceId)
+      await this.removeUserData(null, userId, deviceId)
     }
 
     await this.deleteNodeConnections(void 0, void 0, nodeUrl)
   }
 
-  setSessionUserId(ws, userId) {
+  setSessionUserId(ws, organizationId, userId) {
     const session = this.getSession(ws)
 
-    if (!session) {
-      this.setSession(ws, userId)
-      return
+    if (session) {
+      this.activeSessions.SESSIONS.delete(ws)
     }
 
-    session.userId = userId
-
-    return session
+    this.setSession(ws, organizationId, userId)
   }
 
-  setSession(ws, userId, extraParams = {}) {
-    this.activeSessions.SESSIONS.set(ws, { userId, extraParams })
+  setSession(ws, organizationId, userId, extraParams = {}) {
+    this.activeSessions.SESSIONS.set(ws, { organizationId, userId, extraParams })
   }
 
   getSessionUserId(ws) {
@@ -246,18 +264,24 @@ class SessionService {
   }
 
   async removeAllUserSessions(ws) {
-    const userId = this.getSessionUserId(ws)
+    const session = this.getSession(ws)
+    if (!session) {
+      return
+    }
+
+    const { userId, organizationId } = session
+
     delete this.activeSessions.DEVICES[userId]
     this.activeSessions.SESSIONS.delete(ws)
 
-    const userData = await this.listUserData(userId)
+    const userData = await this.listUserData(organizationId, userId)
 
     for (const [deviceId, extraParams] of Object.entries(userData)) {
       const [, nodeId, nodePort] = splitWsEndpoint(extraParams[CONSTANTS.SESSION_NODE_KEY])
       await this.removeUserDeviceFromNode(nodeId, nodePort, userId, deviceId)
     }
 
-    await this.deleteUserData(userId)
+    await this.deleteUserData(organizationId, userId)
   }
 
   async removeUserSession(ws, userId, deviceId) {
@@ -282,7 +306,7 @@ class SessionService {
 
     const extraParams = await this.retrieveUserExtraParams(userId, deviceId)
 
-    await this.removeUserDevice(userId, deviceId)
+    await this.removeUserDevice(null, userId, deviceId)
     await this.deleteUserExtraParams(userId, deviceId)
 
     const nodeEndpoint = extraParams?.[CONSTANTS.SESSION_NODE_KEY]
@@ -294,16 +318,16 @@ class SessionService {
     await this.removeUserDeviceFromNode(nodeId, nodePort, userId, deviceId)
   }
 
-  async onlineUsersList(offset, limit) {
-    const matchPattern = "user:*"
+  async onlineUsersList(organizationId, offset, limit) {
+    const matchPattern = `user:${organizationId}:*`
 
     const userKeys = await this.redisConnection.scanWithPagination("set", matchPattern, offset, limit)
 
-    return userKeys.map((userKey) => userKey.replace("user:", ""))
+    return userKeys.map((userKey) => userKey.split(":").at(-1))
   }
 
-  async onlineUsersCount() {
-    const matchPattern = "user:*"
+  async onlineUsersCount(organizationId) {
+    const matchPattern = `user:${organizationId}:*`
 
     const count = await this.redisConnection.countWithMatch("set", matchPattern)
 

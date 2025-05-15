@@ -1,15 +1,18 @@
 class BlockListBlockOperation {
-  constructor(sessionService, blockListService) {
+  constructor(sessionService, userService, blockListService) {
     this.sessionService = sessionService
+    this.userService = userService
     this.blockListService = blockListService
   }
 
   async perform(ws, blockParams) {
     const { ids: targetUserIds } = blockParams
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    const blockedUsers = await this.blockListService.blockMany(currentUserId, targetUserIds)
+    const normalizedIds = await this.userService.userRepo.retrieveExistedIds(organizationId, targetUserIds)
+
+    const blockedUsers = await this.blockListService.blockMany(organizationId, currentUserId, normalizedIds)
 
     return blockedUsers
   }

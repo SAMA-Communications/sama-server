@@ -1,5 +1,7 @@
 import assert from "assert"
 
+import "./tools/utils.js"
+
 import { parserCookies, serializeCookie } from "../APIs/JSON/utils/cookie-tools.js"
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 

@@ -9,7 +9,7 @@ class PushSubscriptionDeleteOperation {
   async perform(ws, createSubscriptionParams) {
     const { device_udid } = createSubscriptionParams
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId } = this.sessionService.getSession(ws)
 
     const subscription = await this.pushNotificationService.findAndDeleteSubscription(currentUserId, device_udid)
 

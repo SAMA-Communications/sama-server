@@ -2,12 +2,13 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../../app/common/ServiceLocatorContainer.js"
 
-import { createUserArray, sendLogin } from "../tools/utils.js"
+import { generateNewOrganizationId, createUserArray, sendLogin } from "../tools/utils.js"
 import HttpActivityController from "../../APIs/JSON/controllers/http/activity.js"
 
 const redisClient = ServiceLocatorContainer.use("RedisClient")
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 
+let orgId = void 0
 let usersIds = []
 
 describe("Http Activity", async () => {
@@ -15,15 +16,16 @@ describe("Http Activity", async () => {
     await redisClient.client.flushAll()
     await userRepo.deleteMany({})
 
-    usersIds = await createUserArray(3)
+    orgId = await generateNewOrganizationId()
+    usersIds = await createUserArray(orgId, 3)
 
-    await sendLogin("u1", "user_1")
-    await sendLogin("u2", "user_2")
-    await sendLogin("u3", "user_3")
+    await sendLogin("u1", orgId, "user_1")
+    await sendLogin("u2", orgId, "user_2")
+    await sendLogin("u3", orgId, "user_3")
   })
 
   it("online list count", async () => {
-    const requestData = { count: true }
+    const requestData = { organizationId: orgId, userId: usersIds.at(0), count: true }
 
     const req = {}
     const res = {
@@ -35,11 +37,11 @@ describe("Http Activity", async () => {
     const httpResponse = responseData.httpResponse
     const { count } = httpResponse.body
 
-    assert.ok(count >= 3)
+    assert.ok(count === 3)
   })
 
   it("online list (idsOnly)", async () => {
-    const requestData = { limit: 10, idsOnly: true }
+    const requestData = { organizationId: orgId, userId: usersIds.at(0), limit: 2, idsOnly: true }
 
     const req = {}
     const res = {
@@ -51,11 +53,11 @@ describe("Http Activity", async () => {
     const httpResponse = responseData.httpResponse
     const { users } = httpResponse.body
 
-    assert.ok(users.length <= 10)
+    assert.ok(users.length === 2)
   })
 
   it("online list", async () => {
-    const requestData = { limit: 15 }
+    const requestData = { organizationId: orgId, userId: usersIds.at(0), offset: 1, limit: 15 }
 
     const req = {}
     const res = {
@@ -67,9 +69,11 @@ describe("Http Activity", async () => {
     const httpResponse = responseData.httpResponse
     const { users } = httpResponse.body
 
+    console.log(users)
+
     const user = users.at(0)
 
-    assert.ok(users.length <= 15)
+    assert.ok(users.length === 2)
     assert.ok(user.login)
   })
 
