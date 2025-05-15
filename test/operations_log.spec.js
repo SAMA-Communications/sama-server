@@ -2,22 +2,25 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
-import { createUserArray, mockedWS, sendLogin } from "./tools/utils.js"
+import { generateNewOrganizationId, createUserArray, mockedWS, sendLogin } from "./tools/utils.js"
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 const opLogsService = ServiceLocatorContainer.use("OperationLogsService")
 const opLogRepository = ServiceLocatorContainer.use("OperationsLogRepository")
 
+let orgId = void 0
 let timeWhenUserOff = null
 let usersIds = []
 
 describe("Operations Log functions", async () => {
   before(async () => {
-    await opLogRepository.deleteMany({})
-    usersIds = await createUserArray(2)
+    orgId = await generateNewOrganizationId()
 
-    await sendLogin(mockedWS, "user_1")
+    await opLogRepository.deleteMany({})
+    usersIds = await createUserArray(orgId, 2)
+
+    await sendLogin(mockedWS, orgId, "user_1")
 
     for (let i = 0; i < 2; i++) {
       await opLogsService.savePacket(
@@ -35,7 +38,7 @@ describe("Operations Log functions", async () => {
 
   describe("Get record from OpLog", async () => {
     it("should fail", async () => {
-      await sendLogin(mockedWS, "user_2")
+      await sendLogin(mockedWS, orgId, "user_2")
 
       const requestData = {
         request: {
@@ -94,7 +97,7 @@ describe("Operations Log functions", async () => {
     })
 
     it("should work gt param", async () => {
-      await sendLogin(mockedWS, "user_2")
+      await sendLogin(mockedWS, orgId, "user_2")
 
       const requestData = {
         request: {

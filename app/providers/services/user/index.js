@@ -7,8 +7,8 @@ class UserService {
     this.storageService = storageService
   }
 
-  async findByLogin(userInfo) {
-    const user = await this.userRepo.findByLogin(userInfo.login)
+  async findByLogin(organizationId, login) {
+    const user = await this.userRepo.findByLogin(organizationId, login)
 
     return user
   }
@@ -63,7 +63,7 @@ class UserService {
     const avatarUrlPromises = users.map(async (user) => {
       if (user.params.avatar_object) {
         user.params.avatar_url = await this.storageService
-          .getFileDownloadUrl(user.native_id, user.avatar_object.file_id)
+          .getFileDownloadUrl(user.organization_id, user.avatar_object.file_id)
           .catch((error) => null)
       }
 

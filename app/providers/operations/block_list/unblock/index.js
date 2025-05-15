@@ -5,7 +5,7 @@ class BlockListUnblockOperation {
   }
 
   async perform(ws, targetUserIds) {
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     targetUserIds = Array.isArray(targetUserIds) ? targetUserIds : [targetUserIds]
 

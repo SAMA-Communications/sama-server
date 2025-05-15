@@ -1,19 +1,25 @@
 import BaseRepository from "../base.js"
 
 class UserRepository extends BaseRepository {
-  async findByLogin(login) {
-    const user = await this.findOne({ login })
+  async prepareParams(params) {
+    params.organization_id = this.castOrganizationId(params.organization_id)
+
+    return await super.prepareParams(params)
+  }
+
+  async findByLogin(organizationId, login) {
+    const user = await this.findOne({ organization_id: organizationId, login })
 
     return user
   }
 
-  async findByIds(ids) {
-    const users = await this.findAll({ _id: { $in: ids } }, [], 100)
+  async findWithOrScopeByIds(organizationId, ids) {
+    const users = await this.findAll({ _id: { $in: ids }, organization_id: organizationId }, [], 100)
 
     return users
   }
 
-  async findRegistered(login, email, phone) {
+  async findRegistered(organizationId, login, email, phone) {
     const query = [{ login }]
 
     if (email) {
@@ -24,23 +30,24 @@ class UserRepository extends BaseRepository {
       query.push({ phone })
     }
 
-    const user = await this.findOne({ $or: query })
+    const user = await this.findOne({ organization_id: organizationId, $or: query })
 
     return user
   }
 
-  async retrieveExistedIds(userIds) {
-    const existedUserIds = await this.getAllIdsBy({ _id: { $in: userIds } })
+  async retrieveExistedIds(organizationId, userIds) {
+    const existedUserIds = await this.getAllIdsBy({ organization_id: organizationId, _id: { $in: userIds } })
 
     return existedUserIds
   }
 
-  async search({ match, ignoreIds, timeFromUpdate }, limit) {
+  async search(organizationId, { match, ignoreIds, timeFromUpdate }, limit) {
     const escapedMatch = match.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
     const regexPattern = new RegExp(`${escapedMatch}.*`, "i")
 
     const query = {
       _id: { $nin: ignoreIds },
+      organization_id: organizationId,
       $or: [
         { login: { $regex: regexPattern } },
         { first_name: { $regex: regexPattern } },
@@ -57,7 +64,7 @@ class UserRepository extends BaseRepository {
     return users
   }
 
-  async matchUserContact(emails, phones) {
+  async matchUserContact(organizationId, emails, phones) {
     const orQuery = []
 
     if (emails?.length) {
@@ -68,7 +75,7 @@ class UserRepository extends BaseRepository {
       orQuery.push({ phone: { $in: phones } })
     }
 
-    const users = await this.findAll({ $or: orQuery })
+    const users = await this.findAll({ organization_id: organizationId, $or: orQuery })
 
     return users
   }
@@ -76,7 +83,7 @@ class UserRepository extends BaseRepository {
   async update(userId, updateParams) {
     const user = await this.findOneAndUpdate({ _id: userId }, { $set: updateParams })
 
-    return user.errorResponse ? null : user
+    return user
   }
 
   async updateActivity(userId, recentActivity) {

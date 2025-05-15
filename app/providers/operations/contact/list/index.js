@@ -5,7 +5,7 @@ class ContactListOperation {
   }
 
   async perform(ws, options) {
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     const { limit, ...queryParams } = options
 

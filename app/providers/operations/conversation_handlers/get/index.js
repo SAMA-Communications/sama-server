@@ -9,9 +9,9 @@ class ConversationHandlerGetOperation {
 
   async perform(ws, handlerGetOptions) {
     const { cid } = handlerGetOptions
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    await this.conversationService.validateAccessToConversation(cid, currentUserId)
+    await this.conversationService.validateAccessToConversation(organizationId, cid, currentUserId)
 
     const conversationHandler = await this.conversationHandlerService.getHandlerByConversationId(cid)
     if (!conversationHandler) {

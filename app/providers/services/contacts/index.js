@@ -20,13 +20,13 @@ class ContactService {
     return contacts
   }
 
-  async findByIdAndUpdate(contactId, updateParams) {
-    const contact = await this.contactRepo.findByIdAndUpdate(contactId, updateParams)
+  async findByIdAndUpdate(userId, contactId, updateParams) {
+    const contact = await this.contactRepo.findByIdAndUpdate(userId, contactId, updateParams)
 
     return contact
   }
 
-  async matchContactWithUser(contactData) {
+  async matchContactWithUser(organizationId, contactData) {
     const fields = []
 
     contactData.email && fields.push("email")
@@ -38,7 +38,7 @@ class ContactService {
 
     const emails = contactData.email?.map((email) => email.value)
     const phones = contactData.phone?.map((phone) => phone.value)
-    const foundUsersList = await this.userRepo.matchUserContact(emails, phones)
+    const foundUsersList = await this.userRepo.matchUserContact(organizationId, emails, phones)
 
     for (const field of fields) {
       const foundUsersObj = {}
@@ -54,12 +54,12 @@ class ContactService {
     }
   }
 
-  async matchUserWithContactOnCreate(userId, phone, email) {
+  async matchUserWithContactOnCreate(organizationId, userId, phone, email) {
     if (!(email && phone)) {
       return
     }
 
-    const contacts = await this.contactRepo.findByEmailPhone(email, phone)
+    const contacts = await this.contactRepo.findByEmailPhone(organizationId, email, phone)
     if (!contacts.length) {
       return
     }
@@ -74,16 +74,16 @@ class ContactService {
       email && (updateParam["email"] = await this.#updateFieldOnCreate(contact.email, userId, email))
       phone && (updateParam["phone"] = await this.#updateFieldOnCreate(contact.phone, userId, phone))
 
-      await this.contactRepo.findByIdAndUpdate(contact._id, updateParam)
+      await this.findByIdAndUpdate(contact.user_id, contact._id, updateParam)
     }
   }
 
-  async matchUserWithContactOnUpdate(userId, phone, email, oldPhone, oldEmail) {
+  async matchUserWithContactOnUpdate(organizationId, userId, phone, email, oldPhone, oldEmail) {
     if (!((email && oldEmail) || (phone && oldPhone))) {
       return
     }
 
-    const contacts = await this.contactRepo.findByEmailPhone(email, phone)
+    const contacts = await this.contactRepo.findByEmailPhone(organizationId, email, phone)
     if (!contacts.length) {
       return
     }
@@ -98,11 +98,11 @@ class ContactService {
       email && (updateParam["email"] = await this.#updateFieldOnUpdate(contact.email, userId, email, oldEmail))
       phone && (updateParam["phone"] = await this.#updateFieldOnUpdate(contact.phone, userId, phone, oldPhone))
 
-      await this.contactRepo.findByIdAndUpdate(contact._id, updateParam)
+      await this.findByIdAndUpdate(contact.user_id, contact._id, updateParam)
     }
   }
 
-  async matchUserWithContactOnDelete(userId, phone, email) {
+  async matchUserWithContactOnDelete(organizationId, userId, phone, email) {
     if (!(email && phone)) {
       return
     }
@@ -111,7 +111,7 @@ class ContactService {
     phone && query.$or.push({ [`phone.value`]: phone })
     email && query.$or.push({ [`email.value`]: email })
 
-    const contacts = await this.contactRepo.findByEmailPhone(email, phone)
+    const contacts = await this.contactRepo.findByEmailPhone(organizationId, email, phone)
     if (!contacts.length) {
       return
     }
@@ -126,7 +126,7 @@ class ContactService {
       email && (updateParam["email"] = await this.#updateFieldOnDelete(contact.email, email))
       phone && (updateParam["phone"] = await this.#updateFieldOnDelete(contact.phone, phone))
 
-      await this.contactRepo.findByIdAndUpdate(contact._id, updateParam)
+      await this.findByIdAndUpdate(contact.user_id, contact._id, updateParam)
     }
   }
 

@@ -2,19 +2,20 @@ import BaseRepository from "../base.js"
 
 class ContactRepository extends BaseRepository {
   async prepareParams(params) {
-    params.user_id = this.castObjectId(params.user_id)
+    params.user_id = this.castUserId(params.user_id)
+    params.organization_id = this.castOrganizationId(params.organization_id)
 
     return await super.prepareParams(params)
   }
 
-  async findByIdAndUpdate(contactId, updateParams) {
-    const contact = await this.findOneAndUpdate({ _id: contactId }, { $set: updateParams })
+  async findByIdAndUpdate(userId, contactId, updateParams) {
+    const contact = await this.findOneAndUpdate({ _id: contactId, user_id: userId }, { $set: updateParams })
 
     return contact
   }
 
-  async findByEmailPhone(email, phone, limit) {
-    const query = { $or: [] }
+  async findByEmailPhone(organizationId, email, phone, limit) {
+    const query = { organization_id: organizationId, $or: [] }
 
     email && query.$or.push({ [`phone.value`]: phone })
     phone && query.$or.push({ [`email.value`]: email })

@@ -2,7 +2,7 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
-import { createUserArray, mockedWS, sendLogin, sendLogout } from "./tools/utils.js"
+import { generateNewOrganizationId, createUserArray, mockedWS, sendLogin, sendLogout } from "./tools/utils.js"
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")
@@ -10,6 +10,7 @@ const userTokenRepo = ServiceLocatorContainer.use("UserTokenRepository")
 const conversationRepo = ServiceLocatorContainer.use("ConversationRepository")
 const conversationParticipantRepo = ServiceLocatorContainer.use("ConversationParticipantRepository")
 
+let orgId = void 0
 let currentUserToken = ""
 let usersIds = []
 let filterUpdatedAt = ""
@@ -20,8 +21,9 @@ let lastMessageInChat = ""
 
 describe("Conversation functions", async () => {
   before(async () => {
-    usersIds = await createUserArray(4)
-    currentUserToken = (await sendLogin("test", "user_1")).response.user._id
+    orgId = await generateNewOrganizationId()
+    usersIds = await createUserArray(orgId, 4)
+    currentUserToken = (await sendLogin("test", orgId, "user_1")).response.user._id
   })
 
   describe("IsUserAuth validation", async () => {
@@ -119,7 +121,7 @@ describe("Conversation functions", async () => {
     })
 
     it(`should fail because user doesn't have access (update conversation)`, async () => {
-      currentUserToken = (await sendLogin("test", "user_2")).response.user.token
+      currentUserToken = (await sendLogin("test", orgId, "user_2")).response.user.token
 
       const requestData = {
         request: {
@@ -164,7 +166,7 @@ describe("Conversation functions", async () => {
     })
 
     after(async () => {
-      const tmpToken = (await sendLogin("login_tmp", "user_1")).response.user.token
+      const tmpToken = (await sendLogin("login_tmp", orgId, "user_1")).response.user.token
 
       const requestDataDelete = {
         request: {
@@ -457,7 +459,7 @@ describe("Conversation functions", async () => {
 
   describe("Update Conversation", async () => {
     it("should fail because Conversation not found.", async () => {
-      await sendLogin("test", "user_2")
+      await sendLogin("test", orgId, "user_2")
       const requestData = {
         request: {
           conversation_update: {
@@ -611,7 +613,7 @@ describe("Conversation functions", async () => {
 
     it("should work check count of unread_messages", async () => {
       await sendLogout("test", currentUserToken)
-      currentUserToken = (await sendLogin("test", "user_4")).response.user.token
+      currentUserToken = (await sendLogin("test", orgId, "user_4")).response.user.token
       const requestData = {
         request: {
           conversation_list: {},
@@ -726,7 +728,7 @@ describe("Conversation functions", async () => {
 
     it("should fail limit exceeded", async () => {
       await sendLogout("test", currentUserToken)
-      currentUserToken = (await sendLogin("test", "user_1")).response.user.token
+      currentUserToken = (await sendLogin("test", orgId, "user_1")).response.user.token
       const numberOf = 3
       const requestData = {
         request: {
@@ -747,7 +749,7 @@ describe("Conversation functions", async () => {
 
     it("should work a time parameter and limit", async () => {
       await sendLogout("test", currentUserToken)
-      currentUserToken = (await sendLogin("test", "user_4")).response.user.token
+      currentUserToken = (await sendLogin("test", orgId, "user_4")).response.user.token
       const numberOf = 1
       const requestData = {
         request: {
@@ -905,7 +907,7 @@ describe("Conversation functions", async () => {
   describe("GetParticipantsByCids Conversation", async () => {
     before(async () => {
       await sendLogout("test", currentUserToken)
-      currentUserToken = (await sendLogin("test", "user_1")).response.user.token
+      currentUserToken = (await sendLogin("test", orgId, "user_1")).response.user.token
     })
 
     it("should fail because cids missed", async () => {
@@ -950,7 +952,7 @@ describe("Conversation functions", async () => {
 
     it("should fail, participant is not in the chat", async () => {
       await sendLogout("test", currentUserToken)
-      currentUserToken = (await sendLogin("test", "user_3")).response.user.token
+      currentUserToken = (await sendLogin("test", orgId, "user_3")).response.user.token
 
       const requestData = {
         request: {
@@ -969,14 +971,14 @@ describe("Conversation functions", async () => {
       assert.equal(responseData.response.users.length, 0)
 
       await sendLogout("test", currentUserToken)
-      currentUserToken = (await sendLogin("test", "user_1")).response.user.token
+      currentUserToken = (await sendLogin("test", orgId, "user_1")).response.user.token
     })
   })
 
   describe("Delete Conversation", async () => {
     before(async () => {
       await sendLogout("test", currentUserToken)
-      currentUserToken = (await sendLogin("test", "user_1")).response.user.token
+      currentUserToken = (await sendLogin("test", orgId, "user_1")).response.user.token
     })
 
     it("should fail because Conversation not found.", async () => {
@@ -1023,7 +1025,8 @@ describe("Conversation functions", async () => {
   describe("Re-store conversation 1-1", async () => {
     it("should work create conversation, I deleted, I restored", async () => {
       await sendLogout("test", currentUserToken)
-      currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user._id
+      await sendLogout(mockedWS)
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_1")).response.user._id
       let requestData_create = {
         request: {
           conversation_create: {
@@ -1083,7 +1086,8 @@ describe("Conversation functions", async () => {
     })
 
     it("should work create conversation, I deleted, opponent restored", async () => {
-      currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user._id
+      await sendLogout(mockedWS)
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_1")).response.user._id
       let participantsCount = await conversationParticipantRepo.count({
         conversation_id: currentConversationId,
       })
@@ -1108,7 +1112,7 @@ describe("Conversation functions", async () => {
       assert.equal(participantsCount.length, 1)
 
       await sendLogout(mockedWS, currentUserToken)
-      currentUserToken = (await sendLogin(mockedWS, "user_4")).response.user._id
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_4")).response.user._id
 
       requestData = {
         request: {

@@ -3,6 +3,7 @@ import { ERROR_STATUES } from "@sama/constants/errors.js"
 
 export const usersSchemaValidation = {
   create: Joi.object({
+    organization_id: Joi.string().required(),
     login: Joi.string()
       .min(3)
       .max(40)
@@ -59,6 +60,7 @@ export const usersSchemaValidation = {
       ),
   }),
   login: Joi.object({
+    organization_id: Joi.string().required(),
     login: Joi.string().error(
       new Error(ERROR_STATUES.USER_LOGIN_OR_PASS.message, {
         cause: ERROR_STATUES.USER_LOGIN_OR_PASS,
