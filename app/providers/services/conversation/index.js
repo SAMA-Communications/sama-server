@@ -19,6 +19,8 @@ class ConversationService {
 
   async create(user, conversationParams, participantIds) {
     conversationParams.owner_id = user.native_id
+    conversationParams.organization_id = user.organization_id
+
     const conversation = await this.conversationRepo.create(conversationParams)
 
     await this.addParticipants(conversation, participantIds, [])
@@ -30,7 +32,7 @@ class ConversationService {
     const imageUrlPromises = conversations.map(async (conv) => {
       if (conv.image_object) {
         ;(conv.params ? conv.params : conv)["image_url"] = await this.storageService.getFileDownloadUrl(
-          conv._id,
+          conv.organization_id,
           conv.image_object.file_id
         )
       }
@@ -50,7 +52,7 @@ class ConversationService {
       ? this.validateConvIdsWhichUserHasAccess(options.ids, user.native_id)
       : this.conversationParticipantRepo.findParticipantConversations(user.native_id, filterOptions, limit))
 
-    const conversations = await this.conversationRepo.list(conversationIds, filterOptions, limit)
+    const conversations = await this.conversationRepo.list(user.organization_id, conversationIds, filterOptions, limit)
 
     return conversations
   }
@@ -104,10 +106,10 @@ class ConversationService {
     return verifiedConversationIds
   }
 
-  async hasAccessToConversation(conversationId, userId) {
+  async hasAccessToConversation(organizationId, conversationId, userId) {
     const result = { conversation: null, asParticipant: false, asOwner: false, participantIds: null }
 
-    result.conversation = await this.conversationRepo.findById(conversationId)
+    result.conversation = await this.conversationRepo.findByIdWithOrgScope(organizationId, conversationId)
 
     if (!result.conversation) {
       return result
@@ -121,8 +123,8 @@ class ConversationService {
     return result
   }
 
-  async validateAccessToConversation(conversationId, userId) {
-    const { conversation, asOwner } = await this.hasAccessToConversation(conversationId, userId)
+  async validateAccessToConversation(organizationId, conversationId, userId) {
+    const { conversation, asOwner } = await this.hasAccessToConversation(organizationId, conversationId, userId)
 
     if (!conversation) {
       throw new Error(ERROR_STATUES.BAD_REQUEST.message, {
@@ -179,6 +181,7 @@ class ConversationService {
       const createParticipantsParams = participantIds.map((participantId) => ({
         conversation_id: conversation._id,
         user_id: participantId,
+        organization_id: conversation.organization_id,
       }))
 
       await this.conversationParticipantRepo.createMany(createParticipantsParams)

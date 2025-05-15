@@ -11,7 +11,7 @@ class MessageEditOperation {
   async perform(ws, messageParams) {
     const { id: messageId, body: newBody } = messageParams
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     const message = await this.#hasAccess(messageId, currentUserId)
 

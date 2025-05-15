@@ -1,17 +1,32 @@
 import BaseRepository from "../base.js"
 
 class BlockedUserRepository extends BaseRepository {
+  async create(organizationId, params) {
+    params.organization_id = organizationId
+
+    return await super.create(params)
+  }
+
+  async createMany(organizationId, bulkCreateParams) {
+    bulkCreateParams.forEach((params) => {
+      params.organization_id = organizationId
+    })
+
+    return await super.createMany(bulkCreateParams)
+  }
+
   async prepareParams(params) {
     params.enabled = !!params.enabled
 
-    params.user_id = this.castObjectId(params.user_id)
+    params.organization_id = this.castOrganizationId(params.organization_id)
+    params.user_id = this.castUserId(params.user_id)
     params.blocked_user_id = this.castObjectId(params.blocked_user_id)
 
     return await super.prepareParams(params)
   }
 
   async list(userId, onlyEnabled, recipientsIds) {
-    const query = { user_id: this.castObjectId(userId) }
+    const query = { user_id: this.castUserId(userId) }
 
     if (onlyEnabled) {
       const enabledQuery = { enabled: true }
@@ -20,7 +35,7 @@ class BlockedUserRepository extends BaseRepository {
     }
 
     if (recipientsIds) {
-      const recipientsFilterQuery = { blocked_user_id: { $in: this.castObjectIds(recipientsIds) } }
+      const recipientsFilterQuery = { blocked_user_id: { $in: this.castUserIds(recipientsIds) } }
 
       this.mergeOperators(query, recipientsFilterQuery)
     }
@@ -31,7 +46,7 @@ class BlockedUserRepository extends BaseRepository {
   }
 
   async blockers(userId, onlyEnabled, recipientsIds) {
-    const query = { blocked_user_id: this.castObjectId(userId) }
+    const query = { blocked_user_id: this.castUserId(userId) }
 
     if (onlyEnabled) {
       const enabledQuery = { enabled: true }
@@ -40,7 +55,7 @@ class BlockedUserRepository extends BaseRepository {
     }
 
     if (recipientsIds) {
-      const recipientsFilterQuery = { user_id: { $in: this.castObjectIds(recipientsIds) } }
+      const recipientsFilterQuery = { user_id: { $in: this.castUserIds(recipientsIds) } }
 
       this.mergeOperators(query, recipientsFilterQuery)
     }
@@ -51,7 +66,7 @@ class BlockedUserRepository extends BaseRepository {
   }
 
   async enable(userId, enabled) {
-    const query = { user_id: this.castObjectId(userId) }
+    const query = { user_id: this.castUserId(userId) }
     const update = { enabled: !!enabled }
 
     await this.updateMany(query, { $set: update })
@@ -59,11 +74,11 @@ class BlockedUserRepository extends BaseRepository {
 
   async deleteBlockedUser(userId, blockedUserIds) {
     const query = {
-      user_id: this.castObjectId(userId),
+      user_id: this.castUserId(userId),
     }
 
     if (blockedUserIds) {
-      const blockedUsersFilter = { blocked_user_id: { $in: this.castObjectIds(blockedUserIds) } }
+      const blockedUsersFilter = { blocked_user_id: { $in: this.castUserIds(blockedUserIds) } }
 
       this.mergeOperators(query, blockedUsersFilter)
     }
@@ -73,7 +88,7 @@ class BlockedUserRepository extends BaseRepository {
 
   async deleteAllBlocks(userId) {
     const query = {
-      $or: [{ user_id: this.castObjectId(userId) }, { blocked_user_id: this.castObjectId(userId) }],
+      $or: [{ user_id: this.castUserId(userId) }, { blocked_user_id: this.castUserId(userId) }],
     }
 
     await this.deleteMany(query)

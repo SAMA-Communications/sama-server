@@ -2,12 +2,24 @@ import BaseRepository from "../base.js"
 
 class ConversationRepository extends BaseRepository {
   async prepareParams(params) {
-    params.owner_id = this.castObjectId(params.owner_id)
+    params.organization_id = this.castOrganizationId(params.organization_id)
+    params.owner_id = this.castUserId(params.owner_id)
     if (params.opponent_id) {
-      params.opponent_id = this.castObjectId(params.opponent_id)
+      params.opponent_id = this.castUserId(params.opponent_id)
     }
 
     return await super.prepareParams(params)
+  }
+
+  async findByIdWithOrgScope(organizationId, conversationId) {
+    const query = {
+      organization_id: organizationId,
+      _id: conversationId,
+    }
+
+    const conversation = await this.findOne(query)
+
+    return conversation
   }
 
   async findExistedPrivateConversation(ownerId, opponentId) {
@@ -36,9 +48,10 @@ class ConversationRepository extends BaseRepository {
     return conversations
   }
 
-  async search({ chatNameMatch, ignoreIds, timeFromUpdate }, limit) {
+  async search(organizationId, { chatNameMatch, ignoreIds, timeFromUpdate }, limit) {
     const query = {
       _id: { $nin: ignoreIds },
+      organization_id: organizationId,
       name: { $regex: new RegExp(`${chatNameMatch}.*`, "i") },
     }
 
@@ -51,8 +64,9 @@ class ConversationRepository extends BaseRepository {
     return conversations
   }
 
-  async list(conversationIds, options, limit) {
+  async list(organizationId, conversationIds, options, limit) {
     const query = {
+      organization_id: organizationId,
       _id: { $in: conversationIds },
     }
 

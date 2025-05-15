@@ -3,7 +3,8 @@ import BaseRepository from "../base.js"
 class ConversationParticipantRepository extends BaseRepository {
   async prepareParams(params) {
     params.conversation_id = this.castObjectId(params.conversation_id)
-    params.user_id = this.castObjectId(params.user_id)
+    params.user_id = this.castUserId(params.user_id)
+    params.organization_id = this.castOrganizationId(params.organization_id)
 
     return await super.prepareParams(params)
   }
@@ -75,7 +76,7 @@ class ConversationParticipantRepository extends BaseRepository {
   }
 
   async removeParticipants(conversationId, participantIds) {
-    participantIds = this.castObjectIds(participantIds)
+    participantIds = this.castUserIds(participantIds)
 
     await this.deleteMany({ conversation_id: this.castObjectId(conversationId), user_id: { $in: participantIds } })
   }

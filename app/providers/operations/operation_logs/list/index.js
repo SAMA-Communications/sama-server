@@ -7,7 +7,7 @@ class OpLogsListOperation {
   async perform(ws, opLogListOptions) {
     const { created_at } = opLogListOptions
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     const opLogs = await this.opLogsService.list(currentUserId, created_at)
 

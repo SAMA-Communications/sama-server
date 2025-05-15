@@ -19,6 +19,7 @@ import ContactRepositoryProvider from "./repositories/contact/Provider.js"
 import OperationsLogRepositoryProvider from "./repositories/operations_log/Provider.js"
 import PushEventRepositoryProvider from "./repositories/push_event/Provider.js"
 import PushSubscriptionRepositoryProvider from "./repositories/push_subscriptions/Provider.js"
+import OrganizationRepositoryProvider from "./repositories/organization/Provider.js"
 
 import ClusterNodeServiceProvider from "./services/cluster_node/Provider.js"
 import SessionServiceProvider from "./services/session/Provider.js"
@@ -34,6 +35,7 @@ import ConversationNotificationProvider from "./services/conversation_notificati
 import ContactServiceProvider from "./services/contacts/Provider.js"
 import PushNotificationServiceProvider from "./services/push_notifications/Provider.js"
 import PushQueueServiceProvider from "./services/push_queue_service/Provider.js"
+import OrganizationServiceProvider from "./services/organization/Provider.js"
 
 // WS Operations Providers
 
@@ -104,6 +106,8 @@ import HttpMessageDeleteOperationProvider from "./operations/http/message/delete
 
 import HttpActivityOnlineListOperationProvider from "./operations/http/activity/online_list/Provider.js"
 
+import HttpOrganizationCreateOperation from "./operations/http/organization/create/Provider.js"
+
 const providers = [
   HelpersProvider,
 
@@ -126,6 +130,7 @@ const providers = [
   OperationsLogRepositoryProvider,
   PushEventRepositoryProvider,
   PushSubscriptionRepositoryProvider,
+  OrganizationRepositoryProvider,
 
   ClusterNodeServiceProvider,
   SessionServiceProvider,
@@ -141,6 +146,7 @@ const providers = [
   ContactServiceProvider,
   PushNotificationServiceProvider,
   PushQueueServiceProvider,
+  OrganizationServiceProvider,
 
   // WS Operations Providers
 
@@ -210,6 +216,8 @@ const providers = [
   HttpMessageDeleteOperationProvider,
 
   HttpActivityOnlineListOperationProvider,
+
+  HttpOrganizationCreateOperation,
 ]
 
 export default providers

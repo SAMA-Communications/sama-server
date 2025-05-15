@@ -9,9 +9,9 @@ class ConversationHandlerCreateOperation {
 
   async perform(ws, schemeParams) {
     const { cid, content } = schemeParams
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    await this.conversationService.validateAccessToConversation(cid, currentUserId)
+    await this.conversationService.validateAccessToConversation(organizationId, cid, currentUserId)
 
     const existedHandlerForConversation = await this.conversationHandlerService.getHandlerByConversationId(cid)
     if (existedHandlerForConversation) {
