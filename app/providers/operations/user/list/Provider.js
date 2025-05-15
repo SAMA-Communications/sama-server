@@ -5,9 +5,10 @@ const name = "UserListOperation"
 
 class UserListOperationRegisterProvider extends RegisterProvider {
   register(slc) {
+    const sessionService = slc.use("SessionService")
     const userService = slc.use("UserService")
 
-    return new UserListOperation(userService)
+    return new UserListOperation(sessionService, userService)
   }
 }
 

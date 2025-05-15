@@ -2,7 +2,14 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../../app/common/ServiceLocatorContainer.js"
 
-import { createUserArray, createConversation, sendLogin, mockedWS } from "../tools/utils.js"
+import {
+  generateNewOrganizationId,
+  createUserArray,
+  createConversation,
+  sendLogin,
+  sendLogout,
+  mockedWS,
+} from "../tools/utils.js"
 import HttpMessageController from "../../APIs/JSON/controllers/http/message.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")
@@ -10,6 +17,7 @@ const userTokenRepo = ServiceLocatorContainer.use("UserTokenRepository")
 const conversationRepo = ServiceLocatorContainer.use("ConversationRepository")
 const conversationParticipantRepo = ServiceLocatorContainer.use("ConversationParticipantRepository")
 
+let orgId = void 0
 let usersIds = []
 let conversationId = null
 let createdMessageId = null
@@ -21,13 +29,16 @@ describe("Http Messages", async () => {
     await conversationRepo.deleteMany({})
     await conversationParticipantRepo.deleteMany({})
 
-    usersIds = await createUserArray(2)
-    await sendLogin(mockedWS, "user_1")
+    orgId = await generateNewOrganizationId()
+    usersIds = await createUserArray(orgId, 2)
+    await sendLogout(mockedWS)
+    await sendLogin(mockedWS, orgId, "user_1")
     conversationId = await createConversation(mockedWS, void 0, void 0, "u", usersIds)
   })
 
   it("send system", async () => {
     const requestData = {
+      organizationId: orgId,
       senderId: usersIds.at(0),
       messageSystem: {
         id: "xyz",
@@ -54,6 +65,7 @@ describe("Http Messages", async () => {
 
   it("send", async () => {
     const requestData = {
+      organizationId: orgId,
       senderId: usersIds.at(0),
       message: {
         id: "xyz",
@@ -83,6 +95,7 @@ describe("Http Messages", async () => {
 
   it("edit", async () => {
     const requestData = {
+      organizationId: orgId,
       senderId: usersIds.at(0),
       messageEdit: {
         id: createdMessageId,
@@ -109,6 +122,7 @@ describe("Http Messages", async () => {
     const reaction2 = "🐶"
 
     const requestData = {
+      organizationId: orgId,
       senderId: usersIds.at(0),
       messageReaction: {
         mid: createdMessageId,
@@ -140,6 +154,7 @@ describe("Http Messages", async () => {
 
   it("read", async () => {
     const requestData = {
+      organizationId: orgId,
       senderId: usersIds.at(1),
       messageRead: {
         cid: conversationId,
@@ -163,6 +178,7 @@ describe("Http Messages", async () => {
 
   it("delete", async () => {
     const requestData = {
+      organizationId: orgId,
       senderId: usersIds.at(1),
       messageDelete: {
         cid: conversationId,

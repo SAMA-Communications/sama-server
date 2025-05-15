@@ -6,6 +6,6 @@ export default class BlockedUser extends BaseModel {
   }
 
   static get visibleFields() {
-    return ["_id", "enabled", "user_id", "blocked_user_id", "created_at", "updated_at"]
+    return ["_id", "organization_id", "enabled", "user_id", "blocked_user_id", "created_at", "updated_at"]
   }
 }

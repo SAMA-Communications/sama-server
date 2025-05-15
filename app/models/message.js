@@ -8,6 +8,7 @@ export default class Message extends BaseModel {
   static get visibleFields() {
     return [
       "_id",
+      "organization_id",
       "cid",
 
       "t",

@@ -8,11 +8,14 @@ class ActivityUserRetrieveOperation {
 
   async perform(ws, targetUserId) {
     const activities = {}
-    const targetUsers = await this.userService.userRepo.findAllByIds(targetUserId)
+
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
+
+    const targetUsers = await this.userService.userRepo.findWithOrScopeByIds(organizationId, targetUserId)
 
     for (const targetUser of targetUsers) {
       const userId = targetUser.native_id
-      const isUserOnline = !!(await this.sessionService.listUserDevice(userId))
+      const isUserOnline = !!(await this.sessionService.listUserDevice(organizationId, userId))
 
       const targetUserActivityStatus = isUserOnline ? 0 : targetUser.recent_activity
 

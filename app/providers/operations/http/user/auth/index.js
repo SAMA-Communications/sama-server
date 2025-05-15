@@ -10,7 +10,7 @@ class HttpUserAuthOperation {
     const refreshToken = cookies["refresh_token"]
     const accessToken = this.helpers.extractAccessTokenFromAuthHeader(headers["authorization"])
 
-    const { login, password, device_id } = payload
+    const { organization_id, login, password, device_id } = payload
     if (!device_id) {
       throw new Error(ERROR_STATUES.DEVICE_ID_MISSED.message, {
         cause: ERROR_STATUES.DEVICE_ID_MISSED,
@@ -20,7 +20,7 @@ class HttpUserAuthOperation {
     const userInfo = { device_id }
 
     if (login && password) {
-      Object.assign(userInfo, { login, password })
+      Object.assign(userInfo, { login, password, organization_id })
     } else if (accessToken || refreshToken) {
       userInfo.token = accessToken || refreshToken
     } else {

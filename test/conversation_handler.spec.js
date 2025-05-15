@@ -2,7 +2,14 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
-import { createConversation, createUserArray, mockedWS, sendLogin, sendLogout } from "./tools/utils.js"
+import {
+  createConversation,
+  createUserArray,
+  mockedWS,
+  sendLogin,
+  sendLogout,
+  generateNewOrganizationId,
+} from "./tools/utils.js"
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")
@@ -10,14 +17,16 @@ const conversationRepo = ServiceLocatorContainer.use("ConversationRepository")
 const conversationParticipantRepo = ServiceLocatorContainer.use("ConversationParticipantRepository")
 const conversationHandlerRepo = ServiceLocatorContainer.use("ConversationHandlerRepository")
 
+let orgId = void 0
+let userId = []
 let currentConversationId = ""
 let currentUserToken = ""
-let userId = []
 
 describe("Conversation handler functions", async () => {
   before(async () => {
-    userId = await createUserArray(2)
-    currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user.token
+    orgId = await generateNewOrganizationId()
+    userId = await createUserArray(orgId, 2)
+    currentUserToken = (await sendLogin(mockedWS, orgId, "user_1")).response.user.token
 
     currentConversationId = await createConversation(mockedWS, null, null, "g", [userId[1], userId[0]])
   })
@@ -307,7 +316,7 @@ describe("Conversation handler functions", async () => {
   describe("User with no permissions -->", async () => {
     it("should fail, create conversation handler", async () => {
       await sendLogout(mockedWS, currentUserToken)
-      currentUserToken = (await sendLogin(mockedWS, "user_2")).response.user.token
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_2")).response.user.token
 
       const requestData = {
         request: {

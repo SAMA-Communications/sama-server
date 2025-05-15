@@ -9,9 +9,9 @@ class ConversationHandlerDeleteOperation {
 
   async perform(ws, handlerParams) {
     const { cid } = handlerParams
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    await this.conversationService.validateAccessToConversation(cid, currentUserId)
+    await this.conversationService.validateAccessToConversation(organizationId, cid, currentUserId)
 
     const existedHandlerForConversation = await this.conversationHandlerService.getHandlerByConversationId(cid)
     if (!existedHandlerForConversation) {
