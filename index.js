@@ -19,7 +19,7 @@ import Minio from "./app/lib/storage/minio.js"
 import S3 from "./app/lib/storage/s3.js"
 import Spaces from "./app/lib/storage/spaces.js"
 
-import { connectToDBPromise, getDb } from "./app/lib/db.js"
+import { connectToDBPromise } from "./app/lib/db.js"
 import RedisClient from "./app/lib/redis.js"
 
 import { APIs } from "./app/networking/APIs.js"
@@ -74,16 +74,24 @@ RuntimeDefinedContext.CLUSTER_PORT = await clusterManager.createLocalSocket(
 console.log("[RuntimeDefinedContext]", RuntimeDefinedContext)
 
 // perform a database connection when the server starts
-await connectToDBPromise()
-  .then(() => {
-    console.log("[connectToDB] Ok")
+const dbConnection = await connectToDBPromise(process.env.MONGODB_URL)
+  .then((dbConnection) => {
+    console.log("[Mongo][connect] Ok")
+    return dbConnection
   })
   .catch((err) => {
-    console.error("[connectToDB] Error", err)
+    console.log("[Mongo][connect] error", err)
     process.exit()
   })
 
 await RedisClient.connect()
+  .then(() => {
+    console.log("[Redis][connect] Ok")
+  })
+  .catch((err) => {
+    console.log("[Redis][connect] error", err)
+    process.exit()
+  })
 
 // Register providers
 ServiceLocatorContainer.register(
@@ -91,21 +99,33 @@ ServiceLocatorContainer.register(
     register(slc) {
       return RuntimeDefinedContext
     }
-  })({ name: "RuntimeDefinedContext", implementationName: RuntimeDefinedContext.name })
+  })({
+    name: "RuntimeDefinedContext",
+    implementationName: RuntimeDefinedContext.name,
+    scope: RegisterProvider.SCOPE.SINGLETON,
+  })
 )
 ServiceLocatorContainer.register(
   new (class extends RegisterProvider {
     register(slc) {
       return RedisClient
     }
-  })({ name: "RedisClient", implementationName: RedisClient.constructor.name })
+  })({
+    name: "RedisClient",
+    implementationName: RedisClient.constructor.name,
+    scope: RegisterProvider.SCOPE.SINGLETON,
+  })
 )
 ServiceLocatorContainer.register(
   new (class extends RegisterProvider {
     register(slc) {
-      return getDb()
+      return dbConnection
     }
-  })({ name: "MongoConnection", implementationName: "MongoConnection" })
+  })({
+    name: "MongoConnection",
+    implementationName: "MongoConnection",
+    scope: RegisterProvider.SCOPE.SINGLETON,
+  })
 )
 ServiceLocatorContainer.register(
   new (class extends RegisterProvider {

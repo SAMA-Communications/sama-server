@@ -8,7 +8,7 @@ class RedisManager {
   }
 
   async connect() {
-    await this.client.connect()
+    return await this.client.connect()
   }
 
   async scanWithPagination(type = "string", matchPattern = "*", offset = 0, limit = 10) {
