@@ -1,6 +1,6 @@
 import { ERROR_STATUES } from "../../../../constants/errors.js"
 import { CONVERSATION_EVENTS } from "../../../../constants/conversation.js"
-import CreateChatAlertEventOptions from "@sama/lib/push_queue/models/CreateChatAlertEventOptions.js"
+import CreateChatAlertEventOptions from "@sama/providers/services/push_queue_service/models/CreateChatAlertEventOptions.js"
 import MessagePublicFields from "@sama/DTO/Response/message/create/public_fields.js"
 
 class MessageCreateOperation {
@@ -10,6 +10,7 @@ class MessageCreateOperation {
     blockListService,
     userService,
     conversationService,
+    conversationHandlerService,
     conversationNotificationService,
     messageService
   ) {
@@ -18,29 +19,59 @@ class MessageCreateOperation {
     this.blockListService = blockListService
     this.userService = userService
     this.conversationService = conversationService
+    this.conversationHandlerService = conversationHandlerService
     this.conversationNotificationService = conversationNotificationService
     this.messageService = messageService
   }
 
   async perform(ws, createMessageParams) {
     const deliverMessages = []
+    let modifiedFields = null
+    let botMessage = null
 
     const messageId = createMessageParams.id
     delete createMessageParams.id
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
     const { conversation, blockedUserIds, participantIds } = await this.#hasAccess(
+      organizationId,
       createMessageParams.cid,
       currentUserId
     )
 
-    const message = await this.messageService.create(currentUser, conversation, blockedUserIds, createMessageParams)
+    let conversationHandlerResponse = {}
+    const conversationHandler = await this.conversationHandlerService.getHandlerByConversationId(conversation._id)
+    if (conversationHandler) {
+      const {
+        accept,
+        message: newMessage,
+        options,
+      } = await this.conversationHandlerService.prepareAndExecuteConversationHandler(
+        conversationHandler.content,
+        createMessageParams,
+        currentUser
+      )
 
-    if (!message.x) {
-      message.set("x", {})
+      conversationHandlerResponse = await this.messageService.processHandlerResult(
+        accept,
+        createMessageParams,
+        newMessage,
+        options
+      )
+
+      if (conversationHandlerResponse.newMessageFields) {
+        const { newMessageFields } = conversationHandlerResponse
+        modifiedFields = newMessageFields
+        for (const field in newMessageFields) {
+          createMessageParams[field] = newMessageFields[field]
+        }
+      }
     }
 
+    const message = await this.messageService.create(currentUser, conversation, blockedUserIds, createMessageParams)
+
+    if (!message.x) message.set("x", {})
     message.x.c_type = conversation.type
 
     if (conversation.type === "u") {
@@ -51,30 +82,53 @@ class MessageCreateOperation {
       if (missedParticipantIds.length) {
         participantIds.push(...missedParticipantIds)
 
-        const restoreConversationEvent = await this.#restorePrivateConversationNotification(conversation, currentUserId)
-        restoreConversationEvent.participantIds = missedParticipantIds
-        deliverMessages.push(restoreConversationEvent)
+        if (this.conversationNotificationService.isEnabled()) {
+          const restoreConversationEvent = await this.#restorePrivateConversationNotification(
+            conversation,
+            currentUserId
+          )
+          restoreConversationEvent.participantIds = missedParticipantIds
+          deliverMessages.push(restoreConversationEvent)
+        }
       }
     }
 
     const deliverCreatedMessage = await this.#createMessageNotification(conversation, currentUser, message)
     deliverMessages.push(deliverCreatedMessage)
 
+    if (conversationHandlerResponse.botMessageParams && conversationHandlerResponse.serverBot) {
+      const { botMessageParams, serverBot } = conversationHandlerResponse
+
+      botMessage = await this.messageService.create(serverBot, conversation, blockedUserIds, botMessageParams)
+
+      if (!botMessage.x) botMessage.set("x", {})
+      botMessage.x.c_type = conversation.type
+
+      const deliverBotMessage = await this.#createMessageNotification(conversation, serverBot, botMessageParams)
+      console.log(deliverBotMessage)
+      deliverMessages.push(deliverBotMessage)
+    }
+
     await this.conversationService.conversationRepo.updateLastActivity(conversation._id, message.created_at)
 
-    return { messageId, message: message, deliverMessages, participantIds }
+    return { messageId, message, deliverMessages, participantIds, modifiedFields, botMessage }
   }
 
-  async #hasAccess(conversationId, currentUserId) {
-    const { conversation, participantIds } = await this.#hasAccessToConversation(conversationId, currentUserId)
+  async #hasAccess(organizationId, conversationId, currentUserId) {
+    const { conversation, participantIds } = await this.#hasAccessToConversation(
+      organizationId,
+      conversationId,
+      currentUserId
+    )
 
     const blockedUserIds = await this.#checkBlocked(conversation, currentUserId, participantIds)
 
     return { conversation, blockedUserIds, participantIds }
   }
 
-  async #hasAccessToConversation(conversationId, currentUserId) {
+  async #hasAccessToConversation(organizationId, conversationId, currentUserId) {
     const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
+      organizationId,
       conversationId,
       currentUserId
     )

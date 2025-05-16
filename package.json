@@ -1,6 +1,6 @@
 {
   "name": "sama",
-  "version": "0.30.0",
+  "version": "0.31.0",
   "description": "Simple but Advanced Messaging Alternative",
   "main": "index.js",
   "type": "module",
@@ -24,6 +24,8 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.327.0",
     "@aws-sdk/s3-request-presigner": "^3.328.0",
+    "@jitl/quickjs-ng-wasmfile-release-sync": "^0.31.0",
+    "@sebastianwessel/quickjs": "^2.1.1",
     "bull": "^4.10.4",
     "cookie": "1.0.2",
     "cookie-parser": "1.4.7",

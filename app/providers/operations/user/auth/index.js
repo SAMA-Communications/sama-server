@@ -11,15 +11,16 @@ class UserAuthOperation {
   }
 
   async perform(ws, userInfo, omitDeviceConnection) {
+    const organizationId = userInfo.organization_id
     const deviceId = userInfo.device_id.toString()
 
     const { user, token } = userInfo.token
       ? await this.#authByToken(userInfo.token, deviceId)
-      : await this.#authByLogin(userInfo, deviceId)
+      : await this.#authByLogin(organizationId, userInfo, deviceId)
 
     // TODO: close connections
     if (!omitDeviceConnection) {
-      this.sessionService.addUserDeviceConnection(ws, user.native_id, deviceId)
+      this.sessionService.addUserDeviceConnection(ws, user.organization_id, user.native_id, deviceId)
     }
 
     const jwtAccessToken = this.#generateToken(
@@ -29,11 +30,19 @@ class UserAuthOperation {
       +process.env.JWT_ACCESS_TOKEN_EXPIRES_IN
     )
 
-    const updatedToken = await this.userTokenRepo.updateToken(token, user.native_id, deviceId, jwtAccessToken, "access")
+    const updatedToken = await this.userTokenRepo.updateToken(
+      token,
+      organizationId,
+      user.native_id,
+      deviceId,
+      jwtAccessToken,
+      "access"
+    )
 
     await this.sessionService.storeUserNodeData(
       this.RuntimeDefinedContext.APP_IP,
       this.RuntimeDefinedContext.CLUSTER_PORT,
+      user.organization_id,
       user.native_id,
       deviceId
     )
@@ -61,8 +70,8 @@ class UserAuthOperation {
     return { user, token }
   }
 
-  async #authByLogin(userInfo, deviceId) {
-    const user = await this.userService.findByLogin(userInfo)
+  async #authByLogin(organizationId, userInfo, deviceId) {
+    const user = await this.userService.findByLogin(organizationId, userInfo.login)
 
     if (!user) {
       throw new Error(ERROR_STATUES.INCORRECT_LOGIN_OR_PASSWORD.message, {
@@ -91,7 +100,14 @@ class UserAuthOperation {
       +process.env.JWT_REFRESH_TOKEN_EXPIRES_IN
     )
 
-    const refreshToken = await this.userTokenRepo.updateToken(null, user.native_id, deviceId, jwtToken, "refresh")
+    const refreshToken = await this.userTokenRepo.updateToken(
+      null,
+      user.organization_id,
+      user.native_id,
+      deviceId,
+      jwtToken,
+      "refresh"
+    )
 
     return refreshToken
   }

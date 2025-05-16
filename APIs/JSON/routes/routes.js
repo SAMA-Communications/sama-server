@@ -1,5 +1,6 @@
 import { default as ContactsController } from "../controllers/contacts.js"
 import { default as ConversationsController } from "../controllers/conversations.js"
+import { default as ConversationSchemesController } from "../controllers/conversation_handlers.js"
 import { default as FilesController } from "../controllers/files.js"
 import { default as LastActivityiesController } from "../controllers/activities.js"
 import { default as MessagesController } from "../controllers/messages.js"
@@ -14,6 +15,7 @@ import authGuardMiddleware from "../middleware/auth_guard.js"
 import { activitiesSchemaValidation } from "../validations/activities_schema_validation.js"
 import { contactsSchemaValidation } from "../validations/contacts_schema_validation.js"
 import { conversationsSchemaValidation } from "../validations/conversations_schema_validation.js"
+import { conversationHandlersSchemaValidation } from "../validations/conversation_handlers_schema_validation.js"
 import { filesSchemaValidation } from "../validations/files_schema_validation.js"
 import { messagesSchemaValidation } from "../validations/messages_schema_validation.js"
 import { operationsLogSchemaValidation } from "../validations/operations_log_schema_validation.js"
@@ -181,6 +183,18 @@ export const routes = {
     ConversationsController.middleware(authGuardMiddleware, ws, json)
       .validate(json.conversation_search, conversationsSchemaValidation.search)
       .search(ws, json),
+  conversation_handler_create: (ws, json) =>
+    ConversationSchemesController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.conversation_handler_create, conversationHandlersSchemaValidation.create)
+      .create(ws, json),
+  get_conversation_handler: (ws, json) =>
+    ConversationSchemesController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.get_conversation_handler, conversationHandlersSchemaValidation.get)
+      .get(ws, json),
+  conversation_handler_delete: (ws, json) =>
+    ConversationSchemesController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.conversation_handler_delete, conversationHandlersSchemaValidation.delete)
+      .delete(ws, json),
   push_subscription_create: (ws, json) =>
     PushNotificationsController.middleware(authGuardMiddleware, ws, json)
       .validate(json.push_subscription_create, pushNotificationsSchemaValidation.push_subscription_create)

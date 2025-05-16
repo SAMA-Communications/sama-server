@@ -1,6 +1,7 @@
 class MessageService {
-  constructor(helpers, messageRepo, messageStatusRepo) {
+  constructor(helpers, userRepo, messageRepo, messageStatusRepo) {
     this.helpers = helpers
+    this.userRepo = userRepo
     this.messageRepo = messageRepo
     this.messageStatusRepo = messageStatusRepo
   }
@@ -9,12 +10,34 @@ class MessageService {
     messageParams.cid = conversation._id
     messageParams.deleted_for = blockedUserIds
     messageParams.from = user.native_id
+    messageParams.organization_id = user.organization_id
 
     messageParams.t = this.helpers.currentTimeStamp()
 
     const message = await this.messageRepo.create(messageParams)
 
     return message
+  }
+
+  async processHandlerResult(accept, baseMessage, message, options) {
+    if (accept) return {}
+
+    const { body } = message
+    if (body && typeof body === "string") {
+      if (options.isReplaceBody) {
+        const newMessageFields = { body }
+        return { newMessageFields }
+      } else {
+        const existServerBot = await this.userRepo.findByLogin("server-chat-bot")
+        if (existServerBot) {
+          const botMessageParams = { ...baseMessage, body }
+          return { botMessageParams, serverBot: existServerBot }
+        }
+      }
+    } else {
+      //error that body is must be string
+    }
+    return {}
   }
 
   async messagesList(cId, user, options, limit) {

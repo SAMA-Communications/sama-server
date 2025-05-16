@@ -10,6 +10,7 @@ class MessageCreateOperationRegisterProvider extends RegisterProvider {
     const blockListService = slc.use("BlockListService")
     const userService = slc.use("UserService")
     const conversationService = slc.use("ConversationService")
+    const conversationHandlerService = slc.use("ConversationHandlerService")
     const conversationNotificationService = slc.use("ConversationNotificationService")
     const messageService = slc.use("MessageService")
 
@@ -19,6 +20,7 @@ class MessageCreateOperationRegisterProvider extends RegisterProvider {
       blockListService,
       userService,
       conversationService,
+      conversationHandlerService,
       conversationNotificationService,
       messageService
     )

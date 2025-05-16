@@ -4,7 +4,7 @@ class BlockListService {
     this.blockedUserRepo = blockedUserRepo
   }
 
-  async blockMany(userId, blockUserIds) {
+  async blockMany(organizationId, userId, blockUserIds) {
     const isSelfUserBlocked = blockUserIds.find((blockedUserId) =>
       this.helpers.isEqualsNativeIds(userId, blockedUserId)
     )
@@ -14,12 +14,11 @@ class BlockListService {
 
     const params = blockUserIds.map((blockedUserId) => ({
       enabled: true,
-
       user_id: userId,
       blocked_user_id: blockedUserId,
     }))
 
-    const blockedUsers = await this.blockedUserRepo.createMany(params)
+    const blockedUsers = await this.blockedUserRepo.createMany(organizationId, params)
 
     return blockedUsers
   }

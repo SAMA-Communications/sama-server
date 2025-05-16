@@ -13,7 +13,7 @@ class ConversationListOperation {
     const { limit, updated_at, ids } = options
     const normalizedLimit = this.#normalizeLimitParam(limit)
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
     const conversations = await this.conversationService.conversationsList(
@@ -55,11 +55,11 @@ class ConversationListOperation {
   }
 
   #normalizeLimitParam(limit) {
-    if (limit > MAIN_CONSTANTS.LIMIT_MAX) {
-      return MAIN_CONSTANTS.LIMIT_MAX
+    if (limit > MAIN_CONSTANTS.CONVERSATION_LIMIT_MAX) {
+      return MAIN_CONSTANTS.CONVERSATION_LIMIT_MAX
     }
 
-    return limit || MAIN_CONSTANTS.LIMIT_MAX
+    return limit || MAIN_CONSTANTS.CONVERSATION_LIMIT_MAX
   }
 }
 

@@ -3,7 +3,8 @@ import BaseRepository from "../base.js"
 class ConversationParticipantRepository extends BaseRepository {
   async prepareParams(params) {
     params.conversation_id = this.castObjectId(params.conversation_id)
-    params.user_id = this.castObjectId(params.user_id)
+    params.user_id = this.castUserId(params.user_id)
+    params.organization_id = this.castOrganizationId(params.organization_id)
 
     return await super.prepareParams(params)
   }
@@ -14,15 +15,19 @@ class ConversationParticipantRepository extends BaseRepository {
     return participants
   }
 
-  async findConversationsParticipants(conversationIds, participantId) {
+  async filterAvaibleConversationIds(conversationIds, participantId) {
     const availableConversationParticipants = await this.findAll({
       conversation_id: { $in: conversationIds },
       user_id: participantId,
     })
     const availableConversationIds = availableConversationParticipants.map((participant) => participant.conversation_id)
 
+    return availableConversationIds
+  }
+
+  async findConversationsParticipants(conversationIds) {
     const conversationsParticipants = await this.aggregate([
-      { $match: { conversation_id: { $in: availableConversationIds } } },
+      { $match: { conversation_id: { $in: conversationIds } } },
       { $group: { _id: "$conversation_id", users: { $push: "$user_id" } } },
       {
         $project: {
@@ -39,12 +44,6 @@ class ConversationParticipantRepository extends BaseRepository {
     }, {})
 
     return conversationsParticipantsByIds
-  }
-
-  async findUserConversationIds(conversationIds, user_id) {
-    const availableConversationParticipants = await this.findAll({ conversation_id: { $in: conversationIds }, user_id })
-
-    return availableConversationParticipants.map((participant) => participant.conversation_id)
   }
 
   async findParticipantConversations(userId, options = {}, limit) {
@@ -68,8 +67,16 @@ class ConversationParticipantRepository extends BaseRepository {
     return !!participants
   }
 
+  async extractParticipantIdsFromPrivateConversations(conversations) {
+    return conversations.reduce((ids, conversation) => {
+      ids.add(conversation.owner_id)
+      ids.add(conversation.opponent_id)
+      return ids
+    }, new Set())
+  }
+
   async removeParticipants(conversationId, participantIds) {
-    participantIds = this.castObjectIds(participantIds)
+    participantIds = this.castUserIds(participantIds)
 
     await this.deleteMany({ conversation_id: this.castObjectId(conversationId), user_id: { $in: participantIds } })
   }

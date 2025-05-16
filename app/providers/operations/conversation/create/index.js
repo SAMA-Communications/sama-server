@@ -11,10 +11,13 @@ class ConversationCreateOperation {
   }
 
   async perform(ws, conversationParams) {
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
-    const paramsParticipantIds = await this.userService.userRepo.retrieveExistedIds(conversationParams.participants)
+    const paramsParticipantIds = await this.userService.userRepo.retrieveExistedIds(
+      organizationId,
+      conversationParams.participants
+    )
     delete conversationParams.participants
     conversationParams.owner_id = currentUserId
 
@@ -41,10 +44,15 @@ class ConversationCreateOperation {
       normalizedParticipants = participantIds
     }
 
-    const conversationEvent = await this.#createActionEvent(conversation, currentUserId)
-    conversationEvent.participantIds = normalizedParticipants
+    const result = { conversation }
 
-    return { conversation, event: conversationEvent }
+    if (this.conversationNotificationService.isEnabled()) {
+      const conversationEvent = await this.#createActionEvent(conversation, currentUserId)
+      conversationEvent.participantIds = normalizedParticipants
+      result.event = conversationEvent
+    }
+
+    return result
   }
 
   async #createPrivateConversation(user, conversationParams, participantIds) {

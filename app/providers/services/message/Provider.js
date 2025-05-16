@@ -6,10 +6,11 @@ const name = "MessageService"
 class MessageServiceRegisterProvider extends RegisterProvider {
   register(slc) {
     const helpers = slc.use("Helpers")
+    const userRepo = slc.use("UserRepository")
     const messageRepo = slc.use("MessageRepository")
     const messageStatusRepo = slc.use("MessageStatusRepository")
 
-    return new MessageService(helpers, messageRepo, messageStatusRepo)
+    return new MessageService(helpers, userRepo, messageRepo, messageStatusRepo)
   }
 }
 

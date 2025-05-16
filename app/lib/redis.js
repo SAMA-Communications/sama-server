@@ -17,38 +17,43 @@ class RedisManager {
     let scanned = 0
 
     do {
-        const response = await this.client.scan(cursor, { MATCH: matchPattern, TYPE: type })
+      const response = await this.client.scan(cursor, { MATCH: matchPattern, TYPE: type })
 
-        cursor = Number(response.cursor)
-        const items = response.keys
+      cursor = Number(response.cursor)
+      const items = response.keys
 
-        for (const item of items) {
-            if (scanned >= offset) {
-                results.push(item)
-                if (results.length >= limit) {
-                    return results
-                }
-            }
-            scanned++
+      for (const item of items) {
+        if (scanned >= offset) {
+          results.push(item)
+          if (results.length >= limit) {
+            return results
+          }
         }
+        scanned++
+      }
     } while (cursor !== 0 || !!cursor)
 
     return results
   }
 
   async countWithMatch(type = "string", matchPattern = "*") {
-    let cursor = 0;
-    let matchCount = 0;
+    let cursor = 0
+    let matchCount = 0
 
     do {
-        const response = await this.client.scan(cursor, { MATCH: matchPattern, TYPE: type })
+      const response = await this.client.scan(cursor, { MATCH: matchPattern, TYPE: type })
 
-        cursor = Number(response.cursor);
-        matchCount += response.keys.length
-
+      cursor = Number(response.cursor)
+      matchCount += response.keys.length
     } while (cursor !== 0 || !!cursor)
 
     return matchCount
+  }
+
+  async findKeyByPattern(pattern) {
+    const keys = await this.client.keys(pattern)
+
+    return keys?.at(0)
   }
 }
 

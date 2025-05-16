@@ -19,6 +19,8 @@ class ConversationService {
 
   async create(user, conversationParams, participantIds) {
     conversationParams.owner_id = user.native_id
+    conversationParams.organization_id = user.organization_id
+
     const conversation = await this.conversationRepo.create(conversationParams)
 
     await this.addParticipants(conversation, participantIds, [])
@@ -30,7 +32,7 @@ class ConversationService {
     const imageUrlPromises = conversations.map(async (conv) => {
       if (conv.image_object) {
         ;(conv.params ? conv.params : conv)["image_url"] = await this.storageService.getFileDownloadUrl(
-          conv._id,
+          conv.organization_id,
           conv.image_object.file_id
         )
       }
@@ -50,7 +52,7 @@ class ConversationService {
       ? this.validateConvIdsWhichUserHasAccess(options.ids, user.native_id)
       : this.conversationParticipantRepo.findParticipantConversations(user.native_id, filterOptions, limit))
 
-    const conversations = await this.conversationRepo.list(conversationIds, filterOptions, limit)
+    const conversations = await this.conversationRepo.list(user.organization_id, conversationIds, filterOptions, limit)
 
     return conversations
   }
@@ -76,18 +78,27 @@ class ConversationService {
   }
 
   async findConversationsParticipantIds(conversationIds, user) {
-    const conversationsParticipants = await this.conversationParticipantRepo.findConversationsParticipants(
-      conversationIds,
+    const availableConversationIds = await this.validateConvIdsWhichUserHasAccess(conversationIds, user.native_id)
+
+    const conversationsParticipants =
+      await this.conversationParticipantRepo.findConversationsParticipants(availableConversationIds)
+
+    const privateConversations = await this.conversationRepo.findAvaiblePrivateConversation(
+      availableConversationIds,
       user.native_id
     )
+    const allParticipantIdsFromPrivateConversation =
+      await this.conversationParticipantRepo.extractParticipantIdsFromPrivateConversations(privateConversations)
 
-    const participantIds = [...new Set(Object.values(conversationsParticipants).flat())]
+    const participantIds = [
+      ...new Set([...Object.values(conversationsParticipants).flat(), ...allParticipantIdsFromPrivateConversation]),
+    ]
 
     return { participantIds, participantsIdsByCids: conversationsParticipants }
   }
 
   async validateConvIdsWhichUserHasAccess(conversationIds, userId) {
-    const verifiedConversationIds = await this.conversationParticipantRepo.findUserConversationIds(
+    const verifiedConversationIds = await this.conversationParticipantRepo.filterAvaibleConversationIds(
       conversationIds,
       userId
     )
@@ -95,10 +106,10 @@ class ConversationService {
     return verifiedConversationIds
   }
 
-  async hasAccessToConversation(conversationId, userId) {
+  async hasAccessToConversation(organizationId, conversationId, userId) {
     const result = { conversation: null, asParticipant: false, asOwner: false, participantIds: null }
 
-    result.conversation = await this.conversationRepo.findById(conversationId)
+    result.conversation = await this.conversationRepo.findByIdWithOrgScope(organizationId, conversationId)
 
     if (!result.conversation) {
       return result
@@ -110,6 +121,22 @@ class ConversationService {
     result.participantIds = participantIds
 
     return result
+  }
+
+  async validateAccessToConversation(organizationId, conversationId, userId) {
+    const { conversation, asOwner } = await this.hasAccessToConversation(organizationId, conversationId, userId)
+
+    if (!conversation) {
+      throw new Error(ERROR_STATUES.BAD_REQUEST.message, {
+        cause: ERROR_STATUES.BAD_REQUEST,
+      })
+    }
+
+    if (!asOwner) {
+      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+        cause: ERROR_STATUES.FORBIDDEN,
+      })
+    }
   }
 
   async updateParticipants(conversation, addParticipants, removeParticipants, currentParticipantIds) {
@@ -154,6 +181,7 @@ class ConversationService {
       const createParticipantsParams = participantIds.map((participantId) => ({
         conversation_id: conversation._id,
         user_id: participantId,
+        organization_id: conversation.organization_id,
       }))
 
       await this.conversationParticipantRepo.createMany(createParticipantsParams)

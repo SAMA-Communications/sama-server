@@ -7,9 +7,14 @@ class HttpMessageDeleteOperation {
   }
 
   async perform(fakeWsSessionKey, payload) {
-    const { senderId, messageDelete: messageDeleteParams } = payload
+    const { organizationId, senderId, messageDelete: messageDeleteParams } = payload
 
-    this.sessionService.addUserDeviceConnection(fakeWsSessionKey, senderId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
+    this.sessionService.addUserDeviceConnection(
+      fakeWsSessionKey,
+      organizationId,
+      senderId,
+      MAIN_CONSTANTS.HTTP_DEVICE_ID
+    )
 
     const operationResponse = await this.messageDeleteOperation.perform(fakeWsSessionKey, messageDeleteParams)
 

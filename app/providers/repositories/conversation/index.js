@@ -2,39 +2,56 @@ import BaseRepository from "../base.js"
 
 class ConversationRepository extends BaseRepository {
   async prepareParams(params) {
-    params.owner_id = this.castObjectId(params.owner_id)
+    params.organization_id = this.castOrganizationId(params.organization_id)
+    params.owner_id = this.castUserId(params.owner_id)
     if (params.opponent_id) {
-      params.opponent_id = this.castObjectId(params.opponent_id)
+      params.opponent_id = this.castUserId(params.opponent_id)
     }
 
     return await super.prepareParams(params)
   }
 
+  async findByIdWithOrgScope(organizationId, conversationId) {
+    const query = {
+      organization_id: organizationId,
+      _id: conversationId,
+    }
+
+    const conversation = await this.findOne(query)
+
+    return conversation
+  }
+
   async findExistedPrivateConversation(ownerId, opponentId) {
     ownerId = this.castObjectId(ownerId)
     opponentId = this.castObjectId(opponentId)
-
     const conversation = await this.findOne({
+      type: "u",
       $or: [
-        {
-          type: "u",
-          owner_id: ownerId,
-          opponent_id: opponentId,
-        },
-        {
-          type: "u",
-          owner_id: opponentId,
-          opponent_id: ownerId,
-        },
+        { owner_id: ownerId, opponent_id: opponentId },
+        { owner_id: opponentId, opponent_id: ownerId },
       ],
     })
 
     return conversation
   }
 
-  async search({ chatNameMatch, ignoreIds, timeFromUpdate }, limit) {
+  async findAvaiblePrivateConversation(conversationIds, user_id) {
+    const participantId = this.castObjectId(user_id)
+
+    const conversations = await this.findAll({
+      _id: { $in: conversationIds },
+      type: "u",
+      $or: [{ owner_id: participantId }, { opponent_id: participantId }],
+    })
+
+    return conversations
+  }
+
+  async search(organizationId, { chatNameMatch, ignoreIds, timeFromUpdate }, limit) {
     const query = {
       _id: { $nin: ignoreIds },
+      organization_id: organizationId,
       name: { $regex: new RegExp(`${chatNameMatch}.*`, "i") },
     }
 
@@ -47,8 +64,9 @@ class ConversationRepository extends BaseRepository {
     return conversations
   }
 
-  async list(conversationIds, options, limit) {
+  async list(organizationId, conversationIds, options, limit) {
     const query = {
+      organization_id: organizationId,
       _id: { $in: conversationIds },
     }
 
