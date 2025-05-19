@@ -78,18 +78,27 @@ class ConversationService {
   }
 
   async findConversationsParticipantIds(conversationIds, user) {
-    const conversationsParticipants = await this.conversationParticipantRepo.findConversationsParticipants(
-      conversationIds,
+    const availableConversationIds = await this.validateConvIdsWhichUserHasAccess(conversationIds, user.native_id)
+
+    const conversationsParticipants =
+      await this.conversationParticipantRepo.findConversationsParticipants(availableConversationIds)
+
+    const privateConversations = await this.conversationRepo.findAvailablePrivateConversation(
+      availableConversationIds,
       user.native_id
     )
+    const allParticipantIdsFromPrivateConversation =
+      await this.conversationParticipantRepo.extractParticipantIdsFromPrivateConversations(privateConversations)
 
-    const participantIds = [...new Set(Object.values(conversationsParticipants).flat())]
+    const participantIds = [
+      ...new Set([...Object.values(conversationsParticipants).flat(), ...allParticipantIdsFromPrivateConversation]),
+    ]
 
     return { participantIds, participantsIdsByCids: conversationsParticipants }
   }
 
   async validateConvIdsWhichUserHasAccess(conversationIds, userId) {
-    const verifiedConversationIds = await this.conversationParticipantRepo.findUserConversationIds(
+    const verifiedConversationIds = await this.conversationParticipantRepo.filterAvaibleConversationIds(
       conversationIds,
       userId
     )
