@@ -1,19 +1,14 @@
 import { MongoClient, ObjectId as OID } from "mongodb"
 
-const client = new MongoClient(process.env.MONGODB_URL)
+export async function connectToDBPromise(mongoUrl) {
+  const client = new MongoClient(mongoUrl)
+  const connection = await client.connect()
 
-let dbConnection
-
-export async function connectToDBPromise() {
-  const db = await client.connect()
-
-  const mongoURISplit = process.env.MONGODB_URL.split("/")
+  const mongoURISplit = mongoUrl.split("/")
   const dbName = mongoURISplit[mongoURISplit.length - 1].split("?")[0]
 
-  return (dbConnection = db.db(dbName))
-}
+  const dbConnection = connection.db(dbName)
 
-export function getDb() {
   return dbConnection
 }
 

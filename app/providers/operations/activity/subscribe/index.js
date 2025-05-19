@@ -1,5 +1,4 @@
 import { ERROR_STATUES } from "../../../../constants/errors.js"
-import { CONSTANTS as MAIN_CONSTANTS } from "../../../../constants/constants.js"
 
 class ActivityUserSubscribeOperation {
   constructor(helpers, sessionService, activityManagerService, userService) {
@@ -14,7 +13,7 @@ class ActivityUserSubscribeOperation {
 
     const targetUser = await this.userService.userRepo.findById(targetUserId)
 
-    if (!this.helpers.isEqualsNativeIds(targetUser.organization_id, organizationId)) {
+    if (!targetUser || !this.helpers.isEqualsNativeIds(targetUser.organization_id, organizationId)) {
       throw new Error(ERROR_STATUES.INCORRECT_USER.message, {
         cause: ERROR_STATUES.INCORRECT_USER,
       })

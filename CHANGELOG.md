@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.31.0
+
+### Improvements
+
+- Implemented support for conversation schemes for programmable chat
+- Updated API requests for 1-on-1 chats
+- Added support for checking if a user belongs to a specific organization
+
+### Updated
+
+- Improved real-time “Online” status updates for better compatibility with mobile apps
+- Updated project startup commands
+- Added more different users for get_participants_by_cids response
+
 ## 0.30.0
 
 ### Improvements
