@@ -1,11 +1,12 @@
 import { ERROR_STATUES } from "../../../constants/errors"
 
 class MessageService {
-  constructor(helpers, userRepo, messageRepo, messageStatusRepo) {
+  constructor(helpers, userRepo, messageRepo, messageStatusRepo, messageReactionRepo) {
     this.helpers = helpers
     this.userRepo = userRepo
     this.messageRepo = messageRepo
     this.messageStatusRepo = messageStatusRepo
+    this.messageReactionRepo = messageReactionRepo
   }
 
   async create(user, conversation, blockedUserIds, messageParams) {
@@ -81,7 +82,9 @@ class MessageService {
 
     const messagesStatuses = await this.messageStatusRepo.findReadStatusForMids(messageIds)
 
-    return { messages, messagesStatuses }
+    const messagesReactions = await this.messageReactionRepo.aggregateForUserMessages(messageIds, user.native_id)
+
+    return { messages, messagesStatuses, messagesReactions }
   }
 
   async hasAccessToMessage(messageId, userId) {
@@ -137,11 +140,15 @@ class MessageService {
 
     const lastMessagesIds = Object.values(aggregateLastMessage).map((msg) => msg._id)
 
-    const aggregateLastMessageStatus = await this.messageStatusRepo.findReadStatusForMids(lastMessagesIds)
+    const messagesStatuses = await this.messageStatusRepo.findReadStatusForMids(lastMessagesIds)
+    const messagesReactions = await this.messageReactionRepo.aggregateForUserMessages(lastMessagesIds, user?.native_id)
 
     Object.values(aggregateLastMessage).forEach((message) => {
-      const status = aggregateLastMessageStatus[message._id.toString()] ? "read" : "sent"
+      const status = messagesStatuses[message._id] ? "read" : "sent"
       message.set("status", status)
+
+      const reactions = messagesReactions[message._id] ?? {}
+      message.set("reactions", reactions)
     })
 
     return aggregateLastMessage
@@ -160,6 +167,21 @@ class MessageService {
     )
 
     return unreadMessageCountByCids
+  }
+
+  async updateReactions(mid, userId, addReaction, removeReaction) {
+    const updated = { add: false, remove: false }
+
+    if (addReaction) {
+      const upsert = { mid, user_id: userId, reaction: addReaction }
+      updated.add ||= await this.messageReactionRepo.upsert(upsert)
+    }
+
+    if (removeReaction) {
+      updated.remove ||= await this.messageReactionRepo.remove(mid, userId, removeReaction)
+    }
+
+    return updated
   }
 
   async deleteMessages(userId, mIds, deleteAll) {
