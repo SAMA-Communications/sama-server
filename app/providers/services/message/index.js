@@ -1,4 +1,4 @@
-import { ERROR_STATUES } from "../../../constants/errors"
+import { ERROR_STATUES } from "../../../constants/errors.js"
 
 class MessageService {
   constructor(helpers, userRepo, messageRepo, messageStatusRepo, messageReactionRepo) {
