@@ -897,9 +897,22 @@ When a user leaves the group chat, the next message will also be sent to all use
       param1: "value",
       param2: "value"
     },
-    attachments: [
-      { name: "file_1", size: 240, content_type: "type" },
-      { name: "file_2", size: 126, content_type: "type" }
+    attachments: [{
+        file_id: "15c64c2b988f13a2d821d76c",
+        file_name: "image_6.png",
+        file_blur_hash: "U27nLE$*00_N^k,@s9xu#7$2$%xtVD-B-pkW",
+        file_content_type: "image/png",
+        file_width: 370,
+        file_height: 754
+      },
+      {
+        file_id: "15c64c2b988f13a2d821d86s",
+        file_name: "video_1.png",
+        file_content_type: "image/video",
+        file_width: 589,
+        file_height: 354
+      },
+      ...
     ]
   }
 }
@@ -919,10 +932,23 @@ All conversation's participants who is online will receive the following message
       param1: "value",
       param2: "value"
     },
-    attachments: [
-      { file_id: "123123_file_1", file_name: "file_1" },
-      { file_id: "653534_file_2", file_name: "file_2" }
-    ],
+    attachments: [{
+        file_id: "15c64c2b988f13a2d821d76c",
+        file_name: "image_6.png",
+        file_blur_hash: "U27nLE$*00_N^k,@s9xu#7$2$%xtVD-B-pkW",
+        file_content_type: "image/png",
+        file_width: 370,
+        file_height: 754
+      },
+      {
+        file_id: "15c64c2b988f13a2d821d86s",
+        file_name: "video_1.png",
+        file_content_type: "image/video",
+        file_width: 589,
+        file_height: 354
+      },
+      ...
+    ]
     created_at: "2023-07-04T07:23:53.308Z",
   }
 }
@@ -1618,15 +1644,15 @@ Sends a message to a specific conversation. The message can include text, attach
 
 #### 🧾 Request Parameters
 
-| Field                    | Type              | Description                                                                 |
-|--------------------------|-------------------|-----------------------------------------------------------------------------|
-| `organizationId`         | `string`          | **OrganizationId** performing request                                       |
-| `senderId`               | `string`          | **User ID** of the sender                                                   |
-| `message.id`             | `string`          | Unique **message ID received from the server** (i.e., `server_mid` from a previous response), used for tracking and acknowledgment  |
-| `message.body`           | `string`          | The message text                                                            |
-| `message.cid`            | `string`          | **Conversation ID** the message belongs to                                  |
-| `message.x`              | `object`          | Custom parameters, e.g. `{ "new_friend_connected": true }`                  |
-| `message.attachments`    | `array` of `object`| Array of attachment metadata                                               |
+| Field                 | Type                | Description                                                                                                                        |
+| --------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `organizationId`      | `string`            | **OrganizationId** performing request                                                                                              |
+| `senderId`            | `string`            | **User ID** of the sender                                                                                                          |
+| `message.id`          | `string`            | Unique **message ID received from the server** (i.e., `server_mid` from a previous response), used for tracking and acknowledgment |
+| `message.body`        | `string`            | The message text                                                                                                                   |
+| `message.cid`         | `string`            | **Conversation ID** the message belongs to                                                                                         |
+| `message.x`           | `object`            | Custom parameters, e.g. `{ "new_friend_connected": true }`                                                                         |
+| `message.attachments` | `array` of `object` | Array of attachment metadata                                                                                                       |
 
 ---
 
@@ -1706,13 +1732,13 @@ Sends a **system message** to a specific list of user IDs. These are typically n
 
 #### 🧾 Request Parameters
 
-| Field                     | Type               | Description                                                            |
-|---------------------------|--------------------|------------------------------------------------------------------------|
-| `organizationId`          | `string`            | **OrganizationId** performing request                                 |
-| `senderId`                | `string`            | **User ID** of the sender                                             |
-| `messageSystem.id`        | `string`            | Unique message ID received from the server                            |
-| `messageSystem.uids`      | `array[string]`     | List of **recipient user IDs** (only online users will receive it)    |
-| `messageSystem.x`         | `object`            | Custom metadata parameters (optional), e.g. `{ "event_type": "X" }`   |
+| Field                | Type            | Description                                                         |
+| -------------------- | --------------- | ------------------------------------------------------------------- |
+| `organizationId`     | `string`        | **OrganizationId** performing request                               |
+| `senderId`           | `string`        | **User ID** of the sender                                           |
+| `messageSystem.id`   | `string`        | Unique message ID received from the server                          |
+| `messageSystem.uids` | `array[string]` | List of **recipient user IDs** (only online users will receive it)  |
+| `messageSystem.x`    | `object`        | Custom metadata parameters (optional), e.g. `{ "event_type": "X" }` |
 
 ---
 
@@ -1780,12 +1806,12 @@ Marks one or more messages as **read** in a specific conversation. All users who
 
 #### 🧾 Request Parameters
 
-| Field                    | Type                | Description                                                       |
-|--------------------------|---------------------|-------------------------------------------------------------------|
-| `organizationId`         | `string`            | **OrganizationId** performing request                             |
-| `senderId`               | `string`            | **User ID** marking the messages as read                          |
-| `messageRead.cid`        | `string`            | **Conversation ID**                                               |
-| `messageRead.ids`        | `array[string]`     | List of **Message IDs** that are being marked as read             |
+| Field             | Type            | Description                                           |
+| ----------------- | --------------- | ----------------------------------------------------- |
+| `organizationId`  | `string`        | **OrganizationId** performing request                 |
+| `senderId`        | `string`        | **User ID** marking the messages as read              |
+| `messageRead.cid` | `string`        | **Conversation ID**                                   |
+| `messageRead.ids` | `array[string]` | List of **Message IDs** that are being marked as read |
 
 ---
 
@@ -1846,12 +1872,12 @@ Updates the body of a previously sent message. Only the sender can edit the mess
 
 #### 🧾 Request Parameters
 
-| Field                     | Type     | Description                                                             |
-|---------------------------|----------|-------------------------------------------------------------------------|
-| `organizationId`          | `string` | **OrganizationId** performing request                                   |
-| `senderId`                | `string` | **User ID** of the sender (must match the original message sender)      |
-| `messageEdit.id`          | `string` | **Message ID** to be edited                                             |
-| `messageEdit.body`        | `string` | New content for the message body                                        |
+| Field              | Type     | Description                                                        |
+| ------------------ | -------- | ------------------------------------------------------------------ |
+| `organizationId`   | `string` | **OrganizationId** performing request                              |
+| `senderId`         | `string` | **User ID** of the sender (must match the original message sender) |
+| `messageEdit.id`   | `string` | **Message ID** to be edited                                        |
+| `messageEdit.body` | `string` | New content for the message body                                   |
 
 ---
 
@@ -1968,13 +1994,13 @@ Deletes one or more messages in a conversation. The deletion behavior depends on
 
 #### 🧾 Request Parameters
 
-| Field                       | Type               | Description                                                             |
-|-----------------------------|--------------------|-------------------------------------------------------------------------|
-| `organizationId`            | `string`           | **OrganizationId** performing request                                   |
-| `senderId`                  | `string`           | **User ID** performing the deletion                                     |
-| `messageDelete.cid`         | `string`           | **Conversation ID**                                                     |
-| `messageDelete.ids`         | `array[string]`    | List of **Message IDs** to delete                                       |
-| `messageDelete.type`        | `"myself" \| "all"`| Deletion type: for sender only (`myself`) or for all users (`all`)      |
+| Field                | Type                | Description                                                        |
+| -------------------- | ------------------- | ------------------------------------------------------------------ |
+| `organizationId`     | `string`            | **OrganizationId** performing request                              |
+| `senderId`           | `string`            | **User ID** performing the deletion                                |
+| `messageDelete.cid`  | `string`            | **Conversation ID**                                                |
+| `messageDelete.ids`  | `array[string]`     | List of **Message IDs** to delete                                  |
+| `messageDelete.type` | `"myself" \| "all"` | Deletion type: for sender only (`myself`) or for all users (`all`) |
 
 ---
 
@@ -2038,14 +2064,14 @@ Get online users list (ids only of full model) or count online users
 
 #### 🧾 Request Parameters
 
-| Field                      | Type               | Description                                                             |
-|----------------------------|--------------------|-------------------------------------------------------------------------|
-| `organizationId`           | `string`           | **OrganizationId** performing request                                   |
-| `userId`                   | `string`           | **User ID** performing the deletion                                     |
-| `limit`                    | `int`              | limit numbers of users in response                                      |
-| `offset`                   | `int`              | users to skip for pagination                                            |
-| `count`                    | `boolean`          | receive only users count in response                                    |
-| `idsOnly`                  | `boolean`          | receive only **User ID**s array in response                             |
+| Field            | Type      | Description                                 |
+| ---------------- | --------- | ------------------------------------------- |
+| `organizationId` | `string`  | **OrganizationId** performing request       |
+| `userId`         | `string`  | **User ID** performing the deletion         |
+| `limit`          | `int`     | limit numbers of users in response          |
+| `offset`         | `int`     | users to skip for pagination                |
+| `count`          | `boolean` | receive only users count in response        |
+| `idsOnly`        | `boolean` | receive only **User ID**s array in response |
 
 ---
 
