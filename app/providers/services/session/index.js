@@ -100,7 +100,7 @@ class SessionService {
     if (!userKey) {
       return
     }
-    
+
     await this.redisConnection.client.sRem(userKey, deviceId)
   }
 
@@ -112,7 +112,7 @@ class SessionService {
     if (!userKey) {
       return []
     }
-    
+
     const deviceIds = await this.redisConnection.client.sMembers(userKey)
     return deviceIds
   }
@@ -125,7 +125,7 @@ class SessionService {
     if (!userKey) {
       return
     }
-    
+
     await this.redisConnection.client.del(userKey)
   }
 

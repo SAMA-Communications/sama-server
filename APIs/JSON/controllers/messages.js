@@ -5,6 +5,7 @@ import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 import MessageResponse from "@sama/DTO/Response/message/create/response.js"
 import SystemMessageResponse from "@sama/DTO/Response/message/system/response.js"
 import EditMessageResponse from "@sama/DTO/Response/message/edit/response.js"
+import MessageReactionsUpdateResponse from "@sama/DTO/Response/message/reactions_update/response.js"
 import ReadMessagesResponse from "@sama/DTO/Response/message/read/response.js"
 import DeleteMessagesResponse from "@sama/DTO/Response/message/delete/response.js"
 
@@ -56,6 +57,26 @@ class MessagesController extends BaseJSONController {
       .addDeliverMessage(new DeliverMessage(participantIds, new EditMessageResponse(editedMessage), true))
   }
 
+  async reactions_update(ws, data) {
+    const { id: requestId, message_reactions_update: messageReactionsUpdatePayload } = data
+
+    const messageReactionsUpdateOperation = ServiceLocatorContainer.use("MessageReactionsUpdateOperation")
+    const { isUpdated, messageReactionsUpdate, participantIds } = await messageReactionsUpdateOperation.perform(
+      ws,
+      messageReactionsUpdatePayload
+    )
+
+    const response = new Response().addBackMessage({ response: { id: requestId, success: true } })
+
+    if (isUpdated) {
+      response.addDeliverMessage(
+        new DeliverMessage(participantIds, new MessageReactionsUpdateResponse(messageReactionsUpdate), true)
+      )
+    }
+
+    return response
+  }
+
   async list(ws, data) {
     const { id: requestId, message_list: messagesListParams } = data
 
@@ -68,6 +89,15 @@ class MessagesController extends BaseJSONController {
         messages: messages,
       },
     })
+  }
+
+  async reactions_list(ws, data) {
+    const { id: requestId, message_reactions_list: messageReactionsListParams } = data
+
+    const messageReactionsListOperation = ServiceLocatorContainer.use("MessageReactionsListOperation")
+    const { reactions } = await messageReactionsListOperation.perform(ws, messageReactionsListParams)
+
+    return new Response().addBackMessage({ response: { id: requestId, reactions } })
   }
 
   async read(ws, data) {
