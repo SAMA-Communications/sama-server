@@ -54,6 +54,7 @@ class MessageCreateOperation {
       )
 
       conversationHandlerResponse = await this.messageService.processHandlerResult(
+        currentUser.organization_id,
         accept,
         createMessageParams,
         newMessage,

@@ -19,7 +19,7 @@ class MessageService {
     return message
   }
 
-  async processHandlerResult(accept, baseMessage, message, options) {
+  async processHandlerResult(organizationId, accept, baseMessage, message, options) {
     if (accept) return {}
 
     const { body } = message
@@ -28,15 +28,14 @@ class MessageService {
         const newMessageFields = { body }
         return { newMessageFields }
       } else {
-        const existServerBot = await this.userRepo.findByLogin("server-chat-bot")
+        const existServerBot = await this.userRepo.findByLogin(organizationId, "server-chat-bot")
         if (existServerBot) {
           const botMessageParams = { ...baseMessage, body }
           return { botMessageParams, serverBot: existServerBot }
         }
       }
-    } else {
-      //error that body is must be string
     }
+
     return {}
   }
 
