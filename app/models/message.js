@@ -23,6 +23,19 @@ export default class Message extends BaseModel {
     ]
   }
 
+  static get allowedAttachmentFields() {
+    return [
+      "file_id",
+      "file_name",
+      "file_url",
+      "file_blur_hash",
+      "file_content_type",
+      "file_size",
+      "file_width",
+      "file_height",
+    ]
+  }
+
   static get hiddenFields() {
     return ["updated_at"]
   }

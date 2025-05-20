@@ -1,3 +1,5 @@
+import { ERROR_STATUES } from "../../../constants/errors"
+
 class MessageService {
   constructor(helpers, userRepo, messageRepo, messageStatusRepo) {
     this.helpers = helpers
@@ -19,25 +21,49 @@ class MessageService {
     return message
   }
 
-  async processHandlerResult(accept, baseMessage, message, options) {
+  #validateAttachmentInMessage(attachment) {
+    const allowedAttachmentFields = this.messageRepo.Model.allowedAttachmentFields
+
+    if (typeof attachment !== "object" || attachment === null) return false
+    return Object.keys(attachment).every((key) => allowedAttachmentFields.includes(key))
+  }
+
+  async processHandlerResult(organizationId, accept, baseMessage, message, options) {
     if (accept) return {}
 
-    const { body } = message
-    if (body && typeof body === "string") {
-      if (options.isReplaceBody) {
-        const newMessageFields = { body }
-        return { newMessageFields }
-      } else {
-        const existServerBot = await this.userRepo.findByLogin("server-chat-bot")
-        if (existServerBot) {
-          const botMessageParams = { ...baseMessage, body }
-          return { botMessageParams, serverBot: existServerBot }
+    const { body, attachments } = message
+    const processedResponse = {}
+
+    if (attachments?.length) {
+      for (const att of attachments) {
+        if (!this.#validateAttachmentInMessage(att)) {
+          throw new Error(ERROR_STATUES.INVALID_ATTACHMENT_FIELDS.message, {
+            cause: ERROR_STATUES.INVALID_ATTACHMENT_FIELDS,
+          })
         }
       }
-    } else {
-      //error that body is must be string
     }
-    return {}
+
+    if (body && typeof body !== "string") {
+      throw new Error(ERROR_STATUES.INCORRECT_TYPE_OF_BODY.message, {
+        cause: ERROR_STATUES.INCORRECT_TYPE_OF_BODY,
+      })
+    }
+
+    if (!body?.length && !attachments?.length) return processedResponse
+
+    if (options.isReplaceBody) {
+      processedResponse.newMessageFields = { body, attachments }
+      return processedResponse
+    }
+
+    const existServerBot = await this.userRepo.findByLogin(organizationId, "server-chat-bot")
+    if (existServerBot) {
+      processedResponse.botMessageParams = { ...baseMessage, body, attachments }
+      processedResponse.serverBot = existServerBot
+    }
+
+    return processedResponse
   }
 
   async messagesList(cId, user, options, limit) {
