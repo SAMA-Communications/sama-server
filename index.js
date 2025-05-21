@@ -146,8 +146,8 @@ for (const api of Object.values(APIs)) {
 }
 
 // Boot providers
-await ServiceLocatorContainer.createAllSingletonInstances()
 await ServiceLocatorContainer.boot()
+await ServiceLocatorContainer.createAllSingletonInstances()
 
 // Start Cluster Sync
 
