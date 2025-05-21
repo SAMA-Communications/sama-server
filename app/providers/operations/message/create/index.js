@@ -165,7 +165,7 @@ class MessageCreateOperation {
 
     const firstAttachmentUrl = !message.attachments?.length
       ? null
-      : message.attachments[0]?.file_id && await this.storageService.getDownloadUrl(message.attachments[0].file_id)
+      : message.attachments[0]?.file_id && (await this.storageService.getDownloadUrl(message.attachments[0].file_id))
 
     const pushPayload = Object.assign({
       title: conversation.type === "u" ? userLogin : `${userLogin} | ${conversation.name}`,
