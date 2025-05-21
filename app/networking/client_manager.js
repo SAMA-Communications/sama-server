@@ -2,6 +2,7 @@ import uWS from "uWebSockets.js"
 import { StringDecoder } from "string_decoder"
 
 import { ERROR_STATUES } from "../constants/errors.js"
+import { CONSTANTS as MAIN_CONSTANTS } from "../constants/constants.js"
 
 import { BASE_API, APIs, detectAPIType } from "./APIs.js"
 
@@ -85,7 +86,8 @@ const processMessageResponse = async (ws, response, needStringify) => {
 
 const unbindSessionCallback = async (wsKey) => {
   const sessionService = ServiceLocatorContainer.use("SessionService")
-  await sessionService.removeAllUserSessions(wsKey)
+  const session = sessionService.getSession(wsKey)
+  await sessionService.removeUserSession(wsKey, session.userId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
 }
 
 class ClientManager {
