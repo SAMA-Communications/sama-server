@@ -11,7 +11,7 @@ class ActivityUserRetrieveOperation {
 
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    const targetUsers = await this.userService.userRepo.findWithOrScopeByIds(organizationId, targetUserId)
+    const targetUsers = await this.userService.userRepo.findWithOrgScopeByIds(organizationId, targetUserId)
 
     for (const targetUser of targetUsers) {
       const userId = targetUser.native_id
