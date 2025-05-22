@@ -139,15 +139,22 @@ for (const provider of providers) {
   ServiceLocatorContainer.register(provider)
 }
 
+console.log('[Register base]')
+
 for (const api of Object.values(APIs)) {
+  console.log('[Register Apis]', api.name)
+
   for (const provider of api.providers) {
     ServiceLocatorContainer.register(provider)
   }
 }
 
 // Boot providers
+console.log('[Boot]')
 await ServiceLocatorContainer.boot()
+console.log('[Create singleton]')
 await ServiceLocatorContainer.createAllSingletonInstances()
+console.log('[Start sync]')
 
 // Start Cluster Sync
 
