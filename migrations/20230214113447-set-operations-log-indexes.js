@@ -1,4 +1,5 @@
 export const up = async (db, client) => {
+  console.log('[Up]', process.env.OPERATIONS_LOG_EXPIRES_IN)
   await db.collection("operations_log").createIndex(
     { created_at: 1 },
     {
