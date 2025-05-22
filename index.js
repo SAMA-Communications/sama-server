@@ -87,7 +87,6 @@ const dbConnection = await connectToDBPromise(process.env.MONGODB_URL)
 await RedisClient.connect()
   .then(async () => {
     console.log("[Redis][connect] Ok")
-    console.log('[test]', await RedisClient.findKeyByPattern("*"))
   })
   .catch((err) => {
     console.log("[Redis][connect] error", err)
@@ -136,14 +135,14 @@ ServiceLocatorContainer.register(
   })({ name: "StorageDriverClient", implementationName: RuntimeDefinedContext.STORAGE_DRIVER.constructor.name })
 )
 
+console.log('[Register base]')
+
 for (const provider of providers) {
   ServiceLocatorContainer.register(provider)
 }
 
-console.log('[Register base]')
-
 for (const api of Object.values(APIs)) {
-  console.log('[Register Apis]', api.constructor.name)
+  console.log('[Register Api Providers]', api.constructor.name)
 
   for (const provider of api.providers) {
     ServiceLocatorContainer.register(provider)
