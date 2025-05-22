@@ -87,6 +87,9 @@ const processMessageResponse = async (ws, response, needStringify) => {
 const unbindSessionCallback = async (wsKey) => {
   const sessionService = ServiceLocatorContainer.use("SessionService")
   const session = sessionService.getSession(wsKey)
+  if (!session?.userId) {
+    return
+  }
   await sessionService.removeUserSession(wsKey, session.userId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
 }
 
