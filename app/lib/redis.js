@@ -17,6 +17,7 @@ class RedisManager {
     let scanned = 0
 
     do {
+      console.log('[Redis][scanWithPagination]', cursor, { MATCH: matchPattern, TYPE: type })
       const response = await this.client.scan(cursor, { MATCH: matchPattern, TYPE: type })
 
       cursor = Number(response.cursor)
@@ -41,6 +42,7 @@ class RedisManager {
     let matchCount = 0
 
     do {
+      console.log('[Redis][countWithMatch]', cursor, { MATCH: matchPattern, TYPE: type })
       const response = await this.client.scan(cursor, { MATCH: matchPattern, TYPE: type })
 
       cursor = Number(response.cursor)
@@ -51,6 +53,7 @@ class RedisManager {
   }
 
   async findKeyByPattern(pattern) {
+    console.log('[Redis][findKeyByPattern]', pattern)
     const keys = await this.client.keys(pattern)
 
     return keys?.at(0)
