@@ -142,7 +142,7 @@ for (const provider of providers) {
 console.log('[Register base]')
 
 for (const api of Object.values(APIs)) {
-  console.log('[Register Apis]', api.name)
+  console.log('[Register Apis]', api.constructor.name)
 
   for (const provider of api.providers) {
     ServiceLocatorContainer.register(provider)
