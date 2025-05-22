@@ -85,7 +85,7 @@ const dbConnection = await connectToDBPromise(process.env.MONGODB_URL)
   })
 
 await RedisClient.connect()
-  .then(() => {
+  .then(async () => {
     console.log("[Redis][connect] Ok")
     console.log('[test]', await RedisClient.findKeyByPattern("*"))
   })
