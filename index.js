@@ -135,14 +135,14 @@ ServiceLocatorContainer.register(
   })({ name: "StorageDriverClient", implementationName: RuntimeDefinedContext.STORAGE_DRIVER.constructor.name })
 )
 
-console.log('[Register base]')
+console.log("[Register base]")
 
 for (const provider of providers) {
   ServiceLocatorContainer.register(provider)
 }
 
 for (const api of Object.values(APIs)) {
-  console.log('[Register Api Providers]', api.constructor.name)
+  console.log("[Register Api Providers]", api.constructor.name)
 
   for (const provider of api.providers) {
     ServiceLocatorContainer.register(provider)
@@ -150,14 +150,14 @@ for (const api of Object.values(APIs)) {
 }
 
 // Boot providers
-console.log('[Boot]')
+console.log("[Boot]")
 await ServiceLocatorContainer.boot()
-console.log('[Create singleton]')
+
+console.log("[Create singleton]")
 await ServiceLocatorContainer.createAllSingletonInstances()
-console.log('[Start sync]')
 
 // Start Cluster Sync
-
+console.log("[Start sync]")
 await clusterSyncer.startSyncingClusterNodes()
 
 // https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph

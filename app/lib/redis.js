@@ -17,7 +17,7 @@ class RedisManager {
     let scanned = 0
 
     do {
-      const response = await this.client.scan(cursor, { MATCH: matchPattern, /*TYPE: type*/ })
+      const response = await this.client.scan(cursor, { MATCH: matchPattern /*TYPE: type*/ })
 
       cursor = Number(response.cursor)
       const items = response.keys
@@ -41,7 +41,7 @@ class RedisManager {
     let matchCount = 0
 
     do {
-      const response = await this.client.scan(cursor, { MATCH: matchPattern, /*TYPE: type*/ })
+      const response = await this.client.scan(cursor, { MATCH: matchPattern /*TYPE: type*/ })
 
       cursor = Number(response.cursor)
       matchCount += response.keys.length
