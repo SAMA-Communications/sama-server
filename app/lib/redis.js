@@ -4,6 +4,14 @@ class RedisManager {
   constructor() {
     this.client = createClient({
       url: process.env.REDIS_URL,
+      socket: {
+        reconnectStrategy: retries => {
+          if (retries > 10) {
+            return new Error('Too many retries to connect to Redis');
+          }
+          return Math.min(retries * 100, 3000)
+        }
+      }
     })
   }
 
