@@ -85,7 +85,7 @@ const dbConnection = await connectToDBPromise(process.env.MONGODB_URL)
   })
 
 await RedisClient.connect()
-  .then(() => {
+  .then(async () => {
     console.log("[Redis][connect] Ok")
   })
   .catch((err) => {
@@ -135,22 +135,29 @@ ServiceLocatorContainer.register(
   })({ name: "StorageDriverClient", implementationName: RuntimeDefinedContext.STORAGE_DRIVER.constructor.name })
 )
 
+console.log("[Register base]")
+
 for (const provider of providers) {
   ServiceLocatorContainer.register(provider)
 }
 
 for (const api of Object.values(APIs)) {
+  console.log("[Register Api Providers]", api.constructor.name)
+
   for (const provider of api.providers) {
     ServiceLocatorContainer.register(provider)
   }
 }
 
 // Boot providers
-await ServiceLocatorContainer.createAllSingletonInstances()
+console.log("[Boot]")
 await ServiceLocatorContainer.boot()
 
-// Start Cluster Sync
+console.log("[Create singleton]")
+await ServiceLocatorContainer.createAllSingletonInstances()
 
+// Start Cluster Sync
+console.log("[Start sync]")
 await clusterSyncer.startSyncingClusterNodes()
 
 // https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph

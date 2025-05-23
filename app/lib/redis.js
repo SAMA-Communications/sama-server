@@ -4,6 +4,20 @@ class RedisManager {
   constructor() {
     this.client = createClient({
       url: process.env.REDIS_URL,
+      socket: {
+        reconnectStrategy: retries => {
+          console.log('[Redis][reconnect]', retries)
+          return 1_000
+        }
+      }
+    })
+
+    this.client.on('error', (err) => {
+      console.warn('[Redis][connection][error]', err)
+    })
+    
+    this.client.on('end', () => {
+      console.warn('[Redis][connection][end]')
     })
   }
 

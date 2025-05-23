@@ -25,6 +25,7 @@ import { usersBlockSchemaValidation } from "../validations/users_block_schema_va
 import { usersSchemaValidation } from "../validations/users_schema_validation.js"
 
 export const routes = {
+  ping: (ws, json) => StatusesController.ping(ws, json),
   typing: (ws, json) =>
     StatusesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.typing, statusSchemaValidation.typing)
