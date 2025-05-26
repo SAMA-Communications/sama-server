@@ -23,7 +23,7 @@ class MessageService {
   }
 
   #validateAttachmentInMessage(attachment) {
-    const allowedAttachmentFields = this.messageRepo.Model.allowedAttachmentFields
+    const allowedAttachmentFields = this.messageRepo.Model.allowedBotAttachmentFields
 
     if (typeof attachment !== "object" || attachment === null) return false
     return Object.keys(attachment).every((key) => allowedAttachmentFields.includes(key))

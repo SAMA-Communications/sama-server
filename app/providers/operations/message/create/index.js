@@ -106,7 +106,7 @@ class MessageCreateOperation {
       botMessage.x.c_type = conversation.type
 
       const deliverBotMessage = await this.#createMessageNotification(conversation, serverBot, botMessageParams)
-      console.log(deliverBotMessage)
+      deliverBotMessage.message = { ...deliverBotMessage.message, _id: botMessage._id }
       deliverMessages.push(deliverBotMessage)
     }
 
