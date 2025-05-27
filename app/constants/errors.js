@@ -126,6 +126,7 @@ export const ERROR_STATUES = {
     status: 422,
     message: "Invalid attachment fields.",
   },
+  CORS_RESTRICTIONS: "A CORS error occurred while trying to perform a network request.",
   // Status -->
   STATUS_ID_MISSED: { status: 422, message: "Status ID missed." },
   STATUS_TYPE_MISSED: { status: 422, message: "Status type missed." },
