@@ -895,8 +895,22 @@ When a user leaves the group chat, the next message will also be sent to all use
       param1: "value",
       param2: "value"
     },
-    attachments: [
-      { file_name: "screenshot.png", file_id: "905244e690b012917a6f4c6e", file_blur_hash: "UjI6cvtQNGkC0LfiRjWB~Vjuf7ofELayj[oL" },
+    attachments: [{
+        file_id: "15c64c2b988f13a2d821d76c",
+        file_name: "image_6.png",
+        file_blur_hash: "U27nLE$*00_N^k,@s9xu#7$2$%xtVD-B-pkW",
+        file_content_type: "image/png",
+        file_width: 370,
+        file_height: 754
+      },
+      {
+        file_id: "15c64c2b988f13a2d821d86s",
+        file_name: "video_1.png",
+        file_content_type: "image/video",
+        file_width: 589,
+        file_height: 354
+      },
+      ...
     ]
   }
 }
@@ -916,9 +930,23 @@ All conversation's participants who is online will receive the following message
       param1: "value",
       param2: "value"
     },
-    attachments: [
-      { file_name: "screenshot.png", file_id: "905244e690b012917a6f4c6e", file_blur_hash: "UjI6cvtQNGkC0LfiRjWB~Vjuf7ofELayj[oL" }
-    ],
+    attachments: [{
+        file_id: "15c64c2b988f13a2d821d76c",
+        file_name: "image_6.png",
+        file_blur_hash: "U27nLE$*00_N^k,@s9xu#7$2$%xtVD-B-pkW",
+        file_content_type: "image/png",
+        file_width: 370,
+        file_height: 754
+      },
+      {
+        file_id: "15c64c2b988f13a2d821d86s",
+        file_name: "video_1.png",
+        file_content_type: "image/video",
+        file_width: 589,
+        file_height: 354
+      },
+      ...
+    ]
     created_at: "2023-07-04T07:23:53.308Z",
   }
 }
@@ -1035,6 +1063,7 @@ On each message sent to server - a server will deliver back to client a simple p
         attachments: [
           { file_id: "file_name_1", file_name: "file_1" }
         ],
+        reactions: {}
         t: 1668680757,
         created_at: "2023-05-24T14:34:58.066Z"
       }
@@ -1155,6 +1184,56 @@ Then other users in this conversation who is online will receive the following m
 ```
 
 If users are offline, they will receive a message once became online.
+
+### Update reaction
+
+User who can access message can add/remove reaction
+
+```
+{
+  request: {
+    message_reactions_update: {
+      mid: "63077ad836b78c3d82af0812",
+      add: "👍",
+      remove: "😿"
+    },
+    id: "4"
+  }
+}
+
+{ response: { id: "4", success: true } }
+```
+
+Then other users in this conversation who is online will receive the following message:
+
+```
+{
+  message_reactions_update: {
+    mid: "63077ad836b78c3d82af0812",
+    cid: "63077ad836b78c3d82af0815"
+    from: "634ec51c0b65918393dca5bf",
+    add: "👍",
+    remove: "😿"
+  }
+}
+```
+
+### List reactions
+
+Retrieve userIds who add reaction to message
+
+```
+{
+  request: {
+    message_reactions_list: {
+      mid: "63077ad836b78c3d82af0812",
+    },
+    id: "4"
+  }
+}
+
+{ response: { id: "4", reactions: { "👍": ["63480e68f4794709f802a2fc", "63480e68f4794709f802a2fb"], "😂": ["63480e68f4794709f802a2fb"] } } }
+```
 
 ## Push Subscription API
 
@@ -1563,15 +1642,15 @@ Sends a message to a specific conversation. The message can include text, attach
 
 #### 🧾 Request Parameters
 
-| Field                    | Type              | Description                                                                 |
-|--------------------------|-------------------|-----------------------------------------------------------------------------|
-| `organizationId`         | `string`          | **OrganizationId** performing request                                       |
-| `senderId`               | `string`          | **User ID** of the sender                                                   |
-| `message.id`             | `string`          | Unique **message ID received from the server** (i.e., `server_mid` from a previous response), used for tracking and acknowledgment  |
-| `message.body`           | `string`          | The message text                                                            |
-| `message.cid`            | `string`          | **Conversation ID** the message belongs to                                  |
-| `message.x`              | `object`          | Custom parameters, e.g. `{ "new_friend_connected": true }`                  |
-| `message.attachments`    | `array` of `object`| Array of attachment metadata                                               |
+| Field                 | Type                | Description                                                                                                                        |
+| --------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `organizationId`      | `string`            | **OrganizationId** performing request                                                                                              |
+| `senderId`            | `string`            | **User ID** of the sender                                                                                                          |
+| `message.id`          | `string`            | Unique **message ID received from the server** (i.e., `server_mid` from a previous response), used for tracking and acknowledgment |
+| `message.body`        | `string`            | The message text                                                                                                                   |
+| `message.cid`         | `string`            | **Conversation ID** the message belongs to                                                                                         |
+| `message.x`           | `object`            | Custom parameters, e.g. `{ "new_friend_connected": true }`                                                                         |
+| `message.attachments` | `array` of `object` | Array of attachment metadata                                                                                                       |
 
 ---
 
@@ -1651,13 +1730,13 @@ Sends a **system message** to a specific list of user IDs. These are typically n
 
 #### 🧾 Request Parameters
 
-| Field                     | Type               | Description                                                            |
-|---------------------------|--------------------|------------------------------------------------------------------------|
-| `organizationId`          | `string`            | **OrganizationId** performing request                                 |
-| `senderId`                | `string`            | **User ID** of the sender                                             |
-| `messageSystem.id`        | `string`            | Unique message ID received from the server                            |
-| `messageSystem.uids`      | `array[string]`     | List of **recipient user IDs** (only online users will receive it)    |
-| `messageSystem.x`         | `object`            | Custom metadata parameters (optional), e.g. `{ "event_type": "X" }`   |
+| Field                | Type            | Description                                                         |
+| -------------------- | --------------- | ------------------------------------------------------------------- |
+| `organizationId`     | `string`        | **OrganizationId** performing request                               |
+| `senderId`           | `string`        | **User ID** of the sender                                           |
+| `messageSystem.id`   | `string`        | Unique message ID received from the server                          |
+| `messageSystem.uids` | `array[string]` | List of **recipient user IDs** (only online users will receive it)  |
+| `messageSystem.x`    | `object`        | Custom metadata parameters (optional), e.g. `{ "event_type": "X" }` |
 
 ---
 
@@ -1715,7 +1794,7 @@ Marks one or more messages as **read** in a specific conversation. All users who
   "organizationId": "680a2fae96cc69d78861f101",
   "senderId": "63480e68f4794709f802a2fa",
   "messageRead": {
-    "cid": "63077ad836b78c3d82af0812",
+    "cid": "63077ad836b78c3d82af0815",
     "ids": ["63480e68f4794709f802a2fa", "63077ad836b78c3d82af0866"]
   }
 }
@@ -1725,12 +1804,12 @@ Marks one or more messages as **read** in a specific conversation. All users who
 
 #### 🧾 Request Parameters
 
-| Field                    | Type                | Description                                                       |
-|--------------------------|---------------------|-------------------------------------------------------------------|
-| `organizationId`         | `string`            | **OrganizationId** performing request                             |
-| `senderId`               | `string`            | **User ID** marking the messages as read                          |
-| `messageRead.cid`        | `string`            | **Conversation ID**                                               |
-| `messageRead.ids`        | `array[string]`     | List of **Message IDs** that are being marked as read             |
+| Field             | Type            | Description                                           |
+| ----------------- | --------------- | ----------------------------------------------------- |
+| `organizationId`  | `string`        | **OrganizationId** performing request                 |
+| `senderId`        | `string`        | **User ID** marking the messages as read              |
+| `messageRead.cid` | `string`        | **Conversation ID**                                   |
+| `messageRead.ids` | `array[string]` | List of **Message IDs** that are being marked as read |
 
 ---
 
@@ -1749,7 +1828,7 @@ Marks one or more messages as **read** in a specific conversation. All users who
 ```json
 {
   "message_read": {
-    "cid": "63077ad836b78c3d82af0812",
+    "cid": "63077ad836b78c3d82af0815",
     "ids": ["63480e68f4794709f802a2fa", "63077ad836b78c3d82af0866"],
     "from": "634ec51c0b65918393dca5bf"
   }
@@ -1791,12 +1870,62 @@ Updates the body of a previously sent message. Only the sender can edit the mess
 
 #### 🧾 Request Parameters
 
-| Field                     | Type     | Description                                                             |
-|---------------------------|----------|-------------------------------------------------------------------------|
-| `organizationId`          | `string` | **OrganizationId** performing request                                   |
-| `senderId`                | `string` | **User ID** of the sender (must match the original message sender)      |
-| `messageEdit.id`          | `string` | **Message ID** to be edited                                             |
-| `messageEdit.body`        | `string` | New content for the message body                                        |
+| Field              | Type     | Description                                                        |
+| ------------------ | -------- | ------------------------------------------------------------------ |
+| `organizationId`   | `string` | **OrganizationId** performing request                              |
+| `senderId`         | `string` | **User ID** of the sender (must match the original message sender) |
+| `messageEdit.id`   | `string` | **Message ID** to be edited                                        |
+| `messageEdit.body` | `string` | New content for the message body                                   |
+
+---
+
+#### ✅ Successful Response
+
+```json
+{
+  "success": true
+}
+```
+
+### 📌 `PUT /admin/message/reaction`
+
+**Description**:  
+Updates the reactions of a message. Can add/remove reactions. All online participants of the conversation will receive the update reaction message in real-time.
+
+---
+
+#### 🔐 Authorization
+
+- Required Header:  
+  `Admin-Api-Key: {{HTTP_ADMIN_API_KEY}}`
+
+---
+
+#### 📥 Request
+
+**Content-Type**: `application/json`
+
+```json
+{
+  "senderId": "63480e68f4794709f802a2fa",
+  "messageReaction": {
+    "mid": "63077ad836b78c3d82af0812",
+    "add": "🤐",
+    "remove": "👍"
+  }
+}
+```
+
+---
+
+#### 🧾 Request Parameters
+
+| Field                    | Type     | Description                                                        |
+| ------------------------ | -------- | ------------------------------------------------------------------ |
+| `senderId`               | `string` | **User ID** of the user who update reaction                        |
+| `messageReaction.mid`    | `string` | **Message ID** to update reaction                                  |
+| `messageReaction.add`    | `string` | Reaction to add                                                    |
+| `messageReaction.remove` | `string` | Reaction to remove                                                 |
 
 ---
 
@@ -1814,10 +1943,12 @@ Updates the body of a previously sent message. Only the sender can edit the mess
 
 ```json
 {
-  "message_edit": {
-    "id": "63077ad836b78c3d82af0812",
-    "body": "updated message body",
-    "from": "63480e68f4794709f802a2fa"
+  "message_reactions_update": {
+    "mid": "63077ad836b78c3d82af0812",
+    "cid": "63077ad836b78c3d82af0815",
+    "from": "63480e68f4794709f802a2fa",
+    "add": "🤐",
+    "remove": "👍"
   }
 }
 ```
@@ -1850,7 +1981,7 @@ Deletes one or more messages in a conversation. The deletion behavior depends on
   "organizationId": "680a2fae96cc69d78861f101",
   "senderId": "63480e68f4794709f802a2fa",
   "messageDelete": {
-    "cid": "63077ad836b78c3d82af0812",
+    "cid": "63077ad836b78c3d82af0815",
     "ids": ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
     "type": "myself"
   }
@@ -1861,13 +1992,13 @@ Deletes one or more messages in a conversation. The deletion behavior depends on
 
 #### 🧾 Request Parameters
 
-| Field                       | Type               | Description                                                             |
-|-----------------------------|--------------------|-------------------------------------------------------------------------|
-| `organizationId`            | `string`           | **OrganizationId** performing request                                   |
-| `senderId`                  | `string`           | **User ID** performing the deletion                                     |
-| `messageDelete.cid`         | `string`           | **Conversation ID**                                                     |
-| `messageDelete.ids`         | `array[string]`    | List of **Message IDs** to delete                                       |
-| `messageDelete.type`        | `"myself" \| "all"`| Deletion type: for sender only (`myself`) or for all users (`all`)      |
+| Field                | Type                | Description                                                        |
+| -------------------- | ------------------- | ------------------------------------------------------------------ |
+| `organizationId`     | `string`            | **OrganizationId** performing request                              |
+| `senderId`           | `string`            | **User ID** performing the deletion                                |
+| `messageDelete.cid`  | `string`            | **Conversation ID**                                                |
+| `messageDelete.ids`  | `array[string]`     | List of **Message IDs** to delete                                  |
+| `messageDelete.type` | `"myself" \| "all"` | Deletion type: for sender only (`myself`) or for all users (`all`) |
 
 ---
 
@@ -1886,7 +2017,7 @@ Deletes one or more messages in a conversation. The deletion behavior depends on
 ```json
 {
   "message_delete": {
-    "cid": "63077ad836b78c3d82af0812",
+    "cid": "63077ad836b78c3d82af0815",
     "ids": ["63077ad836b78c3d82af0812", "63077ad836b78c3d82af0813"],
     "type": "all",
     "from": "634ec51c0b65918393dca5bf"
@@ -1931,14 +2062,14 @@ Get online users list (ids only of full model) or count online users
 
 #### 🧾 Request Parameters
 
-| Field                      | Type               | Description                                                             |
-|----------------------------|--------------------|-------------------------------------------------------------------------|
-| `organizationId`           | `string`           | **OrganizationId** performing request                                   |
-| `userId`                   | `string`           | **User ID** performing the deletion                                     |
-| `limit`                    | `int`              | limit numbers of users in response                                      |
-| `offset`                   | `int`              | users to skip for pagination                                            |
-| `count`                    | `boolean`          | receive only users count in response                                    |
-| `idsOnly`                  | `boolean`          | receive only **User ID**s array in response                             |
+| Field            | Type      | Description                                 |
+| ---------------- | --------- | ------------------------------------------- |
+| `organizationId` | `string`  | **OrganizationId** performing request       |
+| `userId`         | `string`  | **User ID** performing the deletion         |
+| `limit`          | `int`     | limit numbers of users in response          |
+| `offset`         | `int`     | users to skip for pagination                |
+| `count`          | `boolean` | receive only users count in response        |
+| `idsOnly`        | `boolean` | receive only **User ID**s array in response |
 
 ---
 

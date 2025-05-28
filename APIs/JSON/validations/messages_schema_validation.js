@@ -33,6 +33,10 @@ export const messagesSchemaValidation = {
             file_id: Joi.string(),
             file_name: Joi.string().max(255),
             file_blur_hash: Joi.string().max(255),
+            file_content_type: Joi.string().max(255),
+            file_size: Joi.number().max(104857601),
+            file_width: Joi.number().max(10000),
+            file_height: Joi.number().max(10000),
           })
         )
         .min(1)
@@ -61,6 +65,18 @@ export const messagesSchemaValidation = {
         })
       ),
   }).required(),
+  reactions_update: Joi.object({
+    mid: Joi.alternatives()
+      .required()
+      .try(Joi.object(), Joi.string())
+      .error(
+        new Error(ERROR_STATUES.INCORRECT_MESSAGE_ID.message, {
+          cause: ERROR_STATUES.INCORRECT_MESSAGE_ID,
+        })
+      ),
+    add: Joi.string().max(10).optional(),
+    remove: Joi.string().max(10).optional(),
+  }).or("add", "remove"),
   list: Joi.object({
     cid: Joi.string()
       .required()
@@ -72,6 +88,16 @@ export const messagesSchemaValidation = {
     limit: Joi.number(),
     updated_at: Joi.object().allow({ gt: Joi.date() }, { lt: Joi.date() }),
   }).required(),
+  reactions_list: Joi.object({
+    mid: Joi.alternatives()
+      .required()
+      .try(Joi.object(), Joi.string())
+      .error(
+        new Error(ERROR_STATUES.INCORRECT_MESSAGE_ID.message, {
+          cause: ERROR_STATUES.INCORRECT_MESSAGE_ID,
+        })
+      ),
+  }),
   read: Joi.object({
     cid: Joi.string()
       .required()

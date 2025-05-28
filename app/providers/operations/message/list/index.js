@@ -21,16 +21,21 @@ class MessageListOperation {
 
     const normalizedLimit = this.#normalizeLimitParam(limit)
 
-    const { messages, messagesStatuses } = await this.messageService.messagesList(
+    const { messages, messagesStatuses, messagesReactions } = await this.messageService.messagesList(
       cId,
       currentUser,
       { updatedAt: updated_at },
       normalizedLimit
     )
 
-    const messagesWithStatus = await this.#assignMessageStatus(messages, messagesStatuses, currentUserId)
+    const messagesWithVirtualFields = await this.#assignMessageVirtualFields(
+      messages,
+      messagesStatuses,
+      messagesReactions,
+      currentUserId
+    )
 
-    return messagesWithStatus.map((message) => new MessagePublicFields(message))
+    return messagesWithVirtualFields.map((message) => new MessagePublicFields(message))
   }
 
   async #hasAccess(organizationId, conversationId, currentUserId) {
@@ -53,13 +58,15 @@ class MessageListOperation {
     }
   }
 
-  async #assignMessageStatus(messages, messagesStatuses, currentUserId) {
+  async #assignMessageVirtualFields(messages, messagesStatuses, messagesReactions, currentUserId) {
     for (const message of messages) {
       if (this.helpers.isEqualsNativeIds(message.from, currentUserId)) {
         const status = messagesStatuses[message._id]
         const statusName = status?.length ? "read" : "sent"
         message.set("status", statusName)
       }
+
+      message.set("reactions", messagesReactions[message._id] ?? {})
     }
 
     return messages

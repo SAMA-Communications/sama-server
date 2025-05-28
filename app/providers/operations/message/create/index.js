@@ -54,6 +54,7 @@ class MessageCreateOperation {
       )
 
       conversationHandlerResponse = await this.messageService.processHandlerResult(
+        currentUser.organization_id,
         accept,
         createMessageParams,
         newMessage,
@@ -105,7 +106,7 @@ class MessageCreateOperation {
       botMessage.x.c_type = conversation.type
 
       const deliverBotMessage = await this.#createMessageNotification(conversation, serverBot, botMessageParams)
-      console.log(deliverBotMessage)
+      deliverBotMessage.message = { ...deliverBotMessage.message, _id: botMessage._id }
       deliverMessages.push(deliverBotMessage)
     }
 
@@ -165,7 +166,7 @@ class MessageCreateOperation {
 
     const firstAttachmentUrl = !message.attachments?.length
       ? null
-      : await this.storageService.getDownloadUrl(message.attachments[0].file_id)
+      : message.attachments[0].file_url || (await this.storageService.getDownloadUrl(message.attachments[0].file_id))
 
     const pushPayload = Object.assign({
       title: conversation.type === "u" ? userLogin : `${userLogin} | ${conversation.name}`,

@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.32.0
+
+### Improvements
+
+- Extended allowed fields for the `attachments` field in the `Message` object
+- Added message reactions support
+
+### Updated
+
+- Added a handler for fetch logic in conversation handler
+- Added image support for conversation handler
+- Updated mongo/redis connection providers
+
 ## 0.31.0
 
 ### Improvements
