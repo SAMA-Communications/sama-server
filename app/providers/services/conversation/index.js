@@ -77,6 +77,31 @@ class ConversationService {
     return participants.map((participant) => participant.user_id)
   }
 
+  async *conversationParticipantIdsIterator(conversationId, exceptUserIds, batchSize = 100) {
+    let lastObjectId = null
+
+    const totalParticipants = await this.conversationParticipantRepo.countConversationParticipants(
+      conversationId,
+      exceptUserIds
+    )
+
+    const totalBatches = Math.ceil(totalParticipants / batchSize)
+
+    for (let i = 0; i < totalBatches; i++) {
+      const conversationParticipants = await this.conversationParticipantRepo.findConversationParticipants(
+        conversationId,
+        exceptUserIds,
+        lastObjectId,
+        batchSize
+      )
+      lastObjectId = conversationParticipants.at(-1)?._id
+
+      const participantsIds = conversationParticipants.map((cParticipant) => cParticipant["user_id"])
+
+      yield participantsIds
+    }
+  }
+
   async findConversationsParticipantIds(conversationIds, user) {
     const availableConversationIds = await this.validateConvIdsWhichUserHasAccess(conversationIds, user.native_id)
 

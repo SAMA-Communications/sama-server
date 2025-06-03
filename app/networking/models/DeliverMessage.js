@@ -1,6 +1,11 @@
 class DeliverMessage {
   ws = null
+
   userIds = []
+
+  cId = null
+  exceptUserIds = []
+
   packet = null
   notSaveInOfflineStorage = false
   pushQueueMessage = null
@@ -10,6 +15,11 @@ class DeliverMessage {
     this.packet = packet
     this.notSaveInOfflineStorage = !!notSaveInOfflineStorage
     this.ws = ws
+  }
+
+  setConversationDestination(cid, exceptUserIds = []) {
+    this.cId = cid
+    this.exceptUserIds = exceptUserIds ?? this.exceptUserIds
   }
 
   addPushQueueMessage(pushQueueMessage) {

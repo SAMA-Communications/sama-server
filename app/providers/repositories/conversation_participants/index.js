@@ -9,10 +9,32 @@ class ConversationParticipantRepository extends BaseRepository {
     return await super.prepareParams(params)
   }
 
-  async findConversationParticipants(conversationId) {
-    const participants = await this.findAll({ conversation_id: conversationId })
+  async findConversationParticipants(conversationId, exceptUserIds, lastObjectId, limit) {
+    const query = { conversation_id: conversationId }
+
+    if (exceptUserIds?.length) {
+      query.user_id = { $nin: this.castObjectIds(exceptUserIds) }
+    }
+
+    if (lastObjectId) {
+      query._id = { $lt: this.castObjectId(lastObjectId) }
+    }
+
+    const participants = await this.findAll(query, null, limit, { _id: -1 })
 
     return participants
+  }
+
+  async countConversationParticipants(conversationId, exceptUserIds) {
+    const query = { conversation_id: conversationId }
+
+    if (exceptUserIds?.length) {
+      query.user_id = { $nin: this.castObjectIds(exceptUserIds) }
+    }
+
+    const count = await this.count(query)
+
+    return count
   }
 
   async filterAvaibleConversationIds(conversationIds, participantId) {
