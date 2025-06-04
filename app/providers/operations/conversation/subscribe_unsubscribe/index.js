@@ -27,11 +27,11 @@ class ConversationSubscribeUnsubscribeOperation {
   }
 
   async #subscribe(conversation, userId) {
-    await this.conversationService.addParticipants(conversation, [userId], [])
+    await this.conversationService.addParticipants(conversation, [userId])
   }
 
   async #unsubscribe(conversation, userId) {
-    await this.conversationService.removeParticipants(conversation, [userId], [userId])
+    await this.conversationService.removeParticipants(conversation, [userId])
   }
 
   async #retrieveConversation(organizationId, conversationId) {

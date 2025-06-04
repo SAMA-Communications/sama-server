@@ -73,10 +73,10 @@ class ConversationService {
     return conversation
   }
 
-  async findConversationParticipants(conversationId) {
+  async findConversationParticipants(conversationId, full) {
     const participants = await this.conversationParticipantRepo.findConversationParticipants(conversationId)
 
-    return participants.map((participant) => participant.user_id)
+    return full ? participants : participants.map((participant) => participant.user_id)
   }
 
   async *conversationParticipantIdsIterator(conversationId, exceptUserIds, batchSize = 100) {
@@ -96,6 +96,7 @@ class ConversationService {
         lastObjectId,
         batchSize
       )
+
       lastObjectId = conversationParticipants.at(-1)?._id
 
       const participantsIds = conversationParticipants.map((cParticipant) => cParticipant["user_id"])
@@ -142,10 +143,13 @@ class ConversationService {
       return result
     }
 
-    const participantIds = await this.findConversationParticipants(conversationId)
-    result.asParticipant = !!participantIds.find((pId) => this.helpers.isEqualsNativeIds(pId, userId))
+    const participants = await this.findConversationParticipants(conversationId, true)
+    const currentParticipant = participants.find((p) => this.helpers.isEqualsNativeIds(p.user_id, userId))
+
+    result.asParticipant = !!currentParticipant
+    result.asAdmin = currentParticipant?.role === "admin"
     result.asOwner = this.helpers.isEqualsNativeIds(result.conversation.owner_id, userId)
-    result.participantIds = participantIds
+    result.participantIds = participants.map(p => p.user_id)
 
     return result
   }
@@ -198,7 +202,7 @@ class ConversationService {
 
     const participantsCount = participantIds.length + currentParticipantIds.length
 
-    if (conversation.type !== "c" && participantsCount > this.CONVERSATION_MAX_PARTICIPANTS) {
+    if (participantsCount > this.CONVERSATION_MAX_PARTICIPANTS) {
       throw new Error(ERROR_STATUES.PARTICIPANTS_LIMIT.message, {
         cause: ERROR_STATUES.PARTICIPANTS_LIMIT,
       })
@@ -251,6 +255,14 @@ class ConversationService {
     }
 
     return result
+  }
+
+  async participantsAddAdminRole(conversationId, participantsIds) {
+    await this.conversationParticipantRepo.addAdminRole(conversationId, participantsIds)
+  }
+
+  async participantsRemoveAdminRole(conversationId, participantsIds) {
+    await this.conversationParticipantRepo.removeAdminRole(conversationId, participantsIds)
   }
 }
 

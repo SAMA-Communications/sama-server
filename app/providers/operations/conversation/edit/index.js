@@ -20,7 +20,7 @@ class ConversationEditOperation {
   }
 
   async perform(ws, conversationParams) {
-    const { id: conversationId, participants: updateParticipants, ...updateFields } = conversationParams
+    const { id: conversationId, admins: updateAdmins, participants: updateParticipants, ...updateFields } = conversationParams
 
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
@@ -34,7 +34,21 @@ class ConversationEditOperation {
 
     const result = { currentUserId, conversation: updatedConversation }
 
-    if (updateParticipants && updatedConversation.type !== "u" && this.conversationNotificationService.isEnabled()) {
+    if (updatedConversation.type === "u") {
+      return result
+    }
+
+    if (updateAdmins) {
+      const addedAdminParticipants = await this.#updateAdmins(
+        updatedConversation,
+        updateAdmins,
+        currentParticipantIds
+      )
+
+      currentParticipantIds.push(...addedAdminParticipants)
+    }
+
+    if (updateParticipants) {
       const { isEmptyAndDeleted, addedIds, removedIds, currentIds } = await this.#updateParticipants(
         updatedConversation,
         updateParticipants,
@@ -43,6 +57,10 @@ class ConversationEditOperation {
 
       if (isEmptyAndDeleted) {
         return null
+      }
+
+      if (!this.conversationNotificationService.isEnabled()) {
+        return result
       }
 
       const isUpdateConversationFields = !!Object.keys(updateFields).length
@@ -66,18 +84,19 @@ class ConversationEditOperation {
   }
 
   async #hasAccess(organizationId, conversationId, userId) {
-    const { conversation, asOwner, participantIds } = await this.conversationService.hasAccessToConversation(
+    const { conversation, asOwner, asAdmin, participantIds } = await this.conversationService.hasAccessToConversation(
       organizationId,
       conversationId,
       userId
     )
+
     if (!conversation) {
       throw new Error(ERROR_STATUES.BAD_REQUEST.message, {
         cause: ERROR_STATUES.BAD_REQUEST,
       })
     }
 
-    if (!asOwner) {
+    if (!(asOwner || asAdmin)) {
       throw new Error(ERROR_STATUES.FORBIDDEN.message, {
         cause: ERROR_STATUES.FORBIDDEN,
       })
@@ -86,24 +105,46 @@ class ConversationEditOperation {
     return { conversation, participantIds }
   }
 
+  async #updateAdmins(conversation, updateAdmins, currentParticipantIds) {
+    let { add: addAdmins, remove: removeAdmins } = updateAdmins
+
+    let addedParticipantsIds = []
+
+    if (addAdmins?.length) {
+      addAdmins = await this.userService.userRepo.retrieveExistedIds(conversation.organization_id, addAdmins)
+
+      if (addAdmins.length) {
+        addedParticipantsIds = await this.conversationService.addParticipants(conversation, addAdmins, currentParticipantIds)
+
+        await this.conversationService.participantsAddAdminRole(conversation._id, addAdmins)
+      }
+    }
+
+    if (removeAdmins?.length) {
+      await this.conversationService.participantsRemoveAdminRole(conversation._id, removeAdmins)
+    }
+
+    return addedParticipantsIds
+  }
+
   async #updateParticipants(conversation, updateParticipants, currentParticipantIds) {
-    let { add: addUsers, remove: removeUsers } = updateParticipants
+    let { add: addParticipants, remove: removeParticipants } = updateParticipants
 
-    if (addUsers?.length) {
-      addUsers = await this.userService.userRepo.retrieveExistedIds(conversation.organization_id, addUsers)
+    if (addParticipants?.length) {
+      addParticipants = await this.userService.userRepo.retrieveExistedIds(conversation.organization_id, addParticipants)
     }
 
-    if (removeUsers?.length) {
-      removeUsers = await this.userService.userRepo.retrieveExistedIds(conversation.organization_id, removeUsers)
+    if (removeParticipants?.length) {
+      removeParticipants = await this.userService.userRepo.retrieveExistedIds(conversation.organization_id, removeParticipants)
     }
 
-    addUsers ??= []
-    removeUsers ??= []
+    addParticipants ??= []
+    removeParticipants ??= []
 
     const result = await this.conversationService.updateParticipants(
       conversation,
-      addUsers,
-      removeUsers,
+      addParticipants,
+      removeParticipants,
       currentParticipantIds
     )
 

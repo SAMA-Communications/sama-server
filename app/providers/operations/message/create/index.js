@@ -128,7 +128,7 @@ class MessageCreateOperation {
   }
 
   async #hasAccessToConversation(organizationId, conversationId, currentUserId) {
-    const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
+    const { conversation, asOwner, asAdmin, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
       organizationId,
       conversationId,
       currentUserId
@@ -137,6 +137,12 @@ class MessageCreateOperation {
     if (!conversation) {
       throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {
         cause: ERROR_STATUES.CONVERSATION_NOT_FOUND,
+      })
+    }
+
+    if (conversation.type === "c" && !(asOwner || asAdmin)) {
+      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+        cause: ERROR_STATUES.FORBIDDEN,
       })
     }
 

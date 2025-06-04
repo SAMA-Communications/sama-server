@@ -102,6 +102,18 @@ class ConversationParticipantRepository extends BaseRepository {
 
     await this.deleteMany({ conversation_id: this.castObjectId(conversationId), user_id: { $in: participantIds } })
   }
+
+  async addAdminRole(conversationId, participantIds) {
+    const query = { conversation_id: this.castObjectId(conversationId), user_id: { $in: this.castObjectIds(participantIds) } }
+
+    await this.updateMany(query, { $set: { role: "admin" } })
+  }
+
+  async removeAdminRole(conversationId, participantIds) {
+    const query = { conversation_id: this.castObjectId(conversationId), user_id: { $in: this.castObjectIds(participantIds) } }
+
+    await this.updateMany(query, { $set: { role: null } })
+  }
 }
 
 export default ConversationParticipantRepository

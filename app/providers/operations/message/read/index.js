@@ -3,9 +3,8 @@ import groupBy from "@sama/utils/groupBy.js"
 import ReadMessagesPublicFields from "@sama/DTO/Response/message/read/public_fields.js"
 
 class MessageReadOperation {
-  constructor(sessionService, userService, messageService, conversationService) {
+  constructor(sessionService, messageService, conversationService) {
     this.sessionService = sessionService
-    this.userService = userService
     this.messageService = messageService
     this.conversationService = conversationService
   }
@@ -14,11 +13,10 @@ class MessageReadOperation {
     const { cid, ids: mids } = messageParams
 
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
-    const currentUser = await this.userService.userRepo.findById(currentUserId)
 
     await this.#hasAccess(organizationId, cid, currentUserId)
 
-    const unreadMessages = await this.messageService.readMessagesInConversation(cid, currentUser, mids)
+    const unreadMessages = await this.messageService.readMessagesInConversation(organizationId, cid, currentUserId, mids)
 
     const unreadMessagesGroupedByFrom = groupBy(unreadMessages, "from")
 
@@ -44,6 +42,12 @@ class MessageReadOperation {
     if (!conversation) {
       throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {
         cause: ERROR_STATUES.CONVERSATION_NOT_FOUND,
+      })
+    }
+
+    if (conversation.type === "c") {
+      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+        cause: ERROR_STATUES.FORBIDDEN,
       })
     }
 
