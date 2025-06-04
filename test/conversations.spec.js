@@ -16,7 +16,7 @@ let usersIds = []
 let filterUpdatedAt = ""
 let filterUpdatedAtTo = ""
 let currentConversationId = ""
-let ArrayOfTmpConversaionts = []
+let ArrayOfTmpConversations = []
 let lastMessageInChat = ""
 
 describe("Conversation functions", async () => {
@@ -569,7 +569,7 @@ describe("Conversation functions", async () => {
 
         i == 1 ? (filterUpdatedAt = responseData.updated_at) : true
         i == 2 ? (filterUpdatedAtTo = responseData.updated_at) : true
-        ArrayOfTmpConversaionts.push(responseData._id.toString())
+        ArrayOfTmpConversations.push(responseData._id.toString())
       }
 
       for (let i = 0; i < 3; i++) {
@@ -577,7 +577,7 @@ describe("Conversation functions", async () => {
           message: {
             id: `messages_${i}`,
             body: `this is messages ${i + 1}`,
-            cid: ArrayOfTmpConversaionts[0],
+            cid: ArrayOfTmpConversations[0],
           },
         }
         let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
@@ -603,7 +603,7 @@ describe("Conversation functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.strictEqual(
         responseData.response.conversations
-          .find((el) => el._id.toString() === ArrayOfTmpConversaionts[0])
+          .find((el) => el._id.toString() === ArrayOfTmpConversations[0])
           ?.last_message._id.toString(),
         lastMessageInChat.toString()
       )
@@ -686,7 +686,7 @@ describe("Conversation functions", async () => {
       const requestData = {
         request: {
           conversation_list: {
-            ids: ArrayOfTmpConversaionts,
+            ids: ArrayOfTmpConversations,
           },
           id: "3_1",
         },
@@ -701,7 +701,7 @@ describe("Conversation functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.notEqual(responseData.response.conversations, undefined)
       assert.equal(
-        conversations.some((el) => !ArrayOfTmpConversaionts.includes(el._id.toString())),
+        conversations.some((el) => !ArrayOfTmpConversations.includes(el._id.toString())),
         false
       )
       assert.equal(responseData.response.error, undefined)
@@ -1137,6 +1137,90 @@ describe("Conversation functions", async () => {
       assert.equal(responseData.response.conversation._id.toString(), currentConversationId)
       assert.notEqual(responseData.response.conversation, undefined)
       assert.equal(responseData.response.error, undefined)
+    })
+  })
+
+  describe("channels", async () => {
+    it("create", async () => {
+      await sendLogout(mockedWS)
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_1")).response.user._id
+  
+      const requestData = {
+        request: {
+          conversation_create: {
+            name: "Channels_1",
+            description: "for admin and users",
+            type: "c",
+          },
+          id: "6_1",
+        },
+      }
+  
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+  
+      responseData = responseData.backMessages.at(0)
+  
+      currentConversationId = responseData.response.conversation._id.toString()
+      const conversation = responseData.response.conversation
+  
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+
+      assert.notEqual(responseData.response.conversation, undefined)
+      assert.equal(responseData.response.error, undefined)
+
+      assert.equal(conversation.type, "c")
+      assert.equal(conversation.owner_id.toString(), usersIds.at(0).toString())
+    })
+
+    it("subscribe user_2", async () => {
+      await sendLogout(mockedWS)
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_2")).response.user._id
+  
+      const requestData = {
+        request: {
+          conversation_subscribe: {
+            cid: currentConversationId
+          },
+          id: "6_2",
+        },
+      }
+  
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+  
+      responseData = responseData.backMessages.at(0)
+
+      assert.notDeepEqual(responseData.response, { success: true })
+      assert.equal(responseData.response.error, undefined)
+
+      const participants = await conversationParticipantRepo.findAll({ conversation_id: currentConversationId })
+
+      assert.equal(participants.length, 2)
+    
+      const participantIds = participants.map(p => `${p.user_id}`)
+
+      assert.deepEqual(participantIds.sort(), [`${usersIds.at(0)}`, `${usersIds.at(1)}`].sort())
+    })
+
+    it("unsubscribe user_2", async () => {  
+      const requestData = {
+        request: {
+          conversation_unsubscribe: {
+            cid: currentConversationId
+          },
+          id: "6_2",
+        },
+      }
+  
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+  
+      responseData = responseData.backMessages.at(0)
+
+      assert.notDeepEqual(responseData.response, { success: true })
+      assert.equal(responseData.response.error, undefined)
+
+      const participants = await conversationParticipantRepo.findAll({ conversation_id: currentConversationId })
+
+      assert.equal(participants.length, 1)
     })
   })
 

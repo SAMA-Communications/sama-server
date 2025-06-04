@@ -68,6 +68,7 @@ import ConversationListOperationProvider from "./operations/conversation/list/Pr
 import ConversationListParticipantsOperationProvider from "./operations/conversation/list_participants/Provider.js"
 import ConversationDeleteOperationProvider from "./operations/conversation/delete/Provider.js"
 import ConversationSearchOperationProvider from "./operations/conversation/search/Provider.js"
+import ConversationSubscribeUnsubscribeOperationProvider from "./operations/conversation/subscribe_unsubscribe/Provider.js"
 
 import ConversationHandlerCreateOperationProvider from "./operations/conversation_handlers/create/Provider.js"
 import ConversationHandlerGetOperationProvider from "./operations/conversation_handlers/get/Provider.js"
@@ -183,6 +184,7 @@ const providers = [
   ConversationListParticipantsOperationProvider,
   ConversationDeleteOperationProvider,
   ConversationSearchOperationProvider,
+  ConversationSubscribeUnsubscribeOperationProvider,
 
   ConversationHandlerCreateOperationProvider,
   ConversationHandlerGetOperationProvider,

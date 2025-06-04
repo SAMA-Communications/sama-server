@@ -193,6 +193,14 @@ export const routes = {
     ConversationsController.middleware(authGuardMiddleware, ws, json)
       .validate(json.conversation_search, conversationsSchemaValidation.search)
       .search(ws, json),
+  conversation_subscribe: (ws, json) =>
+    ConversationsController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.conversation_subscribe, conversationsSchemaValidation.subscribe)
+      .subscribe_channel(ws, json),
+  conversation_unsubscribe: (ws, json) =>
+    ConversationsController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.conversation_unsubscribe, conversationsSchemaValidation.unsubscribe)
+      .unsubscribe_channel(ws, json),
   conversation_handler_create: (ws, json) =>
     ConversationSchemesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.conversation_handler_create, conversationHandlersSchemaValidation.create)

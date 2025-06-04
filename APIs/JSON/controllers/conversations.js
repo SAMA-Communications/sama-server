@@ -137,6 +137,24 @@ class ConversationsController extends BaseJSONController {
 
     return new Response().addBackMessage({ response: { id: requestId, conversations: conversationsSearchOperation } })
   }
+ 
+  async subscribe_channel(ws, data) {
+    const { id: requestId, conversation_subscribe: params } = data
+
+    const conversationSubscribeOperation = ServiceLocatorContainer.use("ConversationSubscribeUnsubscribeOperation")
+    await conversationSubscribeOperation.perform(ws, "subscribe", params)
+
+    return new Response().addBackMessage({ response: { id: requestId, success: true } })
+  }
+
+  async unsubscribe_channel(ws, data) {
+    const { id: requestId, conversation_unsubscribe: params } = data
+
+    const conversationUnsubscribeOperation = ServiceLocatorContainer.use("ConversationSubscribeUnsubscribeOperation")
+    await conversationUnsubscribeOperation.perform(ws, "unsubscribe", params)
+
+    return new Response().addBackMessage({ response: { id: requestId, success: true } })
+  }
 }
 
 export default new ConversationsController()

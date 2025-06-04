@@ -23,7 +23,9 @@ class ConversationService {
 
     const conversation = await this.conversationRepo.create(conversationParams)
 
-    await this.addParticipants(conversation, participantIds, [])
+    if (participantIds?.length) {
+      await this.addParticipants(conversation, participantIds, [])
+    }
 
     return conversation
   }
@@ -123,7 +125,7 @@ class ConversationService {
   }
 
   async validateConvIdsWhichUserHasAccess(conversationIds, userId) {
-    const verifiedConversationIds = await this.conversationParticipantRepo.filterAvaibleConversationIds(
+    const verifiedConversationIds = await this.conversationParticipantRepo.filterAvailableConversationIds(
       conversationIds,
       userId
     )
@@ -196,7 +198,7 @@ class ConversationService {
 
     const participantsCount = participantIds.length + currentParticipantIds.length
 
-    if (participantsCount > this.CONVERSATION_MAX_PARTICIPANTS) {
+    if (conversation.type !== "c" && participantsCount > this.CONVERSATION_MAX_PARTICIPANTS) {
       throw new Error(ERROR_STATUES.PARTICIPANTS_LIMIT.message, {
         cause: ERROR_STATUES.PARTICIPANTS_LIMIT,
       })

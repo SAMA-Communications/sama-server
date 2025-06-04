@@ -4,7 +4,7 @@ import { ERROR_STATUES } from "@sama/constants/errors.js"
 export const conversationsSchemaValidation = {
   create: Joi.object({
     type: Joi.string()
-      .valid("u", "g")
+      .valid("u", "g", "c")
       .required()
       .error((errors) => {
         return errors.map((error) => {
@@ -21,7 +21,7 @@ export const conversationsSchemaValidation = {
         })
       }),
     name: Joi.alternatives().conditional("type", {
-      is: "g",
+      is: Joi.string().valid("g", "c"),
       then: Joi.string()
         .max(255)
         .required()
@@ -43,7 +43,11 @@ export const conversationsSchemaValidation = {
       .items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required())
       .min(1)
       .max(parseInt(process.env.CONVERSATION_MAX_PARTICIPANTS))
-      .required()
+      .when("type", {
+        is: Joi.string().valid("c"),
+        then: Joi.optional(),
+        otherwise: Joi.required()
+      })
       .error((errors) => {
         return errors.map((error) => {
           switch (error.code) {
@@ -106,4 +110,10 @@ export const conversationsSchemaValidation = {
       gt: Joi.date(),
     }),
   }).required(),
+  subscribe: Joi.object({
+    cid: Joi.alternatives().try(Joi.object(), Joi.string())
+  }),
+  unsubscribe: Joi.object({
+    cid: Joi.alternatives().try(Joi.object(), Joi.string())
+  })
 }

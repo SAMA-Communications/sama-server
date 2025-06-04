@@ -37,7 +37,7 @@ class ConversationParticipantRepository extends BaseRepository {
     return count
   }
 
-  async filterAvaibleConversationIds(conversationIds, participantId) {
+  async filterAvailableConversationIds(conversationIds, participantId) {
     const availableConversationParticipants = await this.findAll({
       conversation_id: { $in: conversationIds },
       user_id: participantId,
