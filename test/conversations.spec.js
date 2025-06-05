@@ -1436,6 +1436,77 @@ describe("Conversation functions", async () => {
       assert.equal(count, 1)
       assert.equal(`${currentConversationId}`, `${conversationsResult.at(0)}`)
     })
+
+    it("add admin user_4", async () => {  
+      await sendLogout(mockedWS)
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_1")).response.user._id
+
+      const requestData = {
+        request: {
+          conversation_update: {
+            id: currentConversationId,
+            admins: { add: [usersIds.at(3)] },
+          },
+          id: "6_4",
+        },
+      }
+  
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+  
+      responseData = responseData.backMessages.at(0)
+
+      assert.notEqual(responseData.response.conversation, undefined)
+      assert.equal(responseData.response.error, undefined)
+    })
+
+    it("user_1(owner) admins list", async () => {
+      const requestData = {
+        request: {
+          get_admins_by_cids: {
+            cids: [currentConversationId, `${usersIds.at(-1)}`],
+          },
+          id: "6_7",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.notEqual(responseData.response.users, undefined)
+      assert.equal(responseData.response.error, undefined)
+
+      const { users, conversations } = responseData.response
+
+      assert.equal(users.length, 2)
+      assert.equal(users.length, conversations[`${currentConversationId}`].length)
+    })
+
+    it("user_3(p) try list", async () => {
+      await sendLogout(mockedWS)
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_3")).response.user._id
+
+      const requestData = {
+        request: {
+          get_admins_by_cids: {
+            cids: [currentConversationId ],
+          },
+          id: "6_7",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.notEqual(responseData.response.users, undefined)
+      assert.equal(responseData.response.error, undefined)
+
+      const { users, conversations } = responseData.response
+
+      assert.equal(users.length, 0)
+      assert.equal(conversations[`${currentConversationId}`], undefined)
+    })
   })
 
   after(async () => {

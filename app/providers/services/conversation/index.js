@@ -51,7 +51,7 @@ class ConversationService {
     }
 
     const conversationIds = await (options.ids?.length
-      ? this.validateConvIdsWhichUserHasAccess(options.ids, user.native_id)
+      ? this.validateConvIdsWhichUserHasAccess(user.organization_id, options.ids, user.native_id)
       : this.conversationParticipantRepo.findParticipantConversations(user.native_id, filterOptions, limit))
 
     const conversations = await this.conversationRepo.list(user.organization_id, conversationIds, filterOptions, limit)
@@ -105,16 +105,17 @@ class ConversationService {
     }
   }
 
-  async findConversationsParticipantIds(conversationIds, user) {
-    const availableConversationIds = await this.validateConvIdsWhichUserHasAccess(conversationIds, user.native_id)
+  async findConversationsParticipantIds(organizationId, conversationIds, userId) {
+    const availableConversationIds = await this.validateConvIdsWhichUserHasAccess(organizationId, conversationIds, userId)
 
     const conversationsParticipants =
       await this.conversationParticipantRepo.findConversationsParticipants(availableConversationIds)
 
-    const privateConversations = await this.conversationRepo.findAvaiblePrivateConversation(
+    const privateConversations = await this.conversationRepo.findAvailablePrivateConversation(
       availableConversationIds,
-      user.native_id
+      userId
     )
+
     const allParticipantIdsFromPrivateConversation =
       await this.conversationParticipantRepo.extractParticipantIdsFromPrivateConversations(privateConversations)
 
@@ -125,13 +126,67 @@ class ConversationService {
     return { participantIds, participantsIdsByCids: conversationsParticipants }
   }
 
-  async validateConvIdsWhichUserHasAccess(conversationIds, userId) {
+  async findConversationsAdminIds(conversations) {
+    const conversationIds = conversations.map(conversation => conversation._id)
+    const conversationsOwnersIds = conversations.reduce((acc, conversation) => {
+      acc[conversation._id] = [conversation.owner_id]
+      return acc
+    }, {})
+
+    const conversationsAdminsIds = await this.conversationParticipantRepo.findConversationsParticipants(conversationIds, "admin")
+
+    Object.keys(conversationsOwnersIds).forEach(conversationId => {
+      const adminsIds = conversationsAdminsIds[conversationId] ?? []
+      conversationsOwnersIds[conversationId] = conversationsOwnersIds[conversationId].concat(adminsIds)
+      delete conversationsAdminsIds[conversationId]
+    })
+
+    Object.assign(conversationsOwnersIds, conversationsAdminsIds)
+
+    const adminIds = [
+      ...new Set([...Object.values(conversationsOwnersIds).flat()]),
+    ]
+
+    return { adminIds, adminIdsByCids: conversationsOwnersIds }
+  }
+
+  async validateConvIdsWhichUserHasAccess(organizationId, conversationIds, userId) {
     const verifiedConversationIds = await this.conversationParticipantRepo.filterAvailableConversationIds(
       conversationIds,
       userId
     )
 
     return verifiedConversationIds
+  }
+
+  async validateConvIdsWhichUserHasAccessAsAdmin(organizationId, conversationIds, userId) {
+    const conversations = await this.conversationRepo.findByIdsWithOrgScope(organizationId, conversationIds)
+
+    const { asOwner, left } = conversations.reduce((acc, conversation) => {
+      const isOwner = this.helpers.isEqualsNativeIds(conversation.owner_id, userId)
+      isOwner ? acc.asOwner.push(conversation) : acc.left.push(conversation)
+      return acc
+    }, { asOwner: [], left: [] })
+
+    if (!left.length) {
+      return asOwner
+    }
+
+    const expectAdminConversationIds = left.map(conversation => conversation._id)
+
+    let verifiedConversationIds = await this.conversationParticipantRepo.filterAvailableConversationIds(
+      expectAdminConversationIds,
+      userId,
+      "admin"
+    )
+    
+    verifiedConversationIds = verifiedConversationIds.map(cId => `${cId}`)
+
+    const conversationsAsAdmin = left.filter(conversation => verifiedConversationIds.includes(`${conversation._id}`))
+
+    const verifiedConversations = asOwner.concat(conversationsAsAdmin)
+
+    return verifiedConversations
   }
 
   async hasAccessToConversation(organizationId, conversationId, userId) {
@@ -149,7 +204,7 @@ class ConversationService {
     result.asParticipant = !!currentParticipant
     result.asAdmin = currentParticipant?.role === "admin"
     result.asOwner = this.helpers.isEqualsNativeIds(result.conversation.owner_id, userId)
-    result.participantIds = participants.map(p => p.user_id)
+    result.participantIds = participants.map((p) => p.user_id)
 
     return result
   }

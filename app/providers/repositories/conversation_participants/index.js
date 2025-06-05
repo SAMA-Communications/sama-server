@@ -37,19 +37,31 @@ class ConversationParticipantRepository extends BaseRepository {
     return count
   }
 
-  async filterAvailableConversationIds(conversationIds, participantId) {
-    const availableConversationParticipants = await this.findAll({
+  async filterAvailableConversationIds(conversationIds, participantId, role) {
+    const query = { 
       conversation_id: { $in: conversationIds },
-      user_id: participantId,
-    })
+      user_id: participantId
+    }
+
+    if (role) {
+      query.role = role
+    }
+ 
+    const availableConversationParticipants = await this.findAll(query)
     const availableConversationIds = availableConversationParticipants.map((participant) => participant.conversation_id)
 
     return availableConversationIds
   }
 
-  async findConversationsParticipants(conversationIds) {
+  async findConversationsParticipants(conversationIds, role) {
+    const matchQuery = { conversation_id: { $in: conversationIds } }
+
+    if (role) {
+      matchQuery.role = role
+    }
+
     const conversationsParticipants = await this.aggregate([
-      { $match: { conversation_id: { $in: conversationIds } } },
+      { $match: matchQuery },
       { $group: { _id: "$conversation_id", users: { $push: "$user_id" } } },
       {
         $project: {

@@ -107,6 +107,16 @@ export const conversationsSchemaValidation = {
         })
       ),
   }).required(),
+  get_admins_by_cids: Joi.object({
+    cids: Joi.array()
+      .items(Joi.alternatives().try(Joi.object(), Joi.string()))
+      .required()
+      .error(
+        new Error(ERROR_STATUES.CIDS_REQUIRED.message, {
+          cause: ERROR_STATUES.CIDS_REQUIRED,
+        })
+      ),
+  }).required(),
   search: Joi.object({
     name: Joi.string().required(),
     limit: Joi.number().min(1).max(100),

@@ -173,6 +173,10 @@ export const routes = {
     ConversationsController.middleware(authGuardMiddleware, ws, json)
       .validate(json.get_participants_by_cids, conversationsSchemaValidation.get_participants_by_cids)
       .get_participants_by_cids(ws, json),
+  get_admins_by_cids: (ws, json) =>
+    ConversationsController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.get_admins_by_cids, conversationsSchemaValidation.get_admins_by_cids)
+      .get_admins_by_cids(ws, json),
   conversation_create: (ws, json) =>
     ConversationsController.middleware(authGuardMiddleware, ws, json)
       .validate(json.conversation_create, conversationsSchemaValidation.create)

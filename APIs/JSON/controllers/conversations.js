@@ -129,6 +129,17 @@ class ConversationsController extends BaseJSONController {
     })
   }
 
+  async get_admins_by_cids(ws, data) {
+    const { id: requestId, get_admins_by_cids: options } = data
+
+    const conversationListAdminsOperation = ServiceLocatorContainer.use("ConversationListAdminsOperation")
+    const { users, conversations } = await conversationListAdminsOperation.perform(ws, options)
+
+    return new Response().addBackMessage({
+      response: { id: requestId, users, conversations },
+    })
+  }
+
   async search(ws, data) {
     const { id: requestId, conversation_search: searchParams } = data
 
