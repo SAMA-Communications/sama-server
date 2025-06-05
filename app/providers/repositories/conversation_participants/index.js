@@ -37,6 +37,22 @@ class ConversationParticipantRepository extends BaseRepository {
     return count
   }
 
+  async countConversationsParticipants(conversationIds) {
+    const matchQuery = { conversation_id: { $in: this.castObjectIds(conversationIds) } }
+
+    const conversationsCountParticipants = await this.aggregate([
+      { $match: matchQuery },
+      { $group: { _id: "$conversation_id", count: { $sum: 1 } } },
+    ])
+
+    const conversationsParticipantsCount = conversationsCountParticipants.reduce((acc, { _id, count }) => {
+      acc[_id] = count
+      return acc
+    }, {})
+
+    return conversationsParticipantsCount
+  }
+
   async filterAvailableConversationIds(conversationIds, participantId, role) {
     const query = { 
       conversation_id: { $in: conversationIds },
@@ -54,7 +70,7 @@ class ConversationParticipantRepository extends BaseRepository {
   }
 
   async findConversationsParticipants(conversationIds, role) {
-    const matchQuery = { conversation_id: { $in: conversationIds } }
+    const matchQuery = { conversation_id: { $in: this.castObjectIds(conversationIds) } }
 
     if (role) {
       matchQuery.role = role
@@ -72,9 +88,9 @@ class ConversationParticipantRepository extends BaseRepository {
       },
     ])
 
-    const conversationsParticipantsByIds = conversationsParticipants.reduce((arr, { conversation_id, users }) => {
-      arr[conversation_id] = users
-      return arr
+    const conversationsParticipantsByIds = conversationsParticipants.reduce((acc, { conversation_id, users }) => {
+      acc[conversation_id] = users
+      return acc
     }, {})
 
     return conversationsParticipantsByIds

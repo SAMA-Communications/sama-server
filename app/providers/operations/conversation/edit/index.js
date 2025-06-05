@@ -46,6 +46,10 @@ class ConversationEditOperation {
       )
 
       currentParticipantIds.push(...addedAdminParticipants)
+
+      if (updatedConversation.type === "c") {
+        updatedConversation.set("subscribers_count", currentParticipantIds.length)
+      }
     }
 
     if (updateParticipants) {
@@ -57,6 +61,10 @@ class ConversationEditOperation {
 
       if (isEmptyAndDeleted) {
         return null
+      }
+
+      if (updatedConversation.type === "c") {
+        updatedConversation.set("subscribers_count", currentIds.length)
       }
 
       if (!this.conversationNotificationService.isEnabled()) {

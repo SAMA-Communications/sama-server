@@ -52,6 +52,7 @@ class ConversationCreateOperation {
       const updatedConversationWithImageUrl = await this.conversationService.addImageUrl([createdConversation])
       conversation = updatedConversationWithImageUrl.at(0)
       normalizedParticipants = participantIds
+      conversation.set("subscribers_count", normalizedParticipants.length)
     }
 
     const result = { conversation }

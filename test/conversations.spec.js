@@ -1170,6 +1170,7 @@ describe("Conversation functions", async () => {
 
       assert.equal(conversation.type, "c")
       assert.equal(conversation.owner_id.toString(), usersIds.at(0).toString())
+      assert.equal(conversation.subscribers_count, 1)
     })
 
     it("subscribe user_2", async () => {
@@ -1221,6 +1222,7 @@ describe("Conversation functions", async () => {
 
       assert.notEqual(responseData.response.conversation, undefined)
       assert.equal(responseData.response.error, undefined)
+      assert.equal(responseData.response.conversation.subscribers_count, 3)
 
       const participants = await conversationParticipantRepo.findAll({ conversation_id: currentConversationId })
 
@@ -1387,6 +1389,7 @@ describe("Conversation functions", async () => {
 
       assert.notEqual(responseData.response.conversation, undefined)
       assert.equal(responseData.response.error, undefined)
+      assert.equal(responseData.response.conversation.subscribers_count, 3)
 
       const participants = await conversationParticipantRepo.findAll({ conversation_id: currentConversationId })
 
@@ -1482,7 +1485,7 @@ describe("Conversation functions", async () => {
       assert.equal(users.length, conversations[`${currentConversationId}`].length)
     })
 
-    it("user_3(p) try list", async () => {
+    it("user_3(p) try list admins", async () => {
       await sendLogout(mockedWS)
       currentUserToken = (await sendLogin(mockedWS, orgId, "user_3")).response.user._id
 
@@ -1506,6 +1509,27 @@ describe("Conversation functions", async () => {
 
       assert.equal(users.length, 0)
       assert.equal(conversations[`${currentConversationId}`], undefined)
+    })
+
+    it("user_3(p) list conversation", async () => {
+      const requestData = {
+        request: {
+          conversation_list: {
+            ids: [currentConversationId],
+          },
+          id: "3_1",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      const conversations = responseData.response.conversations
+
+      assert.notEqual(responseData.response.conversations, undefined)
+      assert.equal(responseData.response.error, undefined)
+      assert.equal(conversations.at(0).subscribers_count, 3)
     })
   })
 

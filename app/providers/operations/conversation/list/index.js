@@ -22,13 +22,18 @@ class ConversationListOperation {
       normalizedLimit
     )
 
-    await this.#addMessagesInfo(conversations, currentUser)
+    await this.#addVirtualFields(conversations, currentUser)
 
     const conversationsWithImages = await this.conversationService.addImageUrl(
       conversations.map((conversion) => conversion.visibleParams())
     )
 
     return conversationsWithImages
+  }
+
+  async #addVirtualFields(conversations, currentUser) {
+    await this.#addConversationsChannelsParticipantsCount(conversations)
+    await this.#addMessagesInfo(conversations, currentUser)
   }
 
   async #addMessagesInfo(conversations, currentUser) {
@@ -52,6 +57,19 @@ class ConversationListOperation {
       conversation.set("last_message", lastMessageVal)
       conversation.set("unread_messages_count", unreadMessageCount)
     }
+  }
+
+  async #addConversationsChannelsParticipantsCount(conversations) {
+    const channels = conversations.filter(conversation => conversation.type === "c")
+    const channelIds = channels.map(channel => channel._id)
+
+    const conversationsParticipantsCount = await this.conversationService.conversationParticipantRepo.countConversationsParticipants(channelIds)
+
+    channels.forEach(channel => {
+      const participantsCount = conversationsParticipantsCount[channel._id]
+
+      channel.set("subscribers_count", participantsCount)
+    })
   }
 
   #normalizeLimitParam(limit) {
