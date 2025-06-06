@@ -101,6 +101,10 @@ class ConversationRepository extends BaseRepository {
     await this.updateOne({ _id: conversationId }, { $set: { updated_at: updatedAt } })
   }
 
+  async updateSubscribersCount(conversationId, subscribersCount) {
+    await this.updateOne({ _id: conversationId }, { $set: { subscribers_count: subscribersCount } })
+  }
+
   async update(conversationId, updateParams) {
     if (updateParams.owner_id) {
       updateParams.owner_id = this.castObjectId(updateParams.owner_id)

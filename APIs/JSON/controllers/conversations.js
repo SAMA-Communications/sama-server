@@ -148,7 +148,7 @@ class ConversationsController extends BaseJSONController {
 
     return new Response().addBackMessage({ response: { id: requestId, conversations: conversationsSearchOperation } })
   }
- 
+
   async subscribe_channel(ws, data) {
     const { id: requestId, conversation_subscribe: params } = data
 

@@ -113,10 +113,7 @@ class MessageService {
   async readMessagesInConversation(organizationId, cid, userId, mids) {
     const findMessagesOptions = { mids }
     if (!mids) {
-      const lastReadMessagesByConvIds = await this.messageStatusRepo.findLastReadMessageByUserForCid(
-        [cid],
-        userId
-      )
+      const lastReadMessagesByConvIds = await this.messageStatusRepo.findLastReadMessageByUserForCid([cid], userId)
       findMessagesOptions.lastReadMessageId = lastReadMessagesByConvIds[cid]?.mid || null
     }
 

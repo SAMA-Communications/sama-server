@@ -1,12 +1,7 @@
 import { ERROR_STATUES } from "../../../../constants/errors.js"
 
 class ConversationSubscribeUnsubscribeOperation {
-  constructor(
-    helpers,
-    sessionService,
-    userService,
-    conversationService,
-  ) {
+  constructor(helpers, sessionService, userService, conversationService) {
     this.helpers = helpers
     this.sessionService = sessionService
     this.userService = userService
@@ -18,7 +13,7 @@ class ConversationSubscribeUnsubscribeOperation {
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     const conversation = await this.#retrieveConversation(organizationId, conversationId)
-    
+
     if (type === "subscribe") {
       await this.#subscribe(conversation, currentUserId)
     } else {
@@ -35,7 +30,10 @@ class ConversationSubscribeUnsubscribeOperation {
   }
 
   async #retrieveConversation(organizationId, conversationId) {
-    const conversation = await this.conversationService.conversationRepo.findByIdWithOrgScope(organizationId, conversationId)
+    const conversation = await this.conversationService.conversationRepo.findByIdWithOrgScope(
+      organizationId,
+      conversationId
+    )
 
     if (!conversation) {
       throw new Error(ERROR_STATUES.BAD_REQUEST.message, {

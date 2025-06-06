@@ -14,10 +14,9 @@ class ConversationCreateOperation {
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
-    const paramsParticipantIds = conversationParams.participants?.length ? await this.userService.userRepo.retrieveExistedIds(
-      organizationId,
-      conversationParams.participants
-    ) : []
+    const paramsParticipantIds = conversationParams.participants?.length
+      ? await this.userService.userRepo.retrieveExistedIds(organizationId, conversationParams.participants)
+      : []
     delete conversationParams.participants
     conversationParams.owner_id = currentUserId
 
@@ -52,7 +51,6 @@ class ConversationCreateOperation {
       const updatedConversationWithImageUrl = await this.conversationService.addImageUrl([createdConversation])
       conversation = updatedConversationWithImageUrl.at(0)
       normalizedParticipants = participantIds
-      conversation.set("subscribers_count", normalizedParticipants.length)
     }
 
     const result = { conversation }

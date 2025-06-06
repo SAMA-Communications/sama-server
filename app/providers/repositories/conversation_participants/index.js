@@ -54,15 +54,15 @@ class ConversationParticipantRepository extends BaseRepository {
   }
 
   async filterAvailableConversationIds(conversationIds, participantId, role) {
-    const query = { 
+    const query = {
       conversation_id: { $in: conversationIds },
-      user_id: participantId
+      user_id: participantId,
     }
 
     if (role) {
       query.role = role
     }
- 
+
     const availableConversationParticipants = await this.findAll(query)
     const availableConversationIds = availableConversationParticipants.map((participant) => participant.conversation_id)
 
@@ -132,13 +132,19 @@ class ConversationParticipantRepository extends BaseRepository {
   }
 
   async addAdminRole(conversationId, participantIds) {
-    const query = { conversation_id: this.castObjectId(conversationId), user_id: { $in: this.castObjectIds(participantIds) } }
+    const query = {
+      conversation_id: this.castObjectId(conversationId),
+      user_id: { $in: this.castObjectIds(participantIds) },
+    }
 
     await this.updateMany(query, { $set: { role: "admin" } })
   }
 
   async removeAdminRole(conversationId, participantIds) {
-    const query = { conversation_id: this.castObjectId(conversationId), user_id: { $in: this.castObjectIds(participantIds) } }
+    const query = {
+      conversation_id: this.castObjectId(conversationId),
+      user_id: { $in: this.castObjectIds(participantIds) },
+    }
 
     await this.updateMany(query, { $set: { role: null } })
   }

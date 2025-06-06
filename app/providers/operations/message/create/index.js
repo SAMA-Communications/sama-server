@@ -128,11 +128,8 @@ class MessageCreateOperation {
   }
 
   async #hasAccessToConversation(organizationId, conversationId, currentUserId) {
-    const { conversation, asOwner, asAdmin, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
-      organizationId,
-      conversationId,
-      currentUserId
-    )
+    const { conversation, asOwner, asAdmin, asParticipant, participantIds } =
+      await this.conversationService.hasAccessToConversation(organizationId, conversationId, currentUserId)
 
     if (!conversation) {
       throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {

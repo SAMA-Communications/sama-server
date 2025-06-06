@@ -46,7 +46,7 @@ export const conversationsSchemaValidation = {
       .when("type", {
         is: Joi.string().valid("c"),
         then: Joi.optional(),
-        otherwise: Joi.required()
+        otherwise: Joi.required(),
       })
       .error((errors) => {
         return errors.map((error) => {
@@ -125,9 +125,9 @@ export const conversationsSchemaValidation = {
     }),
   }).required(),
   subscribe: Joi.object({
-    cid: Joi.alternatives().try(Joi.object(), Joi.string())
+    cid: Joi.alternatives().try(Joi.object(), Joi.string()),
   }),
   unsubscribe: Joi.object({
-    cid: Joi.alternatives().try(Joi.object(), Joi.string())
-  })
+    cid: Joi.alternatives().try(Joi.object(), Joi.string()),
+  }),
 }

@@ -19,7 +19,7 @@ class ConversationListAdminsOperation {
       return { users: [], conversations: {} }
     }
 
-    const {  adminIds, adminIdsByCids } = await this.conversationService.findConversationsAdminIds(conversations)
+    const { adminIds, adminIdsByCids } = await this.conversationService.findConversationsAdminIds(conversations)
 
     const users = await this.userService.userRepo.findAllByIds(adminIds)
 

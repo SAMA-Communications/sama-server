@@ -10,12 +10,7 @@ class ConversationSubscribeUnsubscribeOperationRegisterProvider extends Register
     const userService = slc.use("UserService")
     const conversationService = slc.use("ConversationService")
 
-    return new ConversationSubscribeUnsubscribeOperation(
-      helpers,
-      sessionService,
-      userService,
-      conversationService,
-    )
+    return new ConversationSubscribeUnsubscribeOperation(helpers, sessionService, userService, conversationService)
   }
 }
 

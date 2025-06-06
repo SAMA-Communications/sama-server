@@ -1144,7 +1144,7 @@ describe("Conversation functions", async () => {
     it("create", async () => {
       await sendLogout(mockedWS)
       currentUserToken = (await sendLogin(mockedWS, orgId, "user_1")).response.user._id
-  
+
       const requestData = {
         request: {
           conversation_create: {
@@ -1155,14 +1155,14 @@ describe("Conversation functions", async () => {
           id: "6_1",
         },
       }
-  
+
       let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
-  
+
       responseData = responseData.backMessages.at(0)
-  
+
       currentConversationId = responseData.response.conversation._id.toString()
       const conversation = responseData.response.conversation
-  
+
       assert.strictEqual(requestData.request.id, responseData.response.id)
 
       assert.notEqual(responseData.response.conversation, undefined)
@@ -1176,18 +1176,18 @@ describe("Conversation functions", async () => {
     it("subscribe user_2", async () => {
       await sendLogout(mockedWS)
       currentUserToken = (await sendLogin(mockedWS, orgId, "user_2")).response.user._id
-  
+
       const requestData = {
         request: {
           conversation_subscribe: {
-            cid: currentConversationId
+            cid: currentConversationId,
           },
           id: "6_2",
         },
       }
-  
+
       let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
-  
+
       responseData = responseData.backMessages.at(0)
 
       assert.notDeepEqual(responseData.response, { success: true })
@@ -1196,13 +1196,13 @@ describe("Conversation functions", async () => {
       const participants = await conversationParticipantRepo.findAll({ conversation_id: currentConversationId })
 
       assert.equal(participants.length, 2)
-    
-      const participantIds = participants.map(p => `${p.user_id}`)
+
+      const participantIds = participants.map((p) => `${p.user_id}`)
 
       assert.deepEqual(participantIds.sort(), [`${usersIds.at(0)}`, `${usersIds.at(1)}`].sort())
     })
 
-    it("add admin user_2,user_3", async () => {  
+    it("add admin user_2,user_3", async () => {
       await sendLogout(mockedWS)
       currentUserToken = (await sendLogin(mockedWS, orgId, "user_1")).response.user._id
 
@@ -1215,9 +1215,9 @@ describe("Conversation functions", async () => {
           id: "6_4",
         },
       }
-  
+
       let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
-  
+
       responseData = responseData.backMessages.at(0)
 
       assert.notEqual(responseData.response.conversation, undefined)
@@ -1228,28 +1228,28 @@ describe("Conversation functions", async () => {
 
       assert.equal(participants.length, 3)
 
-      const participantsUser2 = participants.find(participant => `${participant.user_id}` === `${usersIds.at(1)}`)
-      const participantsUser3 = participants.find(participant => `${participant.user_id}` === `${usersIds.at(2)}`)
+      const participantsUser2 = participants.find((participant) => `${participant.user_id}` === `${usersIds.at(1)}`)
+      const participantsUser3 = participants.find((participant) => `${participant.user_id}` === `${usersIds.at(2)}`)
 
       assert.equal(participantsUser2.role, "admin")
       assert.equal(participantsUser3.role, "admin")
     })
 
-    it("unsubscribe user_2", async () => {  
+    it("unsubscribe user_2", async () => {
       await sendLogout(mockedWS)
       currentUserToken = (await sendLogin(mockedWS, orgId, "user_2")).response.user._id
 
       const requestData = {
         request: {
           conversation_unsubscribe: {
-            cid: currentConversationId
+            cid: currentConversationId,
           },
           id: "6_3",
         },
       }
-  
+
       let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
-  
+
       responseData = responseData.backMessages.at(0)
 
       assert.notDeepEqual(responseData.response, { success: true })
@@ -1263,18 +1263,18 @@ describe("Conversation functions", async () => {
     it("subscribe user_4", async () => {
       await sendLogout(mockedWS)
       currentUserToken = (await sendLogin(mockedWS, orgId, "user_4")).response.user._id
-  
+
       const requestData = {
         request: {
           conversation_subscribe: {
-            cid: currentConversationId
+            cid: currentConversationId,
           },
           id: "6_2",
         },
       }
-  
+
       let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
-  
+
       responseData = responseData.backMessages.at(0)
 
       assert.notDeepEqual(responseData.response, { success: true })
@@ -1283,31 +1283,31 @@ describe("Conversation functions", async () => {
       const participants = await conversationParticipantRepo.findAll({ conversation_id: currentConversationId })
 
       assert.equal(participants.length, 3)
-    
-      const participantIds = participants.map(p => `${p.user_id}`)
+
+      const participantIds = participants.map((p) => `${p.user_id}`)
 
       assert.deepEqual(participantIds.sort(), [`${usersIds.at(0)}`, `${usersIds.at(2)}`, `${usersIds.at(3)}`].sort())
     })
 
-    it("user_4(p) try update admin", async () => {  
+    it("user_4(p) try update admin", async () => {
       const requestData = {
         request: {
           conversation_update: {
             id: currentConversationId,
-            admins: { remove: [ usersIds.at(2)] },
+            admins: { remove: [usersIds.at(2)] },
           },
           id: "6_2",
         },
       }
-  
+
       let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
-  
+
       responseData = responseData.backMessages.at(0)
 
-      assert.deepEqual(responseData.response.error, { status: 403, message: 'Forbidden.' })
+      assert.deepEqual(responseData.response.error, { status: 403, message: "Forbidden." })
     })
 
-    it("user_4(p) try send message", async () => {  
+    it("user_4(p) try send message", async () => {
       const requestData = {
         message: {
           id: "xyz",
@@ -1319,15 +1319,15 @@ describe("Conversation functions", async () => {
           },
         },
       }
-  
+
       let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
-  
+
       responseData = responseData.backMessages.at(0)
 
-      assert.deepEqual(responseData.message.error, { status: 403, message: 'Forbidden.' })
+      assert.deepEqual(responseData.message.error, { status: 403, message: "Forbidden." })
     })
 
-    it("user_1(owner) try send message", async () => {  
+    it("user_1(owner) try send message", async () => {
       await sendLogout(mockedWS)
       currentUserToken = (await sendLogin(mockedWS, orgId, "user_1")).response.user._id
 
@@ -1342,9 +1342,9 @@ describe("Conversation functions", async () => {
           },
         },
       }
-  
+
       let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
-  
+
       responseData = responseData.backMessages.at(0)
 
       assert.notEqual(responseData.ask, undefined)
@@ -1353,7 +1353,7 @@ describe("Conversation functions", async () => {
       lastMessageInChat = responseData.ask.server_mid
     })
 
-    it("user_3(admin) try send read status", async () => {  
+    it("user_3(admin) try send read status", async () => {
       await sendLogout(mockedWS)
       currentUserToken = (await sendLogin(mockedWS, orgId, "user_3")).response.user._id
 
@@ -1364,27 +1364,27 @@ describe("Conversation functions", async () => {
         },
         id: "123",
       }
-  
+
       let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
-  
+
       responseData = responseData.backMessages.at(0)
 
-      assert.deepEqual(responseData.message_read.error, { status: 403, message: 'Forbidden.' })
+      assert.deepEqual(responseData.message_read.error, { status: 403, message: "Forbidden." })
     })
 
-    it("user_3(admin) remove self admin", async () => {  
+    it("user_3(admin) remove self admin", async () => {
       const requestData = {
         request: {
           conversation_update: {
             id: currentConversationId,
-            admins: { remove: [ usersIds.at(2)] },
+            admins: { remove: [usersIds.at(2)] },
           },
           id: "6_6",
         },
       }
-  
+
       let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
-  
+
       responseData = responseData.backMessages.at(0)
 
       assert.notEqual(responseData.response.conversation, undefined)
@@ -1396,22 +1396,22 @@ describe("Conversation functions", async () => {
       assert.equal(participants.length, 3)
     })
 
-    it("user_3(p) try update", async () => {  
+    it("user_3(p) try update", async () => {
       const requestData = {
         request: {
           conversation_update: {
             id: currentConversationId,
-            name: "My Channel"
+            name: "My Channel",
           },
           id: "6_2",
         },
       }
-  
+
       let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
-  
+
       responseData = responseData.backMessages.at(0)
 
-      assert.deepEqual(responseData.response.error, { status: 403, message: 'Forbidden.' })
+      assert.deepEqual(responseData.response.error, { status: 403, message: "Forbidden." })
     })
 
     it("user_2(no) search", async () => {
@@ -1440,7 +1440,7 @@ describe("Conversation functions", async () => {
       assert.equal(`${currentConversationId}`, `${conversationsResult.at(0)}`)
     })
 
-    it("add admin user_4", async () => {  
+    it("add admin user_4", async () => {
       await sendLogout(mockedWS)
       currentUserToken = (await sendLogin(mockedWS, orgId, "user_1")).response.user._id
 
@@ -1453,9 +1453,9 @@ describe("Conversation functions", async () => {
           id: "6_4",
         },
       }
-  
+
       let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
-  
+
       responseData = responseData.backMessages.at(0)
 
       assert.notEqual(responseData.response.conversation, undefined)
@@ -1492,7 +1492,7 @@ describe("Conversation functions", async () => {
       const requestData = {
         request: {
           get_admins_by_cids: {
-            cids: [currentConversationId ],
+            cids: [currentConversationId],
           },
           id: "6_7",
         },
