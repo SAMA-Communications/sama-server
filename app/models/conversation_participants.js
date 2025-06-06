@@ -6,6 +6,6 @@ export default class ConversationParticipant extends BaseModel {
   }
 
   static get visibleFields() {
-    return ["_id", "organization_id", "conversation_id", "user_id", "created_at", "updated_at"]
+    return ["_id", "organization_id", "conversation_id", "user_id", "role", "created_at", "updated_at"]
   }
 }

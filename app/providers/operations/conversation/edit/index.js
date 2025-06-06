@@ -20,7 +20,8 @@ class ConversationEditOperation {
   }
 
   async perform(ws, conversationParams) {
-    const { id: conversationId, participants: updateParticipants, ...updateFields } = conversationParams
+    const { id: conversationId, admins: updateAdmins, ...updateFields } = conversationParams
+    let { participants: updateParticipants } = conversationParams
 
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
@@ -34,50 +35,78 @@ class ConversationEditOperation {
 
     const result = { currentUserId, conversation: updatedConversation }
 
-    if (updateParticipants && updatedConversation.type !== "u" && this.conversationNotificationService.isEnabled()) {
-      const { isEmptyAndDeleted, addedIds, removedIds, currentIds } = await this.#updateParticipants(
+    if (updatedConversation.type === "u") {
+      return result
+    }
+
+    const adminsToAdd = updateAdmins?.add?.length
+      ? await this.#prepareAddAdmins(updatedConversation, updateAdmins.add, currentParticipantIds)
+      : []
+
+    if (adminsToAdd.length) {
+      if (!updateParticipants) {
+        updateParticipants = { add: [] }
+      }
+
+      updateParticipants.add = (updateParticipants.add ?? []).concat(adminsToAdd)
+    }
+
+    let updateParticipantsResult = {}
+    if (updateParticipants) {
+      updateParticipantsResult = await this.#updateParticipants(
         updatedConversation,
         updateParticipants,
         currentParticipantIds
       )
-
-      if (isEmptyAndDeleted) {
-        return null
-      }
-
-      const isUpdateConversationFields = !!Object.keys(updateFields).length
-      const isUpdateConversationImage = !!updateFields.image_object
-      const updatedConversationWithImageUrl = await this.conversationService.addImageUrl([updatedConversation])
-
-      const createdEvents = await this.#createActionEvents(
-        updatedConversationWithImageUrl.at(0),
-        currentUserId,
-        addedIds,
-        removedIds,
-        currentIds,
-        isUpdateConversationFields,
-        isUpdateConversationImage
-      )
-
-      result.conversationEvents = createdEvents
     }
+
+    const { isEmptyAndDeleted, addedIds, removedIds, currentIds } = updateParticipantsResult
+
+    if (isEmptyAndDeleted) {
+      return null
+    }
+
+    if (updateAdmins) {
+      await this.#updateAdmins(updatedConversation, updateAdmins, currentParticipantIds)
+    }
+
+    if (!this.conversationNotificationService.isEnabled()) {
+      return result
+    }
+
+    const isUpdateConversationFields = !!Object.keys(updateFields).length
+    const isUpdateConversationImage = !!updateFields.image_object
+    const updatedConversationWithImageUrl = await this.conversationService.addImageUrl([updatedConversation])
+
+    const createdEvents = await this.#createActionEvents(
+      updatedConversationWithImageUrl.at(0),
+      currentUserId,
+      addedIds,
+      removedIds,
+      currentIds,
+      isUpdateConversationFields,
+      isUpdateConversationImage
+    )
+
+    result.conversationEvents = createdEvents
 
     return result
   }
 
   async #hasAccess(organizationId, conversationId, userId) {
-    const { conversation, asOwner, participantIds } = await this.conversationService.hasAccessToConversation(
+    const { conversation, asOwner, asAdmin, participantIds } = await this.conversationService.hasAccessToConversation(
       organizationId,
       conversationId,
       userId
     )
+
     if (!conversation) {
       throw new Error(ERROR_STATUES.BAD_REQUEST.message, {
         cause: ERROR_STATUES.BAD_REQUEST,
       })
     }
 
-    if (!asOwner) {
+    if (conversation.type !== "u" && !(asOwner || asAdmin)) {
       throw new Error(ERROR_STATUES.FORBIDDEN.message, {
         cause: ERROR_STATUES.FORBIDDEN,
       })
@@ -86,24 +115,52 @@ class ConversationEditOperation {
     return { conversation, participantIds }
   }
 
+  async #prepareAddAdmins(conversation, addAdmins, currentParticipantIds) {
+    addAdmins = await this.userService.userRepo.retrieveExistedIds(conversation.organization_id, addAdmins)
+
+    const addedParticipantsIds = addAdmins.filter(
+      (aId) => !currentParticipantIds.find((uId) => this.helpers.isEqualsNativeIds(uId, aId))
+    )
+
+    return addedParticipantsIds
+  }
+
+  async #updateAdmins(conversation, updateAdmins) {
+    const { add: addAdmins, remove: removeAdmins } = updateAdmins
+
+    if (addAdmins?.length) {
+      await this.conversationService.participantsAddAdminRole(conversation._id, addAdmins)
+    }
+
+    if (removeAdmins?.length) {
+      await this.conversationService.participantsRemoveAdminRole(conversation._id, removeAdmins)
+    }
+  }
+
   async #updateParticipants(conversation, updateParticipants, currentParticipantIds) {
-    let { add: addUsers, remove: removeUsers } = updateParticipants
+    let { add: addParticipants, remove: removeParticipants } = updateParticipants
 
-    if (addUsers?.length) {
-      addUsers = await this.userService.userRepo.retrieveExistedIds(conversation.organization_id, addUsers)
+    if (addParticipants?.length) {
+      addParticipants = await this.userService.userRepo.retrieveExistedIds(
+        conversation.organization_id,
+        addParticipants
+      )
     }
 
-    if (removeUsers?.length) {
-      removeUsers = await this.userService.userRepo.retrieveExistedIds(conversation.organization_id, removeUsers)
+    if (removeParticipants?.length) {
+      removeParticipants = await this.userService.userRepo.retrieveExistedIds(
+        conversation.organization_id,
+        removeParticipants
+      )
     }
 
-    addUsers ??= []
-    removeUsers ??= []
+    addParticipants ??= []
+    removeParticipants ??= []
 
     const result = await this.conversationService.updateParticipants(
       conversation,
-      addUsers,
-      removeUsers,
+      addParticipants,
+      removeParticipants,
       currentParticipantIds
     )
 

@@ -1,4 +1,4 @@
-class ConversationListParticipantsOperation {
+class ConversationListAdminsOperation {
   constructor(sessionService, userService, conversationService) {
     this.sessionService = sessionService
     this.userService = userService
@@ -9,24 +9,26 @@ class ConversationListParticipantsOperation {
     const { cids } = options
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    const { participantIds, participantsIdsByCids } = await this.conversationService.findConversationsParticipantIds(
+    const conversations = await this.conversationService.validateConvIdsWhichUserHasAccessAsAdmin(
       organizationId,
       cids,
       currentUserId
     )
 
-    if (!participantIds.length) {
+    if (!conversations.length) {
       return { users: [], conversations: {} }
     }
 
-    const users = await this.userService.userRepo.findAllByIds(participantIds)
+    const { adminIds, adminIdsByCids } = await this.conversationService.findConversationsAdminIds(conversations)
+
+    const users = await this.userService.userRepo.findAllByIds(adminIds)
 
     const usersWithAvatars = await this.userService.addAvatarUrl(users)
 
     const userFields = usersWithAvatars.map((user) => user.visibleParams())
 
-    return { users: userFields, conversations: participantsIdsByCids }
+    return { users: userFields, conversations: adminIdsByCids }
   }
 }
 
-export default ConversationListParticipantsOperation
+export default ConversationListAdminsOperation

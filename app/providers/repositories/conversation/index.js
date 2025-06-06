@@ -22,6 +22,17 @@ class ConversationRepository extends BaseRepository {
     return conversation
   }
 
+  async findByIdsWithOrgScope(organizationId, conversationIds) {
+    const query = {
+      organization_id: organizationId,
+      _id: { $in: this.castObjectIds(conversationIds) },
+    }
+
+    const conversation = await this.findAll(query)
+
+    return conversation
+  }
+
   async findExistedPrivateConversation(ownerId, opponentId) {
     ownerId = this.castObjectId(ownerId)
     opponentId = this.castObjectId(opponentId)
@@ -36,7 +47,7 @@ class ConversationRepository extends BaseRepository {
     return conversation
   }
 
-  async findAvaiblePrivateConversation(conversationIds, user_id) {
+  async findAvailablePrivateConversation(conversationIds, user_id) {
     const participantId = this.castObjectId(user_id)
 
     const conversations = await this.findAll({
@@ -88,6 +99,10 @@ class ConversationRepository extends BaseRepository {
 
   async updateLastActivity(conversationId, updatedAt) {
     await this.updateOne({ _id: conversationId }, { $set: { updated_at: updatedAt } })
+  }
+
+  async updateSubscribersCount(conversationId, subscribersCount) {
+    await this.updateOne({ _id: conversationId }, { $set: { subscribers_count: subscribersCount } })
   }
 
   async update(conversationId, updateParams) {

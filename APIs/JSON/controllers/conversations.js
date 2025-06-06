@@ -129,6 +129,17 @@ class ConversationsController extends BaseJSONController {
     })
   }
 
+  async get_admins_by_cids(ws, data) {
+    const { id: requestId, get_admins_by_cids: options } = data
+
+    const conversationListAdminsOperation = ServiceLocatorContainer.use("ConversationListAdminsOperation")
+    const { users, conversations } = await conversationListAdminsOperation.perform(ws, options)
+
+    return new Response().addBackMessage({
+      response: { id: requestId, users, conversations },
+    })
+  }
+
   async search(ws, data) {
     const { id: requestId, conversation_search: searchParams } = data
 
@@ -136,6 +147,24 @@ class ConversationsController extends BaseJSONController {
     const conversationsSearchOperation = await conversationSearchOperation.perform(ws, searchParams)
 
     return new Response().addBackMessage({ response: { id: requestId, conversations: conversationsSearchOperation } })
+  }
+
+  async subscribe_channel(ws, data) {
+    const { id: requestId, conversation_subscribe: params } = data
+
+    const conversationSubscribeOperation = ServiceLocatorContainer.use("ConversationSubscribeUnsubscribeOperation")
+    await conversationSubscribeOperation.perform(ws, "subscribe", params)
+
+    return new Response().addBackMessage({ response: { id: requestId, success: true } })
+  }
+
+  async unsubscribe_channel(ws, data) {
+    const { id: requestId, conversation_unsubscribe: params } = data
+
+    const conversationUnsubscribeOperation = ServiceLocatorContainer.use("ConversationSubscribeUnsubscribeOperation")
+    await conversationUnsubscribeOperation.perform(ws, "unsubscribe", params)
+
+    return new Response().addBackMessage({ response: { id: requestId, success: true } })
   }
 }
 

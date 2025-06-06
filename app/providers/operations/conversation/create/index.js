@@ -14,10 +14,9 @@ class ConversationCreateOperation {
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
-    const paramsParticipantIds = await this.userService.userRepo.retrieveExistedIds(
-      organizationId,
-      conversationParams.participants
-    )
+    const paramsParticipantIds = conversationParams.participants?.length
+      ? await this.userService.userRepo.retrieveExistedIds(organizationId, conversationParams.participants)
+      : []
     delete conversationParams.participants
     conversationParams.owner_id = currentUserId
 
@@ -32,8 +31,18 @@ class ConversationCreateOperation {
       )
       conversation = createdConversation
       normalizedParticipants = participantIds
-    } else {
+    } else if (conversationParams.type === "g") {
       const { conversation: createdConversation, participantIds } = await this.#createGroupConversation(
+        currentUser,
+        conversationParams,
+        paramsParticipantIds
+      )
+
+      const updatedConversationWithImageUrl = await this.conversationService.addImageUrl([createdConversation])
+      conversation = updatedConversationWithImageUrl.at(0)
+      normalizedParticipants = participantIds
+    } else {
+      const { conversation: createdConversation, participantIds } = await this.#createChannelConversation(
         currentUser,
         conversationParams,
         paramsParticipantIds
@@ -122,6 +131,19 @@ class ConversationCreateOperation {
       throw new Error(ERROR_STATUES.PARTICIPANTS_NOT_PROVIDED.message, {
         cause: ERROR_STATUES.PARTICIPANTS_NOT_PROVIDED,
       })
+    }
+
+    const createdConversation = await this.conversationService.create(user, conversationParams, participantIds)
+
+    return { conversation: createdConversation, participantIds }
+  }
+
+  async #createChannelConversation(user, conversationParams, participantIds) {
+    const isOwnerInParticipants = participantIds.find((pId) =>
+      this.helpers.isEqualsNativeIds(pId, conversationParams.owner_id)
+    )
+    if (!isOwnerInParticipants) {
+      participantIds.push(conversationParams.owner_id)
     }
 
     const createdConversation = await this.conversationService.create(user, conversationParams, participantIds)
