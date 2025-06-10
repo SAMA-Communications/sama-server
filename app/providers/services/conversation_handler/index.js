@@ -40,13 +40,34 @@ class ConversationHandlerService {
       executionTimeout: 3000,
       env: {
         MESSAGE: message,
-        USER: user,
+        USER: user.params,
         ACCEPT: () => (compilationResult.accept = true),
         RESOLVE: (messageObject, options = {}) => {
           compilationResult.message = messageObject?.message || {}
           compilationResult.options = options
         },
         REJECT: (message) => (compilationResult.errorMessage = message),
+        FETCH: async (input, init = {}) => {
+          try {
+            const res = await fetch(input, init)
+            const data = await res.json()
+            return {
+              ok: res.ok,
+              status: res.status,
+              headers: res.headers,
+              json: async () => data,
+              text: async () => JSON.stringify(data),
+            }
+          } catch (e) {
+            errorMessage = ERROR_STATUES.CORS_RESTRICTIONS
+            return {
+              ok: false,
+              status: 500,
+              json: async () => ({}),
+              text: async () => "",
+            }
+          }
+        },
       },
     }
 
@@ -62,6 +83,7 @@ class ConversationHandlerService {
         },
       })
     }
+    console.log(compilationResult)
 
     return compilationResult
   }

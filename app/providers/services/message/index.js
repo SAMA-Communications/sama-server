@@ -1,3 +1,5 @@
+import { ERROR_STATUES } from "../../../constants/errors.js"
+
 class MessageService {
   constructor(helpers, userRepo, messageRepo, messageStatusRepo, messageReactionRepo) {
     this.helpers = helpers
@@ -20,26 +22,49 @@ class MessageService {
     return message
   }
 
-  async processHandlerResult(accept, baseMessage, message, options) {
+  #validateAttachmentInMessage(attachment) {
+    const allowedAttachmentFields = this.messageRepo.Model.allowedBotAttachmentFields
+
+    if (typeof attachment !== "object" || attachment === null) return false
+    return Object.keys(attachment).every((key) => allowedAttachmentFields.includes(key))
+  }
+
+  async processHandlerResult(organizationId, accept, baseMessage, message, options) {
     if (accept) return {}
 
-    const { body } = message
-    if (body && typeof body === "string") {
-      if (options.isReplaceBody) {
-        const newMessageFields = { body }
-        return { newMessageFields }
-      } else {
-        const existServerBot = await this.userRepo.findByLogin("server-chat-bot")
-        if (existServerBot) {
-          const botMessageParams = { ...baseMessage, body }
-          return { botMessageParams, serverBot: existServerBot }
+    const { body, attachments } = message
+    const processedResponse = {}
+
+    if (attachments?.length) {
+      for (const att of attachments) {
+        if (!this.#validateAttachmentInMessage(att)) {
+          throw new Error(ERROR_STATUES.INVALID_ATTACHMENT_FIELDS.message, {
+            cause: ERROR_STATUES.INVALID_ATTACHMENT_FIELDS,
+          })
         }
       }
-    } else {
-      //error that body is must be string
     }
 
-    return {}
+    if (body && typeof body !== "string") {
+      throw new Error(ERROR_STATUES.INCORRECT_TYPE_OF_BODY.message, {
+        cause: ERROR_STATUES.INCORRECT_TYPE_OF_BODY,
+      })
+    }
+
+    if (!body?.length && !attachments?.length) return processedResponse
+
+    if (options.isReplaceBody) {
+      processedResponse.newMessageFields = { body, attachments }
+      return processedResponse
+    }
+
+    const existServerBot = await this.userRepo.findByLogin(organizationId, "server-chat-bot")
+    if (existServerBot) {
+      processedResponse.botMessageParams = { ...baseMessage, body, attachments }
+      processedResponse.serverBot = existServerBot
+    }
+
+    return processedResponse
   }
 
   async messagesList(cId, user, options, limit) {
@@ -85,26 +110,23 @@ class MessageService {
     return result
   }
 
-  async readMessagesInConversation(cid, user, mids) {
+  async readMessagesInConversation(organizationId, cid, userId, mids) {
     const findMessagesOptions = { mids }
     if (!mids) {
-      const lastReadMessagesByConvIds = await this.messageStatusRepo.findLastReadMessageByUserForCid(
-        [cid],
-        user.native_id
-      )
+      const lastReadMessagesByConvIds = await this.messageStatusRepo.findLastReadMessageByUserForCid([cid], userId)
       findMessagesOptions.lastReadMessageId = lastReadMessagesByConvIds[cid]?.mid || null
     }
 
     const unreadMessages = await this.messageRepo.findAllOpponentsMessagesFromConversation(
       cid,
-      user.native_id,
+      userId,
       findMessagesOptions
     )
 
     if (unreadMessages.length) {
       const mids = unreadMessages.map((message) => message._id).reverse()
 
-      await this.messageStatusRepo.upsertMessageReadStatuses(cid, mids, user.native_id, "read")
+      await this.messageStatusRepo.upsertMessageReadStatuses(cid, mids, userId, "read")
     }
 
     return unreadMessages

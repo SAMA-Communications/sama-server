@@ -69,8 +69,13 @@ const processMessageResponse = async (ws, response, needStringify) => {
   }
 
   for (const deliverMessage of response.deliverMessages) {
+    console.log("[DELIVER]", deliverMessage)
     try {
-      console.log("[DELIVER]", deliverMessage)
+      if (deliverMessage.cId) {
+        await processDeliverConversationMessageMessage(deliverMessage)
+        continue
+      }
+
       await packetManager.deliverToUserOrUsers(
         deliverMessage.ws || ws,
         deliverMessage.packet,
@@ -81,6 +86,26 @@ const processMessageResponse = async (ws, response, needStringify) => {
     } catch (e) {
       console.error("[ClientManager] connection with client ws is lost", e)
     }
+  }
+}
+
+const processDeliverConversationMessageMessage = async (deliverMessage) => {
+  const { cId, exceptUserIds } = deliverMessage
+
+  const conversationService = ServiceLocatorContainer.use("ConversationService")
+
+  for await (const participantIds of conversationService.conversationParticipantIdsIterator(cId, exceptUserIds)) {
+    if (!participantIds.length) {
+      continue
+    }
+
+    await packetManager.deliverToUserOrUsers(
+      deliverMessage.ws || ws,
+      deliverMessage.packet,
+      deliverMessage.pushQueueMessage,
+      participantIds,
+      deliverMessage.notSaveInOfflineStorage
+    )
   }
 }
 

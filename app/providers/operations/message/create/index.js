@@ -54,6 +54,7 @@ class MessageCreateOperation {
       )
 
       conversationHandlerResponse = await this.messageService.processHandlerResult(
+        currentUser.organization_id,
         accept,
         createMessageParams,
         newMessage,
@@ -105,7 +106,7 @@ class MessageCreateOperation {
       botMessage.x.c_type = conversation.type
 
       const deliverBotMessage = await this.#createMessageNotification(conversation, serverBot, botMessageParams)
-      console.log(deliverBotMessage)
+      deliverBotMessage.message = { ...deliverBotMessage.message, _id: botMessage._id }
       deliverMessages.push(deliverBotMessage)
     }
 
@@ -127,15 +128,18 @@ class MessageCreateOperation {
   }
 
   async #hasAccessToConversation(organizationId, conversationId, currentUserId) {
-    const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
-      organizationId,
-      conversationId,
-      currentUserId
-    )
+    const { conversation, asOwner, asAdmin, asParticipant, participantIds } =
+      await this.conversationService.hasAccessToConversation(organizationId, conversationId, currentUserId)
 
     if (!conversation) {
       throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {
         cause: ERROR_STATUES.CONVERSATION_NOT_FOUND,
+      })
+    }
+
+    if (conversation.type === "c" && !(asOwner || asAdmin)) {
+      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+        cause: ERROR_STATUES.FORBIDDEN,
       })
     }
 
