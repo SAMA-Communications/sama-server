@@ -9,25 +9,75 @@ class ConversationParticipantRepository extends BaseRepository {
     return await super.prepareParams(params)
   }
 
-  async findConversationParticipants(conversationId) {
-    const participants = await this.findAll({ conversation_id: conversationId })
+  async findConversationParticipants(conversationId, exceptUserIds, lastObjectId, limit) {
+    const query = { conversation_id: conversationId }
+
+    if (exceptUserIds?.length) {
+      query.user_id = { $nin: this.castObjectIds(exceptUserIds) }
+    }
+
+    if (lastObjectId) {
+      query._id = { $lt: this.castObjectId(lastObjectId) }
+    }
+
+    const participants = await this.findAll(query, null, limit, { _id: -1 })
 
     return participants
   }
 
-  async filterAvaibleConversationIds(conversationIds, participantId) {
-    const availableConversationParticipants = await this.findAll({
+  async countConversationParticipants(conversationId, exceptUserIds) {
+    const query = { conversation_id: conversationId }
+
+    if (exceptUserIds?.length) {
+      query.user_id = { $nin: this.castObjectIds(exceptUserIds) }
+    }
+
+    const count = await this.count(query)
+
+    return count
+  }
+
+  async countConversationsParticipants(conversationIds) {
+    const matchQuery = { conversation_id: { $in: this.castObjectIds(conversationIds) } }
+
+    const conversationsCountParticipants = await this.aggregate([
+      { $match: matchQuery },
+      { $group: { _id: "$conversation_id", count: { $sum: 1 } } },
+    ])
+
+    const conversationsParticipantsCount = conversationsCountParticipants.reduce((acc, { _id, count }) => {
+      acc[_id] = count
+      return acc
+    }, {})
+
+    return conversationsParticipantsCount
+  }
+
+  async filterAvailableConversationIds(conversationIds, participantId, role) {
+    const query = {
       conversation_id: { $in: conversationIds },
       user_id: participantId,
-    })
+    }
+
+    if (role) {
+      query.role = role
+    }
+
+    const availableConversationParticipants = await this.findAll(query)
     const availableConversationIds = availableConversationParticipants.map((participant) => participant.conversation_id)
 
     return availableConversationIds
   }
 
-  async findConversationsParticipants(conversationIds) {
+  async findConversationsParticipants(conversationIds, role) {
+    const matchQuery = { conversation_id: { $in: this.castObjectIds(conversationIds) } }
+
+    if (role) {
+      matchQuery.role = role
+    }
+
     const conversationsParticipants = await this.aggregate([
-      { $match: { conversation_id: { $in: conversationIds } } },
+      { $match: matchQuery },
       { $group: { _id: "$conversation_id", users: { $push: "$user_id" } } },
       {
         $project: {
@@ -38,9 +88,9 @@ class ConversationParticipantRepository extends BaseRepository {
       },
     ])
 
-    const conversationsParticipantsByIds = conversationsParticipants.reduce((arr, { conversation_id, users }) => {
-      arr[conversation_id] = users
-      return arr
+    const conversationsParticipantsByIds = conversationsParticipants.reduce((acc, { conversation_id, users }) => {
+      acc[conversation_id] = users
+      return acc
     }, {})
 
     return conversationsParticipantsByIds
@@ -79,6 +129,24 @@ class ConversationParticipantRepository extends BaseRepository {
     participantIds = this.castUserIds(participantIds)
 
     await this.deleteMany({ conversation_id: this.castObjectId(conversationId), user_id: { $in: participantIds } })
+  }
+
+  async addAdminRole(conversationId, participantIds) {
+    const query = {
+      conversation_id: this.castObjectId(conversationId),
+      user_id: { $in: this.castObjectIds(participantIds) },
+    }
+
+    await this.updateMany(query, { $set: { role: "admin" } })
+  }
+
+  async removeAdminRole(conversationId, participantIds) {
+    const query = {
+      conversation_id: this.castObjectId(conversationId),
+      user_id: { $in: this.castObjectIds(participantIds) },
+    }
+
+    await this.updateMany(query, { $set: { role: null } })
   }
 }
 

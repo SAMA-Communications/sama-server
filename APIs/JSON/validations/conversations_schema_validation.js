@@ -4,7 +4,7 @@ import { ERROR_STATUES } from "@sama/constants/errors.js"
 export const conversationsSchemaValidation = {
   create: Joi.object({
     type: Joi.string()
-      .valid("u", "g")
+      .valid("u", "g", "c")
       .required()
       .error((errors) => {
         return errors.map((error) => {
@@ -21,7 +21,7 @@ export const conversationsSchemaValidation = {
         })
       }),
     name: Joi.alternatives().conditional("type", {
-      is: "g",
+      is: Joi.string().valid("g", "c"),
       then: Joi.string()
         .max(255)
         .required()
@@ -43,7 +43,11 @@ export const conversationsSchemaValidation = {
       .items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required())
       .min(1)
       .max(parseInt(process.env.CONVERSATION_MAX_PARTICIPANTS))
-      .required()
+      .when("type", {
+        is: Joi.string().valid("c"),
+        then: Joi.optional(),
+        otherwise: Joi.required(),
+      })
       .error((errors) => {
         return errors.map((error) => {
           switch (error.code) {
@@ -69,6 +73,10 @@ export const conversationsSchemaValidation = {
     name: Joi.string().max(255),
     description: Joi.string().max(255),
     participants: Joi.object({
+      add: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number())),
+      remove: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number())),
+    }),
+    admins: Joi.object({
       add: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number())),
       remove: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number())),
     }),
@@ -99,6 +107,16 @@ export const conversationsSchemaValidation = {
         })
       ),
   }).required(),
+  get_admins_by_cids: Joi.object({
+    cids: Joi.array()
+      .items(Joi.alternatives().try(Joi.object(), Joi.string()))
+      .required()
+      .error(
+        new Error(ERROR_STATUES.CIDS_REQUIRED.message, {
+          cause: ERROR_STATUES.CIDS_REQUIRED,
+        })
+      ),
+  }).required(),
   search: Joi.object({
     name: Joi.string().required(),
     limit: Joi.number().min(1).max(100),
@@ -106,4 +124,10 @@ export const conversationsSchemaValidation = {
       gt: Joi.date(),
     }),
   }).required(),
+  subscribe: Joi.object({
+    cid: Joi.alternatives().try(Joi.object(), Joi.string()),
+  }),
+  unsubscribe: Joi.object({
+    cid: Joi.alternatives().try(Joi.object(), Joi.string()),
+  }),
 }
