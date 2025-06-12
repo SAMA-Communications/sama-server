@@ -1071,6 +1071,40 @@ On each message sent to server - a server will deliver back to client a simple p
   }
 }
 
+It can also be used with the `ids` field:
+
+{
+  request: {
+    message_list: {
+      cid: "63077ad836b78c3d82af0812",
+      ids: [ "63760c34c35e750877677925", ... ]
+    },
+    id: "ef5326a5-b16b-4f75-9e88-cc42e5fea016"
+  }
+}
+
+{
+  response: {
+    id: "ef5326a5-b16b-4f75-9e88-cc42e5fea016",
+    messages: [
+      {
+        _id: "63760c34c35e750877677925",
+        body: "How is going?",
+        cid: "63563a2ad745dc1c6ad01b5f",
+        from: "63480e68f4794709f802a2fa",
+        status: "sent",
+        attachments: [
+          { file_id: "file_name_1", file_name: "file_1" }
+        ],
+        reactions: {}
+        t: 1668680757,
+        created_at: "2023-05-24T14:34:58.066Z"
+      },
+      ...
+    ]
+  }
+}
+
 ```
 
 ### Read status
@@ -1920,12 +1954,12 @@ Updates the reactions of a message. Can add/remove reactions. All online partici
 
 #### 🧾 Request Parameters
 
-| Field                    | Type     | Description                                                        |
-| ------------------------ | -------- | ------------------------------------------------------------------ |
-| `senderId`               | `string` | **User ID** of the user who update reaction                        |
-| `messageReaction.mid`    | `string` | **Message ID** to update reaction                                  |
-| `messageReaction.add`    | `string` | Reaction to add                                                    |
-| `messageReaction.remove` | `string` | Reaction to remove                                                 |
+| Field                    | Type     | Description                                 |
+| ------------------------ | -------- | ------------------------------------------- |
+| `senderId`               | `string` | **User ID** of the user who update reaction |
+| `messageReaction.mid`    | `string` | **Message ID** to update reaction           |
+| `messageReaction.add`    | `string` | Reaction to add                             |
+| `messageReaction.remove` | `string` | Reaction to remove                          |
 
 ---
 

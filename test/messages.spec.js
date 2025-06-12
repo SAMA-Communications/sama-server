@@ -27,6 +27,7 @@ let currentUserToken = ""
 let currentConversationId = ""
 let usersIds = []
 let messagesIds = []
+let messagesIds_2 = []
 let messageId1 = ""
 
 describe("Message function", async () => {
@@ -321,6 +322,7 @@ describe("Message function", async () => {
         let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
 
         responseData = responseData.backMessages.at(0)
+        messagesIds_2.push(responseData.ask.server_mid)
 
         if (i === 3) {
           const findMessage = await messageRepo.findById(responseData.ask.server_mid)
@@ -418,6 +420,29 @@ describe("Message function", async () => {
         }
         await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
       }
+    })
+
+    it("should work with ids param", async () => {
+      const requestData = {
+        request: {
+          message_list: {
+            cid: currentConversationId,
+            ids: messagesIds_2,
+          },
+          id: "2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      const count = responseData.response.messages.length
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.notEqual(responseData.response.messages, undefined)
+      assert.strictEqual(count, messagesIds_2.length)
+      assert.equal(responseData.response.error, undefined)
     })
 
     it("should fail user haven`t permission", async () => {
