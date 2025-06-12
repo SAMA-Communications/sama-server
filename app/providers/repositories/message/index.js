@@ -68,6 +68,9 @@ class MessageRepository extends BaseRepository {
       deleted_for: { $nin: [this.castUserId(userId)] },
     }
 
+    if (options.ids) {
+      query._id = this.mergeOperators(query.updated_at, { $in: options.ids })
+    }
     if (options.updatedAtFrom) {
       query.updated_at = this.mergeOperators(query.updated_at, { $gt: options.updatedAtFrom })
     }

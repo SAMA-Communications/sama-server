@@ -85,6 +85,7 @@ export const messagesSchemaValidation = {
           cause: ERROR_STATUES.CID_REQUIRED,
         })
       ),
+    ids: Joi.array().items(Joi.string()).max(100),
     limit: Joi.number(),
     updated_at: Joi.object().allow({ gt: Joi.date() }, { lt: Joi.date() }),
   }).required(),
