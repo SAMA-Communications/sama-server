@@ -1,4 +1,5 @@
 import uWS from "uWebSockets.js"
+import net from "net"
 import { StringDecoder } from "string_decoder"
 
 import { ERROR_STATUES } from "../constants/errors.js"
@@ -89,14 +90,15 @@ const unbindSessionCallback = async (wsKey) => {
 }
 
 class ClientManager {
-  #localSocket = null
+  #localWSSocket = null
+  #localTCPSocket = null
   #httpServerApp = null
 
   async createLocalSocket(appOptions, wsOptions, listenOptions, isSSL, port) {
     return new Promise((resolve) => {
-      this.#localSocket = isSSL ? uWS.SSLApp(appOptions) : uWS.App(appOptions)
+      this.#localWSSocket = isSSL ? uWS.SSLApp(appOptions) : uWS.App(appOptions)
 
-      this.#localSocket.ws("/*", {
+      this.#localWSSocket.ws("/*", {
         ...wsOptions,
 
         open: (ws) => {
@@ -141,12 +143,12 @@ class ClientManager {
         },
       })
 
-      this.#httpServerApp = new HttpServerApp(this.#localSocket)
+      this.#httpServerApp = new HttpServerApp(this.#localWSSocket)
       this.#httpServerApp.setResponseProcessor(processMessageResponse)
       this.#httpServerApp.setUnbindSessionCallback(unbindSessionCallback)
       this.#httpServerApp.bindRoutes()
 
-      this.#localSocket.listen(port, listenOptions, (listenSocket) => {
+      this.#localWSSocket.listen(port, listenOptions, (listenSocket) => {
         if (listenSocket) {
           console.log(
             `[ClientManager][createLocalSocket] listening on port ${uWS.us_socket_local_port(
@@ -158,6 +160,43 @@ class ClientManager {
         } else {
           throw new Error(`[ClientManager][createLocalSocket] socket.listen error: can't allocate port`)
         }
+      })
+
+      this.#localTCPSocket = net.createServer((socket) => {
+        tcpServer.on("connection", (socket) => {
+          console.log("[ClientManager] TCP on Open")
+
+          tcpClients.add(socket)
+
+          socket.on("close", () => {
+            console.log("[ClientManager] TCP on Close")
+            
+            tcpClients.delete(socket)
+          })
+        })
+
+        socket.on("data", (data) => {
+          console.log("Received from TCP client:", data.toString())
+
+          // Example: echo back to TCP client
+          socket.write(`Echo: ${data}`)
+
+          // You can also forward this to WebSocket clients if needed
+          // ws.publish('some-channel', data.toString());
+        })
+
+        socket.on("end", () => {
+          console.log("TCP client disconnected")
+        })
+
+        socket.on("error", (err) => {
+          console.error("TCP socket error:", err)
+        })
+      })
+
+      // Start TCP server on a different port (e.g. 9001)
+      tcpServer.listen(9001, () => {
+        console.log("TCP server listening on port 9001")
       })
     })
   }
