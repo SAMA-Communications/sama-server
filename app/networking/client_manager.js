@@ -1,3 +1,4 @@
+import net from "net"
 import uWS from "uWebSockets.js"
 import { StringDecoder } from "string_decoder"
 
@@ -118,45 +119,48 @@ const unbindSessionCallback = async (wsKey) => {
   await sessionService.removeUserSession(wsKey, session.userId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
 }
 
+const onClose = async (ws) => {
+  const sessionService = ServiceLocatorContainer.use("SessionService")
+
+  const userId = sessionService.getSessionUserId(ws)
+
+  if (!userId) {
+    console.log("[ClientManager] ws on Close")
+    return
+  } else {
+    console.log("[ClientManager] ws on Close", userId)
+  }
+
+  await sessionService.removeUserSession(ws, userId)
+
+  await processMessageResponse(ws, activitySender.buildOfflineActivityResponse(userId), true)
+}
+
 class ClientManager {
-  #localSocket = null
+  #localTCPSocket = null
+  #localWebSocket = null
   #httpServerApp = null
 
-  async createLocalSocket(appOptions, wsOptions, listenOptions, isSSL, port) {
+  async createLocalSocket(uwsOptions, tcpOptions) {
     return new Promise((resolve) => {
-      this.#localSocket = isSSL ? uWS.SSLApp(appOptions) : uWS.App(appOptions)
+      this.#localWebSocket = uwsOptions.isSSL ? uWS.SSLApp(uwsOptions.appOptions) : uWS.App(uwsOptions.appOptions)
 
-      this.#localSocket.ws("/*", {
-        ...wsOptions,
+      this.#localWebSocket.ws("/*", {
+        ...uwsOptions.wsOptions,
 
         open: (ws) => {
-          console.log("[ClientManager] ws on Open", `IP: ${Buffer.from(ws.getRemoteAddressAsText()).toString()}`)
+          console.log("[ClientManager][WS] on Open", `IP: ${Buffer.from(ws.getRemoteAddressAsText()).toString()}`)
         },
 
         close: async (ws, code, message) => {
-          const sessionService = ServiceLocatorContainer.use("SessionService")
-
-          const userId = sessionService.getSessionUserId(ws)
-
-          if (!userId) {
-            console.log("[ClientManager] ws on Close")
-            return
-          } else {
-            console.log("[ClientManager] ws on Close", userId)
-          }
-
-          await sessionService.removeUserSession(ws, userId)
-
-          await processMessageResponse(ws, activitySender.buildOfflineActivityResponse(userId), true)
+          await onClose(ws)
         },
 
         message: async (ws, message, isBinary) => {
           try {
             await onMessage(ws, message)
           } catch (err) {
-            console.log("[ClientManager] onMessage error", err)
-            // const rawPacket = decoder.write(Buffer.from(message))
-            // console.error('[ClientManager] ws on message error', err, rawPacket)
+            console.log("[ClientManager][WS] onMessage error", err)
             ws.send(
               JSON.stringify({
                 response: {
@@ -171,22 +175,56 @@ class ClientManager {
         },
       })
 
-      this.#httpServerApp = new HttpServerApp(this.#localSocket)
+      this.#httpServerApp = new HttpServerApp(this.#localWebSocket)
       this.#httpServerApp.setResponseProcessor(processMessageResponse)
       this.#httpServerApp.setUnbindSessionCallback(unbindSessionCallback)
       this.#httpServerApp.bindRoutes()
 
-      this.#localSocket.listen(port, listenOptions, (listenSocket) => {
+      this.#localTCPSocket = net.createServer((socket) => {
+        console.log("[ClientManager][TCP] on Open", `IP: ${socket.remoteAddress}`)
+
+        socket.send = (message) => {
+          socket.write(message)
+        }
+
+        socket.on("data", async (message) => {
+          try {
+            await onMessage(socket, message)
+          } catch (err) {
+            console.log("[ClientManager][TCP] onMessage error", err)
+            socket.send(
+              JSON.stringify({
+                response: {
+                  error: {
+                    status: ERROR_STATUES.INVALID_DATA_FORMAT.status,
+                    message: ERROR_STATUES.INVALID_DATA_FORMAT.message,
+                  },
+                },
+              })
+            )
+          }
+        })
+
+        socket.on("close", async () => {
+          await onClose(socket)
+        })
+      })
+
+      this.#localTCPSocket.listen(tcpOptions.port, () => {
+        console.log(`[ClientManager][createLocalSocket][TCP] listening on port ${tcpOptions.port}, pid=${process.pid}`)
+      })
+
+      this.#localWebSocket.listen(uwsOptions.port, uwsOptions.listenOptions, (listenSocket) => {
         if (listenSocket) {
           console.log(
-            `[ClientManager][createLocalSocket] listening on port ${uWS.us_socket_local_port(
+            `[ClientManager][createLocalSocket][WS] listening on port ${uWS.us_socket_local_port(
               listenSocket
             )}, pid=${process.pid}`
           )
 
-          return resolve(port)
+          return resolve(uwsOptions.port)
         } else {
-          throw new Error(`[ClientManager][createLocalSocket] socket.listen error: can't allocate port`)
+          throw new Error(`[ClientManager][createLocalSocket][WS] socket.listen error: can't allocate port`)
         }
       })
     })

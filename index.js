@@ -39,37 +39,34 @@ switch (process.env.STORAGE_DRIVER) {
     break
 }
 
-const APP_OPTIONS = {}
 const SSL_APP_OPTIONS = {
   key_file_name: process.env.SSL_KEY_FILE_NAME,
   cert_file_name: process.env.SSL_CERT_FILE_NAME,
 }
-const WS_OPTIONS = {
-  compression: uWS.SHARED_COMPRESSOR,
-  idleTimeout: 12,
-  maxBackpressure: 1024,
-  maxPayloadLength: 16 * 1024 * 1024,
-}
-const WS_LISTEN_OPTIONS = {
-  LIBUS_LISTEN_EXCLUSIVE_PORT: 1,
-}
-const isSSL = !!SSL_APP_OPTIONS.key_file_name && !!SSL_APP_OPTIONS.cert_file_name
-const appPort = parseInt(process.env.APP_PORT || process.env.PORT)
+const IS_SSL = !!SSL_APP_OPTIONS.key_file_name && !!SSL_APP_OPTIONS.cert_file_name
 
-await clientManager.createLocalSocket(
-  isSSL ? SSL_APP_OPTIONS : APP_OPTIONS,
-  WS_OPTIONS,
-  WS_LISTEN_OPTIONS,
-  isSSL,
-  appPort
-)
+const uwsOptions = {
+  appOptions: IS_SSL ? SSL_APP_OPTIONS : {},
+  wsOptions: {
+    compression: uWS.SHARED_COMPRESSOR,
+    idleTimeout: 12,
+    maxBackpressure: 1024,
+    maxPayloadLength: 16 * 1024 * 1024,
+  },
+  listenOptions: {
+    LIBUS_LISTEN_EXCLUSIVE_PORT: 1,
+  },
+  isSSL: IS_SSL,
+  port: parseInt(process.env.APP_WS_PORT ?? process.env.APP_PORT ?? process.env.PORT),
+}
 
-RuntimeDefinedContext.CLUSTER_PORT = await clusterManager.createLocalSocket(
-  isSSL ? SSL_APP_OPTIONS : APP_OPTIONS,
-  WS_OPTIONS,
-  WS_LISTEN_OPTIONS,
-  isSSL
-)
+const tcpOptions = {
+  port: parseInt(process.env.APP_TCP_PORT),
+}
+
+await clientManager.createLocalSocket(uwsOptions, tcpOptions)
+
+RuntimeDefinedContext.CLUSTER_PORT = await clusterManager.createLocalSocket(uwsOptions)
 
 console.log("[RuntimeDefinedContext]", RuntimeDefinedContext)
 
