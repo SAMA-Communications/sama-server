@@ -12,6 +12,7 @@ import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 import packetManager from "./packet_manager.js"
 import packetMapper from "./packet_mapper.js"
 import HttpServerApp from "./http_server.js"
+import sendMultiplePackages from "../utils/send-multiple-socket-packages.js"
 
 import activitySender from "../services/activity_sender.js"
 
@@ -34,9 +35,22 @@ const onMessage = async (ws, message) => {
   }
 
   const api = APIs[ws.apiType]
-  const response = await api.onMessage(ws, stringMessage)
 
-  await processMessageResponse(ws, response)
+  const splittedMessages = api.splitPacket(stringMessage)
+
+  console.log("[RECV][splitted]", splittedMessages)
+
+  if (Array.isArray(splittedMessages)) {
+    for (const splittedMessage of splittedMessages) {
+      const response = await api.onMessage(ws, splittedMessage)
+
+      await processMessageResponse(ws, response)
+    }
+  } else {
+    const response = await api.onMessage(ws, splittedMessages)
+
+    await processMessageResponse(ws, response)
+  }
 }
 
 const processMessageResponse = async (ws, response, needStringify) => {
@@ -187,6 +201,8 @@ class ClientManager {
           socket.write(message)
         }
 
+        socket.sendMultiple = (messages) => sendMultiplePackages(socket, messages)
+
         socket.on("data", async (message) => {
           try {
             await onMessage(socket, message)
@@ -207,6 +223,10 @@ class ClientManager {
 
         socket.on("close", async () => {
           await onClose(socket)
+        })
+
+        socket.on("error", () => {
+          console.log("[ClientManager][TCP] socket error", err)
         })
       })
 

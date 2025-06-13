@@ -40,8 +40,12 @@ class PacketManager {
         }
 
         if (Array.isArray(mappedMessage)) {
-          for (const message of mappedMessage) {
-            recipient.ws.send(message)
+          if (recipient.ws.sendMultiple) {
+            recipient.ws.sendMultiple(mappedMessage)
+          } else {
+            for (const message of mappedMessage) {
+              recipient.ws.send(message)
+            } 
           }
         } else {
           recipient.ws.send(mappedMessage)
