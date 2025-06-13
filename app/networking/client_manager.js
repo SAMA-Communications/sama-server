@@ -96,7 +96,8 @@ const processMessageResponse = async (ws, response, needStringify) => {
         deliverMessage.packet,
         deliverMessage.pushQueueMessage,
         deliverMessage.userIds,
-        deliverMessage.notSaveInOfflineStorage
+        deliverMessage.notSaveInOfflineStorage,
+        deliverMessage.ignoreSelf
       )
     } catch (e) {
       console.error("[ClientManager] connection with client ws is lost", e)

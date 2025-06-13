@@ -56,7 +56,7 @@ class PacketManager {
     }
   }
 
-  #deliverToUserDevices(ws, nodeConnections, userId, packet) {
+  #deliverToUserDevices(ws, nodeConnections, userId, packet, ignoreSelf) {
     const sessionService = ServiceLocatorContainer.use("SessionService")
     const senderUserSession = sessionService.getSession(ws)
     const senderDeviceId = senderUserSession ? sessionService.getDeviceId(ws, senderUserSession.userId) : null
@@ -74,9 +74,17 @@ class PacketManager {
       const nodeUrl = extraParams[MAIN_CONSTANTS.SESSION_NODE_KEY]
 
       if (currentNodeUrl === nodeUrl) {
-        if (senderDeviceId !== nodeDeviceId) {
-          await this.deliverToUserOnThisNode(userId, packet, nodeDeviceId, senderInfo) // carbon message
+        console.log('[Ignore self]', ignoreSelf)
+        if ((senderDeviceId === nodeDeviceId) && ignoreSelf) {
+          return
         }
+
+        if (senderDeviceId === nodeDeviceId) {
+          console.log('[self send]', ignoreSelf)
+        }
+
+        await this.deliverToUserOnThisNode(userId, packet, nodeDeviceId, senderInfo, ignoreSelf) // carbon message
+
         return
       }
 
@@ -90,7 +98,7 @@ class PacketManager {
     })
   }
 
-  async deliverToUserOrUsers(ws, packet, pushQueueMessage, usersIds, notSaveInOfflineStorage) {
+  async deliverToUserOrUsers(ws, packet, pushQueueMessage, usersIds, notSaveInOfflineStorage, ignoreSelf) {
     const sessionService = ServiceLocatorContainer.use("SessionService")
     const opLogsService = ServiceLocatorContainer.use("OperationLogsService")
     const pushQueueService = ServiceLocatorContainer.use("PushQueueService")
@@ -122,7 +130,7 @@ class PacketManager {
         offlineUsersByPackets.push(userId)
       }
 
-      this.#deliverToUserDevices(ws, userNodeData, userId, packet)
+      this.#deliverToUserDevices(ws, userNodeData, userId, packet, ignoreSelf)
     }
 
     if (pushQueueMessage && offlineUsersByPackets.length) {
