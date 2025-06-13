@@ -45,6 +45,7 @@ export const messagesSchemaValidation = {
             cause: ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY,
           })
         ),
+      replied_message_id: Joi.string(),
       deleted_for: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required()),
     })
     .or("body", "attachments"),
