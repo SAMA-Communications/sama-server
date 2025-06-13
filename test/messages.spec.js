@@ -69,8 +69,58 @@ describe("Message function", async () => {
         }
       }
 
+      messageId1 = responseData.ask.server_mid
+
       assert.strictEqual("xyz", responseData.ask.mid)
       assert.notEqual(responseData.ask.t, undefined)
+    })
+
+    it("should work with reply id", async () => {
+      const requestData = {
+        message: {
+          id: "xyzd",
+          body: "hey how is going?",
+          cid: currentConversationId,
+          replied_message_id: messageId1,
+          x: {
+            param1: "value",
+            param2: "value",
+          },
+        },
+      }
+      let responseData = null
+
+      responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual("xyzd", responseData.ask.mid)
+      assert.notEqual(responseData.ask.t, undefined)
+    })
+
+    it("should fail incorrect reply message id", async () => {
+      const requestData = {
+        message: {
+          id: "xyzda",
+          body: "hey how is going?",
+          cid: currentConversationId,
+          replied_message_id: "123",
+          x: {
+            param1: "value",
+            param2: "value",
+          },
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.equal(responseData.ask, undefined)
+      assert.deepEqual(responseData.message.error, {
+        status: 422,
+        message: "Incorrect reply message ID.",
+      })
     })
 
     it("should fail incorrect ID", async () => {

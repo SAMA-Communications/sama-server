@@ -8,6 +8,7 @@ class MessageRepository extends BaseRepository {
     params.from = this.castUserId(params.from)
     params.cid = this.castObjectId(params.cid)
     params.organization_id = this.castOrganizationId(params.organization_id)
+    params.replied_message_id = this.castObjectId(params.replied_message_id)
 
     return await super.prepareParams(params)
   }
@@ -62,6 +63,14 @@ class MessageRepository extends BaseRepository {
     return result
   }
 
+  async findMessageById(conversationId, userId, mid) {
+    const query = { _id: mid, cid: this.castObjectId(conversationId), deleted_for: { $nin: [this.castUserId(userId)] } }
+
+    const message = await this.findOne(query)
+
+    return message
+  }
+
   async list(conversationId, userId, options, limit) {
     const query = {
       cid: this.castObjectId(conversationId),
@@ -69,7 +78,7 @@ class MessageRepository extends BaseRepository {
     }
 
     if (options.ids) {
-      query._id = this.mergeOperators(query.updated_at, { $in: options.ids })
+      query._id = this.mergeOperators(query.updated_at, { $in: this.castObjectIds(options.ids) })
     }
     if (options.updatedAtFrom) {
       query.updated_at = this.mergeOperators(query.updated_at, { $gt: options.updatedAtFrom })
