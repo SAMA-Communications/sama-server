@@ -5,6 +5,10 @@ export default class BaseAPI {
     // return true/false
   }
 
+  splitPacket(message) {
+    return message
+  }
+
   async onMessage(ws, message) {
     // Response object
   }
