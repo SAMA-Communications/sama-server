@@ -48,7 +48,14 @@ class PacketManager {
             } 
           }
         } else {
-          recipient.ws.send(mappedMessage)
+          const mappedRecipientMessage = await packetMapper.mapRecipientPacket(
+            recipient.ws?.apiType,
+            mappedMessage,
+            senderInfo,
+            recipientInfo
+          )
+
+          recipient.ws.send(mappedRecipientMessage)
         }
       } catch (err) {
         console.error(`[PacketProcessor] send on socket error`, err)
@@ -74,13 +81,8 @@ class PacketManager {
       const nodeUrl = extraParams[MAIN_CONSTANTS.SESSION_NODE_KEY]
 
       if (currentNodeUrl === nodeUrl) {
-        console.log('[Ignore self]', ignoreSelf)
         if ((senderDeviceId === nodeDeviceId) && ignoreSelf) {
           return
-        }
-
-        if (senderDeviceId === nodeDeviceId) {
-          console.log('[self send]', ignoreSelf)
         }
 
         await this.deliverToUserOnThisNode(userId, packet, nodeDeviceId, senderInfo, ignoreSelf) // carbon message

@@ -31,6 +31,16 @@ class PacketMapper {
       return await APIs[sourceAPIType].mapPacketToAnotherAPI(destinationAPIType, packet, senderInfo, recipientInfo)
     }
   }
+
+  mapRecipientPacket(destinationAPIType, packet, senderInfo, recipientInfo) {
+    console.log('[mapRecipientPacket]', destinationAPIType, packet, senderInfo, recipientInfo)
+
+    if (!destinationAPIType) {
+      destinationAPIType = this.detectAPIType(packet)
+    }
+
+    return APIs[destinationAPIType].mapRecipientPacket(packet, senderInfo, recipientInfo)
+  }
 }
 
 export default new PacketMapper()

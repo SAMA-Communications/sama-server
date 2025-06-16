@@ -103,6 +103,10 @@ const processMessageResponse = async (ws, response, needStringify) => {
       console.error("[ClientManager] connection with client ws is lost", e)
     }
   }
+
+  if (response.closeSocket) {
+    ws.end()
+  }
 }
 
 const processDeliverConversationMessageMessage = async (deliverMessage) => {
