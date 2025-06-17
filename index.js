@@ -1,6 +1,7 @@
 /* Simplified stock exchange made with uWebSockets.js pub/sub */
 import ip from "ip"
 import os from "os"
+import fs from "fs"
 
 import uWS from "uWebSockets.js"
 
@@ -62,6 +63,8 @@ const uwsOptions = {
 
 const tcpOptions = {
   port: parseInt(process.env.APP_TCP_PORT),
+  key: process.env.TLS_KEY_FILE_NAME ? fs.readFileSync(process.env.TLS_KEY_FILE_NAME) : null,
+  cert: process.env.TLS_CERT_FILE_NAME ? fs.readFileSync(process.env.TLS_CERT_FILE_NAME) : null
 }
 
 await clientManager.createLocalSocket(uwsOptions, tcpOptions)

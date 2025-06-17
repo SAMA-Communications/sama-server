@@ -1,4 +1,5 @@
 import net from "net"
+import tls from "tls"
 import uWS from "uWebSockets.js"
 import { StringDecoder } from "string_decoder"
 
@@ -107,6 +108,10 @@ const processMessageResponse = async (ws, response, needStringify) => {
   if (response.closeSocket) {
     ws.end()
   }
+
+  if (response.upgradeTls) {
+    ws.emit("upgrade")
+  }
 }
 
 const processDeliverConversationMessageMessage = async (deliverMessage) => {
@@ -199,42 +204,88 @@ class ClientManager {
       this.#httpServerApp.setUnbindSessionCallback(unbindSessionCallback)
       this.#httpServerApp.bindRoutes()
 
-      this.#localTCPSocket = net.createServer((socket) => {
-        console.log("[ClientManager][TCP] on Open", `IP: ${socket.remoteAddress}`)
+      const tcpOnData = async function (message) {
+        try {
+          await onMessage(this, message)
+        } catch (err) {
+          console.log("[ClientManager][TCP] onMessage error", err)
+          socket.send(
+            JSON.stringify({
+              response: {
+                error: {
+                  status: ERROR_STATUES.INVALID_DATA_FORMAT.status,
+                  message: ERROR_STATUES.INVALID_DATA_FORMAT.message,
+                },
+              },
+            })
+          )
+        }
+      }
 
-        socket.setEncoding("utf8")
+      const tcpOnClose = async function () {
+        await onClose(this)
+      }
 
+      const tcpOnError = function (err) {
+        console.log("[ClientManager][TCP] socket error", err)
+      }
+
+      const socketListeners = (socket, isTls) => {
         socket.send = (message) => {
           socket.write(message)
         }
 
         socket.sendMultiple = (messages) => sendMultiplePackages(socket, messages)
 
-        socket.on("data", async (message) => {
-          try {
-            await onMessage(socket, message)
-          } catch (err) {
-            console.log("[ClientManager][TCP] onMessage error", err)
-            socket.send(
-              JSON.stringify({
-                response: {
-                  error: {
-                    status: ERROR_STATUES.INVALID_DATA_FORMAT.status,
-                    message: ERROR_STATUES.INVALID_DATA_FORMAT.message,
-                  },
-                },
-              })
-            )
-          }
-        })
+        socket.on("data", tcpOnData)
 
-        socket.on("close", async () => {
-          await onClose(socket)
-        })
+        socket.on("close", tcpOnClose)
 
-        socket.on("error", () => {
-          console.log("[ClientManager][TCP] socket error", err)
-        })
+        socket.on("error", tcpOnError)
+
+        if (!isTls) {
+          socket.once("upgrade", () => {
+            console.log("[Upgrade]")
+
+            removeSocketListeners(socket)
+
+            const options = {
+              isServer: true,
+              key: tcpOptions.key,
+              cert: tcpOptions.cert,
+            }
+
+            console.log("[Upgrade][options]", options)
+
+            const tlsSocket = new tls.TLSSocket(socket, options)
+  
+            tlsSocket.on('secureConnect', () => {
+              console.log('TLS handshake complete')
+            })
+
+            tlsSocket.on("data", (message) => {
+              const stringMessage = decoder.write(Buffer.from(message))
+              console.log("[RECV][TLS]", stringMessage)
+            })
+
+            socketListeners(tlsSocket, true)
+          })
+        }
+      }
+
+      const removeSocketListeners = (socket) => {
+        socket.send = void 0
+        socket.sendMultiple = void 0
+
+        socket.removeListener("data", tcpOnData)
+        socket.removeListener("close", tcpOnClose)
+        socket.removeListener("error", tcpOnError)
+      }
+
+      this.#localTCPSocket = net.createServer((socket) => {
+        console.log("[ClientManager][TCP] on Open", `IP: ${socket.remoteAddress}`)
+
+        socketListeners(socket)
       })
 
       this.#localTCPSocket.listen(tcpOptions.port, () => {
