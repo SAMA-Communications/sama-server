@@ -202,6 +202,8 @@ class ClientManager {
       this.#localTCPSocket = net.createServer((socket) => {
         console.log("[ClientManager][TCP] on Open", `IP: ${socket.remoteAddress}`)
 
+        socket.setEncoding("utf8")
+
         socket.send = (message) => {
           socket.write(message)
         }
