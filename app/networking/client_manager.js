@@ -24,8 +24,12 @@ const decoder = new StringDecoder("utf8")
 const mapBackMessageFunc = async (ws, packet) => packetMapper.mapPacket(null, ws.apiType, packet, {}, {})
 
 const onMessage = async (ws, message) => {
-  const stringMessage = decoder.write(Buffer.from(message))
-  console.log("[RECV]", stringMessage)
+  const stringMessage = decoder.write(Buffer.from(message))?.trim()
+  console.log("[RECV]", stringMessage, stringMessage.length)
+
+  if (!stringMessage.length) {
+    return
+  }
 
   if (!ws.apiType) {
     const apiType = detectAPIType(ws, stringMessage)
