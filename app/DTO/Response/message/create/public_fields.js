@@ -12,6 +12,7 @@ class MessagePublicFields {
     this.body = messageModel.body
     this.attachments = messageModel.attachments
     this.x = messageModel.x
+    this.replied_message_id = messageModel.replied_message_id
 
     this.created_at = messageModel.created_at
 
