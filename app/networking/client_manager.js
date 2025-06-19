@@ -213,7 +213,7 @@ class ClientManager {
           await onMessage(this, message)
         } catch (err) {
           console.log("[ClientManager][TCP] onMessage error", err)
-          socket.send(
+          this.send(
             JSON.stringify({
               response: {
                 error: {
