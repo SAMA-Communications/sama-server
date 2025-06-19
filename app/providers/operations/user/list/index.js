@@ -9,7 +9,7 @@ class UserListOperation {
 
     const { ids: userIds } = userListParams
 
-    const users = await this.userService.userRepo.findWithOrScopeByIds(organizationId, userIds)
+    const users = await this.userService.userRepo.findWithOrgScopeByIds(organizationId, userIds)
 
     const usersWithAvatars = await this.userService.addAvatarUrl(users)
 

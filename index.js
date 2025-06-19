@@ -1,6 +1,7 @@
 /* Simplified stock exchange made with uWebSockets.js pub/sub */
 import ip from "ip"
 import os from "os"
+import fs from "fs"
 
 import uWS from "uWebSockets.js"
 
@@ -39,37 +40,36 @@ switch (process.env.STORAGE_DRIVER) {
     break
 }
 
-const APP_OPTIONS = {}
 const SSL_APP_OPTIONS = {
   key_file_name: process.env.SSL_KEY_FILE_NAME,
   cert_file_name: process.env.SSL_CERT_FILE_NAME,
 }
-const WS_OPTIONS = {
-  compression: uWS.SHARED_COMPRESSOR,
-  idleTimeout: 12,
-  maxBackpressure: 1024,
-  maxPayloadLength: 16 * 1024 * 1024,
-}
-const WS_LISTEN_OPTIONS = {
-  LIBUS_LISTEN_EXCLUSIVE_PORT: 1,
-}
-const isSSL = !!SSL_APP_OPTIONS.key_file_name && !!SSL_APP_OPTIONS.cert_file_name
-const appPort = parseInt(process.env.APP_PORT || process.env.PORT)
+const IS_SSL = !!SSL_APP_OPTIONS.key_file_name && !!SSL_APP_OPTIONS.cert_file_name
 
-await clientManager.createLocalSocket(
-  isSSL ? SSL_APP_OPTIONS : APP_OPTIONS,
-  WS_OPTIONS,
-  WS_LISTEN_OPTIONS,
-  isSSL,
-  appPort
-)
+const uwsOptions = {
+  appOptions: IS_SSL ? SSL_APP_OPTIONS : {},
+  wsOptions: {
+    compression: uWS.SHARED_COMPRESSOR,
+    idleTimeout: 12,
+    maxBackpressure: 1024,
+    maxPayloadLength: 16 * 1024 * 1024,
+  },
+  listenOptions: {
+    LIBUS_LISTEN_EXCLUSIVE_PORT: 1,
+  },
+  isSSL: IS_SSL,
+  port: parseInt(process.env.APP_WS_PORT ?? process.env.APP_PORT ?? process.env.PORT),
+}
 
-RuntimeDefinedContext.CLUSTER_PORT = await clusterManager.createLocalSocket(
-  isSSL ? SSL_APP_OPTIONS : APP_OPTIONS,
-  WS_OPTIONS,
-  WS_LISTEN_OPTIONS,
-  isSSL
-)
+const tcpOptions = {
+  port: parseInt(process.env.APP_TCP_PORT),
+  key: process.env.TLS_KEY_FILE_NAME ? fs.readFileSync(process.env.TLS_KEY_FILE_NAME) : null,
+  cert: process.env.TLS_CERT_FILE_NAME ? fs.readFileSync(process.env.TLS_CERT_FILE_NAME) : null
+}
+
+await clientManager.createLocalSocket(uwsOptions, tcpOptions)
+
+RuntimeDefinedContext.CLUSTER_PORT = await clusterManager.createLocalSocket(uwsOptions)
 
 console.log("[RuntimeDefinedContext]", RuntimeDefinedContext)
 
@@ -85,7 +85,7 @@ const dbConnection = await connectToDBPromise(process.env.MONGODB_URL)
   })
 
 await RedisClient.connect()
-  .then(() => {
+  .then(async () => {
     console.log("[Redis][connect] Ok")
   })
   .catch((err) => {
@@ -135,22 +135,29 @@ ServiceLocatorContainer.register(
   })({ name: "StorageDriverClient", implementationName: RuntimeDefinedContext.STORAGE_DRIVER.constructor.name })
 )
 
+console.log("[Register base]")
+
 for (const provider of providers) {
   ServiceLocatorContainer.register(provider)
 }
 
 for (const api of Object.values(APIs)) {
+  console.log("[Register Api Providers]", api.constructor.name)
+
   for (const provider of api.providers) {
     ServiceLocatorContainer.register(provider)
   }
 }
 
 // Boot providers
-await ServiceLocatorContainer.createAllSingletonInstances()
+console.log("[Boot]")
 await ServiceLocatorContainer.boot()
 
-// Start Cluster Sync
+console.log("[Create singleton]")
+await ServiceLocatorContainer.createAllSingletonInstances()
 
+// Start Cluster Sync
+console.log("[Start sync]")
 await clusterSyncer.startSyncingClusterNodes()
 
 // https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph

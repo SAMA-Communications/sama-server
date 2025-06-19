@@ -4,6 +4,7 @@ class DeliverMessage {
   orgId = null
 
   userIds = []
+  ignoreSelf = true
 
   cId = null
   exceptUserIds = []
@@ -21,6 +22,12 @@ class DeliverMessage {
 
   setOrgId(orgId) {
     this.orgId = orgId
+
+    return this
+  }
+
+  setIgnoreSelf(isIgnore) {
+    this.ignoreSelf = !!isIgnore
 
     return this
   }
