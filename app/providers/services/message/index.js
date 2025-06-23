@@ -58,7 +58,7 @@ class MessageService {
       return processedResponse
     }
 
-    const existServerBot = await this.userRepo.findByLogin(organizationId, "server-chat-bot")
+    const existServerBot = await this.userRepo.findByLogin(organizationId, process.env.CHAT_BOT_LOGIN)
     if (existServerBot) {
       processedResponse.botMessageParams = { ...baseMessage, body, attachments }
       processedResponse.serverBot = existServerBot
@@ -69,6 +69,9 @@ class MessageService {
 
   async messagesList(cId, user, options, limit) {
     const filterOptions = {}
+    if (options.ids) {
+      filterOptions.ids = options.ids
+    }
     if (options.updatedAt?.gt) {
       filterOptions.updatedAtFrom = new Date(options.updatedAt.gt)
     }

@@ -45,6 +45,7 @@ export const messagesSchemaValidation = {
             cause: ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY,
           })
         ),
+      replied_message_id: Joi.string(),
       deleted_for: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required()),
     })
     .or("body", "attachments"),
@@ -85,6 +86,7 @@ export const messagesSchemaValidation = {
           cause: ERROR_STATUES.CID_REQUIRED,
         })
       ),
+    ids: Joi.array().items(Joi.string()).max(100),
     limit: Joi.number(),
     updated_at: Joi.object().allow({ gt: Joi.date() }, { lt: Joi.date() }),
   }).required(),
