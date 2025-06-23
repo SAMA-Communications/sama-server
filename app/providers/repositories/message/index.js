@@ -8,7 +8,9 @@ class MessageRepository extends BaseRepository {
     params.from = this.castUserId(params.from)
     params.cid = this.castObjectId(params.cid)
     params.organization_id = this.castOrganizationId(params.organization_id)
-    params.replied_message_id = this.castObjectId(params.replied_message_id)
+    if (params.replied_message_id) {
+      params.replied_message_id = this.castObjectId(params.replied_message_id)
+    }
 
     return await super.prepareParams(params)
   }
