@@ -42,7 +42,7 @@ class ActivitySender {
       })
 
       const response = new Response().addDeliverMessage(
-        new DeliverMessage([subscriberUserId], lastActivityMessage, true)
+        new DeliverMessage(null, lastActivityMessage, true).setUsersDestination([setUsersDestination])
       )
 
       responses.push(response)

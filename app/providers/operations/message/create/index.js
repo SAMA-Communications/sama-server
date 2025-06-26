@@ -112,7 +112,7 @@ class MessageCreateOperation {
 
     await this.conversationService.conversationRepo.updateLastActivity(conversation._id, message.created_at)
 
-    return { messageId, message, deliverMessages, participantIds, modifiedFields, botMessage }
+    return { organizationId, messageId, message, deliverMessages, cId: conversation._id, modifiedFields, botMessage }
   }
 
   async #hasAccess(organizationId, conversationId, currentUserId) {
@@ -169,7 +169,7 @@ class MessageCreateOperation {
 
     const firstAttachmentUrl = !message.attachments?.length
       ? null
-      : message.attachments[0].file_url || (await this.storageService.getDownloadUrl(message.attachments[0].file_id))
+      : message.attachments[0]?.file_id && (await this.storageService.getDownloadUrl(message.attachments[0].file_id))
 
     const pushPayload = Object.assign({
       title: conversation.type === "u" ? userLogin : `${userLogin} | ${conversation.name}`,

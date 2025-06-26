@@ -93,7 +93,7 @@ class ClusterManager {
     })
   }
 
-  async createLocalSocket(appOptions, wsOptions, listenOptions, isSSL) {
+  async createLocalSocket({ isSSL, appOptions, wsOptions, listenOptions }) {
     return new Promise((resolve) => {
       this.#localSocket = isSSL ? uWS.SSLApp(appOptions) : uWS.App(appOptions)
 

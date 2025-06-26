@@ -15,11 +15,9 @@ class MessageSendSystemOperation {
 
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    let recipientsIds = []
+    let recipientsIds = null
 
-    if (cid) {
-      recipientsIds = await this.#conversationParticipants(organizationId, cid, currentUserId)
-    } else {
+    if (!cid) {
       recipientsIds = await this.userService.userRepo.retrieveExistedIds(organizationId, uids)
     }
 
@@ -31,7 +29,12 @@ class MessageSendSystemOperation {
       t: this.helpers.currentTimeStamp(),
     }
 
-    return { recipientsIds, systemMessage: new SystemMessagePublicFields(systemMessageParams) }
+    return {
+      organizationId,
+      cId: cid,
+      recipientsIds,
+      systemMessage: new SystemMessagePublicFields(systemMessageParams),
+    }
   }
 
   async #conversationParticipants(organizationId, conversationId, currentUserId) {

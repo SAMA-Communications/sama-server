@@ -53,7 +53,7 @@ class ConversationCreateOperation {
       normalizedParticipants = participantIds
     }
 
-    const result = { conversation }
+    const result = { organizationId, conversation }
 
     if (this.conversationNotificationService.isEnabled()) {
       const conversationEvent = await this.#createActionEvent(conversation, currentUserId)

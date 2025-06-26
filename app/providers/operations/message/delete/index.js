@@ -26,7 +26,7 @@ class MessageDeleteOperation {
 
     const deletedMessages = isDeleteAll ? new DeleteMessagesPublicFields(deleteMessageFields) : null
 
-    return { deletedMessages, participantIds }
+    return { organizationId, cId: conversation._id, deletedMessages }
   }
 
   async #hasAccess(organizationId, conversationId, currentUserId) {

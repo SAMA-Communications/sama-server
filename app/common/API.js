@@ -5,6 +5,10 @@ export default class BaseAPI {
     // return true/false
   }
 
+  splitPacket(message) {
+    return message
+  }
+
   async onMessage(ws, message) {
     // Response object
   }
@@ -14,10 +18,14 @@ export default class BaseAPI {
   }
 
   async mapPacketToAnotherAPI(destinationAPIType, packet) {
-    // return string/null
+    return packet
   }
 
   async mapPacketFromAnotherAPI(sourceAPIType, packet) {
-    // return string/null
+    return packet
+  }
+
+  mapRecipientPacket(packet, senderInfo, recipientInfo) {
+    return packet
   }
 }
