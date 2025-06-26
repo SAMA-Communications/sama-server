@@ -45,7 +45,7 @@ class PacketManager {
           } else {
             for (const message of mappedMessage) {
               recipient.ws.send(message)
-            } 
+            }
           }
         } else {
           const mappedRecipientMessage = await packetMapper.mapRecipientPacket(
@@ -81,7 +81,7 @@ class PacketManager {
       const nodeUrl = extraParams[MAIN_CONSTANTS.SESSION_NODE_KEY]
 
       if (currentNodeUrl === nodeUrl) {
-        if ((senderDeviceId === nodeDeviceId) && ignoreSelf) {
+        if (senderDeviceId === nodeDeviceId && ignoreSelf) {
           return
         }
 

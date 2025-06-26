@@ -112,7 +112,7 @@ class MessageCreateOperation {
 
     await this.conversationService.conversationRepo.updateLastActivity(conversation._id, message.created_at)
 
-    return { messageId, message, deliverMessages, participantIds, modifiedFields, botMessage }
+    return { organizationId, messageId, message, deliverMessages, cId: conversation._id, modifiedFields, botMessage }
   }
 
   async #hasAccess(organizationId, conversationId, currentUserId) {

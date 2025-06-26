@@ -11,7 +11,7 @@ class MessageReactionsUpdateOperation {
   async perform(ws, messageUpdateReactionParams) {
     const { mid: messageId, add: addReaction, remove: removeReaction } = messageUpdateReactionParams
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     const message = await this.#hasAccess(messageId, currentUserId)
 
@@ -27,8 +27,6 @@ class MessageReactionsUpdateOperation {
     }
 
     const conversation = await this.conversationService.conversationRepo.findById(message.cid)
-
-    const participantIds = await this.conversationService.findConversationParticipants(message.cid)
 
     const messageUpdateReactionParamsResult = {
       mid: messageId,
@@ -46,8 +44,9 @@ class MessageReactionsUpdateOperation {
     }
 
     return {
+      organizationId,
+      cId: conversation._id,
       messageReactionsUpdate: new MessageReactionsUpdatePublicFields(messageUpdateReactionParamsResult),
-      participantIds,
       isUpdated: true,
     }
   }

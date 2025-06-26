@@ -34,7 +34,7 @@ class MessageReadOperation {
       return { userId, readMessages }
     })
 
-    return { readMessagesGroups }
+    return { organizationId, readMessagesGroups }
   }
 
   async #hasAccess(organizationId, conversationId, currentUserId) {

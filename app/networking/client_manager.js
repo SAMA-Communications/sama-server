@@ -90,20 +90,22 @@ const processMessageResponse = async (ws, response, needStringify) => {
 
   for (const deliverMessage of response.deliverMessages) {
     console.log("[DELIVER]", deliverMessage)
-    try {
-      if (deliverMessage.cId) {
-        await processDeliverConversationMessageMessage(deliverMessage)
-        continue
-      }
 
-      await packetManager.deliverToUserOrUsers(
-        deliverMessage.ws || ws,
-        deliverMessage.packet,
-        deliverMessage.pushQueueMessage,
-        deliverMessage.userIds,
-        deliverMessage.notSaveInOfflineStorage,
-        deliverMessage.ignoreSelf
-      )
+    deliverMessage.ws ??= ws
+
+    try {
+      if (deliverMessage.userIds?.length) {
+        await packetManager.deliverToUserOrUsers(
+          deliverMessage.ws,
+          deliverMessage.packet,
+          deliverMessage.pushQueueMessage,
+          deliverMessage.userIds,
+          deliverMessage.notSaveInOfflineStorage,
+          deliverMessage.ignoreSelf
+        )
+      } else if (deliverMessage.cId) {
+        await processDeliverConversationMessageMessage(deliverMessage)
+      }
     } catch (e) {
       console.error("[ClientManager] connection with client ws is lost", e)
     }
@@ -129,11 +131,12 @@ const processDeliverConversationMessageMessage = async (deliverMessage) => {
     }
 
     await packetManager.deliverToUserOrUsers(
-      deliverMessage.ws || ws,
+      deliverMessage.ws,
       deliverMessage.packet,
       deliverMessage.pushQueueMessage,
       participantIds,
-      deliverMessage.notSaveInOfflineStorage
+      deliverMessage.notSaveInOfflineStorage,
+      deliverMessage.ignoreSelf
     )
   }
 }
@@ -262,9 +265,9 @@ class ClientManager {
             console.log("[Upgrade][options]", options)
 
             const tlsSocket = new tls.TLSSocket(socket, options)
-  
-            tlsSocket.on('secureConnect', () => {
-              console.log('TLS handshake complete')
+
+            tlsSocket.on("secureConnect", () => {
+              console.log("TLS handshake complete")
             })
 
             tlsSocket.on("data", (message) => {

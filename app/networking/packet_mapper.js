@@ -33,7 +33,7 @@ class PacketMapper {
   }
 
   mapRecipientPacket(destinationAPIType, packet, senderInfo, recipientInfo) {
-    console.log('[mapRecipientPacket]', destinationAPIType, packet, senderInfo, recipientInfo)
+    console.log("[mapRecipientPacket]", destinationAPIType, packet, senderInfo, recipientInfo)
 
     if (!destinationAPIType) {
       destinationAPIType = this.detectAPIType(packet)

@@ -21,9 +21,11 @@ class StatusesController extends BaseJSONController {
     const { typing: typingParams } = data
 
     const statusTypingOperation = ServiceLocatorContainer.use("StatusTypingOperation")
-    const { status, participantIds } = await statusTypingOperation.perform(ws, typingParams)
+    const { organizationId, cId, status } = await statusTypingOperation.perform(ws, typingParams)
 
-    return new Response().addDeliverMessage(new DeliverMessage(participantIds, status))
+    const deliverMessage = new DeliverMessage(organizationId, status).setConversationDestination(cId)
+
+    return new Response().addDeliverMessage(deliverMessage)
   }
 }
 

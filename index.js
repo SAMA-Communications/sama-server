@@ -64,7 +64,7 @@ const uwsOptions = {
 const tcpOptions = {
   port: parseInt(process.env.APP_TCP_PORT),
   key: process.env.TLS_KEY_FILE_NAME ? fs.readFileSync(process.env.TLS_KEY_FILE_NAME) : null,
-  cert: process.env.TLS_CERT_FILE_NAME ? fs.readFileSync(process.env.TLS_CERT_FILE_NAME) : null
+  cert: process.env.TLS_CERT_FILE_NAME ? fs.readFileSync(process.env.TLS_CERT_FILE_NAME) : null,
 }
 
 await clientManager.createLocalSocket(uwsOptions, tcpOptions)

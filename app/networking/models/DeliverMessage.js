@@ -13,8 +13,8 @@ class DeliverMessage {
   notSaveInOfflineStorage = false
   pushQueueMessage = null
 
-  constructor(userIds, packet, notSaveInOfflineStorage, ws) {
-    this.userIds = userIds
+  constructor(orgId, packet, notSaveInOfflineStorage, ws) {
+    this.orgId = orgId
     this.packet = packet
     this.notSaveInOfflineStorage = !!notSaveInOfflineStorage
     this.ws = ws
@@ -32,8 +32,15 @@ class DeliverMessage {
     return this
   }
 
-  setConversationDestination(cid, exceptUserIds = []) {
-    this.cId = cid
+  setUsersDestination(userIds, exceptUserIds) {
+    this.userIds = userIds
+    this.exceptUserIds = exceptUserIds ?? this.exceptUserIds
+
+    return this
+  }
+
+  setConversationDestination(cId, exceptUserIds) {
+    this.cId = cId
     this.exceptUserIds = exceptUserIds ?? this.exceptUserIds
 
     return this
@@ -41,6 +48,7 @@ class DeliverMessage {
 
   addPushQueueMessage(pushQueueMessage) {
     this.pushQueueMessage = pushQueueMessage
+
     return this
   }
 }

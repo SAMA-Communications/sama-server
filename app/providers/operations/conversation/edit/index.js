@@ -33,7 +33,7 @@ class ConversationEditOperation {
 
     const updatedConversation = await this.conversationService.conversationRepo.update(conversationId, updateFields)
 
-    const result = { currentUserId, conversation: updatedConversation }
+    const result = { organizationId, currentUserId, conversation: updatedConversation }
 
     if (updatedConversation.type === "u") {
       return result
