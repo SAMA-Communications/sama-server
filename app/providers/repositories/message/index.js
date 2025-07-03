@@ -78,18 +78,20 @@ class MessageRepository extends BaseRepository {
       cid: this.castObjectId(conversationId),
       deleted_for: { $nin: [this.castUserId(userId)] },
     }
+    let sort = null
 
     if (options.ids) {
       query._id = this.mergeOperators(query.updated_at, { $in: this.castObjectIds(options.ids) })
     }
     if (options.updatedAtFrom) {
       query.updated_at = this.mergeOperators(query.updated_at, { $gt: options.updatedAtFrom })
+      sort = { created_at: 1 }
     }
     if (options.updatedAtBefore) {
       query.updated_at = this.mergeOperators(query.updated_at, { $lt: options.updatedAtBefore })
     }
 
-    const messages = await this.findAll(query, null, limit)
+    const messages = await this.findAll(query, null, limit, sort)
 
     return messages
   }

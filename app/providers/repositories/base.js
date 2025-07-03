@@ -138,11 +138,13 @@ export default class BaseRepository {
       return { ...acc, [p]: 1 }
     }, {})
 
-    const records = await this.collectionCursor
+    let records = await this.collectionCursor
       .find(query, { limit: +limit })
       .project(projection)
       .sort(sortParams || { $natural: -1 })
       .toArray()
+
+    if (sortParams) records = records.reverse()
 
     const models = records.map((record) => this.wrapRawRecordInModel(record))
 
