@@ -24,6 +24,7 @@ export default class Conversation extends BaseModel {
 
       "last_message", // virtual
       "unread_messages_count", // virtual
+      "subscribers_count",
     ]
   }
 }
