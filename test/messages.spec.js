@@ -75,7 +75,7 @@ describe("Message function", async () => {
       assert.notEqual(responseData.ask.t, undefined)
     })
 
-    it("should work with reply id", async () => {
+    it("should work with replied id", async () => {
       const requestData = {
         message: {
           id: "xyzd",
@@ -98,7 +98,7 @@ describe("Message function", async () => {
       assert.notEqual(responseData.ask.t, undefined)
     })
 
-    it("should fail incorrect reply message id", async () => {
+    it("should fail incorrect replied message id", async () => {
       const requestData = {
         message: {
           id: "xyzda",
@@ -119,7 +119,53 @@ describe("Message function", async () => {
       assert.equal(responseData.ask, undefined)
       assert.deepEqual(responseData.message.error, {
         status: 422,
-        message: "Incorrect reply message ID.",
+        message: "Incorrect additional message ID.",
+      })
+    })
+
+    it("should work with forwarded id", async () => {
+      const requestData = {
+        message: {
+          id: "xyzd",
+          cid: currentConversationId,
+          forwarded_message_id: messageId1,
+          x: {
+            param1: "value",
+            param2: "value",
+          },
+        },
+      }
+      let responseData = null
+
+      responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual("xyzd", responseData.ask.mid)
+      assert.notEqual(responseData.ask.t, undefined)
+    })
+
+    it("should fail incorrect forwarded message id", async () => {
+      const requestData = {
+        message: {
+          id: "xyzda",
+          cid: currentConversationId,
+          forwarded_message_id: "123",
+          x: {
+            param1: "value",
+            param2: "value",
+          },
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.equal(responseData.ask, undefined)
+      assert.deepEqual(responseData.message.error, {
+        status: 422,
+        message: "Incorrect additional message ID.",
       })
     })
 

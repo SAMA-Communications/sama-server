@@ -109,7 +109,7 @@ export const ERROR_STATUES = {
   MESSAGE_ID_NOT_FOUND: { status: 422, message: "Message ID not found." },
   MESSAGE_ID_MISSED: { status: 422, message: "Message ID missed." },
   INCORRECT_MESSAGE_ID: { status: 422, message: "Incorrect message ID." },
-  INCORRECT_REPLY_MESSAGE_ID: { status: 422, message: "Incorrect reply message ID." },
+  INCORRECT_ADDITIONAL_MESSAGE_ID: { status: 422, message: "Incorrect additional message ID." },
   MESSAGE_TYPE_MISSED: { status: 422, message: "Message type missed." },
   MESSAGE_BODY_AND_ATTACHMENTS_EMPTY: {
     status: 422,
