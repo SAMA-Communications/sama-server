@@ -145,6 +145,29 @@ describe("Message function", async () => {
       assert.notEqual(responseData.ask.t, undefined)
     })
 
+    it("should work with forwarded id & body", async () => {
+      const requestData = {
+        message: {
+          id: "xyzd",
+          body: "hey how is going?",
+          cid: currentConversationId,
+          forwarded_message_id: messageId1,
+          x: {
+            param1: "value",
+            param2: "value",
+          },
+        },
+      }
+      let responseData = null
+
+      responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual("xyzd", responseData.ask.mid)
+      assert.notEqual(responseData.ask.t, undefined)
+    })
+
     it("should fail incorrect forwarded message id", async () => {
       const requestData = {
         message: {

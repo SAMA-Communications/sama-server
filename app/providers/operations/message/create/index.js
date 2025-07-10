@@ -40,9 +40,15 @@ class MessageCreateOperation {
       currentUserId
     )
 
-    const additionaMessageId = createMessageParams.replied_message_id || createMessageParams.forwarded_message_id
-    if (additionaMessageId) {
-      await this.#validateAdditionalMessageId(createMessageParams.cid, currentUserId, additionaMessageId)
+    const repliedMessageId = createMessageParams.replied_message_id
+    if (repliedMessageId) {
+      await this.#validateAdditionalMessageId(createMessageParams.cid, currentUserId, repliedMessageId)
+    }
+    const forwardedMessageId = createMessageParams.forwarded_message_id
+    if (forwardedMessageId) {
+      const cid = createMessageParams.cid
+      const forwardedMessage = await this.#validateAdditionalMessageId(cid, currentUserId, forwardedMessageId)
+      await this.messageService.updateForwardedTo(forwardedMessage._id, forwardedMessage.forwarded_to, cid)
     }
 
     let conversationHandlerResponse = {}
@@ -165,6 +171,8 @@ class MessageCreateOperation {
         cause: ERROR_STATUES.INCORRECT_ADDITIONAL_MESSAGE_ID,
       })
     }
+
+    return message
   }
 
   async #checkBlocked(conversation, currentUserId, participantIds) {
