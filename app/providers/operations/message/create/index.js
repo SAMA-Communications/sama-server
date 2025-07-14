@@ -40,15 +40,9 @@ class MessageCreateOperation {
       currentUserId
     )
 
-    const repliedMessageId = createMessageParams.replied_message_id
-    if (repliedMessageId) {
-      await this.#validateAdditionalMessageId(createMessageParams.cid, currentUserId, repliedMessageId)
-    }
-    const forwardedMessageId = createMessageParams.forwarded_message_id
-    if (forwardedMessageId) {
-      const cid = createMessageParams.cid
-      const forwardedMessage = await this.#validateAdditionalMessageId(cid, currentUserId, forwardedMessageId)
-      await this.messageService.updateForwardedTo(forwardedMessage._id, forwardedMessage.forwarded_to, cid)
+    const additionalMessageId = createMessageParams.replied_message_id
+    if (additionalMessageId) {
+      await this.#validateAdditionalMessageId(createMessageParams.cid, currentUserId, additionalMessageId)
     }
 
     let conversationHandlerResponse = {}

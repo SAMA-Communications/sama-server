@@ -75,14 +75,11 @@ class MessageRepository extends BaseRepository {
 
   async list(conversationId, userId, options, limit) {
     const cid = this.castObjectId(conversationId)
-    const query = { deleted_for: { $nin: [this.castUserId(userId)] } }
+    const query = { cid, deleted_for: { $nin: [this.castUserId(userId)] } }
     let sort = null
 
     if (options.ids) {
       query._id = this.mergeOperators(query.updated_at, { $in: this.castObjectIds(options.ids) })
-      query.$or = [{ cid }, { forwarded_to: [cid] }]
-    } else {
-      query.cid = cid
     }
     if (options.updatedAtFrom) {
       query.updated_at = this.mergeOperators(query.updated_at, { $gt: options.updatedAtFrom })
@@ -127,10 +124,6 @@ class MessageRepository extends BaseRepository {
 
   async updateBody(messageId, newBody) {
     await this.updateOne({ _id: messageId }, { $set: { body: newBody } })
-  }
-
-  async updateForwardedTo(messageId, newForwardedTo) {
-    await this.updateOne({ _id: messageId }, { $set: { forwarded_to: newForwardedTo } })
   }
 
   async updateDeleteForUser(messageIds, userId) {

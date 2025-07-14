@@ -184,12 +184,6 @@ class MessageService {
     return updated
   }
 
-  async updateForwardedTo(mid, oldForwardedTo, newCid) {
-    const newForwardedTo = [...(oldForwardedTo || []), newCid]
-
-    await this.messageRepo.updateForwardedTo(mid, newForwardedTo)
-  }
-
   async deleteMessages(userId, mIds, deleteAll) {
     if (deleteAll) {
       await this.messageRepo.deleteByIds(mIds)

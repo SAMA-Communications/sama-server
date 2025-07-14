@@ -44,6 +44,6 @@ export default class Message extends BaseModel {
   }
 
   static get hiddenFields() {
-    return ["forwarded_to", "updated_at"]
+    return ["updated_at"]
   }
 }
