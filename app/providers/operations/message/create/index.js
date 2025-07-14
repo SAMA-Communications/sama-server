@@ -42,7 +42,7 @@ class MessageCreateOperation {
 
     const additionalMessageId = createMessageParams.replied_message_id
     if (additionalMessageId) {
-      await this.#validateAdditionalMessageId(createMessageParams.cid, currentUserId, additionalMessageId)
+      await this.#validateAdditionalMessageId(currentUserId, additionalMessageId)
     }
 
     let conversationHandlerResponse = {}
@@ -157,8 +157,8 @@ class MessageCreateOperation {
     return { conversation, participantIds }
   }
 
-  async #validateAdditionalMessageId(cid, userId, mid) {
-    const message = await this.messageService.messageRepo.findMessageById(cid, userId, mid)
+  async #validateAdditionalMessageId(userId, mid) {
+    const message = await this.messageService.messageRepo.findMessageById(null, userId, mid)
 
     if (!message) {
       throw new Error(ERROR_STATUES.INCORRECT_ADDITIONAL_MESSAGE_ID.message, {
