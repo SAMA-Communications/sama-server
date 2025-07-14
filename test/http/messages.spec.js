@@ -57,10 +57,10 @@ describe("Http Messages", async () => {
 
     const responseData = await HttpMessageController.system_message(res, req)
     const httpResponse = responseData.httpResponse
-    const deliveredMessages = responseData.deliverMessages.at(0)
+    const deliveredMessage = responseData.deliverMessages.at(0)
 
     assert.equal(httpResponse.body.ask.mid, requestData.messageSystem.id)
-    assert.deepEqual(deliveredMessages.userIds.reverse(), usersIds)
+    assert.deepEqual(deliveredMessage.userIds, usersIds)
   })
 
   it("send", async () => {
@@ -88,7 +88,7 @@ describe("Http Messages", async () => {
     const deliveredMessages = responseData.deliverMessages.at(0)
 
     assert.notEqual(httpResponse.body.ask.server_mid, undefined)
-    assert.deepEqual(deliveredMessages.userIds.reverse(), usersIds)
+    assert.deepEqual(deliveredMessages.userIds, usersIds)
 
     createdMessageId = httpResponse.body.ask.server_mid
   })
@@ -114,7 +114,7 @@ describe("Http Messages", async () => {
     const deliveredMessages = responseData.deliverMessages.at(0)
 
     assert.deepEqual(httpResponse.body, { success: true })
-    assert.deepEqual(deliveredMessages.userIds.reverse(), usersIds)
+    assert.deepEqual(deliveredMessages.userIds, usersIds)
   })
 
   it("update reaction", async () => {
@@ -142,7 +142,7 @@ describe("Http Messages", async () => {
     const deliveredMessage = responseData.deliverMessages.at(0)
 
     assert.deepEqual(httpResponse.body, { success: true })
-    assert.deepEqual(deliveredMessage.userIds.reverse(), usersIds)
+    assert.deepEqual(deliveredMessage.userIds, usersIds)
     assert.deepEqual(deliveredMessage.packet.message_reactions_update, {
       mid: createdMessageId,
       cid: userRepo.castObjectId(conversationId),
@@ -198,7 +198,7 @@ describe("Http Messages", async () => {
     const deliveredMessages = responseData.deliverMessages.at(0)
 
     assert.deepEqual(httpResponse.body, { success: true })
-    assert.deepEqual(deliveredMessages.userIds.reverse(), usersIds)
+    assert.deepEqual(deliveredMessages.userIds, usersIds)
   })
 
   after(async () => {

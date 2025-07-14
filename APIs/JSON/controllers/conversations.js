@@ -101,6 +101,7 @@ class ConversationsController extends BaseJSONController {
       const deliverMessage = new DeliverMessage(organizationId, event.message)
         .addPushQueueMessage(event.notification)
         .setUsersDestination(event.participantIds)
+        .setConversationDestination(event.cId)
 
       response.addDeliverMessage(deliverMessage)
 

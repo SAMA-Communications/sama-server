@@ -51,7 +51,7 @@ class ConversationNotificationService {
       x: { type: eventType, conversation: conversation.visibleParams() },
     }
 
-    const createdMessage = await this.messageService.create(userActionCreator, conversation, [], createMessageParams)
+    const createdMessage = await this.messageService.create(userActionCreator, conversation, createMessageParams)
 
     const userActionCreatorDisplayName = this.helpers.getDisplayName(userActionCreator)
     const pushPayload = {
@@ -76,7 +76,7 @@ class ConversationNotificationService {
       x: { type: eventType, user: userActioned.visibleParams() },
     }
 
-    const createdMessage = await this.messageService.create(userActionCreator, conversation, [], createMessageParams)
+    const createdMessage = await this.messageService.create(userActionCreator, conversation, createMessageParams)
 
     const userActionCreatorDisplayName = this.helpers.getDisplayName(userActionCreator)
     const pushPayload = {

@@ -34,11 +34,7 @@ class MessageCreateOperation {
 
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
-    const { conversation, blockedUserIds, participantIds } = await this.#hasAccess(
-      organizationId,
-      createMessageParams.cid,
-      currentUserId
-    )
+    const conversation = await this.#hasAccess(organizationId, createMessageParams.cid, currentUserId)
 
     let conversationHandlerResponse = {}
     const conversationHandler = await this.conversationHandlerService.getHandlerByConversationId(conversation._id)
@@ -70,19 +66,15 @@ class MessageCreateOperation {
       }
     }
 
-    const message = await this.messageService.create(currentUser, conversation, blockedUserIds, createMessageParams)
+    const message = await this.messageService.create(currentUser, conversation, createMessageParams)
 
     if (!message.x) message.set("x", {})
     message.x.c_type = conversation.type
 
     if (conversation.type === "u") {
-      const missedParticipantIds = await this.conversationService.restorePrivateConversation(
-        conversation,
-        participantIds
-      )
-      if (missedParticipantIds.length) {
-        participantIds.push(...missedParticipantIds)
+      const missedParticipantIds = await this.conversationService.restorePrivateConversation(conversation)
 
+      if (missedParticipantIds.length) {
         if (this.conversationNotificationService.isEnabled()) {
           const restoreConversationEvent = await this.#restorePrivateConversationNotification(
             conversation,
@@ -100,7 +92,7 @@ class MessageCreateOperation {
     if (conversationHandlerResponse.botMessageParams && conversationHandlerResponse.serverBot) {
       const { botMessageParams, serverBot } = conversationHandlerResponse
 
-      botMessage = await this.messageService.create(serverBot, conversation, blockedUserIds, botMessageParams)
+      botMessage = await this.messageService.create(serverBot, conversation, botMessageParams)
 
       if (!botMessage.x) botMessage.set("x", {})
       botMessage.x.c_type = conversation.type
@@ -112,24 +104,37 @@ class MessageCreateOperation {
 
     await this.conversationService.conversationRepo.updateLastActivity(conversation._id, message.created_at)
 
-    return { organizationId, messageId, message, deliverMessages, cId: conversation._id, modifiedFields, botMessage }
+    const participantIds = conversation.type === "u" ? [conversation.owner_id, conversation.opponent_id] : null
+
+    return {
+      organizationId,
+      messageId,
+      message,
+      deliverMessages,
+      cId: conversation._id,
+      participantIds,
+      modifiedFields,
+      botMessage,
+    }
   }
 
   async #hasAccess(organizationId, conversationId, currentUserId) {
-    const { conversation, participantIds } = await this.#hasAccessToConversation(
+    const conversation = await this.#hasAccessToConversation(organizationId, conversationId, currentUserId)
+
+    if (conversation.type === "u") {
+      const privateParticipantsIds = [conversation.owner_id, conversation.opponent_id]
+      await this.#checkBlocked(conversation, currentUserId, privateParticipantsIds)
+    }
+
+    return conversation
+  }
+
+  async #hasAccessToConversation(organizationId, conversationId, currentUserId) {
+    const { conversation, asOwner, asAdmin, asParticipant } = await this.conversationService.hasAccessToConversation(
       organizationId,
       conversationId,
       currentUserId
     )
-
-    const blockedUserIds = await this.#checkBlocked(conversation, currentUserId, participantIds)
-
-    return { conversation, blockedUserIds, participantIds }
-  }
-
-  async #hasAccessToConversation(organizationId, conversationId, currentUserId) {
-    const { conversation, asOwner, asAdmin, asParticipant, participantIds } =
-      await this.conversationService.hasAccessToConversation(organizationId, conversationId, currentUserId)
 
     if (!conversation) {
       throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {
@@ -149,7 +154,7 @@ class MessageCreateOperation {
       })
     }
 
-    return { conversation, participantIds }
+    return conversation
   }
 
   async #checkBlocked(conversation, currentUserId, participantIds) {
@@ -160,8 +165,6 @@ class MessageCreateOperation {
         cause: ERROR_STATUES.USER_BLOCKED,
       })
     }
-
-    return blockedUserIds
   }
 
   async #createMessageNotification(conversation, user, message) {

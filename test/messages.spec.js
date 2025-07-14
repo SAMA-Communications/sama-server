@@ -179,10 +179,7 @@ describe("Message function", async () => {
       }
 
       assert.deepEqual(deliverMessage.packet.system_message, expectedSystemMessage)
-      assert.deepEqual(
-        deliverMessage.userIds.map((id) => `${id}`),
-        [usersIds[1], usersIds[0]].map((id) => `${id}`)
-      )
+      assert.deepEqual(`${deliverMessage.cId}`, `${currentConversationId}`)
       assert.strictEqual(deliverMessage.notSaveInOfflineStorage, true)
     })
 
@@ -1035,7 +1032,7 @@ describe("Message function", async () => {
       assert.notEqual(responseData.response.success, undefined)
       assert.equal(responseData.response.error, undefined)
 
-      assert.deepEqual(deliveredMessage.userIds, usersIds.slice(0, 2).reverse())
+      assert.deepEqual(`${deliveredMessage.cId}`, `${currentConversationId}`)
       assert.deepEqual(deliveredMessage.packet.message_reactions_update, {
         mid: messageId1.toString(),
         cid: userRepo.castObjectId(currentConversationId),

@@ -31,7 +31,7 @@ describe("Cluster Message function", async () => {
 
     currentConversationId = await createConversation(mockedWS, null, null, "g", [usersIds[1], usersIds[0]])
 
-    //emulate user2 connect in other node
+    // emulate user2 connect in other node
     deviceId = sessionService.activeSessions.DEVICES[usersIds[0]][0].deviceId
 
     const SSL_APP_OPTIONS = {
@@ -71,12 +71,13 @@ describe("Cluster Message function", async () => {
       const deliverMessage = controllerResponse.deliverMessages.at(0)
 
       assert.notEqual(deliverMessage, undefined)
+      assert.equal(`${deliverMessage.cId}`, `${currentConversationId}`)
 
       await packetManager.deliverToUserOrUsers(
         deliverMessage.ws || mockedWS,
         JSON.stringify(deliverMessage.packet),
         null,
-        deliverMessage.userIds,
+        usersIds,
         deliverMessage.notSaveInOfflineStorage
       )
 

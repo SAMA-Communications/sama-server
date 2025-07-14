@@ -43,9 +43,12 @@ class MessageReactionsUpdateOperation {
       messageUpdateReactionParamsResult.remove = removeReaction
     }
 
+    const participantsIds = conversation.type === "u" ? [conversation.owner_id, conversation.opponent_id] : null
+
     return {
       organizationId,
       cId: conversation._id,
+      participantsIds,
       messageReactionsUpdate: new MessageReactionsUpdatePublicFields(messageUpdateReactionParamsResult),
       isUpdated: true,
     }

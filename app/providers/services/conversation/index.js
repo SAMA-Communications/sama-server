@@ -18,13 +18,13 @@ class ConversationService {
   }
 
   async create(user, conversationParams, participantIds) {
-    conversationParams.owner_id = user.native_id
     conversationParams.organization_id = user.organization_id
+    conversationParams.owner_id = user.native_id
 
     const conversation = await this.conversationRepo.create(conversationParams)
 
     if (participantIds?.length) {
-      await this.addParticipants(conversation, participantIds, [])
+      await this.addParticipants(conversation, participantIds, true)
     }
 
     return conversation
@@ -59,10 +59,10 @@ class ConversationService {
     return conversations
   }
 
-  async restorePrivateConversation(conversation, currentParticipantIds) {
+  async restorePrivateConversation(conversation) {
     const requiredParticipantIds = [conversation.owner_id, conversation.opponent_id]
 
-    const missedParticipantIds = await this.addParticipants(conversation, requiredParticipantIds, currentParticipantIds)
+    const missedParticipantIds = await this.addParticipants(conversation, requiredParticipantIds)
 
     return missedParticipantIds
   }
@@ -198,7 +198,7 @@ class ConversationService {
   }
 
   async hasAccessToConversation(organizationId, conversationId, userId) {
-    const result = { conversation: null, asParticipant: false, asOwner: false, participantIds: null }
+    const result = { conversation: null, asParticipant: false, asOwner: false, asAdmin: false }
 
     result.conversation = await this.conversationRepo.findByIdWithOrgScope(organizationId, conversationId)
 
@@ -206,13 +206,14 @@ class ConversationService {
       return result
     }
 
-    const participants = await this.findConversationParticipants(conversationId, true)
-    const currentParticipant = participants.find((p) => this.helpers.isEqualsNativeIds(p.user_id, userId))
+    const currentParticipant = await this.conversationParticipantRepo.findFirstConversationParticipant(
+      conversationId,
+      userId
+    )
 
     result.asParticipant = !!currentParticipant
     result.asAdmin = currentParticipant?.role === "admin"
     result.asOwner = this.helpers.isEqualsNativeIds(result.conversation.owner_id, userId)
-    result.participantIds = participants.map((p) => p.user_id)
 
     return result
   }
@@ -233,37 +234,22 @@ class ConversationService {
     }
   }
 
-  async updateParticipants(conversation, addParticipants, removeParticipants, currentParticipantIds) {
-    if (!currentParticipantIds) {
-      currentParticipantIds = await this.findConversationParticipants(conversation._id)
-    }
+  async updateParticipants(conversation, addParticipants, removeParticipants) {
+    const addedIds = await this.addParticipants(conversation, addParticipants)
 
-    const addedIds = await this.addParticipants(conversation, addParticipants, currentParticipantIds)
+    const removeResult = await this.removeParticipants(conversation, removeParticipants)
 
-    currentParticipantIds = currentParticipantIds.concat(addedIds)
-
-    const removeResult = await this.removeParticipants(conversation, removeParticipants, currentParticipantIds)
-
-    if (!removeResult.isEmptyAndDeleted && removeResult.removedIds?.length) {
-      currentParticipantIds = currentParticipantIds.filter(
-        (currentPId) =>
-          !removeResult.removedIds.find((removedId) => this.helpers.isEqualsNativeIds(removedId, currentPId))
-      )
-    }
-
-    return { addedIds, ...removeResult, currentIds: currentParticipantIds }
+    return { addedIds, ...removeResult }
   }
 
-  async addParticipants(conversation, participantIds, currentParticipantIds) {
-    if (!currentParticipantIds) {
-      currentParticipantIds = await this.findConversationParticipants(conversation._id)
-    }
+  async addParticipants(conversation, participantIds, isEmpty) {
+    const currentParticipantsCount = isEmpty
+      ? 0
+      : conversation.type === "c"
+        ? conversation.subscribers_count
+        : await this.conversationParticipantRepo.countConversationParticipants(conversation._id)
 
-    participantIds = participantIds.filter(
-      (pId) => !currentParticipantIds.find((currentPId) => this.helpers.isEqualsNativeIds(currentPId, pId))
-    )
-
-    const participantsCount = participantIds.length + currentParticipantIds.length
+    let participantsCount = participantIds.length + (currentParticipantsCount ?? 0)
 
     if (participantsCount > this.CONVERSATION_MAX_PARTICIPANTS) {
       throw new Error(ERROR_STATUES.PARTICIPANTS_LIMIT.message, {
@@ -272,14 +258,20 @@ class ConversationService {
     }
 
     if (participantIds.length) {
-      const createParticipantsParams = participantIds.map((participantId) => ({
+      const createParticipantsParams = participantIds.map((pId) => ({
         conversation_id: conversation._id,
-        user_id: participantId,
+        user_id: pId,
         organization_id: conversation.organization_id,
+        role: this.helpers.isEqualsNativeIds(pId, conversation.owner_id) ? "owner" : null,
       }))
 
-      await this.conversationParticipantRepo.createMany(createParticipantsParams)
+      participantIds = await this.conversationParticipantRepo.addNoExistedParticipants(
+        conversation._id,
+        createParticipantsParams
+      )
     }
+
+    participantsCount = (participantIds?.length ?? 0) + (currentParticipantsCount ?? 0)
 
     if (conversation.type === "c") {
       await this.conversationRepo.updateSubscribersCount(conversation._id, participantsCount)
@@ -289,42 +281,36 @@ class ConversationService {
     return participantIds
   }
 
-  async removeParticipants(conversation, participantIds, currentParticipantIds) {
+  async removeParticipants(conversation, participantIds) {
     const result = { removedIds: null, newOwnerId: null, isEmptyAndDeleted: false }
 
-    if (!currentParticipantIds) {
-      currentParticipantIds = await this.findConversationParticipants(conversation._id)
-    }
-
-    participantIds = participantIds.filter((pId) =>
-      currentParticipantIds.find((currentPId) => this.helpers.isEqualsNativeIds(currentPId, pId))
-    )
-    await this.conversationParticipantRepo.removeParticipants(conversation._id, participantIds)
-    result.removedIds = participantIds
-    currentParticipantIds = currentParticipantIds.filter(
-      (currentPId) => !participantIds.find((removedId) => this.helpers.isEqualsNativeIds(removedId, currentPId))
+    result.removedIds = await this.conversationParticipantRepo.removeExistedParticipants(
+      conversation._id,
+      participantIds
     )
 
-    const isConversationHasParticipants = await this.conversationParticipantRepo.isConversationHasParticipants(
+    const firstConversationHasParticipant = await this.conversationParticipantRepo.findFirstConversationParticipant(
       conversation._id
     )
 
-    if (!isConversationHasParticipants) {
+    if (!firstConversationHasParticipant) {
       await this.conversationRepo.deleteById(conversation._id)
       result.isEmptyAndDeleted = true
       return result
     }
 
-    const isOwnerInRemove = participantIds.find((pId) => this.helpers.isEqualsNativeIds(pId, conversation.owner_id))
+    const isOwnerInRemove = result.removedIds.find((pId) => this.helpers.isEqualsNativeIds(pId, conversation.owner_id))
+
     if (isOwnerInRemove && conversation.type !== "u") {
-      const newOwnerId = currentParticipantIds.at(0)
+      const newOwnerId = firstConversationHasParticipant.user_id
       await this.conversationRepo.updateOwner(conversation._id, newOwnerId)
       result.newOwnerId = newOwnerId
     }
 
     if (conversation.type === "c") {
-      await this.conversationRepo.updateSubscribersCount(conversation._id, currentParticipantIds.length)
-      conversation.set("subscribers_count", currentParticipantIds.length)
+      const subscribersCount = conversation.subscribers_count - result.removedIds.length
+      await this.conversationRepo.updateSubscribersCount(conversation._id, subscribersCount)
+      conversation.set("subscribers_count", subscribersCount)
     }
 
     return result

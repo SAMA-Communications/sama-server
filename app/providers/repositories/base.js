@@ -189,10 +189,10 @@ export default class BaseRepository {
 
     const count = await this.collectionCursor.count(query)
 
-    return count || 0
+    return count ?? 0
   }
 
-  async updateOne(query, update) {
+  async updateOne(query, update, options) {
     if (query._id) {
       query._id = this.castObjectId(query._id)
     }
@@ -203,7 +203,9 @@ export default class BaseRepository {
       query.conversation_id = this.castObjectId(query.conversation_id)
     }
 
-    await this.collectionCursor.updateOne(query, update)
+    const result = await this.collectionCursor.updateOne(query, update, options)
+
+    return result
   }
 
   async findOneAndUpdate(query, update) {
@@ -247,13 +249,13 @@ export default class BaseRepository {
   }
 
   async deleteById(_id) {
-    await this.collectionCursor.deleteOne({ _id: this.castObjectId(_id) })
+    return await this.collectionCursor.deleteOne({ _id: this.castObjectId(_id) })
   }
 
   async deleteByIds(ids) {
     ids = this.castObjectIds(ids)
 
-    await this.deleteMany({ _id: { $in: ids } })
+    return await this.deleteMany({ _id: { $in: ids } })
   }
 
   async deleteMany(query) {
@@ -270,7 +272,9 @@ export default class BaseRepository {
       query.user_id = this.castUserId(query.user_id)
     }
 
-    return await this.collectionCursor.deleteMany(query)
+    const result = await this.collectionCursor.deleteMany(query)
+
+    return result
   }
 
   wrapRawRecordInModel(rawRecord) {

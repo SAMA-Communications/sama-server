@@ -19,7 +19,7 @@ class MessagesController extends BaseJSONController {
     const response = new Response()
 
     const messageCreateOperation = ServiceLocatorContainer.use("MessageCreateOperation")
-    const { organizationId, messageId, message, deliverMessages, cId, modifiedFields, botMessage } =
+    const { organizationId, messageId, message, deliverMessages, cId, participantIds, modifiedFields, botMessage } =
       await messageCreateOperation.perform(ws, messageParams)
 
     deliverMessages.forEach((event) => {
@@ -27,11 +27,9 @@ class MessagesController extends BaseJSONController {
         event.notification
       )
 
-      if (event.participantIds) {
-        deliverMessage.setUsersDestination(event.participantIds)
-      } else {
-        deliverMessage.setConversationDestination(cId)
-      }
+      const participantsDestination = event.participantIds ?? participantIds
+      deliverMessage.setUsersDestination(participantsDestination)
+      deliverMessage.setConversationDestination(cId)
 
       response.addDeliverMessage(deliverMessage)
     })
@@ -63,12 +61,17 @@ class MessagesController extends BaseJSONController {
     const { id: requestId, message_edit: messageParams } = data
 
     const messageEditOperation = ServiceLocatorContainer.use("MessageEditOperation")
-    const { organizationId, cId, editedMessage } = await messageEditOperation.perform(ws, messageParams)
+    const { organizationId, cId, participantsIds, editedMessage } = await messageEditOperation.perform(
+      ws,
+      messageParams
+    )
 
     return new Response()
       .addBackMessage({ response: { id: requestId, success: true } })
       .addDeliverMessage(
-        new DeliverMessage(organizationId, new EditMessageResponse(editedMessage), true).setConversationDestination(cId)
+        new DeliverMessage(organizationId, new EditMessageResponse(editedMessage), true)
+          .setConversationDestination(cId)
+          .setUsersDestination(participantsIds)
       )
   }
 
@@ -76,20 +79,16 @@ class MessagesController extends BaseJSONController {
     const { id: requestId, message_reactions_update: messageReactionsUpdatePayload } = data
 
     const messageReactionsUpdateOperation = ServiceLocatorContainer.use("MessageReactionsUpdateOperation")
-    const { organizationId, cId, isUpdated, messageReactionsUpdate } = await messageReactionsUpdateOperation.perform(
-      ws,
-      messageReactionsUpdatePayload
-    )
+    const { organizationId, cId, participantsIds, isUpdated, messageReactionsUpdate } =
+      await messageReactionsUpdateOperation.perform(ws, messageReactionsUpdatePayload)
 
     const response = new Response().addBackMessage({ response: { id: requestId, success: true } })
 
     if (isUpdated) {
       response.addDeliverMessage(
-        new DeliverMessage(
-          organizationId,
-          new MessageReactionsUpdateResponse(messageReactionsUpdate),
-          true
-        ).setConversationDestination(cId)
+        new DeliverMessage(organizationId, new MessageReactionsUpdateResponse(messageReactionsUpdate), true)
+          .setConversationDestination(cId)
+          .setUsersDestination(participantsIds)
       )
     }
 
@@ -146,17 +145,18 @@ class MessagesController extends BaseJSONController {
     const { id: requestId, message_delete: messageDeleteParams } = data
 
     const messageDeleteOperation = ServiceLocatorContainer.use("MessageDeleteOperation")
-    const { organizationId, cId, deletedMessages } = await messageDeleteOperation.perform(ws, messageDeleteParams)
+    const { organizationId, cId, participantsIds, deletedMessages } = await messageDeleteOperation.perform(
+      ws,
+      messageDeleteParams
+    )
 
     const response = new Response()
 
     if (deletedMessages) {
       response.addDeliverMessage(
-        new DeliverMessage(
-          organizationId,
-          new DeleteMessagesResponse(deletedMessages),
-          true
-        ).setConversationDestination(cId)
+        new DeliverMessage(organizationId, new DeleteMessagesResponse(deletedMessages), true)
+          .setConversationDestination(cId)
+          .setUsersDestination(participantsIds)
       )
     }
 

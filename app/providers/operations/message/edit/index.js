@@ -27,7 +27,14 @@ class MessageEditOperation {
       body: newBody,
     }
 
-    return { organizationId, cId: conversation._id, editedMessage: new EditMessagePublicFields(editedMessageParams) }
+    const participantsIds = conversation.type === "u" ? [conversation.owner_id, conversation.opponent_id] : null
+
+    return {
+      organizationId,
+      cId: conversation._id,
+      participantsIds,
+      editedMessage: new EditMessagePublicFields(editedMessageParams),
+    }
   }
 
   async #hasAccess(messageId, currentUserId) {

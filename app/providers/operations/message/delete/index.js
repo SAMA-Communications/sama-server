@@ -12,7 +12,7 @@ class MessageDeleteOperation {
     const { cid: cId, ids: mIds, type } = deleteMessageParams
 
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
-    const { conversation, participantIds } = await this.#hasAccess(organizationId, cId, currentUserId)
+    const { conversation } = await this.#hasAccess(organizationId, cId, currentUserId)
 
     const isDeleteAll = type === "all"
     await this.messageService.deleteMessages(currentUserId, mIds, isDeleteAll)
@@ -26,11 +26,13 @@ class MessageDeleteOperation {
 
     const deletedMessages = isDeleteAll ? new DeleteMessagesPublicFields(deleteMessageFields) : null
 
-    return { organizationId, cId: conversation._id, deletedMessages }
+    const participantsIds = conversation.type === "u" ? [conversation.owner_id, conversation.opponent_id] : null
+
+    return { organizationId, cId: conversation._id, participantsIds, deletedMessages }
   }
 
   async #hasAccess(organizationId, conversationId, currentUserId) {
-    const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
+    const { conversation, asParticipant } = await this.conversationService.hasAccessToConversation(
       organizationId,
       conversationId,
       currentUserId
@@ -48,7 +50,7 @@ class MessageDeleteOperation {
       })
     }
 
-    return { conversation, participantIds }
+    return { conversation }
   }
 }
 

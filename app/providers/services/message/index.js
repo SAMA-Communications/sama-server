@@ -9,9 +9,8 @@ class MessageService {
     this.messageReactionRepo = messageReactionRepo
   }
 
-  async create(user, conversation, blockedUserIds, messageParams) {
+  async create(user, conversation, messageParams) {
     messageParams.cid = conversation._id
-    messageParams.deleted_for = blockedUserIds
     messageParams.from = user.native_id
     messageParams.organization_id = user.organization_id
 
