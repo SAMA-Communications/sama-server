@@ -155,13 +155,7 @@ export default class HttpServerApp {
   onHttpRequestHandler(preMiddleware = [], handler) {
     return async (res, req) => {
       try {
-        console.log(
-          "[Http][Request]",
-          req.getMethod(),
-          req.getUrl(),
-          req.getHeader("content-type"),
-          req.getHeader("content-length")
-        )
+        console.log("[Http][Request]", req.getMethod(), req.getUrl(), req.getHeader("content-type"), req.getHeader("content-length"))
 
         await parseBaseParamsMiddleware(res, req)
 
@@ -221,30 +215,18 @@ export default class HttpServerApp {
       this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.system_message)
     )
 
-    this.uWSLocalSocket.put(
-      "/admin/message/read",
-      this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.read)
-    )
+    this.uWSLocalSocket.put("/admin/message/read", this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.read))
 
-    this.uWSLocalSocket.put(
-      "/admin/message",
-      this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.edit)
-    )
+    this.uWSLocalSocket.put("/admin/message", this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.edit))
 
     this.uWSLocalSocket.put(
       "/admin/message/reaction",
       this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.reaction)
     )
 
-    this.uWSLocalSocket.del(
-      "/admin/message",
-      this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.delete)
-    )
+    this.uWSLocalSocket.del("/admin/message", this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.delete))
 
-    this.uWSLocalSocket.post(
-      "/admin/message",
-      this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.message)
-    )
+    this.uWSLocalSocket.post("/admin/message", this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.message))
 
     this.uWSLocalSocket.post(
       "/admin/activity/online",

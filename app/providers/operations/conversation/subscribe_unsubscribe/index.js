@@ -30,10 +30,7 @@ class ConversationSubscribeUnsubscribeOperation {
   }
 
   async #retrieveConversation(organizationId, conversationId) {
-    const conversation = await this.conversationService.conversationRepo.findByIdWithOrgScope(
-      organizationId,
-      conversationId
-    )
+    const conversation = await this.conversationService.conversationRepo.findByIdWithOrgScope(organizationId, conversationId)
 
     if (!conversation || conversation.type !== "c") {
       throw new Error(ERROR_STATUES.BAD_REQUEST.message, {

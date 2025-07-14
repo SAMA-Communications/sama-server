@@ -6,7 +6,7 @@ export default class BaseAPI {
   }
 
   splitPacket(message) {
-    return message
+    return []
   }
 
   async onMessage(ws, message) {

@@ -48,11 +48,7 @@ class UserRepository extends BaseRepository {
     const query = {
       _id: { $nin: ignoreIds },
       organization_id: organizationId,
-      $or: [
-        { login: { $regex: regexPattern } },
-        { first_name: { $regex: regexPattern } },
-        { last_name: { $regex: regexPattern } },
-      ],
+      $or: [{ login: { $regex: regexPattern } }, { first_name: { $regex: regexPattern } }, { last_name: { $regex: regexPattern } }],
     }
 
     if (timeFromUpdate) {

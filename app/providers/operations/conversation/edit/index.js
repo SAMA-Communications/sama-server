@@ -3,14 +3,7 @@ import { CONVERSATION_EVENTS } from "../../../../constants/conversation.js"
 import MessagePublicFields from "@sama/DTO/Response/message/create/public_fields.js"
 
 class ConversationEditOperation {
-  constructor(
-    helpers,
-    sessionService,
-    userService,
-    conversationService,
-    conversationNotificationService,
-    messagesService
-  ) {
+  constructor(helpers, sessionService, userService, conversationService, conversationNotificationService, messagesService) {
     this.helpers = helpers
     this.sessionService = sessionService
     this.userService = userService
@@ -35,9 +28,7 @@ class ConversationEditOperation {
       return result
     }
 
-    const adminsToAdd = updateAdmins?.add?.length
-      ? await this.#prepareAddAdmins(updatedConversation, updateAdmins.add)
-      : []
+    const adminsToAdd = updateAdmins?.add?.length ? await this.#prepareAddAdmins(updatedConversation, updateAdmins.add) : []
 
     if (adminsToAdd.length) {
       if (!updateParticipants) {
@@ -132,17 +123,11 @@ class ConversationEditOperation {
     let { add: addParticipants, remove: removeParticipants } = updateParticipants
 
     if (addParticipants?.length) {
-      addParticipants = await this.userService.userRepo.retrieveExistedIds(
-        conversation.organization_id,
-        addParticipants
-      )
+      addParticipants = await this.userService.userRepo.retrieveExistedIds(conversation.organization_id, addParticipants)
     }
 
     if (removeParticipants?.length) {
-      removeParticipants = await this.userService.userRepo.retrieveExistedIds(
-        conversation.organization_id,
-        removeParticipants
-      )
+      removeParticipants = await this.userService.userRepo.retrieveExistedIds(conversation.organization_id, removeParticipants)
     }
 
     addParticipants ??= []
@@ -154,10 +139,7 @@ class ConversationEditOperation {
   }
 
   async #addMessagesInfo(conversation, user) {
-    const lastMessagesListByCid = await this.messagesService.aggregateLastMessageForConversation(
-      [conversation._id],
-      user
-    )
+    const lastMessagesListByCid = await this.messagesService.aggregateLastMessageForConversation([conversation._id], user)
 
     const conversationId = conversation._id.toString()
     const lastMessage = lastMessagesListByCid[conversationId]
@@ -183,12 +165,7 @@ class ConversationEditOperation {
 
     if (addedParticipantIds.length) {
       for (const addedParticipantId of addedParticipantIds) {
-        const addParticipantEvent = await this.#participantsActionEvent(
-          conversation,
-          currentUser,
-          addedParticipantId,
-          false
-        )
+        const addParticipantEvent = await this.#participantsActionEvent(conversation, currentUser, addedParticipantId, false)
 
         conversationEvent.push(addParticipantEvent)
       }
@@ -202,12 +179,7 @@ class ConversationEditOperation {
 
     if (removedParticipantIds.length) {
       for (const removedParticipantId of removedParticipantIds) {
-        const removedParticipantEvent = await this.#participantsActionEvent(
-          conversation,
-          currentUser,
-          removedParticipantId,
-          true
-        )
+        const removedParticipantEvent = await this.#participantsActionEvent(conversation, currentUser, removedParticipantId, true)
 
         conversationEvent.push(removedParticipantEvent)
       }
@@ -234,15 +206,9 @@ class ConversationEditOperation {
   }
 
   async #actionEvent(conversation, currentUser, isDelete) {
-    const eventType = isDelete
-      ? CONVERSATION_EVENTS.CONVERSATION_EVENT.DELETE
-      : CONVERSATION_EVENTS.CONVERSATION_EVENT.UPDATE
+    const eventType = isDelete ? CONVERSATION_EVENTS.CONVERSATION_EVENT.DELETE : CONVERSATION_EVENTS.CONVERSATION_EVENT.UPDATE
 
-    const actionMessageNotification = await this.conversationNotificationService.actionEvent(
-      eventType,
-      conversation,
-      currentUser
-    )
+    const actionMessageNotification = await this.conversationNotificationService.actionEvent(eventType, conversation, currentUser)
 
     return actionMessageNotification
   }
@@ -250,11 +216,7 @@ class ConversationEditOperation {
   async #imageActionEvent(conversation, currentUser) {
     const eventType = CONVERSATION_EVENTS.CONVERSATION_EVENT.UPDATE_IMAGE
 
-    const actionMessageNotification = await this.conversationNotificationService.imageActionEvent(
-      eventType,
-      conversation,
-      currentUser
-    )
+    const actionMessageNotification = await this.conversationNotificationService.imageActionEvent(eventType, conversation, currentUser)
 
     return actionMessageNotification
   }

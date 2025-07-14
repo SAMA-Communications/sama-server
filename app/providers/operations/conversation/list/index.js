@@ -16,11 +16,7 @@ class ConversationListOperation {
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
-    const conversations = await this.conversationService.conversationsList(
-      currentUser,
-      { updatedAt: updated_at, ids },
-      normalizedLimit
-    )
+    const conversations = await this.conversationService.conversationsList(currentUser, { updatedAt: updated_at, ids }, normalizedLimit)
 
     await this.#addMessagesInfo(conversations, currentUser)
 
@@ -34,14 +30,8 @@ class ConversationListOperation {
   async #addMessagesInfo(conversations, currentUser) {
     const conversationIds = conversations.map((conversation) => conversation._id)
 
-    const lastMessagesListByCid = await this.messagesService.aggregateLastMessageForConversation(
-      conversationIds,
-      currentUser
-    )
-    const countOfUnreadMessagesByCid = await this.messagesService.aggregateCountOfUnreadMessagesByCid(
-      conversationIds,
-      currentUser
-    )
+    const lastMessagesListByCid = await this.messagesService.aggregateLastMessageForConversation(conversationIds, currentUser)
+    const countOfUnreadMessagesByCid = await this.messagesService.aggregateCountOfUnreadMessagesByCid(conversationIds, currentUser)
 
     for (const conversation of conversations) {
       const conversationId = conversation._id.toString()

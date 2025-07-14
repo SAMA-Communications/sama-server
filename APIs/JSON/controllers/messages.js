@@ -23,9 +23,7 @@ class MessagesController extends BaseJSONController {
       await messageCreateOperation.perform(ws, messageParams)
 
     deliverMessages.forEach((event) => {
-      const deliverMessage = new DeliverMessage(organizationId, new MessageResponse(event.message)).addPushQueueMessage(
-        event.notification
-      )
+      const deliverMessage = new DeliverMessage(organizationId, new MessageResponse(event.message)).addPushQueueMessage(event.notification)
 
       const participantsDestination = event.participantIds ?? participantIds
       deliverMessage.setUsersDestination(participantsDestination)
@@ -43,28 +41,20 @@ class MessagesController extends BaseJSONController {
     const { system_message: systemMessageParams } = data
 
     const messageSendSystemOperation = ServiceLocatorContainer.use("MessageSendSystemOperation")
-    const { organizationId, cId, recipientsIds, systemMessage } = await messageSendSystemOperation.perform(
-      ws,
-      systemMessageParams
-    )
+    const { organizationId, cId, recipientsIds, systemMessage } = await messageSendSystemOperation.perform(ws, systemMessageParams)
 
     const deliverMessage = new DeliverMessage(organizationId, new SystemMessageResponse(systemMessage), true)
       .setConversationDestination(cId)
       .setUsersDestination(recipientsIds)
 
-    return new Response()
-      .addBackMessage({ ask: { mid: systemMessage._id, t: systemMessage.t } })
-      .addDeliverMessage(deliverMessage)
+    return new Response().addBackMessage({ ask: { mid: systemMessage._id, t: systemMessage.t } }).addDeliverMessage(deliverMessage)
   }
 
   async edit(ws, data) {
     const { id: requestId, message_edit: messageParams } = data
 
     const messageEditOperation = ServiceLocatorContainer.use("MessageEditOperation")
-    const { organizationId, cId, participantsIds, editedMessage } = await messageEditOperation.perform(
-      ws,
-      messageParams
-    )
+    const { organizationId, cId, participantsIds, editedMessage } = await messageEditOperation.perform(ws, messageParams)
 
     return new Response()
       .addBackMessage({ response: { id: requestId, success: true } })
@@ -79,8 +69,10 @@ class MessagesController extends BaseJSONController {
     const { id: requestId, message_reactions_update: messageReactionsUpdatePayload } = data
 
     const messageReactionsUpdateOperation = ServiceLocatorContainer.use("MessageReactionsUpdateOperation")
-    const { organizationId, cId, participantsIds, isUpdated, messageReactionsUpdate } =
-      await messageReactionsUpdateOperation.perform(ws, messageReactionsUpdatePayload)
+    const { organizationId, cId, participantsIds, isUpdated, messageReactionsUpdate } = await messageReactionsUpdateOperation.perform(
+      ws,
+      messageReactionsUpdatePayload
+    )
 
     const response = new Response().addBackMessage({ response: { id: requestId, success: true } })
 
@@ -128,9 +120,7 @@ class MessagesController extends BaseJSONController {
 
     for (const readMessagesGroup of readMessagesGroups) {
       const { userId, readMessages } = readMessagesGroup
-      response.addDeliverMessage(
-        new DeliverMessage(organizationId, new ReadMessagesResponse(readMessages)).setUsersDestination([userId])
-      )
+      response.addDeliverMessage(new DeliverMessage(organizationId, new ReadMessagesResponse(readMessages)).setUsersDestination([userId]))
     }
 
     return response.addBackMessage({
@@ -145,10 +135,7 @@ class MessagesController extends BaseJSONController {
     const { id: requestId, message_delete: messageDeleteParams } = data
 
     const messageDeleteOperation = ServiceLocatorContainer.use("MessageDeleteOperation")
-    const { organizationId, cId, participantsIds, deletedMessages } = await messageDeleteOperation.perform(
-      ws,
-      messageDeleteParams
-    )
+    const { organizationId, cId, participantsIds, deletedMessages } = await messageDeleteOperation.perform(ws, messageDeleteParams)
 
     const response = new Response()
 

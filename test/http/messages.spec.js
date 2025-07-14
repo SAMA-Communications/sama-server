@@ -2,14 +2,7 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../../app/common/ServiceLocatorContainer.js"
 
-import {
-  generateNewOrganizationId,
-  createUserArray,
-  createConversation,
-  sendLogin,
-  sendLogout,
-  mockedWS,
-} from "../tools/utils.js"
+import { generateNewOrganizationId, createUserArray, createConversation, sendLogin, sendLogout, mockedWS } from "../tools/utils.js"
 import HttpMessageController from "../../APIs/JSON/controllers/http/message.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")

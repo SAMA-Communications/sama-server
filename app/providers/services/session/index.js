@@ -288,9 +288,7 @@ class SessionService {
     userId = userId ?? this.getSessionUserId(ws)
     deviceId = deviceId ?? this.getDeviceId(ws, userId)
 
-    const leftActiveConnections = this.getUserDevices(userId).filter(
-      ({ deviceId: activeDeviceId }) => activeDeviceId !== deviceId
-    )
+    const leftActiveConnections = this.getUserDevices(userId).filter(({ deviceId: activeDeviceId }) => activeDeviceId !== deviceId)
 
     if (!leftActiveConnections.length) {
       this.removeAllUserSessions(ws)

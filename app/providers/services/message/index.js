@@ -116,11 +116,7 @@ class MessageService {
       findMessagesOptions.lastReadMessageId = lastReadMessagesByConvIds[cid]?.mid || null
     }
 
-    const unreadMessages = await this.messageRepo.findAllOpponentsMessagesFromConversation(
-      cid,
-      userId,
-      findMessagesOptions
-    )
+    const unreadMessages = await this.messageRepo.findAllOpponentsMessagesFromConversation(cid, userId, findMessagesOptions)
 
     if (unreadMessages.length) {
       const mids = unreadMessages.map((message) => message._id).reverse()
@@ -151,16 +147,9 @@ class MessageService {
   }
 
   async aggregateCountOfUnreadMessagesByCid(cids, user) {
-    const lastReadMessageByUserForCids = await this.messageStatusRepo.findLastReadMessageByUserForCid(
-      cids,
-      user.native_id
-    )
+    const lastReadMessageByUserForCids = await this.messageStatusRepo.findLastReadMessageByUserForCid(cids, user.native_id)
 
-    const unreadMessageCountByCids = await this.messageRepo.countUnreadMessagesByCids(
-      cids,
-      user.native_id,
-      lastReadMessageByUserForCids
-    )
+    const unreadMessageCountByCids = await this.messageRepo.countUnreadMessagesByCids(cids, user.native_id, lastReadMessageByUserForCids)
 
     return unreadMessageCountByCids
   }

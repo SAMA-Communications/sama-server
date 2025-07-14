@@ -15,12 +15,7 @@ class MessageReactionsUpdateOperation {
 
     const message = await this.#hasAccess(messageId, currentUserId)
 
-    const updateResult = await this.messageService.updateReactions(
-      message._id,
-      currentUserId,
-      addReaction,
-      removeReaction
-    )
+    const updateResult = await this.messageService.updateReactions(message._id, currentUserId, addReaction, removeReaction)
 
     if (!(updateResult.add || updateResult.remove)) {
       return { isUpdated: false }

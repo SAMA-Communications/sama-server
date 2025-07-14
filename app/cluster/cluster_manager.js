@@ -101,14 +101,11 @@ class ClusterManager {
         ...wsOptions,
 
         open: (ws) => {
-          console.log(
-            "[ClusterManager][createLocalSocket] ws on Open",
-            `IP: ${Buffer.from(ws.getRemoteAddressAsText()).toString()}`
-          )
+          console.log("[ClusterManager][WS] on Open", `IP: ${Buffer.from(ws.getRemoteAddressAsText()).toString()}`)
         },
 
         close: async (ws, code, message) => {
-          console.log("[ClusterManager][createLocalSocket] ws on Close")
+          console.log("[ClusterManager][WS] on Close")
           for (const nodeIp in this.clusterNodesWS) {
             if (this.clusterNodesWS[nodeIp] !== ws) {
               continue
@@ -122,7 +119,7 @@ class ClusterManager {
         message: async (ws, message, isBinary) => {
           const json = JSON.parse(decoder.write(Buffer.from(message)))
 
-          console.log("[ClusterManager] ws on Message", json)
+          console.log("[ClusterManager][WS] on Message", json)
 
           if (json.node_info) {
             const nodeInfo = json.node_info
@@ -137,14 +134,14 @@ class ClusterManager {
       })
 
       this.#localSocket.listen(0, listenOptions, (listenSocket) => {
-        if (listenSocket) {
-          const clusterPort = uWS.us_socket_local_port(listenSocket)
-          console.log(`[ClusterManager][createLocalSocket] listening on port ${clusterPort}`)
-
-          return resolve(clusterPort)
-        } else {
-          throw new Error(`[ClusterManager][createLocalSocket] socket.listen error: can't allocate port`)
+        if (!listenSocket) {
+          throw new Error(`[ClusterManager][WS] socket.listen error: can't allocate port`)
         }
+
+        const clusterPort = uWS.us_socket_local_port(listenSocket)
+        console.log(`[ClusterManager][WS] listening on port ${clusterPort}`)
+
+        return resolve(clusterPort)
       })
     })
   }

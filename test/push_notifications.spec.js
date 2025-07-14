@@ -42,26 +42,11 @@ describe("PushNotification functions", async () => {
       responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id)
-      assert.strictEqual(
-        responseData.response.subscription.web_endpoint,
-        requestData.request.push_subscription_create.web_endpoint
-      )
-      assert.strictEqual(
-        responseData.response.subscription.web_key_auth,
-        requestData.request.push_subscription_create.web_key_auth
-      )
-      assert.strictEqual(
-        responseData.response.subscription.web_key_p256dh,
-        requestData.request.push_subscription_create.web_key_p256dh
-      )
-      assert.strictEqual(
-        responseData.response.subscription.device_udid,
-        requestData.request.push_subscription_create.device_udid
-      )
-      assert.strictEqual(
-        responseData.response.subscription.platform,
-        requestData.request.push_subscription_create.platform
-      )
+      assert.strictEqual(responseData.response.subscription.web_endpoint, requestData.request.push_subscription_create.web_endpoint)
+      assert.strictEqual(responseData.response.subscription.web_key_auth, requestData.request.push_subscription_create.web_key_auth)
+      assert.strictEqual(responseData.response.subscription.web_key_p256dh, requestData.request.push_subscription_create.web_key_p256dh)
+      assert.strictEqual(responseData.response.subscription.device_udid, requestData.request.push_subscription_create.device_udid)
+      assert.strictEqual(responseData.response.subscription.platform, requestData.request.push_subscription_create.platform)
       assert.strictEqual(responseData.response.subscription.user_id.toString(), usersIds[0].toString())
     })
 
@@ -82,18 +67,9 @@ describe("PushNotification functions", async () => {
       responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id)
-      assert.strictEqual(
-        responseData.response.subscription.device_token,
-        requestData.request.push_subscription_create.device_token
-      )
-      assert.strictEqual(
-        responseData.response.subscription.device_udid,
-        requestData.request.push_subscription_create.device_udid
-      )
-      assert.strictEqual(
-        responseData.response.subscription.platform,
-        requestData.request.push_subscription_create.platform
-      )
+      assert.strictEqual(responseData.response.subscription.device_token, requestData.request.push_subscription_create.device_token)
+      assert.strictEqual(responseData.response.subscription.device_udid, requestData.request.push_subscription_create.device_udid)
+      assert.strictEqual(responseData.response.subscription.platform, requestData.request.push_subscription_create.platform)
       assert.strictEqual(responseData.response.subscription.user_id.toString(), usersIds[0].toString())
     })
 
@@ -116,10 +92,7 @@ describe("PushNotification functions", async () => {
       responseData = responseData.backMessages.at(0)
 
       assert.strictEqual(requestData.request.id, responseData.response.id)
-      assert.strictEqual(
-        responseData.response.subscription.web_endpoint,
-        requestData.request.push_subscription_create.web_endpoint
-      )
+      assert.strictEqual(responseData.response.subscription.web_endpoint, requestData.request.push_subscription_create.web_endpoint)
     })
 
     it("should fail, incorrect platform field ", async () => {
@@ -326,30 +299,15 @@ describe("PushNotification functions", async () => {
 
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.strictEqual(responseData.response.subscriptions.length, 2)
-      assert.notEqual(
-        responseData.response.subscriptions[1].platform,
-        requestDataCreate.request.push_subscription_create.platform
-      )
-      assert.notEqual(
-        responseData.response.subscriptions[1].web_endpoint,
-        requestDataCreate.request.push_subscription_create.web_endpoint
-      )
-      assert.notEqual(
-        responseData.response.subscriptions[1].web_key_auth,
-        requestDataCreate.request.push_subscription_create.web_key_auth
-      )
+      assert.notEqual(responseData.response.subscriptions[1].platform, requestDataCreate.request.push_subscription_create.platform)
+      assert.notEqual(responseData.response.subscriptions[1].web_endpoint, requestDataCreate.request.push_subscription_create.web_endpoint)
+      assert.notEqual(responseData.response.subscriptions[1].web_key_auth, requestDataCreate.request.push_subscription_create.web_key_auth)
       assert.notEqual(
         responseData.response.subscriptions[1].web_key_p256dh,
         requestDataCreate.request.push_subscription_create.web_key_p256dh
       )
-      assert.notEqual(
-        responseData.response.subscriptions[1].device_udid,
-        requestDataCreate.request.push_subscription_create.device_udid
-      )
-      assert.notEqual(
-        responseData.response.subscriptions[1].user_id,
-        requestDataCreate.request.push_subscription_create.user_id
-      )
+      assert.notEqual(responseData.response.subscriptions[1].device_udid, requestDataCreate.request.push_subscription_create.device_udid)
+      assert.notEqual(responseData.response.subscriptions[1].user_id, requestDataCreate.request.push_subscription_create.user_id)
     })
 
     it("should fail, user_id is missed", async () => {

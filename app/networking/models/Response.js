@@ -9,9 +9,7 @@ class Response {
   constructor(backMessages, deliverMessages, lastActivityStatusResponse, httpResponse) {
     this.backMessages = this.backMessages.concat(backMessages || [])
     this.deliverMessages = this.deliverMessages.concat(deliverMessages || [])
-    this.lastActivityStatusResponse = lastActivityStatusResponse
-      ? lastActivityStatusResponse
-      : this.lastActivityStatusResponse
+    this.lastActivityStatusResponse = lastActivityStatusResponse ? lastActivityStatusResponse : this.lastActivityStatusResponse
     this.httpResponse = httpResponse ? httpResponse : this.httpResponse
   }
 

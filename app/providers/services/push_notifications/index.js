@@ -17,9 +17,7 @@ class PushNotificationService {
     let subscription = await this.pushSubscriptionsRepo.findAndUpdate(userId, deviceId, updateParams)
 
     if (!subscription) {
-      subscription = await this.pushSubscriptionsRepo.create(
-        Object.assign({}, { user_id: userId, device_udid: deviceId }, updateParams)
-      )
+      subscription = await this.pushSubscriptionsRepo.create(Object.assign({}, { user_id: userId, device_udid: deviceId }, updateParams))
     }
 
     return subscription

@@ -23,21 +23,9 @@ class UserAuthOperation {
       this.sessionService.addUserDeviceConnection(ws, user.organization_id, user.native_id, deviceId)
     }
 
-    const jwtAccessToken = this.#generateToken(
-      user,
-      "access",
-      process.env.JWT_ACCESS_SECRET,
-      +process.env.JWT_ACCESS_TOKEN_EXPIRES_IN
-    )
+    const jwtAccessToken = this.#generateToken(user, "access", process.env.JWT_ACCESS_SECRET, +process.env.JWT_ACCESS_TOKEN_EXPIRES_IN)
 
-    const updatedToken = await this.userTokenRepo.updateToken(
-      token,
-      organizationId,
-      user.native_id,
-      deviceId,
-      jwtAccessToken,
-      "access"
-    )
+    const updatedToken = await this.userTokenRepo.updateToken(token, organizationId, user.native_id, deviceId, jwtAccessToken, "access")
 
     await this.sessionService.storeUserNodeData(
       this.RuntimeDefinedContext.APP_IP,
@@ -93,21 +81,9 @@ class UserAuthOperation {
   }
 
   async createRefreshToken(user, deviceId) {
-    const jwtToken = this.#generateToken(
-      user,
-      "refresh",
-      process.env.JWT_REFRESH_SECRET,
-      +process.env.JWT_REFRESH_TOKEN_EXPIRES_IN
-    )
+    const jwtToken = this.#generateToken(user, "refresh", process.env.JWT_REFRESH_SECRET, +process.env.JWT_REFRESH_TOKEN_EXPIRES_IN)
 
-    const refreshToken = await this.userTokenRepo.updateToken(
-      null,
-      user.organization_id,
-      user.native_id,
-      deviceId,
-      jwtToken,
-      "refresh"
-    )
+    const refreshToken = await this.userTokenRepo.updateToken(null, user.organization_id, user.native_id, deviceId, jwtToken, "refresh")
 
     return refreshToken
   }

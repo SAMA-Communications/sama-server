@@ -28,12 +28,7 @@ class MessageListOperation {
       normalizedLimit
     )
 
-    const messagesWithVirtualFields = await this.#assignMessageVirtualFields(
-      messages,
-      messagesStatuses,
-      messagesReactions,
-      currentUserId
-    )
+    const messagesWithVirtualFields = await this.#assignMessageVirtualFields(messages, messagesStatuses, messagesReactions, currentUserId)
 
     return messagesWithVirtualFields.map((message) => new MessagePublicFields(message))
   }

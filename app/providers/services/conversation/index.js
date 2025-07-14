@@ -82,10 +82,7 @@ class ConversationService {
   async *conversationParticipantIdsIterator(conversationId, exceptUserIds, batchSize = 100) {
     let lastObjectId = null
 
-    const totalParticipants = await this.conversationParticipantRepo.countConversationParticipants(
-      conversationId,
-      exceptUserIds
-    )
+    const totalParticipants = await this.conversationParticipantRepo.countConversationParticipants(conversationId, exceptUserIds)
 
     const totalBatches = Math.ceil(totalParticipants / batchSize)
 
@@ -106,26 +103,16 @@ class ConversationService {
   }
 
   async findConversationsParticipantIds(organizationId, conversationIds, userId) {
-    const availableConversationIds = await this.validateConvIdsWhichUserHasAccess(
-      organizationId,
-      conversationIds,
-      userId
-    )
+    const availableConversationIds = await this.validateConvIdsWhichUserHasAccess(organizationId, conversationIds, userId)
 
-    const conversationsParticipants =
-      await this.conversationParticipantRepo.findConversationsParticipants(availableConversationIds)
+    const conversationsParticipants = await this.conversationParticipantRepo.findConversationsParticipants(availableConversationIds)
 
-    const privateConversations = await this.conversationRepo.findAvailablePrivateConversation(
-      availableConversationIds,
-      userId
-    )
+    const privateConversations = await this.conversationRepo.findAvailablePrivateConversation(availableConversationIds, userId)
 
     const allParticipantIdsFromPrivateConversation =
       await this.conversationParticipantRepo.extractParticipantIdsFromPrivateConversations(privateConversations)
 
-    const participantIds = [
-      ...new Set([...Object.values(conversationsParticipants).flat(), ...allParticipantIdsFromPrivateConversation]),
-    ]
+    const participantIds = [...new Set([...Object.values(conversationsParticipants).flat(), ...allParticipantIdsFromPrivateConversation])]
 
     return { participantIds, participantsIdsByCids: conversationsParticipants }
   }
@@ -137,10 +124,7 @@ class ConversationService {
       return acc
     }, {})
 
-    const conversationsAdminsIds = await this.conversationParticipantRepo.findConversationsParticipants(
-      conversationIds,
-      "admin"
-    )
+    const conversationsAdminsIds = await this.conversationParticipantRepo.findConversationsParticipants(conversationIds, "admin")
 
     Object.keys(conversationsOwnersIds).forEach((conversationId) => {
       const adminsIds = conversationsAdminsIds[conversationId] ?? []
@@ -156,10 +140,7 @@ class ConversationService {
   }
 
   async validateConvIdsWhichUserHasAccess(organizationId, conversationIds, userId) {
-    const verifiedConversationIds = await this.conversationParticipantRepo.filterAvailableConversationIds(
-      conversationIds,
-      userId
-    )
+    const verifiedConversationIds = await this.conversationParticipantRepo.filterAvailableConversationIds(conversationIds, userId)
 
     return verifiedConversationIds
   }
@@ -206,10 +187,7 @@ class ConversationService {
       return result
     }
 
-    const currentParticipant = await this.conversationParticipantRepo.findFirstConversationParticipant(
-      conversationId,
-      userId
-    )
+    const currentParticipant = await this.conversationParticipantRepo.findFirstConversationParticipant(conversationId, userId)
 
     result.asParticipant = !!currentParticipant
     result.asAdmin = currentParticipant?.role === "admin"
@@ -265,10 +243,7 @@ class ConversationService {
         role: this.helpers.isEqualsNativeIds(pId, conversation.owner_id) ? "owner" : null,
       }))
 
-      participantIds = await this.conversationParticipantRepo.addNoExistedParticipants(
-        conversation._id,
-        createParticipantsParams
-      )
+      participantIds = await this.conversationParticipantRepo.addNoExistedParticipants(conversation._id, createParticipantsParams)
     }
 
     participantsCount = (participantIds?.length ?? 0) + (currentParticipantsCount ?? 0)
@@ -284,14 +259,9 @@ class ConversationService {
   async removeParticipants(conversation, participantIds) {
     const result = { removedIds: null, newOwnerId: null, isEmptyAndDeleted: false }
 
-    result.removedIds = await this.conversationParticipantRepo.removeExistedParticipants(
-      conversation._id,
-      participantIds
-    )
+    result.removedIds = await this.conversationParticipantRepo.removeExistedParticipants(conversation._id, participantIds)
 
-    const firstConversationHasParticipant = await this.conversationParticipantRepo.findFirstConversationParticipant(
-      conversation._id
-    )
+    const firstConversationHasParticipant = await this.conversationParticipantRepo.findFirstConversationParticipant(conversation._id)
 
     if (!firstConversationHasParticipant) {
       await this.conversationRepo.deleteById(conversation._id)

@@ -38,11 +38,7 @@ describe("Unit Conversation participants", async () => {
 
     const conversationService = ServiceLocatorContainer.use("ConversationService")
 
-    for await (const participantIds of conversationService.conversationParticipantIdsIterator(
-      conversationId,
-      [],
-      batchSize
-    )) {
+    for await (const participantIds of conversationService.conversationParticipantIdsIterator(conversationId, [], batchSize)) {
       const isFullLength = participantIds.length === batchSize
       const isLessButNotEmpty = participantIds.length <= batchSize && participantIds.length > 0
 
@@ -68,9 +64,7 @@ describe("Unit Conversation participants", async () => {
   })
 
   it("participants iterator with exceptIds", async () => {
-    const exceptIds = [usersIds.at(4), usersIds.at(7), usersIds.at(34), usersIds.at(49), usersIds.at(21)].map(
-      (uId) => `${uId}`
-    )
+    const exceptIds = [usersIds.at(4), usersIds.at(7), usersIds.at(34), usersIds.at(49), usersIds.at(21)].map((uId) => `${uId}`)
     const origUserIds = usersIds.map((uId) => `${uId}`).filter((uId) => !exceptIds.includes(uId))
     const batchSize = 10
     const targetIterationsCount = Math.ceil(origUserIds.length / batchSize)
@@ -79,11 +73,7 @@ describe("Unit Conversation participants", async () => {
 
     const conversationService = ServiceLocatorContainer.use("ConversationService")
 
-    for await (const participantIds of conversationService.conversationParticipantIdsIterator(
-      conversationId,
-      exceptIds,
-      batchSize
-    )) {
+    for await (const participantIds of conversationService.conversationParticipantIdsIterator(conversationId, exceptIds, batchSize)) {
       const isFullLength = participantIds.length === batchSize
       const isLessButNotEmpty = participantIds.length <= batchSize && participantIds.length > 0
 

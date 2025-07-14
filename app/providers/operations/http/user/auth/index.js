@@ -32,8 +32,7 @@ class HttpUserAuthOperation {
     const { user, token: newAccessToken } = await this.userAuthOperation.perform(fakeWsSessionKey, userInfo, true)
     const newRefreshToken = await this.userAuthOperation.createRefreshToken(user, device_id)
 
-    const accessTokenExpiredAt =
-      new Date(newAccessToken.updated_at).getTime() + process.env.JWT_ACCESS_TOKEN_EXPIRES_IN * 1000
+    const accessTokenExpiredAt = new Date(newAccessToken.updated_at).getTime() + process.env.JWT_ACCESS_TOKEN_EXPIRES_IN * 1000
 
     return { user, newAccessToken, accessTokenExpiredAt, newRefreshToken }
   }

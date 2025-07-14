@@ -121,9 +121,7 @@ export default class BaseRepository {
       query._id.$in && (query._id.$in = this.castObjectIds(query._id.$in))
     }
     if (query.user_id && !query.user_id.$ne) {
-      query.user_id.$in
-        ? (query.user_id.$in = this.castUserIds(query.user_id.$in))
-        : (query.user_id = this.castUserId(query.user_id))
+      query.user_id.$in ? (query.user_id.$in = this.castUserIds(query.user_id.$in)) : (query.user_id = this.castUserId(query.user_id))
     }
     if (query.conversation_id) {
       query.conversation_id.$in
@@ -219,9 +217,7 @@ export default class BaseRepository {
       query.user_id = this.castUserId(query.user_id)
     }
 
-    const record = await this.collectionCursor
-      .findOneAndUpdate(query, update, { returnDocument: "after" })
-      .catch((error) => null)
+    const record = await this.collectionCursor.findOneAndUpdate(query, update, { returnDocument: "after" }).catch((error) => null)
 
     const model = record ? this.wrapRawRecordInModel(record) : null
 

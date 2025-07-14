@@ -67,11 +67,13 @@ const tcpOptions = {
   cert: process.env.TLS_CERT_FILE_NAME ? fs.readFileSync(process.env.TLS_CERT_FILE_NAME) : null,
 }
 
-await clientManager.createLocalSocket(uwsOptions, tcpOptions)
-
 RuntimeDefinedContext.CLUSTER_PORT = await clusterManager.createLocalSocket(uwsOptions)
 
 console.log("[RuntimeDefinedContext]", RuntimeDefinedContext)
+
+await clientManager.createWebSocket(uwsOptions)
+await clientManager.createHttpServer({})
+await clientManager.createTCPSocket(tcpOptions)
 
 // perform a database connection when the server starts
 const dbConnection = await connectToDBPromise(process.env.MONGODB_URL)

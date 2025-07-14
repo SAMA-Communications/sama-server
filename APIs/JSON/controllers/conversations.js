@@ -54,9 +54,7 @@ class ConversationsController extends BaseJSONController {
 
       response.addDeliverMessage(deliverMessage)
 
-      const isCurrentUser = event.participantIds.find((pId) =>
-        conversationEditOperation.helpers.isEqualsNativeIds(pId, currentUserId)
-      )
+      const isCurrentUser = event.participantIds.find((pId) => conversationEditOperation.helpers.isEqualsNativeIds(pId, currentUserId))
       if (isCurrentUser && !event.ignoreOwnDelivery) {
         response.addBackMessage(event.message)
       }
@@ -105,9 +103,7 @@ class ConversationsController extends BaseJSONController {
 
       response.addDeliverMessage(deliverMessage)
 
-      const isCurrentUser = event.participantIds.find((pId) =>
-        conversationDeleteOperation.helpers.isEqualsNativeIds(pId, currentUserId)
-      )
+      const isCurrentUser = event.participantIds.find((pId) => conversationDeleteOperation.helpers.isEqualsNativeIds(pId, currentUserId))
       if (isCurrentUser) {
         response.addBackMessage(event.message)
       }

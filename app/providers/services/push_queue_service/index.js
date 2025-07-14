@@ -29,11 +29,9 @@ export default class PushQueueService extends BasePushQueueService {
   }
 
   async createChatAlert(createChatAlertEventOptions) {
-    const createPushEventOptions = new CreatePushEventOptions(
-      createChatAlertEventOptions.senderID,
-      createChatAlertEventOptions.payload,
-      { user_ids: createChatAlertEventOptions.offlineUsersIDs }
-    )
+    const createPushEventOptions = new CreatePushEventOptions(createChatAlertEventOptions.senderID, createChatAlertEventOptions.payload, {
+      user_ids: createChatAlertEventOptions.offlineUsersIDs,
+    })
 
     const pushEvent = await this.createPushEvent(createPushEventOptions)
 

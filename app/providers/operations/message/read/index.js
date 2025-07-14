@@ -16,12 +16,7 @@ class MessageReadOperation {
 
     await this.#hasAccess(organizationId, cid, currentUserId)
 
-    const unreadMessages = await this.messageService.readMessagesInConversation(
-      organizationId,
-      cid,
-      currentUserId,
-      mids
-    )
+    const unreadMessages = await this.messageService.readMessagesInConversation(organizationId, cid, currentUserId, mids)
 
     const unreadMessagesGroupedByFrom = groupBy(unreadMessages, "from")
 

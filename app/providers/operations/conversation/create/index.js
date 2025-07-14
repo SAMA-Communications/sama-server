@@ -72,10 +72,7 @@ class ConversationCreateOperation {
     )
 
     let normalizedParticipants = participantIds
-    let existedConversation = await this.conversationService.findExistedPrivateConversation(
-      user,
-      conversationParams.opponent_id
-    )
+    let existedConversation = await this.conversationService.findExistedPrivateConversation(user, conversationParams.opponent_id)
 
     if (existedConversation) {
       normalizedParticipants = await this.conversationService.restorePrivateConversation(existedConversation)
@@ -120,9 +117,7 @@ class ConversationCreateOperation {
   }
 
   async #createGroupConversation(user, conversationParams, participantIds) {
-    const isOwnerInParticipants = participantIds.find((pId) =>
-      this.helpers.isEqualsNativeIds(pId, conversationParams.owner_id)
-    )
+    const isOwnerInParticipants = participantIds.find((pId) => this.helpers.isEqualsNativeIds(pId, conversationParams.owner_id))
     if (!isOwnerInParticipants) {
       participantIds.push(conversationParams.owner_id)
     }
@@ -139,9 +134,7 @@ class ConversationCreateOperation {
   }
 
   async #createChannelConversation(user, conversationParams, participantIds) {
-    const isOwnerInParticipants = participantIds.find((pId) =>
-      this.helpers.isEqualsNativeIds(pId, conversationParams.owner_id)
-    )
+    const isOwnerInParticipants = participantIds.find((pId) => this.helpers.isEqualsNativeIds(pId, conversationParams.owner_id))
     if (!isOwnerInParticipants) {
       participantIds.push(conversationParams.owner_id)
     }

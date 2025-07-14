@@ -602,9 +602,7 @@ describe("Conversation functions", async () => {
 
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.strictEqual(
-        responseData.response.conversations
-          .find((el) => el._id.toString() === ArrayOfTmpConversations[0])
-          ?.last_message._id.toString(),
+        responseData.response.conversations.find((el) => el._id.toString() === ArrayOfTmpConversations[0])?.last_message._id.toString(),
         lastMessageInChat.toString()
       )
       assert.notEqual(responseData.response.conversations, undefined)

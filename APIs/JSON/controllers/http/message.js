@@ -24,9 +24,7 @@ class HttpMessageController extends BaseHttpController {
     const { organizationId, messageId, message, deliverMessages, cId, participantIds, modifiedFields, botMessage } = createMessageResponse
 
     deliverMessages.forEach((event) => {
-      const deliverMessage = new DeliverMessage(organizationId, new MessageResponse(event.message)).addPushQueueMessage(
-        event.notification
-      )
+      const deliverMessage = new DeliverMessage(organizationId, new MessageResponse(event.message)).addPushQueueMessage(event.notification)
 
       const participantsDestination = event.participantIds ?? participantIds
       deliverMessage.setUsersDestination(participantsDestination)
@@ -50,10 +48,7 @@ class HttpMessageController extends BaseHttpController {
     const payload = res.parsedBody
 
     const messageSendSystemOperation = ServiceLocatorContainer.use("HttpMessageSendSystemOperation")
-    const { organizationId, cId, recipientsIds, systemMessage } = await messageSendSystemOperation.perform(
-      res.fakeWsSessionKey,
-      payload
-    )
+    const { organizationId, cId, recipientsIds, systemMessage } = await messageSendSystemOperation.perform(res.fakeWsSessionKey, payload)
 
     const deliverMessage = new DeliverMessage(organizationId, new SystemMessageResponse(systemMessage), true)
       .setConversationDestination(cId)
@@ -74,9 +69,7 @@ class HttpMessageController extends BaseHttpController {
 
     for (const readMessagesGroup of readMessagesGroups) {
       const { userId, readMessages } = readMessagesGroup
-      response.addDeliverMessage(
-        new DeliverMessage(organizationId, new ReadMessagesResponse(readMessages)).setUsersDestination([userId])
-      )
+      response.addDeliverMessage(new DeliverMessage(organizationId, new ReadMessagesResponse(readMessages)).setUsersDestination([userId]))
     }
 
     return response.setHttpResponse(new HttpResponse(200, {}, { success: true }))
@@ -92,8 +85,8 @@ class HttpMessageController extends BaseHttpController {
       .setHttpResponse(new HttpResponse(200, {}, { success: true }))
       .addDeliverMessage(
         new DeliverMessage(organizationId, new EditMessageResponse(editedMessage), true)
-        .setConversationDestination(cId)
-        .setUsersDestination(participantsIds)
+          .setConversationDestination(cId)
+          .setUsersDestination(participantsIds)
       )
   }
 
@@ -109,12 +102,9 @@ class HttpMessageController extends BaseHttpController {
     return new Response()
       .setHttpResponse(new HttpResponse(200, {}, { success: true }))
       .addDeliverMessage(
-        new DeliverMessage(
-          organizationId,
-          new MessageReactionsUpdateResponse(messageReactionsUpdate),
-          true
-        ).setConversationDestination(cId)
-        .setUsersDestination(participantsIds)
+        new DeliverMessage(organizationId, new MessageReactionsUpdateResponse(messageReactionsUpdate), true)
+          .setConversationDestination(cId)
+          .setUsersDestination(participantsIds)
       )
   }
 
@@ -128,12 +118,9 @@ class HttpMessageController extends BaseHttpController {
 
     if (deletedMessages) {
       response.addDeliverMessage(
-        new DeliverMessage(
-          organizationId,
-          new DeleteMessagesResponse(deletedMessages),
-          true
-        ).setConversationDestination(cId)
-        .setUsersDestination(participantsIds)
+        new DeliverMessage(organizationId, new DeleteMessagesResponse(deletedMessages), true)
+          .setConversationDestination(cId)
+          .setUsersDestination(participantsIds)
       )
     }
 

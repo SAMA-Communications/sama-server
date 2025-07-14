@@ -9,11 +9,7 @@ class ConversationListAdminsOperation {
     const { cids } = options
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    const conversations = await this.conversationService.validateConvIdsWhichUserHasAccessAsAdmin(
-      organizationId,
-      cids,
-      currentUserId
-    )
+    const conversations = await this.conversationService.validateConvIdsWhichUserHasAccessAsAdmin(organizationId, cids, currentUserId)
 
     if (!conversations.length) {
       return { users: [], conversations: {} }

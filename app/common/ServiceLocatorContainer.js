@@ -51,12 +51,7 @@ class ServiceLocatorContainer {
         registerProvider.implementationName
       )
     } else {
-      console.log(
-        "[ServiceLocatorContainer] [register]",
-        registerProvider.name,
-        "[implementation]",
-        registerProvider.implementationName
-      )
+      console.log("[ServiceLocatorContainer] [register]", registerProvider.name, "[implementation]", registerProvider.implementationName)
     }
 
     this.#providersStore[registerProvider.name] = registerProvider
@@ -69,12 +64,7 @@ class ServiceLocatorContainer {
     for (const registerProvider of registerProviderToBoot) {
       await registerProvider.boot(this)
       registerProvider.booted = true
-      console.log(
-        "[ServiceLocatorContainer] [boot]",
-        registerProvider.name,
-        "[implementation]",
-        registerProvider.implementationName
-      )
+      console.log("[ServiceLocatorContainer] [boot]", registerProvider.name, "[implementation]", registerProvider.implementationName)
     }
   }
 }

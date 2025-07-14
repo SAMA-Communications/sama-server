@@ -45,14 +45,8 @@ const onMessage = async (ws, message) => {
 
   console.log("[RECV][splitted]", splittedMessages)
 
-  if (Array.isArray(splittedMessages)) {
-    for (const splittedMessage of splittedMessages) {
-      const response = await api.onMessage(ws, splittedMessage)
-
-      await processMessageResponse(ws, response)
-    }
-  } else {
-    const response = await api.onMessage(ws, splittedMessages)
+  for (const splittedMessage of splittedMessages) {
+    const response = await api.onMessage(ws, splittedMessage)
 
     await processMessageResponse(ws, response)
   }
@@ -68,11 +62,7 @@ const processMessageResponse = async (ws, response, needStringify) => {
 
     const userId = response.lastActivityStatusResponse.userId || sessionService.getSessionUserId(ws)
     console.log("[UPDATE_LAST_ACTIVITY]", userId, response.lastActivityStatusResponse)
-    const responses = await activitySender.updateAndBuildUserActivity(
-      ws,
-      userId,
-      response.lastActivityStatusResponse.status
-    )
+    const responses = await activitySender.updateAndBuildUserActivity(ws, userId, response.lastActivityStatusResponse.status)
     responses.forEach((activityResponse) => response.merge(activityResponse))
   }
 
@@ -93,21 +83,10 @@ const processMessageResponse = async (ws, response, needStringify) => {
 
     deliverMessage.ws ??= ws
 
-    try {
-      if (deliverMessage.userIds?.length) {
-        await packetManager.deliverToUserOrUsers(
-          deliverMessage.ws,
-          deliverMessage.packet,
-          deliverMessage.pushQueueMessage,
-          deliverMessage.userIds,
-          deliverMessage.notSaveInOfflineStorage,
-          deliverMessage.ignoreSelf
-        )
-      } else if (deliverMessage.cId) {
-        await processDeliverConversationMessageMessage(deliverMessage)
-      }
-    } catch (e) {
-      console.error("[ClientManager] connection with client ws is lost", e)
+    if (deliverMessage.userIds?.length) {
+      await processDeliverUserMessage(deliverMessage)
+    } else if (deliverMessage.cId) {
+      await processDeliverConversationMessageMessage(deliverMessage)
     }
   }
 
@@ -117,6 +96,21 @@ const processMessageResponse = async (ws, response, needStringify) => {
 
   if (response.upgradeTls) {
     ws.emit("upgrade")
+  }
+}
+
+const processDeliverUserMessage = async (deliverMessage, participantIds) => {
+  try {
+    await packetManager.deliverToUserOrUsers(
+      deliverMessage.ws,
+      deliverMessage.packet,
+      deliverMessage.pushQueueMessage,
+      participantIds ?? deliverMessage.userIds,
+      deliverMessage.notSaveInOfflineStorage,
+      deliverMessage.ignoreSelf
+    )
+  } catch (e) {
+    console.error("[ClientManager] connection with client socket is lost", e)
   }
 }
 
@@ -130,14 +124,7 @@ const processDeliverConversationMessageMessage = async (deliverMessage) => {
       continue
     }
 
-    await packetManager.deliverToUserOrUsers(
-      deliverMessage.ws,
-      deliverMessage.packet,
-      deliverMessage.pushQueueMessage,
-      participantIds,
-      deliverMessage.notSaveInOfflineStorage,
-      deliverMessage.ignoreSelf
-    )
+    await processDeliverUserMessage(deliverMessage, participantIds)
   }
 }
 
@@ -147,6 +134,7 @@ const unbindSessionCallback = async (wsKey) => {
   if (!session?.userId) {
     return
   }
+
   await sessionService.removeUserSession(wsKey, session.userId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
 }
 
@@ -155,11 +143,10 @@ const onClose = async (ws) => {
 
   const userId = sessionService.getSessionUserId(ws)
 
+  console.log("[ClientManager] ws on Close", userId)
+
   if (!userId) {
-    console.log("[ClientManager] ws on Close")
     return
-  } else {
-    console.log("[ClientManager] ws on Close", userId)
   }
 
   await sessionService.removeUserSession(ws, userId)
@@ -172,7 +159,7 @@ class ClientManager {
   #localWebSocket = null
   #httpServerApp = null
 
-  async createLocalSocket(uwsOptions, tcpOptions) {
+  createWebSocket(uwsOptions) {
     return new Promise((resolve) => {
       this.#localWebSocket = uwsOptions.isSSL ? uWS.SSLApp(uwsOptions.appOptions) : uWS.App(uwsOptions.appOptions)
 
@@ -206,11 +193,29 @@ class ClientManager {
         },
       })
 
-      this.#httpServerApp = new HttpServerApp(this.#localWebSocket)
-      this.#httpServerApp.setResponseProcessor(processMessageResponse)
-      this.#httpServerApp.setUnbindSessionCallback(unbindSessionCallback)
-      this.#httpServerApp.bindRoutes()
+      this.#localWebSocket.listen(uwsOptions.port, uwsOptions.listenOptions, (listenSocket) => {
+        if (!listenSocket) {
+          throw new Error(`[ClientManager][WS] can't allocate port`)
+        }
 
+        console.log(`[ClientManager][WS] listening on port ${uWS.us_socket_local_port(listenSocket)}, pid=${process.pid}`)
+
+        return resolve(uwsOptions.port)
+      })
+    })
+  }
+
+  createHttpServer(httpOptions) {
+    this.#httpServerApp = new HttpServerApp(this.#localWebSocket)
+    this.#httpServerApp.setResponseProcessor(processMessageResponse)
+    this.#httpServerApp.setUnbindSessionCallback(unbindSessionCallback)
+    this.#httpServerApp.bindRoutes()
+
+    console.log(`[ClientManager][HTTP] listening on [WS] port, pid=${process.pid}`)
+  }
+
+  createTCPSocket(tcpOptions) {
+    return new Promise((resolve) => {
       const tcpOnData = async function (message) {
         try {
           await onMessage(this, message)
@@ -296,21 +301,9 @@ class ClientManager {
       })
 
       this.#localTCPSocket.listen(tcpOptions.port, () => {
-        console.log(`[ClientManager][createLocalSocket][TCP] listening on port ${tcpOptions.port}, pid=${process.pid}`)
-      })
+        console.log(`[ClientManager][TCP] listening on port ${tcpOptions.port}, pid=${process.pid}`)
 
-      this.#localWebSocket.listen(uwsOptions.port, uwsOptions.listenOptions, (listenSocket) => {
-        if (listenSocket) {
-          console.log(
-            `[ClientManager][createLocalSocket][WS] listening on port ${uWS.us_socket_local_port(
-              listenSocket
-            )}, pid=${process.pid}`
-          )
-
-          return resolve(uwsOptions.port)
-        } else {
-          throw new Error(`[ClientManager][createLocalSocket][WS] socket.listen error: can't allocate port`)
-        }
+        return resolve(tcpOptions.port)
       })
     })
   }

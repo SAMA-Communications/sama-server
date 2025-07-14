@@ -27,13 +27,7 @@ class PacketManager {
           node: currentNodeUrl,
         }
 
-        const mappedMessage = await packetMapper.mapPacket(
-          senderInfo.apiType,
-          recipient.ws?.apiType,
-          packet,
-          senderInfo,
-          recipientInfo
-        )
+        const mappedMessage = await packetMapper.mapPacket(senderInfo.apiType, recipient.ws?.apiType, packet, senderInfo, recipientInfo)
 
         if (!mappedMessage) {
           continue
@@ -124,9 +118,7 @@ class PacketManager {
         continue
       }
 
-      const isInactive = Object.values(userNodeData).some((extraParams) =>
-        sessionService.isUserInactive(null, extraParams)
-      )
+      const isInactive = Object.values(userNodeData).some((extraParams) => sessionService.isUserInactive(null, extraParams))
 
       if (isInactive) {
         offlineUsersByPackets.push(userId)

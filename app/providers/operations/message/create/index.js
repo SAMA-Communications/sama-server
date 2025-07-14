@@ -76,10 +76,7 @@ class MessageCreateOperation {
 
       if (missedParticipantIds.length) {
         if (this.conversationNotificationService.isEnabled()) {
-          const restoreConversationEvent = await this.#restorePrivateConversationNotification(
-            conversation,
-            currentUserId
-          )
+          const restoreConversationEvent = await this.#restorePrivateConversationNotification(conversation, currentUserId)
           restoreConversationEvent.participantIds = missedParticipantIds
           deliverMessages.push(restoreConversationEvent)
         }
@@ -200,11 +197,7 @@ class MessageCreateOperation {
   async #restorePrivateConversationNotification(conversation, currentUserId) {
     const user = await this.userService.userRepo.findById(currentUserId)
 
-    const event = await this.conversationNotificationService.actionEvent(
-      CONVERSATION_EVENTS.CONVERSATION_EVENT.CREATE,
-      conversation,
-      user
-    )
+    const event = await this.conversationNotificationService.actionEvent(CONVERSATION_EVENTS.CONVERSATION_EVENT.CREATE, conversation, user)
 
     return event
   }

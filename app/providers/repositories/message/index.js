@@ -13,11 +13,7 @@ class MessageRepository extends BaseRepository {
   }
 
   async findAllOpponentsMessagesFromConversation(cid, readerUserId, { mids, lastReadMessageId }) {
-    const idQuery = lastReadMessageId
-      ? { $gt: this.castObjectId(lastReadMessageId) }
-      : mids
-        ? { $in: this.castObjectIds(mids) }
-        : null
+    const idQuery = lastReadMessageId ? { $gt: this.castObjectId(lastReadMessageId) } : mids ? { $in: this.castObjectIds(mids) } : null
 
     const query = {
       cid: this.castObjectId(cid),
@@ -94,10 +90,7 @@ class MessageRepository extends BaseRepository {
       count: { $sum: 1 },
     }
 
-    const aggregatedResult = await this.aggregate([
-      { $match: arrayParams.length ? { $or: arrayParams } : {} },
-      { $group },
-    ])
+    const aggregatedResult = await this.aggregate([{ $match: arrayParams.length ? { $or: arrayParams } : {} }, { $group }])
 
     const result = {}
 

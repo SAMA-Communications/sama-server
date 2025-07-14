@@ -73,10 +73,7 @@ async function createUserArray(organizationId, count, currentCountOfUsers, email
       },
     }
 
-    const createUserResponse = await packetJsonProcessor.processMessageOrError(
-      "UserCreate",
-      JSON.stringify(requestData)
-    )
+    const createUserResponse = await packetJsonProcessor.processMessageOrError("UserCreate", JSON.stringify(requestData))
 
     usersIds[i] = createUserResponse?.backMessages?.at?.(0)?.response.user._id
   }
@@ -108,12 +105,4 @@ async function createConversation(ws, name, description, type, participants) {
   return responseData?.response.conversation._id.toString()
 }
 
-export {
-  createOrganization,
-  generateNewOrganizationId,
-  sendLogin,
-  sendLogout,
-  createUserArray,
-  createConversation,
-  mockedWS,
-}
+export { createOrganization, generateNewOrganizationId, sendLogin, sendLogout, createUserArray, createConversation, mockedWS }

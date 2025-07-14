@@ -11,13 +11,7 @@ class UserDeleteOperationRegisterProvider extends RegisterProvider {
     const blockListService = slc.use("BlockListService")
     const contactService = slc.use("ContactService")
 
-    return new UserDeleteOperation(
-      sessionService,
-      userService,
-      activityManagerService,
-      blockListService,
-      contactService
-    )
+    return new UserDeleteOperation(sessionService, userService, activityManagerService, blockListService, contactService)
   }
 }
 
