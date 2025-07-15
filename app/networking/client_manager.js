@@ -86,7 +86,7 @@ const processMessageResponse = async (ws, response, needStringify) => {
     if (deliverMessage.userIds?.length) {
       await processDeliverUserMessage(deliverMessage)
     } else if (deliverMessage.cId) {
-      await processDeliverConversationMessageMessage(deliverMessage)
+      await processDeliverConversationMessage(deliverMessage)
     }
   }
 
@@ -114,7 +114,7 @@ const processDeliverUserMessage = async (deliverMessage, participantIds) => {
   }
 }
 
-const processDeliverConversationMessageMessage = async (deliverMessage) => {
+const processDeliverConversationMessage = async (deliverMessage) => {
   const { cId, exceptUserIds } = deliverMessage
 
   const conversationService = ServiceLocatorContainer.use("ConversationService")
