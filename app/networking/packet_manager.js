@@ -27,29 +27,25 @@ class PacketManager {
           node: currentNodeUrl,
         }
 
-        const mappedMessage = await packetMapper.mapPacket(senderInfo.apiType, recipient.ws?.apiType, packet, senderInfo, recipientInfo)
+        let mappedMessage = await packetMapper.mapPacket(senderInfo.apiType, recipient.ws?.apiType, packet, senderInfo, recipientInfo)
 
         if (!mappedMessage) {
           continue
         }
 
-        if (Array.isArray(mappedMessage)) {
-          if (recipient.ws.sendMultiple) {
-            recipient.ws.sendMultiple(mappedMessage)
-          } else {
-            for (const message of mappedMessage) {
-              recipient.ws.send(message)
-            }
-          }
-        } else {
+        if (!Array.isArray(mappedMessage)) {
+          mappedMessage = [mappedMessage]
+        }
+
+        for (const message of mappedMessage) {
           const mappedRecipientMessage = await packetMapper.mapRecipientPacket(
             recipient.ws?.apiType,
-            mappedMessage,
+            message,
             senderInfo,
             recipientInfo
           )
 
-          recipient.ws.send(mappedRecipientMessage)
+          await recipient.ws.safeSend(mappedRecipientMessage)
         }
       } catch (err) {
         console.error(`[PacketProcessor] send on socket error`, err)

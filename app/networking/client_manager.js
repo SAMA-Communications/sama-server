@@ -13,7 +13,7 @@ import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 import packetManager from "./packet_manager.js"
 import packetMapper from "./packet_mapper.js"
 import HttpServerApp from "./http_server.js"
-import sendMultiplePackages from "../utils/send-multiple-socket-packages.js"
+import { tcpSafeSend, wsSafeSend, socketMultipleSafeSend } from "../utils/sockets-utils.js"
 
 import activitySender from "../services/activity_sender.js"
 
@@ -23,36 +23,27 @@ const decoder = new StringDecoder("utf8")
 
 const mapBackMessageFunc = async (ws, packet) => packetMapper.mapPacket(null, ws.apiType, packet, {}, {})
 
-const onMessage = async (ws, message) => {
-  const stringMessage = decoder.write(Buffer.from(message))?.trim()
-  console.log("[RECV]", stringMessage, stringMessage.length)
-
-  if (!stringMessage.length) {
+const onMessage = async (socket, stringMessage) => {
+  if (!stringMessage) {
     return
   }
 
-  if (!ws.apiType) {
-    const apiType = detectAPIType(ws, stringMessage)
+  if (!socket.apiType) {
+    const apiType = detectAPIType(socket, stringMessage)
     if (!apiType) {
       throw new Error("Unknown message format")
     }
-    ws.apiType = apiType.at(0)
+    socket.apiType = apiType.at(0)
   }
 
-  const api = APIs[ws.apiType]
+  const api = APIs[socket.apiType]
 
-  const splittedMessages = api.splitPacket(stringMessage)
+  const response = await api.onMessage(socket, stringMessage)
 
-  console.log("[RECV][splitted]", splittedMessages)
-
-  for (const splittedMessage of splittedMessages) {
-    const response = await api.onMessage(ws, splittedMessage)
-
-    await processMessageResponse(ws, response)
-  }
+  await processMessageResponse(socket, response)
 }
 
-const processMessageResponse = async (ws, response, needStringify) => {
+const processMessageResponse = async (socket, response, needStringify) => {
   if (needStringify) {
     response = APIs[BASE_API].stringifyResponse(response)
   }
@@ -60,19 +51,19 @@ const processMessageResponse = async (ws, response, needStringify) => {
   if (response.lastActivityStatusResponse) {
     const sessionService = ServiceLocatorContainer.use("SessionService")
 
-    const userId = response.lastActivityStatusResponse.userId || sessionService.getSessionUserId(ws)
+    const userId = response.lastActivityStatusResponse.userId || sessionService.getSessionUserId(socket)
     console.log("[UPDATE_LAST_ACTIVITY]", userId, response.lastActivityStatusResponse)
-    const responses = await activitySender.updateAndBuildUserActivity(ws, userId, response.lastActivityStatusResponse.status)
+    const responses = await activitySender.updateAndBuildUserActivity(socket, userId, response.lastActivityStatusResponse.status)
     responses.forEach((activityResponse) => response.merge(activityResponse))
   }
 
   for (let backMessage of response.backMessages) {
     try {
       if (backMessage instanceof MappableMessage) {
-        backMessage = await backMessage.mapMessage(mapBackMessageFunc.bind(ws))
+        backMessage = await backMessage.mapMessage(mapBackMessageFunc.bind(socket))
       }
       console.log("[SENT]", backMessage)
-      ws.send(backMessage)
+      await socket.safeSend(backMessage)
     } catch (e) {
       console.error("[ClientManager] connection with client ws is lost", e)
     }
@@ -81,7 +72,7 @@ const processMessageResponse = async (ws, response, needStringify) => {
   for (const deliverMessage of response.deliverMessages) {
     console.log("[DELIVER]", deliverMessage)
 
-    deliverMessage.ws ??= ws
+    deliverMessage.ws ??= socket
 
     if (deliverMessage.userIds?.length) {
       await processDeliverUserMessage(deliverMessage)
@@ -91,11 +82,11 @@ const processMessageResponse = async (ws, response, needStringify) => {
   }
 
   if (response.closeSocket) {
-    ws.end()
+    socket.end()
   }
 
   if (response.upgradeTls) {
-    ws.emit("upgrade")
+    socket.emit("upgrade")
   }
 }
 
@@ -138,10 +129,10 @@ const unbindSessionCallback = async (wsKey) => {
   await sessionService.removeUserSession(wsKey, session.userId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
 }
 
-const onClose = async (ws) => {
+const onClose = async (socket) => {
   const sessionService = ServiceLocatorContainer.use("SessionService")
 
-  const userId = sessionService.getSessionUserId(ws)
+  const userId = sessionService.getSessionUserId(socket)
 
   console.log("[ClientManager] ws on Close", userId)
 
@@ -149,9 +140,22 @@ const onClose = async (ws) => {
     return
   }
 
-  await sessionService.removeUserSession(ws, userId)
+  await sessionService.removeUserSession(socket, userId)
 
-  await processMessageResponse(ws, activitySender.buildOfflineActivityResponse(userId), true)
+  await processMessageResponse(socket, activitySender.buildOfflineActivityResponse(userId), true)
+}
+
+const socketOnErrorProcessingMessage = (socket, error, message) => {
+  socket.safeSend(
+    JSON.stringify({
+      response: {
+        error: {
+          status: ERROR_STATUES.INVALID_DATA_FORMAT.status,
+          message: ERROR_STATUES.INVALID_DATA_FORMAT.message,
+        },
+      },
+    })
+  )
 }
 
 class ClientManager {
@@ -160,6 +164,27 @@ class ClientManager {
   #httpServerApp = null
 
   createWebSocket(uwsOptions) {
+    const extendWs = (ws) => {
+      ws.safeSend = wsSafeSend.bind(ws, ws)
+      ws.multipleSafeSend = socketMultipleSafeSend.bind(ws, ws)
+    }
+
+    const removeWsExtends = (ws) => {
+      ws.safeSend = void 0
+      ws.multipleSafeSend = void 0
+    }
+
+    const decodeMessage = (message) => {
+      const stringMessage = decoder.write(Buffer.from(message))?.trim()
+      console.log("[RECV]", stringMessage, stringMessage.length)
+    
+      if (!stringMessage.length) {
+        return
+      }
+
+      return stringMessage
+    }
+
     return new Promise((resolve) => {
       this.#localWebSocket = uwsOptions.isSSL ? uWS.SSLApp(uwsOptions.appOptions) : uWS.App(uwsOptions.appOptions)
 
@@ -168,27 +193,23 @@ class ClientManager {
 
         open: (ws) => {
           console.log("[ClientManager][WS] on Open", `IP: ${Buffer.from(ws.getRemoteAddressAsText()).toString()}`)
+
+          extendWs(ws)
         },
 
         close: async (ws, code, message) => {
           await onClose(ws)
+
+          removeWsExtends(ws)
         },
 
         message: async (ws, message, isBinary) => {
           try {
-            await onMessage(ws, message)
+            const stringMessage = decodeMessage(message)
+            await onMessage(ws, stringMessage)
           } catch (err) {
             console.log("[ClientManager][WS] onMessage error", err)
-            ws.send(
-              JSON.stringify({
-                response: {
-                  error: {
-                    status: ERROR_STATUES.INVALID_DATA_FORMAT.status,
-                    message: ERROR_STATUES.INVALID_DATA_FORMAT.message,
-                  },
-                },
-              })
-            )
+            socketOnErrorProcessingMessage(ws, err, stringMessage)
           }
         },
       })
@@ -216,21 +237,52 @@ class ClientManager {
 
   createTCPSocket(tcpOptions) {
     return new Promise((resolve) => {
+      const extendSocket = (socket) => {
+        socket.safeSend = tcpSafeSend.bind(socket, socket)
+        socket.multipleSafeSend = socketMultipleSafeSend.bind(socket, socket)
+      }
+  
+      const removeSocketExtends = (socket) => {
+        socket.safeSend = void 0
+        socket.multipleSafeSend = void 0
+      }
+
+      const decodeMessage = (socket, message) => {
+        const stringMessage = decoder.write(Buffer.from(message))?.trim()
+        console.log("[RECV]", stringMessage, stringMessage.length)
+      
+        if (!stringMessage.length) {
+          return []
+        }
+
+        if (!socket.apiType) {
+          const apiType = detectAPIType(socket, stringMessage)
+          if (!apiType) {
+            throw new Error("Unknown message format")
+          }
+          socket.apiType = apiType.at(0)
+        }
+      
+        const api = APIs[socket.apiType]
+      
+        const splittedMessages = api.splitPacket(stringMessage)
+      
+        console.log("[RECV][splitted]", splittedMessages)
+
+        return { stringMessage, splittedMessages }
+      }
+
       const tcpOnData = async function (message) {
         try {
-          await onMessage(this, message)
+          const { stringMessage, splittedMessages } = decodeMessage(this, message)
+          message = stringMessage
+
+          for (const message of splittedMessages) {
+            await onMessage(this, message)
+          }
         } catch (err) {
           console.log("[ClientManager][TCP] onMessage error", err)
-          this.send(
-            JSON.stringify({
-              response: {
-                error: {
-                  status: ERROR_STATUES.INVALID_DATA_FORMAT.status,
-                  message: ERROR_STATUES.INVALID_DATA_FORMAT.message,
-                },
-              },
-            })
-          )
+          socketOnErrorProcessingMessage(this, err, message)
         }
       }
 
@@ -243,11 +295,7 @@ class ClientManager {
       }
 
       const socketListeners = (socket, isTls) => {
-        socket.send = (message) => {
-          socket.write(message)
-        }
-
-        socket.sendMultiple = (messages) => sendMultiplePackages(socket, messages)
+        extendSocket(socket)
 
         socket.on("data", tcpOnData)
 
@@ -286,8 +334,7 @@ class ClientManager {
       }
 
       const removeSocketListeners = (socket) => {
-        socket.send = void 0
-        socket.sendMultiple = void 0
+        removeSocketExtends(socket)
 
         socket.removeListener("data", tcpOnData)
         socket.removeListener("close", tcpOnClose)
