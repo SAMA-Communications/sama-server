@@ -49,7 +49,7 @@ export const messagesSchemaValidation = {
       forwarded_message_id: Joi.string(),
       deleted_for: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required()),
     })
-    .or("body", "attachments", "forwarded_message_id"),
+    .or("body", "attachments"),
   edit: Joi.object({
     id: Joi.alternatives()
       .try(Joi.object(), Joi.string())
