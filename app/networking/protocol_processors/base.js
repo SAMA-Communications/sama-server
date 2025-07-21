@@ -39,7 +39,7 @@ class BaseProtocolProcessor {
 
     console.log("[RECV]", stringMessage, stringMessage.length)
 
-    if (!stringMessage.length) {
+    if (!stringMessage?.length) {
       return
     }
 

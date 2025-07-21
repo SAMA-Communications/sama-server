@@ -13,10 +13,10 @@ class TcpProtocol extends BaseProtocolProcessor {
   socketListenerOnClose = function () {}
   socketListenerOnUpgrade = function() {}
 
-  onOpen(socket) {
+  onOpen(socket, isTls) {
     console.log("[ClientManager][TCP] on Open", `IP: ${socket.remoteAddress}`)
     super.onOpen(socket)
-    this.setUpSocketListeners(socket)
+    this.setUpSocketListeners(socket, isTls)
   }
 
   extendSocket(socket) {
@@ -38,7 +38,7 @@ class TcpProtocol extends BaseProtocolProcessor {
   decodeAndSplitPackage(socket, buffer) {
     const stringPackage = this.decodePackage(socket, buffer)
 
-    if (!stringPackage.length) {
+    if (!stringPackage?.length) {
       return []
     }
 
@@ -112,7 +112,7 @@ class TcpProtocol extends BaseProtocolProcessor {
       console.log("TLS handshake complete")
     })
 
-    this.setUpSocketListeners(tlsSocket, true)
+    this.onOpen(tlsSocket, true)
   }
 
   setUpSocketListeners(socket, isTls) {
