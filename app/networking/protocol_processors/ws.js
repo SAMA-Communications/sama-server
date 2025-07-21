@@ -1,14 +1,11 @@
 import uWS from "uWebSockets.js"
 
 import BaseProtocolProcessor from "./base.js"
-import HttpProtocol from "./http.js"
-import { CONSTANTS as MAIN_CONSTANTS } from "../../constants/constants.js"
 import { wsSafeSend } from "../../utils/sockets-utils.js"
 
 class WsProtocol extends BaseProtocolProcessor {
   uwsOptions = {}
-  httpServerApp = void 0
-  webSocket = void 0
+  uWSocket = void 0
 
   onOpen(ws) {
     console.log("[ClientManager][WS] on Open", `IP: ${Buffer.from(ws.getRemoteAddressAsText()).toString()}`)
@@ -37,9 +34,9 @@ class WsProtocol extends BaseProtocolProcessor {
     this.uwsOptions = uwsOptions
 
     return new Promise((resolve) => {
-      this.webSocket = uwsOptions.isSSL ? uWS.SSLApp(uwsOptions.appOptions) : uWS.App(uwsOptions.appOptions)
+      this.uWSocket = uwsOptions.isSSL ? uWS.SSLApp(uwsOptions.appOptions) : uWS.App(uwsOptions.appOptions)
 
-      this.webSocket.ws("/*", {
+      this.uWSocket.ws("/*", {
         ...uwsOptions.wsOptions,
 
         open: (ws) => this.onOpen(ws),
@@ -49,7 +46,7 @@ class WsProtocol extends BaseProtocolProcessor {
         message: (ws, message, isBinary) => this.onPackage(ws, message, isBinary),
       })
 
-      this.webSocket.listen(uwsOptions.port, uwsOptions.listenOptions, (listenSocket) => {
+      this.uWSocket.listen(uwsOptions.port, uwsOptions.listenOptions, (listenSocket) => {
         if (!listenSocket) {
           throw new Error(`[ClientManager][WS] can't allocate port`)
         }
@@ -59,24 +56,6 @@ class WsProtocol extends BaseProtocolProcessor {
         return resolve(uwsOptions.port)
       })
     })
-  }
-
-  async unbindSessionCallback(wsKey) {
-    const session = this.sessionService.getSession(wsKey)
-    if (!session?.userId) {
-      return
-    }
-
-    await this.sessionService.removeUserSession(wsKey, session.userId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
-  }
-
-  listenHttp(httpOptions) {
-    this.httpServerApp = new HttpProtocol(this.webSocket)
-    this.httpServerApp.setResponseProcessor(this.processAPIResponse.bind(this))
-    this.httpServerApp.setUnbindSessionCallback(this.unbindSessionCallback.bind(this))
-    this.httpServerApp.bindRoutes()
-
-    console.log(`[ClientManager][HTTP] listening on [WS] port, pid=${process.pid}`)
   }
 }
 

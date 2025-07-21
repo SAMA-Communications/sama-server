@@ -15,6 +15,7 @@ import clusterSyncer from "./app/cluster/cluster_syncer.js"
 
 import WsProtocol from "./app/networking/protocol_processors/ws.js"
 import TcpProtocol from "./app/networking/protocol_processors/tcp.js"
+import HttpProtocol from "./app/networking/protocol_processors/http.js"
 
 // get MongoDB driver connection
 import Minio from "./app/lib/storage/minio.js"
@@ -165,7 +166,9 @@ const conversationService = ServiceLocatorContainer.use("ConversationService")
 
 const wsProtocolImp = new WsProtocol(sessionService, conversationService)
 await wsProtocolImp.listen(uwsOptions)
-await wsProtocolImp.listenHttp({})
+
+const httpProtocolImp = new HttpProtocol(sessionService, conversationService, wsProtocolImp.uWSocket)
+await httpProtocolImp.listen({})
 
 const tcpProtocolImp = new TcpProtocol(sessionService, conversationService)
 await tcpProtocolImp.listen(tcpOptions)

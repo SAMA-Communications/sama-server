@@ -8,6 +8,8 @@ import HttpMessageController from "../../../APIs/JSON/controllers/http/message.j
 import HttpActivityController from "../../../APIs/JSON/controllers/http/activity.js"
 import HttpOrganizationController from "../../../APIs/JSON/controllers/http/organization.js"
 
+import BaseProtocolProcessor from "./base.js"
+
 import HttpResponse from "@sama/networking/models/HttpResponse.js"
 import Response from "@sama/networking/models/Response.js"
 
@@ -96,21 +98,21 @@ const healthCheckHandler = async (res, req) => {
   return new Response().setHttpResponse(httpResponse)
 }
 
-class HttpProtocol {
-  uWSLocalSocket = null
-  responseProcessor = null
-  unbindSessionCallback = null
+class HttpProtocol extends BaseProtocolProcessor {
+  uWSocket = void 0
 
-  constructor(uWSLocalSocket) {
-    this.uWSLocalSocket = uWSLocalSocket
+  constructor(sessionService, conversationService, uWSocket) {
+    super(sessionService, conversationService)
+    this.uWSocket = uWSocket
   }
 
-  setResponseProcessor(responseProcessor) {
-    this.responseProcessor = responseProcessor
-  }
+  async unbindSession(wsKey) {
+    const session = this.sessionService.getSession(wsKey)
+    if (!session?.userId) {
+      return
+    }
 
-  setUnbindSessionCallback(unbindSessionCallback) {
-    this.unbindSessionCallback = unbindSessionCallback
+    await this.sessionService.removeUserSession(wsKey, session.userId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
   }
 
   async processHttpResponseMiddleware(res, req, handlerResponse) {
@@ -149,7 +151,7 @@ class HttpProtocol {
       emptyBody ? res.endWithoutBody() : res.end(bodyStr)
     })
 
-    await this.responseProcessor(res.fakeWsSessionKey, handlerResponse, true)
+    await this.processAPIResponse(res.fakeWsSessionKey, handlerResponse, true)
   }
 
   onHttpRequestHandler(preMiddleware = [], handler) {
@@ -191,54 +193,56 @@ class HttpProtocol {
           res.end(error.message ?? ERROR_STATUES.INTERNAL_SERVER.message)
         })
       } finally {
-        await this.unbindSessionCallback(res.fakeWsSessionKey)
+        await this.unbindSession(res.fakeWsSessionKey)
       }
     }
   }
 
-  bindRoutes() {
-    this.uWSLocalSocket.options("/*", this.onHttpRequestHandler([], optionsRequestHandler))
+  listen(httpOptions) {
+    this.uWSocket.options("/*", this.onHttpRequestHandler([], optionsRequestHandler))
 
-    this.uWSLocalSocket.get("/health", this.onHttpRequestHandler([], healthCheckHandler))
+    this.uWSocket.get("/health", this.onHttpRequestHandler([], healthCheckHandler))
 
-    this.uWSLocalSocket.post("/login", this.onHttpRequestHandler([], HttpAuthController.login))
+    this.uWSocket.post("/login", this.onHttpRequestHandler([], HttpAuthController.login))
 
-    this.uWSLocalSocket.post("/logout", this.onHttpRequestHandler([], HttpAuthController.logout))
+    this.uWSocket.post("/logout", this.onHttpRequestHandler([], HttpAuthController.logout))
 
-    this.uWSLocalSocket.post(
+    this.uWSocket.post(
       "/admin/organization",
       this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpOrganizationController.create)
     )
 
-    this.uWSLocalSocket.post(
+    this.uWSocket.post(
       "/admin/message/system",
       this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.system_message)
     )
 
-    this.uWSLocalSocket.put("/admin/message/read", this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.read))
+    this.uWSocket.put("/admin/message/read", this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.read))
 
-    this.uWSLocalSocket.put("/admin/message", this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.edit))
+    this.uWSocket.put("/admin/message", this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.edit))
 
-    this.uWSLocalSocket.put(
+    this.uWSocket.put(
       "/admin/message/reaction",
       this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.reaction)
     )
 
-    this.uWSLocalSocket.del("/admin/message", this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.delete))
+    this.uWSocket.del("/admin/message", this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.delete))
 
-    this.uWSLocalSocket.post("/admin/message", this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.message))
+    this.uWSocket.post("/admin/message", this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.message))
 
-    this.uWSLocalSocket.post(
+    this.uWSocket.post(
       "/admin/activity/online",
       this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpActivityController.online_list)
     )
 
-    this.uWSLocalSocket.any(
+    this.uWSocket.any(
       "/*",
       this.onHttpRequestHandler([], (res, req) => {
         throw new Error(ERROR_STATUES.ROUTE_NOT_FOUND.message, { cause: ERROR_STATUES.ROUTE_NOT_FOUND })
       })
     )
+
+    console.log(`[ClientManager][HTTP] listening on [WS] port, pid=${process.pid}`)
   }
 }
 
