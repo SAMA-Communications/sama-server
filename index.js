@@ -13,7 +13,8 @@ import RegisterProvider from "./app/common/RegisterProvider.js"
 import clusterManager from "./app/cluster/cluster_manager.js"
 import clusterSyncer from "./app/cluster/cluster_syncer.js"
 
-import clientManager from "./app/networking/client_manager.js"
+import WsProtocol from "./app/networking/protocol_processors/ws.js"
+import TcpProtocol from "./app/networking/protocol_processors/tcp.js"
 
 // get MongoDB driver connection
 import Minio from "./app/lib/storage/minio.js"
@@ -70,10 +71,6 @@ const tcpOptions = {
 RuntimeDefinedContext.CLUSTER_PORT = await clusterManager.createLocalSocket(uwsOptions)
 
 console.log("[RuntimeDefinedContext]", RuntimeDefinedContext)
-
-await clientManager.createWebSocket(uwsOptions)
-await clientManager.createHttpServer({})
-await clientManager.createTCPSocket(tcpOptions)
 
 // perform a database connection when the server starts
 const dbConnection = await connectToDBPromise(process.env.MONGODB_URL)
@@ -161,5 +158,16 @@ await ServiceLocatorContainer.createAllSingletonInstances()
 // Start Cluster Sync
 console.log("[Start sync]")
 await clusterSyncer.startSyncingClusterNodes()
+
+// Start public protocols
+const sessionService = ServiceLocatorContainer.use("SessionService")
+const conversationService = ServiceLocatorContainer.use("ConversationService")
+
+const wsProtocolImp = new WsProtocol(sessionService, conversationService)
+await wsProtocolImp.listen(uwsOptions)
+await wsProtocolImp.listenHttp({})
+
+const tcpProtocolImp = new TcpProtocol(sessionService, conversationService)
+await tcpProtocolImp.listen(tcpOptions)
 
 // https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph
