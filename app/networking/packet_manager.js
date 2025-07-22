@@ -38,12 +38,7 @@ class PacketManager {
         }
 
         for (const message of mappedMessage) {
-          const mappedRecipientMessage = await packetMapper.mapRecipientPacket(
-            recipient.ws?.apiType,
-            message,
-            senderInfo,
-            recipientInfo
-          )
+          const mappedRecipientMessage = await packetMapper.mapRecipientPacket(recipient.ws?.apiType, message, senderInfo, recipientInfo)
 
           await recipient.ws.safeSend(mappedRecipientMessage)
         }

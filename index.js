@@ -17,11 +17,6 @@ import WsProtocol from "./app/networking/protocol_processors/ws.js"
 import TcpProtocol from "./app/networking/protocol_processors/tcp.js"
 import HttpProtocol from "./app/networking/protocol_processors/http.js"
 
-// get MongoDB driver connection
-import Minio from "./app/lib/storage/minio.js"
-import S3 from "./app/lib/storage/s3.js"
-import Spaces from "./app/lib/storage/spaces.js"
-
 import { connectToDBPromise } from "./app/lib/db.js"
 import RedisClient from "./app/lib/redis.js"
 
@@ -29,18 +24,6 @@ import { APIs } from "./app/networking/APIs.js"
 
 RuntimeDefinedContext.APP_HOSTNAME = process.env.HOSTNAME || os.hostname()
 RuntimeDefinedContext.APP_IP = ip.address()
-
-switch (process.env.STORAGE_DRIVER) {
-  case "minio":
-    RuntimeDefinedContext.STORAGE_DRIVER = new Minio()
-    break
-  case "spaces":
-    RuntimeDefinedContext.STORAGE_DRIVER = new Spaces()
-    break
-  default:
-    RuntimeDefinedContext.STORAGE_DRIVER = new S3()
-    break
-}
 
 const SSL_APP_OPTIONS = {
   key_file_name: process.env.SSL_KEY_FILE_NAME,
@@ -102,7 +85,6 @@ ServiceLocatorContainer.register(
   })({
     name: "RuntimeDefinedContext",
     implementationName: RuntimeDefinedContext.name,
-    scope: RegisterProvider.SCOPE.SINGLETON,
   })
 )
 ServiceLocatorContainer.register(
@@ -113,7 +95,6 @@ ServiceLocatorContainer.register(
   })({
     name: "RedisClient",
     implementationName: RedisClient.constructor.name,
-    scope: RegisterProvider.SCOPE.SINGLETON,
   })
 )
 ServiceLocatorContainer.register(
@@ -124,17 +105,8 @@ ServiceLocatorContainer.register(
   })({
     name: "MongoConnection",
     implementationName: "MongoConnection",
-    scope: RegisterProvider.SCOPE.SINGLETON,
   })
 )
-ServiceLocatorContainer.register(
-  new (class extends RegisterProvider {
-    register(slc) {
-      return RuntimeDefinedContext.STORAGE_DRIVER
-    }
-  })({ name: "StorageDriverClient", implementationName: RuntimeDefinedContext.STORAGE_DRIVER.constructor.name })
-)
-
 console.log("[Register base]")
 
 for (const provider of providers) {

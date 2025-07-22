@@ -18,5 +18,4 @@ class PushQueueServiceRegisterProvider extends RegisterProvider {
 export default new PushQueueServiceRegisterProvider({
   name,
   implementationName: PushQueueService.name,
-  scope: RegisterProvider.SCOPE.SINGLETON,
 })

@@ -1,10 +1,10 @@
 export async function tcpSafeSend(socket, data) {
   try {
     await new Promise((resolve, reject) => {
-      socket.write(data, (error) => error ? reject(error) : resolve())
+      socket.write(data, (error) => (error ? reject(error) : resolve()))
     })
   } catch (error) {
-    console.log('[TCP][sent][error]', error)
+    console.log("[TCP][sent][error]", error)
   }
 }
 
@@ -12,7 +12,7 @@ export function wsSafeSend(ws, data) {
   try {
     ws.send(data)
   } catch (error) {
-    console.log('[WS][sent][error]', error)
+    console.log("[WS][sent][error]", error)
   }
 }
 

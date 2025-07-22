@@ -1,14 +1,12 @@
 import { PutObjectCommand, S3, GetObjectCommand } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 
-import BaseStorage from "./base.js"
+import BaseStorageClient from "./base.js"
 
-import getUniqueId from "../../utils/uuid.js"
-
-export default class S3Storage extends BaseStorage {
-  constructor(options) {
+class S3StorageClient extends BaseStorageClient {
+  constructor(options, helpers) {
     options = options || { bucketName: process.env.S3_BUCKET_NAME }
-    super(options)
+    super(options, helpers)
 
     this.s3Client = new S3({
       endpoint: process.env.S3_ENDPOINT || null,
@@ -21,7 +19,7 @@ export default class S3Storage extends BaseStorage {
   }
 
   async getUploadUrl(fileName) {
-    const objectId = getUniqueId()
+    const objectId = this.helpers.getUniqueId()
 
     const bucketParams = {
       Bucket: this.bucketName,
@@ -41,6 +39,10 @@ export default class S3Storage extends BaseStorage {
       Key: fileId,
     }
 
-    return await getSignedUrl(this.s3Client, new GetObjectCommand(bucketParams), { expiresIn: this.expire })
+    const url = await getSignedUrl(this.s3Client, new GetObjectCommand(bucketParams), { expiresIn: this.expire })
+
+    return url
   }
 }
+
+export default S3StorageClient

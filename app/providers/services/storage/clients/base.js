@@ -1,7 +1,9 @@
-export default class BaseStorage {
-  constructor(options) {
+class BaseStorageClient {
+  constructor(options, helpers) {
     this.bucketName = options.bucketName
     this.expire = +process.env.FILE_DOWNLOAD_URL_EXPIRES_IN
+
+    this.helpers = helpers
   }
 
   async getUploadUrl() {
@@ -12,3 +14,5 @@ export default class BaseStorage {
     throw new Error("Not implemented")
   }
 }
+
+export default BaseStorageClient

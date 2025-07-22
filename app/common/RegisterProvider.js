@@ -6,7 +6,7 @@ export default class RegisterProvider {
 
   constructor(opts) {
     this.name = opts.name
-    this.scope = opts.scope || RegisterProvider.SCOPE.SINGLETON
+    this.scope = opts.scope ?? RegisterProvider.SCOPE.SINGLETON
     this.implementationName = opts.implementationName
 
     this.booted = false

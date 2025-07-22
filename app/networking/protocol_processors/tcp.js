@@ -11,7 +11,7 @@ class TcpProtocol extends BaseProtocolProcessor {
 
   socketListenerOnData = function () {}
   socketListenerOnClose = function () {}
-  socketListenerOnUpgrade = function() {}
+  socketListenerOnUpgrade = function () {}
 
   onOpen(socket, isTls) {
     console.log("[ClientManager][TCP] on Open", `IP: ${socket.remoteAddress}`)
@@ -49,11 +49,11 @@ class TcpProtocol extends BaseProtocolProcessor {
       }
       socket.apiType = apiType.at(0)
     }
-  
+
     const api = APIs[socket.apiType]
-  
+
     const splittedPackages = api.splitPacket(stringPackage)
-  
+
     console.log("[RECV][splitted]", splittedPackages)
 
     return splittedPackages

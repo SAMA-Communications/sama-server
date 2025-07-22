@@ -4,6 +4,7 @@ import BaseMapperProvider from "./utils/mappers/base/Provider.js"
 import UserMapperProvider from "./utils/mappers/user/Provider.js"
 import ConversationMapperProvider from "./utils/mappers/conversation/Provider.js"
 import MessageMapperProvider from "./utils/mappers/message/Provider.js"
+import StorageDriverClientProvider from "./services/storage/clients/Provider.js"
 
 import ClusterNodeRepositoryProvider from "./repositories/cluster_node/Provider.js"
 import UserRepoProvider from "./repositories/user/Provider.js"
@@ -121,6 +122,7 @@ const providers = [
   UserMapperProvider,
   ConversationMapperProvider,
   MessageMapperProvider,
+  StorageDriverClientProvider,
 
   ClusterNodeRepositoryProvider,
   UserRepoProvider,
