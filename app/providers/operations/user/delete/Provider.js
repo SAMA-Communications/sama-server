@@ -15,4 +15,8 @@ class UserDeleteOperationRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new UserDeleteOperationRegisterProvider({ name, implementationName: UserDeleteOperation.name })
+export default new UserDeleteOperationRegisterProvider({
+  name,
+  implementationName: UserDeleteOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})

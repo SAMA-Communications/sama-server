@@ -17,4 +17,5 @@ class ActivityUserSubscribeOperationRegisterProvider extends RegisterProvider {
 export default new ActivityUserSubscribeOperationRegisterProvider({
   name,
   implementationName: ActivityUserSubscribeOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

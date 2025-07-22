@@ -12,4 +12,8 @@ class UserSearchOperationRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new UserSearchOperationRegisterProvider({ name, implementationName: UserSearchOperation.name })
+export default new UserSearchOperationRegisterProvider({
+  name,
+  implementationName: UserSearchOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})

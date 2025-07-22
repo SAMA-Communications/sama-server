@@ -15,4 +15,5 @@ class HttpUserAuthOperationRegisterProvider extends RegisterProvider {
 export default new HttpUserAuthOperationRegisterProvider({
   name,
   implementationName: HttpUserAuthOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

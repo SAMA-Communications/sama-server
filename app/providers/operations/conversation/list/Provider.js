@@ -17,4 +17,5 @@ class ConversationListOperationRegisterProvider extends RegisterProvider {
 export default new ConversationListOperationRegisterProvider({
   name,
   implementationName: ConversationListOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

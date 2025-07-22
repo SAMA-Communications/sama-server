@@ -27,4 +27,8 @@ class MessageCreateOperationRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new MessageCreateOperationRegisterProvider({ name, implementationName: MessageCreateOperation.name })
+export default new MessageCreateOperationRegisterProvider({
+  name,
+  implementationName: MessageCreateOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})

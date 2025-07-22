@@ -17,4 +17,5 @@ class UserConnectSocketOperationRegisterProvider extends RegisterProvider {
 export default new UserConnectSocketOperationRegisterProvider({
   name,
   implementationName: UserConnectSocketOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

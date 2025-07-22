@@ -18,4 +18,5 @@ class ConversationDeleteOperationRegisterProvider extends RegisterProvider {
 export default new ConversationDeleteOperationRegisterProvider({
   name,
   implementationName: ConversationDeleteOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

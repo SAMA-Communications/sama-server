@@ -15,4 +15,5 @@ class HttpMessageReactionOperationRegisterProvider extends RegisterProvider {
 export default new HttpMessageReactionOperationRegisterProvider({
   name,
   implementationName: HttpMessageReactionOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

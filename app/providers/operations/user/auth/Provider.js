@@ -14,4 +14,8 @@ class UserAuthOperationRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new UserAuthOperationRegisterProvider({ name, implementationName: UserAuthOperation.name })
+export default new UserAuthOperationRegisterProvider({
+  name,
+  implementationName: UserAuthOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})

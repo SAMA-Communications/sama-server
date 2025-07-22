@@ -13,4 +13,8 @@ class PushEventCreateOperationRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new PushEventCreateOperationRegisterProvider({ name, implementationName: PushEventCreateOperation.name })
+export default new PushEventCreateOperationRegisterProvider({
+  name,
+  implementationName: PushEventCreateOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})

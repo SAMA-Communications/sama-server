@@ -15,4 +15,5 @@ class BlockListUnblockOperationRegisterProvider extends RegisterProvider {
 export default new BlockListUnblockOperationRegisterProvider({
   name,
   implementationName: BlockListUnblockOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

@@ -15,4 +15,5 @@ class ConversationSearchOperationRegisterProvider extends RegisterProvider {
 export default new ConversationSearchOperationRegisterProvider({
   name,
   implementationName: ConversationSearchOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

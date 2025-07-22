@@ -17,4 +17,5 @@ class ConversationSubscribeUnsubscribeOperationRegisterProvider extends Register
 export default new ConversationSubscribeUnsubscribeOperationRegisterProvider({
   name,
   implementationName: ConversationSubscribeUnsubscribeOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

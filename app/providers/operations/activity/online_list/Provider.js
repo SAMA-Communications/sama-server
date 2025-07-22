@@ -15,4 +15,5 @@ class OnlineListOperationRegisterProvider extends RegisterProvider {
 export default new OnlineListOperationRegisterProvider({
   name,
   implementationName: OnlineListOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

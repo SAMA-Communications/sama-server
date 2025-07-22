@@ -13,4 +13,8 @@ class MessageReadOperationRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new MessageReadOperationRegisterProvider({ name, implementationName: MessageReadOperation.name })
+export default new MessageReadOperationRegisterProvider({
+  name,
+  implementationName: MessageReadOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})

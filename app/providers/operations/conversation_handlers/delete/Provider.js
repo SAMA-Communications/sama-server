@@ -16,4 +16,5 @@ class ConversationHandlerDeleteOperationRegisterProvider extends RegisterProvide
 export default new ConversationHandlerDeleteOperationRegisterProvider({
   name,
   implementationName: ConversationHandlerDeleteOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

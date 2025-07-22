@@ -15,4 +15,5 @@ class MessageReactionsListOperationRegisterProvider extends RegisterProvider {
 export default new MessageReactionsListOperationRegisterProvider({
   name,
   implementationName: MessageReactionsListOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

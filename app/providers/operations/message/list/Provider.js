@@ -15,4 +15,8 @@ class MessageListOperationRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new MessageListOperationRegisterProvider({ name, implementationName: MessageListOperation.name })
+export default new MessageListOperationRegisterProvider({
+  name,
+  implementationName: MessageListOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})

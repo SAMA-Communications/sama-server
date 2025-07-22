@@ -15,4 +15,5 @@ class ActivityUserUnsubscribeOperationRegisterProvider extends RegisterProvider 
 export default new ActivityUserUnsubscribeOperationRegisterProvider({
   name,
   implementationName: ActivityUserUnsubscribeOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })
