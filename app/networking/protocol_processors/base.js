@@ -46,10 +46,10 @@ class BaseProtocolProcessor {
     return stringMessage
   }
 
-  async onPackage(socket, packageData, isDecoded) {
+  async onPackage(socket, packageData) {
     let stringMessage = packageData
     try {
-      stringMessage = isDecoded ? packageData : this.decodePackage(socket, packageData)
+      stringMessage = this.decodePackage(socket, packageData)
       await this.processPackage(socket, stringMessage)
     } catch (error) {
       console.log("[ClientManager] onPackage error", error)

@@ -35,15 +35,13 @@ class TcpProtocol extends BaseProtocolProcessor {
     this.removeSocketListeners(socket)
   }
 
-  decodeAndSplitPackage(socket, buffer) {
-    const stringPackage = this.decodePackage(socket, buffer)
-
-    if (!stringPackage?.length) {
-      return []
+  async processPackage(socket, decodedPackage) {
+    if (!decodedPackage?.length) {
+      return
     }
 
     if (!socket.apiType) {
-      const apiType = detectAPIType(socket, stringPackage)
+      const apiType = detectAPIType(socket, decodedPackage)
       if (!apiType) {
         throw new Error("Unknown message format")
       }
@@ -52,23 +50,12 @@ class TcpProtocol extends BaseProtocolProcessor {
 
     const api = APIs[socket.apiType]
 
-    const splittedPackages = api.splitPacket(stringPackage)
+    const splittedPackages = api.splitPacket(decodedPackage)
 
     console.log("[RECV][splitted]", splittedPackages)
 
-    return splittedPackages
-  }
-
-  async onPackage(socket, packageData) {
-    try {
-      const splittedPackages = this.decodeAndSplitPackage(socket, packageData)
-
-      for (const splittedPackage of splittedPackages) {
-        await super.onPackage(socket, splittedPackage, true)
-      }
-    } catch (error) {
-      console.log("[ClientManager][TCP] onPackage error", error)
-      this.onProcessingError(socket, error, "")
+    for (const splittedPackage of splittedPackages) {
+      await super.processPackage(socket, splittedPackage)
     }
   }
 
@@ -113,7 +100,7 @@ class TcpProtocol extends BaseProtocolProcessor {
 
     const tlsSocket = new tls.TLSSocket(socket, options)
 
-    tlsSocket.on("secureConnect", () => {
+    tlsSocket.on("session", () => {
       console.log("TLS handshake complete")
     })
 
