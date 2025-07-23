@@ -60,10 +60,15 @@ class TcpProtocol extends BaseProtocolProcessor {
   }
 
   async onPackage(socket, packageData) {
-    const splittedPackages = this.decodeAndSplitPackage(socket, packageData)
+    try {
+      const splittedPackages = this.decodeAndSplitPackage(socket, packageData)
 
-    for (const splittedPackage of splittedPackages) {
-      await super.onPackage(socket, splittedPackage, true)
+      for (const splittedPackage of splittedPackages) {
+        await super.onPackage(socket, splittedPackage, true)
+      }
+    } catch (error) {
+      console.log("[ClientManager][TCP] onPackage error", error)
+      this.onProcessingError(socket, error, '')
     }
   }
 
