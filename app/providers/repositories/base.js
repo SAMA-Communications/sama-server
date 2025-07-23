@@ -144,8 +144,6 @@ export default class BaseRepository {
       .sort(sortParams || { $natural: -1 })
       .toArray()
 
-    if (sortParams) records = records.reverse()
-
     const models = records.map((record) => this.wrapRawRecordInModel(record))
 
     return models
