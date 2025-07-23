@@ -10,10 +10,9 @@ import { CONSTANTS } from "../../../constants/constants.js"
 */
 
 class SessionService {
-  constructor(activeSessions, redisConnection, RuntimeDefinedContext) {
+  constructor(activeSessions, redisConnection) {
     this.activeSessions = activeSessions
     this.redisConnection = redisConnection
-    this.RuntimeDefinedContext = RuntimeDefinedContext
   }
 
   totalSessions() {

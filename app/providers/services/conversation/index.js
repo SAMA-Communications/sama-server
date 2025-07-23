@@ -1,16 +1,8 @@
 import { ERROR_STATUES } from "../../../constants/errors.js"
 
 class ConversationService {
-  constructor(
-    CONVERSATION_MAX_PARTICIPANTS,
-
-    helpers,
-    storageService,
-    conversationRepo,
-    conversationParticipantRepo
-  ) {
-    this.CONVERSATION_MAX_PARTICIPANTS = CONVERSATION_MAX_PARTICIPANTS
-
+  constructor(config, helpers, storageService, conversationRepo, conversationParticipantRepo) {
+    this.config = config
     this.helpers = helpers
     this.storageService = storageService
     this.conversationRepo = conversationRepo
@@ -229,7 +221,7 @@ class ConversationService {
 
     let participantsCount = participantIds.length + (currentParticipantsCount ?? 0)
 
-    if (participantsCount > this.CONVERSATION_MAX_PARTICIPANTS) {
+    if (participantsCount > this.config.get("conversation.maxParticipants")) {
       throw new Error(ERROR_STATUES.PARTICIPANTS_LIMIT.message, {
         cause: ERROR_STATUES.PARTICIPANTS_LIMIT,
       })

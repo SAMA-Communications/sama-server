@@ -4,18 +4,19 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import BaseStorageClient from "./base.js"
 
 class S3StorageClient extends BaseStorageClient {
-  constructor(options, helpers) {
-    options = options || { bucketName: process.env.S3_BUCKET_NAME }
-    super(options, helpers)
+  constructor(config, helpers) {
+    super(config, helpers)
 
     this.s3Client = new S3({
-      endpoint: process.env.S3_ENDPOINT || null,
-      region: process.env.S3_REGION,
       credentials: {
-        accessKeyId: process.env.S3_ACCESS_KEY,
-        secretAccessKey: process.env.S3_SECRET_KEY,
+        accessKeyId: this.config.get("storage.s3.key"),
+        secretAccessKey: this.config.get("storage.s3.secret"),
       },
+      endpoint: this.config.get("storage.s3.endpoint"),
+      region: this.config.get("storage.s3.region"),
     })
+
+    this.bucketName = this.config.get("storage.s3.bucket")
   }
 
   async getUploadUrl(fileName) {
@@ -27,7 +28,7 @@ class S3StorageClient extends BaseStorageClient {
     }
 
     const presignedUrl = await getSignedUrl(this.s3Client, new PutObjectCommand(bucketParams), {
-      expiresIn: this.expire,
+      expiresIn: this.expireUploadUrl,
     })
 
     return { objectId, url: presignedUrl }
@@ -39,7 +40,7 @@ class S3StorageClient extends BaseStorageClient {
       Key: fileId,
     }
 
-    const url = await getSignedUrl(this.s3Client, new GetObjectCommand(bucketParams), { expiresIn: this.expire })
+    const url = await getSignedUrl(this.s3Client, new GetObjectCommand(bucketParams), { expiresIn: this.expireDownloadUrl })
 
     return url
   }

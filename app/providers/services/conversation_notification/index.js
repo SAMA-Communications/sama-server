@@ -8,13 +8,14 @@ import SystemMessagePublicFields from "@sama/DTO/Response/message/system/public_
 import SystemMessageResponse from "@sama/DTO/Response/message/system/response.js"
 
 class ConversationNotificationService {
-  constructor(helpers, messageService) {
+  constructor(config, helpers, messageService) {
+    this.config = config
     this.helpers = helpers
     this.messageService = messageService
   }
 
   isEnabled() {
-    return process.env.CONVERSATION_NOTIFICATIONS_ENABLED === "true"
+    return this.config.get("conversation.isEventsEnabled")
   }
 
   async actionEvent(eventType, conversation, user) {

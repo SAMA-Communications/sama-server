@@ -1,4 +1,4 @@
-import RuntimeDefinedContext from "../store/RuntimeDefinedContext.js"
+import config from "../config/index.js"
 
 import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
@@ -10,7 +10,7 @@ import { CONSTANTS as MAIN_CONSTANTS } from "../constants/constants.js"
 
 class PacketManager {
   async deliverToUserOnThisNode(userId, packet, deviceId, senderInfo) {
-    const currentNodeUrl = buildWsEndpoint(RuntimeDefinedContext.APP_IP, RuntimeDefinedContext.CLUSTER_PORT)
+    const currentNodeUrl = buildWsEndpoint(config.get("app.ip"), config.get("ws.cluster.port"))
     const sessionService = ServiceLocatorContainer.use("SessionService")
     const activeDevices = sessionService
       .getUserDevices(userId)
@@ -53,7 +53,7 @@ class PacketManager {
     const senderUserSession = sessionService.getSession(ws)
     const senderDeviceId = senderUserSession ? sessionService.getDeviceId(ws, senderUserSession.userId) : null
 
-    const currentNodeUrl = buildWsEndpoint(RuntimeDefinedContext.APP_IP, RuntimeDefinedContext.CLUSTER_PORT)
+    const currentNodeUrl = buildWsEndpoint(config.get("app.ip"), config.get("ws.cluster.port"))
 
     const senderInfo = {
       apiType: ws?.apiType,

@@ -7,10 +7,11 @@ import CreatePushEventOptions from "./models/CreatePushEventOptions.js"
 export default class PushQueueService extends BasePushQueueService {
   #queue = null
 
-  constructor(queueName, redisUrl, pushEventRepo, pushSubscriptionsRepo) {
+  constructor(config, pushEventRepo, pushSubscriptionsRepo) {
     super()
 
-    this.#queue = new Queue(queueName, redisUrl)
+    this.config = config
+    this.#queue = new Queue(config.get("push.queueName"), config.get("redis.main.url"))
 
     this.pushEventRepo = pushEventRepo
     this.pushSubscriptionsRepo = pushSubscriptionsRepo

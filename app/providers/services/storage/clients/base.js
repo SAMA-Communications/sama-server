@@ -1,9 +1,12 @@
 class BaseStorageClient {
-  constructor(options, helpers) {
-    this.bucketName = options.bucketName
-    this.expire = +process.env.FILE_DOWNLOAD_URL_EXPIRES_IN
-
+  constructor(config, helpers) {
+    this.config = config
     this.helpers = helpers
+
+    this.expireUploadUrl = +config.get("storage.uploadUrlExpiresIn")
+    this.expireDownloadUrl = +config.get("storage.downloadUrlExpiresIn")
+
+    this.bucketName = void 0
   }
 
   async getUploadUrl() {

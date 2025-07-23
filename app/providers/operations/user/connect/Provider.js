@@ -5,12 +5,12 @@ const name = "UserConnectSocketOperation"
 
 class UserConnectSocketOperationRegisterProvider extends RegisterProvider {
   register(slc) {
-    const RuntimeDefinedContext = slc.use("RuntimeDefinedContext")
+    const config = slc.use("Config")
     const sessionService = slc.use("SessionService")
     const userService = slc.use("UserService")
     const userTokenRepo = slc.use("UserTokenRepository")
 
-    return new UserConnectSocketOperation(RuntimeDefinedContext, sessionService, userService, userTokenRepo)
+    return new UserConnectSocketOperation(config, sessionService, userService, userTokenRepo)
   }
 }
 

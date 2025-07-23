@@ -5,12 +5,12 @@ const name = "UserAuthOperation"
 
 class UserAuthOperationRegisterProvider extends RegisterProvider {
   register(slc) {
-    const RuntimeDefinedContext = slc.use("RuntimeDefinedContext")
+    const config = slc.use("Config")
     const sessionService = slc.use("SessionService")
     const userService = slc.use("UserService")
     const userTokenRepo = slc.use("UserTokenRepository")
 
-    return new UserAuthOperation(RuntimeDefinedContext, sessionService, userService, userTokenRepo)
+    return new UserAuthOperation(config, sessionService, userService, userTokenRepo)
   }
 }
 

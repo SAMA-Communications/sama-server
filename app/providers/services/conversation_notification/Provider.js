@@ -5,10 +5,11 @@ const name = "ConversationNotificationService"
 
 class ConversationNotificationServiceRegisterProvider extends RegisterProvider {
   register(slc) {
+    const config = slc.use("Config")
     const helpers = slc.use("Helpers")
     const messageService = slc.use("MessageService")
 
-    return new ConversationNotificationService(helpers, messageService)
+    return new ConversationNotificationService(config, helpers, messageService)
   }
 }
 

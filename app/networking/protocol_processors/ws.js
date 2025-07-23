@@ -21,7 +21,7 @@ class WsProtocol extends BaseProtocolProcessor {
   }
 
   async onClose(ws, code, message) {
-    console.log("[ClientManager][WS] on close", code, message)
+    console.log("[ClientManager][WS] on close", code)
 
     return super.onClose(ws)
   }

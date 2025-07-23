@@ -13,6 +13,8 @@ import BaseProtocolProcessor from "./base.js"
 import HttpResponse from "@sama/networking/models/HttpResponse.js"
 import Response from "@sama/networking/models/Response.js"
 
+import config from "@sama/config/index.js"
+
 const parseBaseParamsMiddleware = async (res, req) => {
   res.fakeWsSessionKey = Symbol("Http ws fake session")
 
@@ -37,7 +39,7 @@ const parseBaseParamsMiddleware = async (res, req) => {
 }
 
 const addCorsHeaders = (res, req) => {
-  res.writeHeader("Access-Control-Allow-Origin", process.env.CORS_ORIGIN || "*")
+  res.writeHeader("Access-Control-Allow-Origin", config.get("http.corsOrigin") ?? "*")
   res.writeHeader("Access-Control-Allow-Credentials", "true")
   res.writeHeader("Access-Control-Allow-Methods", "POST, PUT, DELETE")
   res.writeHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, API-Key")
@@ -79,7 +81,7 @@ const parseJsonBodyMiddleware = async (res, req) => {
 const adminApiKeyValidationMiddleware = async (res, req) => {
   const apiKey = req.getHeader(MAIN_CONSTANTS.HTTP_ADMIN_API_KEY_HEADER)
 
-  if (apiKey !== process.env.HTTP_ADMIN_API_KEY) {
+  if (apiKey !== config.get("http.admin.apiKey")) {
     throw new Error(ERROR_STATUES.UNAUTHORIZED.message, {
       cause: ERROR_STATUES.UNAUTHORIZED,
     })

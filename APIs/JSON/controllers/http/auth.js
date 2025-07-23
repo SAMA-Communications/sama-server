@@ -9,6 +9,7 @@ class HttpAuthController extends BaseHttpController {
   async login(res, req) {
     const payload = res.parsedBody
 
+    const config = ServiceLocatorContainer.use("Config")
     const httpAuthOperation = ServiceLocatorContainer.use("HttpUserAuthOperation")
 
     const { user, newAccessToken, accessTokenExpiredAt, newRefreshToken } = await httpAuthOperation.perform(
@@ -27,7 +28,7 @@ class HttpAuthController extends BaseHttpController {
         expired_at: accessTokenExpiredAt,
       }
     ).addCookie("refresh_token", newRefreshToken.token, {
-      maxAge: +process.env.JWT_REFRESH_TOKEN_EXPIRES_IN,
+      maxAge: +config.get("jwt.refresh.expiresIn"),
       httpOnly: true,
       secure: true,
       sameSite: "lax",

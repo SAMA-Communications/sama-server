@@ -3,7 +3,7 @@ import uWS from "uWebSockets.js"
 
 import { StringDecoder } from "string_decoder"
 
-import RuntimeDefinedContext from "../store/RuntimeDefinedContext.js"
+import config from "../config/index.js"
 
 import packetManager from "../networking/packet_manager.js"
 
@@ -25,7 +25,7 @@ class ClusterManager {
     ws.send(
       JSON.stringify({
         node_info: {
-          ip: RuntimeDefinedContext.APP_IP,
+          ip: config.get("app.ip"),
         },
       })
     )

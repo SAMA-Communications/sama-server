@@ -1,11 +1,8 @@
-/* Simplified stock exchange made with uWebSockets.js pub/sub */
-import ip from "ip"
-import os from "os"
 import fs from "fs"
 
 import uWS from "uWebSockets.js"
 
-import RuntimeDefinedContext from "./app/store/RuntimeDefinedContext.js"
+import config from "./app/config/index.js"
 import ServiceLocatorContainer from "./app/common/ServiceLocatorContainer.js"
 import providers from "./app/providers/index.js"
 import RegisterProvider from "./app/common/RegisterProvider.js"
@@ -22,17 +19,13 @@ import RedisClient from "./app/lib/redis.js"
 
 import { APIs } from "./app/networking/APIs.js"
 
-RuntimeDefinedContext.APP_HOSTNAME = process.env.HOSTNAME || os.hostname()
-RuntimeDefinedContext.APP_IP = ip.address()
-
-const SSL_APP_OPTIONS = {
-  key_file_name: process.env.SSL_KEY_FILE_NAME,
-  cert_file_name: process.env.SSL_CERT_FILE_NAME,
+const uWS_SSL_OPTIONS = {
+  key_file_name: config.get("ws.options.ssl.key"),
+  cert_file_name: config.get("ws.options.ssl.cert"),
 }
-const IS_SSL = !!SSL_APP_OPTIONS.key_file_name && !!SSL_APP_OPTIONS.cert_file_name
 
-const uwsOptions = {
-  appOptions: IS_SSL ? SSL_APP_OPTIONS : {},
+const uWSOptions = {
+  appOptions: config.get("ws.options.isSecure") ? uWS_SSL_OPTIONS : {},
   wsOptions: {
     compression: uWS.SHARED_COMPRESSOR,
     idleTimeout: 12,
@@ -42,22 +35,27 @@ const uwsOptions = {
   listenOptions: {
     LIBUS_LISTEN_EXCLUSIVE_PORT: 1,
   },
-  isSSL: IS_SSL,
-  port: parseInt(process.env.APP_WS_PORT ?? process.env.APP_PORT ?? process.env.PORT),
+  isSSL: config.get("ws.options.isSecure"),
+  port: parseInt(config.get("ws.api.port")),
 }
 
 const tcpOptions = {
-  port: parseInt(process.env.APP_TCP_PORT),
-  key: process.env.TLS_KEY_FILE_NAME ? fs.readFileSync(process.env.TLS_KEY_FILE_NAME) : null,
-  cert: process.env.TLS_CERT_FILE_NAME ? fs.readFileSync(process.env.TLS_CERT_FILE_NAME) : null,
+  port: parseInt(config.get("tcp.api.port")),
+}
+if (config.get("tcp.options.isTls")) {
+  Object.assign(tcpOptions, {
+    key: fs.readFileSync(config.get("tcp.options.tls.key")),
+    cert: fs.readFileSync(config.get("tcp.options.tls.cert")),
+  })
 }
 
-RuntimeDefinedContext.CLUSTER_PORT = await clusterManager.createLocalSocket(uwsOptions)
+const clusterPort = await clusterManager.createLocalSocket(uWSOptions)
+config.set("ws.cluster.port", clusterPort)
 
-console.log("[RuntimeDefinedContext]", RuntimeDefinedContext)
+console.log("[Config]", JSON.stringify(config.toObject(), null, 5))
 
 // perform a database connection when the server starts
-const dbConnection = await connectToDBPromise(process.env.MONGODB_URL)
+const dbConnection = await connectToDBPromise(config.get("db.mongo.main.url"))
   .then((dbConnection) => {
     console.log("[Mongo][connect] Ok")
     return dbConnection
@@ -80,11 +78,11 @@ await RedisClient.connect()
 ServiceLocatorContainer.register(
   new (class extends RegisterProvider {
     register(slc) {
-      return RuntimeDefinedContext
+      return config
     }
   })({
-    name: "RuntimeDefinedContext",
-    implementationName: RuntimeDefinedContext.name,
+    name: "Config",
+    implementationName: config.constructor.name,
   })
 )
 ServiceLocatorContainer.register(
@@ -116,10 +114,14 @@ for (const provider of providers) {
 for (const api of Object.values(APIs)) {
   console.log("[Register Api Providers]", api.constructor.name)
 
+  config.merge(api.config)
+
   for (const provider of api.providers) {
     ServiceLocatorContainer.register(provider)
   }
 }
+
+console.log("[Config][Merged]", JSON.stringify(config.toObject(), null, 5))
 
 // Boot providers
 console.log("[Boot]")
@@ -137,7 +139,7 @@ const sessionService = ServiceLocatorContainer.use("SessionService")
 const conversationService = ServiceLocatorContainer.use("ConversationService")
 
 const wsProtocolImp = new WsProtocol(sessionService, conversationService)
-await wsProtocolImp.listen(uwsOptions)
+await wsProtocolImp.listen(uWSOptions)
 
 const httpProtocolImp = new HttpProtocol(sessionService, conversationService, wsProtocolImp.uWSocket)
 await httpProtocolImp.listen({})

@@ -68,7 +68,7 @@ class TcpProtocol extends BaseProtocolProcessor {
       }
     } catch (error) {
       console.log("[ClientManager][TCP] onPackage error", error)
-      this.onProcessingError(socket, error, '')
+      this.onProcessingError(socket, error, "")
     }
   }
 

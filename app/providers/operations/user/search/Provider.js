@@ -5,10 +5,11 @@ const name = "UserSearchOperation"
 
 class UserSearchOperationRegisterProvider extends RegisterProvider {
   register(slc) {
+    const config = slc.use("Config")
     const sessionService = slc.use("SessionService")
     const userService = slc.use("UserService")
 
-    return new UserSearchOperation(sessionService, userService)
+    return new UserSearchOperation(config, sessionService, userService)
   }
 }
 

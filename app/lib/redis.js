@@ -1,9 +1,11 @@
 import { createClient } from "redis"
 
+import config from "../config/index.js"
+
 class RedisManager {
   constructor() {
     this.client = createClient({
-      url: process.env.REDIS_URL,
+      url: config.get("redis.main.url"),
       socket: {
         reconnectStrategy: (retries) => {
           console.log("[Redis][reconnect]", retries)

@@ -1,4 +1,4 @@
-import RuntimeDefinedContext from "../store/RuntimeDefinedContext.js"
+import config from "../config/index.js"
 
 import clusterManager from "./cluster_manager.js"
 
@@ -20,7 +20,7 @@ class ClusterSyncer {
 
     this.nodesSyncInterval = setInterval(() => {
       this.#syncCluster()
-    }, process.env.NODE_CLUSTER_DATA_EXPIRES_IN)
+    }, config.get("ws.cluster.nodeExpiresIn"))
   }
 
   async stopSyncingClusterNodes() {
@@ -35,8 +35,8 @@ class ClusterSyncer {
     // initiate connect to other node
     nodeList.forEach(async (n) => {
       if (
-        RuntimeDefinedContext.CLUSTER_PORT !== n.port &&
-        `${RuntimeDefinedContext.APP_HOSTNAME}${RuntimeDefinedContext.CLUSTER_PORT}` < `${n.hostname}${n.port}`
+        config.get("ws.cluster.port") !== n.port &&
+        `${config.get("app.hostName")}${config.get("ws.cluster.port")}` < `${n.hostname}${n.port}`
       )
         try {
           await clusterManager.createSocketWithNode(n.ip_address, n.port)
@@ -55,9 +55,9 @@ class ClusterSyncer {
     const clusterNodeService = ServiceLocatorContainer.use("ClusterNodeService")
 
     const addressParams = {
-      ip_address: RuntimeDefinedContext.APP_IP,
-      hostname: RuntimeDefinedContext.APP_HOSTNAME,
-      port: RuntimeDefinedContext.CLUSTER_PORT,
+      ip_address: config.get("app.ip"),
+      hostname: config.get("app.hostName"),
+      port: config.get("ws.cluster.port"),
     }
 
     const optionalParams = {

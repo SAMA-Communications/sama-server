@@ -1,9 +1,9 @@
 import { ERROR_STATUES } from "../../../../constants/errors.js"
-import { CONSTANTS as MAIN_CONSTANTS } from "../../../../constants/constants.js"
 import MessagePublicFields from "@sama/DTO/Response/message/create/public_fields.js"
 
 class MessageListOperation {
-  constructor(helpers, sessionService, userService, messageService, conversationService) {
+  constructor(config, helpers, sessionService, userService, messageService, conversationService) {
+    this.config = config
     this.helpers = helpers
     this.sessionService = sessionService
     this.userService = userService
@@ -68,11 +68,13 @@ class MessageListOperation {
   }
 
   #normalizeLimitParam(limit) {
-    if (limit > MAIN_CONSTANTS.MESSAGE_LIMIT_MAX) {
-      return MAIN_CONSTANTS.MESSAGE_LIMIT_MAX
+    const preloadCount = this.config.get("conversation.messages.preloadCount")
+
+    if (limit > preloadCount) {
+      return preloadCount
     }
 
-    return limit || MAIN_CONSTANTS.MESSAGE_LIMIT_MAX
+    return limit || preloadCount
   }
 }
 
