@@ -40,6 +40,11 @@ class MessageCreateOperation {
       currentUserId
     )
 
+    const repliedMessageId = createMessageParams.replied_message_id
+    if (repliedMessageId) {
+      await this.#validateRepliedMessageId(createMessageParams.cid, currentUserId, repliedMessageId)
+    }
+
     let conversationHandlerResponse = {}
     const conversationHandler = await this.conversationHandlerService.getHandlerByConversationId(conversation._id)
     if (conversationHandler) {
@@ -128,15 +133,18 @@ class MessageCreateOperation {
   }
 
   async #hasAccessToConversation(organizationId, conversationId, currentUserId) {
-    const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
-      organizationId,
-      conversationId,
-      currentUserId
-    )
+    const { conversation, asOwner, asAdmin, asParticipant, participantIds } =
+      await this.conversationService.hasAccessToConversation(organizationId, conversationId, currentUserId)
 
     if (!conversation) {
       throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {
         cause: ERROR_STATUES.CONVERSATION_NOT_FOUND,
+      })
+    }
+
+    if (conversation.type === "c" && !(asOwner || asAdmin)) {
+      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+        cause: ERROR_STATUES.FORBIDDEN,
       })
     }
 
@@ -147,6 +155,16 @@ class MessageCreateOperation {
     }
 
     return { conversation, participantIds }
+  }
+
+  async #validateRepliedMessageId(cid, userId, mid) {
+    const message = await this.messageService.messageRepo.findMessageById(cid, userId, mid)
+
+    if (!message) {
+      throw new Error(ERROR_STATUES.INCORRECT_REPLY_MESSAGE_ID.message, {
+        cause: ERROR_STATUES.INCORRECT_REPLY_MESSAGE_ID,
+      })
+    }
   }
 
   async #checkBlocked(conversation, currentUserId, participantIds) {

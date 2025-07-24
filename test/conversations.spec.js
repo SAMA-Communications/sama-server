@@ -16,7 +16,7 @@ let usersIds = []
 let filterUpdatedAt = ""
 let filterUpdatedAtTo = ""
 let currentConversationId = ""
-let ArrayOfTmpConversaionts = []
+let ArrayOfTmpConversations = []
 let lastMessageInChat = ""
 
 describe("Conversation functions", async () => {
@@ -569,7 +569,7 @@ describe("Conversation functions", async () => {
 
         i == 1 ? (filterUpdatedAt = responseData.updated_at) : true
         i == 2 ? (filterUpdatedAtTo = responseData.updated_at) : true
-        ArrayOfTmpConversaionts.push(responseData._id.toString())
+        ArrayOfTmpConversations.push(responseData._id.toString())
       }
 
       for (let i = 0; i < 3; i++) {
@@ -577,7 +577,7 @@ describe("Conversation functions", async () => {
           message: {
             id: `messages_${i}`,
             body: `this is messages ${i + 1}`,
-            cid: ArrayOfTmpConversaionts[0],
+            cid: ArrayOfTmpConversations[0],
           },
         }
         let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
@@ -603,7 +603,7 @@ describe("Conversation functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.strictEqual(
         responseData.response.conversations
-          .find((el) => el._id.toString() === ArrayOfTmpConversaionts[0])
+          .find((el) => el._id.toString() === ArrayOfTmpConversations[0])
           ?.last_message._id.toString(),
         lastMessageInChat.toString()
       )
@@ -686,7 +686,7 @@ describe("Conversation functions", async () => {
       const requestData = {
         request: {
           conversation_list: {
-            ids: ArrayOfTmpConversaionts,
+            ids: ArrayOfTmpConversations,
           },
           id: "3_1",
         },
@@ -701,7 +701,7 @@ describe("Conversation functions", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.notEqual(responseData.response.conversations, undefined)
       assert.equal(
-        conversations.some((el) => !ArrayOfTmpConversaionts.includes(el._id.toString())),
+        conversations.some((el) => !ArrayOfTmpConversations.includes(el._id.toString())),
         false
       )
       assert.equal(responseData.response.error, undefined)
@@ -1137,6 +1137,399 @@ describe("Conversation functions", async () => {
       assert.equal(responseData.response.conversation._id.toString(), currentConversationId)
       assert.notEqual(responseData.response.conversation, undefined)
       assert.equal(responseData.response.error, undefined)
+    })
+  })
+
+  describe("Channels", async () => {
+    it("create", async () => {
+      await sendLogout(mockedWS)
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_1")).response.user._id
+
+      const requestData = {
+        request: {
+          conversation_create: {
+            name: "Breaking News From User_1",
+            description: "for admin and users",
+            type: "c",
+          },
+          id: "6_1",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      currentConversationId = responseData.response.conversation._id.toString()
+      const conversation = responseData.response.conversation
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+
+      assert.notEqual(responseData.response.conversation, undefined)
+      assert.equal(responseData.response.error, undefined)
+
+      assert.equal(conversation.type, "c")
+      assert.equal(conversation.owner_id.toString(), usersIds.at(0).toString())
+      assert.equal(conversation.subscribers_count, 1)
+    })
+
+    it("subscribe user_2", async () => {
+      await sendLogout(mockedWS)
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_2")).response.user._id
+
+      const requestData = {
+        request: {
+          conversation_subscribe: {
+            cid: currentConversationId,
+          },
+          id: "6_2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.notDeepEqual(responseData.response, { success: true })
+      assert.equal(responseData.response.error, undefined)
+
+      const participants = await conversationParticipantRepo.findAll({ conversation_id: currentConversationId })
+
+      assert.equal(participants.length, 2)
+
+      const participantIds = participants.map((p) => `${p.user_id}`)
+
+      assert.deepEqual(participantIds.sort(), [`${usersIds.at(0)}`, `${usersIds.at(1)}`].sort())
+    })
+
+    it("add admin user_2,user_3", async () => {
+      await sendLogout(mockedWS)
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_1")).response.user._id
+
+      const requestData = {
+        request: {
+          conversation_update: {
+            id: currentConversationId,
+            admins: { add: [usersIds.at(1), usersIds.at(2)] },
+          },
+          id: "6_4",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.notEqual(responseData.response.conversation, undefined)
+      assert.equal(responseData.response.error, undefined)
+      assert.equal(responseData.response.conversation.subscribers_count, 3)
+
+      const participants = await conversationParticipantRepo.findAll({ conversation_id: currentConversationId })
+
+      assert.equal(participants.length, 3)
+
+      const participantsUser2 = participants.find((participant) => `${participant.user_id}` === `${usersIds.at(1)}`)
+      const participantsUser3 = participants.find((participant) => `${participant.user_id}` === `${usersIds.at(2)}`)
+
+      assert.equal(participantsUser2.role, "admin")
+      assert.equal(participantsUser3.role, "admin")
+    })
+
+    it("unsubscribe user_2", async () => {
+      await sendLogout(mockedWS)
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_2")).response.user._id
+
+      const requestData = {
+        request: {
+          conversation_unsubscribe: {
+            cid: currentConversationId,
+          },
+          id: "6_3",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.notDeepEqual(responseData.response, { success: true })
+      assert.equal(responseData.response.error, undefined)
+
+      const participants = await conversationParticipantRepo.findAll({ conversation_id: currentConversationId })
+
+      assert.equal(participants.length, 2)
+    })
+
+    it("subscribe user_4", async () => {
+      await sendLogout(mockedWS)
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_4")).response.user._id
+
+      const requestData = {
+        request: {
+          conversation_subscribe: {
+            cid: currentConversationId,
+          },
+          id: "6_2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.notDeepEqual(responseData.response, { success: true })
+      assert.equal(responseData.response.error, undefined)
+
+      const participants = await conversationParticipantRepo.findAll({ conversation_id: currentConversationId })
+
+      assert.equal(participants.length, 3)
+
+      const participantIds = participants.map((p) => `${p.user_id}`)
+
+      assert.deepEqual(participantIds.sort(), [`${usersIds.at(0)}`, `${usersIds.at(2)}`, `${usersIds.at(3)}`].sort())
+    })
+
+    it("user_4(p) try update admin", async () => {
+      const requestData = {
+        request: {
+          conversation_update: {
+            id: currentConversationId,
+            admins: { remove: [usersIds.at(2)] },
+          },
+          id: "6_2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.deepEqual(responseData.response.error, { status: 403, message: "Forbidden." })
+    })
+
+    it("user_4(p) try send message", async () => {
+      const requestData = {
+        message: {
+          id: "xyz",
+          body: "hey how is going?",
+          cid: currentConversationId,
+          x: {
+            param1: "value",
+            param2: "value",
+          },
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.deepEqual(responseData.message.error, { status: 403, message: "Forbidden." })
+    })
+
+    it("user_1(owner) try send message", async () => {
+      await sendLogout(mockedWS)
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_1")).response.user._id
+
+      const requestData = {
+        message: {
+          id: "xyz",
+          body: "hey how is going?",
+          cid: currentConversationId,
+          x: {
+            param1: "value",
+            param2: "value",
+          },
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.notEqual(responseData.ask, undefined)
+      assert.equal(responseData.error, undefined)
+
+      lastMessageInChat = responseData.ask.server_mid
+    })
+
+    it("user_3(admin) try send read status", async () => {
+      await sendLogout(mockedWS)
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_3")).response.user._id
+
+      const requestData = {
+        message_read: {
+          cid: currentConversationId,
+          ids: [lastMessageInChat],
+        },
+        id: "123",
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.deepEqual(responseData.message_read.error, { status: 403, message: "Forbidden." })
+    })
+
+    it("user_3(admin) remove self admin", async () => {
+      const requestData = {
+        request: {
+          conversation_update: {
+            id: currentConversationId,
+            admins: { remove: [usersIds.at(2)] },
+          },
+          id: "6_6",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.notEqual(responseData.response.conversation, undefined)
+      assert.equal(responseData.response.error, undefined)
+      assert.equal(responseData.response.conversation.subscribers_count, 3)
+
+      const participants = await conversationParticipantRepo.findAll({ conversation_id: currentConversationId })
+
+      assert.equal(participants.length, 3)
+    })
+
+    it("user_3(p) try update", async () => {
+      const requestData = {
+        request: {
+          conversation_update: {
+            id: currentConversationId,
+            name: "My Channel",
+          },
+          id: "6_2",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.deepEqual(responseData.response.error, { status: 403, message: "Forbidden." })
+    })
+
+    it("user_2(no) search", async () => {
+      await sendLogout(mockedWS)
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_2")).response.user._id
+
+      const requestData = {
+        request: {
+          conversation_search: {
+            name: "breaking news",
+          },
+          id: "5_1",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      const conversationsResult = responseData.response.conversations
+      const count = conversationsResult.length
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.notEqual(conversationsResult, undefined)
+      assert.equal(count, 1)
+      assert.equal(`${currentConversationId}`, `${conversationsResult.at(0)}`)
+    })
+
+    it("add admin user_4", async () => {
+      await sendLogout(mockedWS)
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_1")).response.user._id
+
+      const requestData = {
+        request: {
+          conversation_update: {
+            id: currentConversationId,
+            admins: { add: [usersIds.at(3)] },
+          },
+          id: "6_4",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.notEqual(responseData.response.conversation, undefined)
+      assert.equal(responseData.response.error, undefined)
+    })
+
+    it("user_1(owner) admins list", async () => {
+      const requestData = {
+        request: {
+          get_admins_by_cids: {
+            cids: [currentConversationId, `${usersIds.at(-1)}`],
+          },
+          id: "6_7",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.notEqual(responseData.response.users, undefined)
+      assert.equal(responseData.response.error, undefined)
+
+      const { users, conversations } = responseData.response
+
+      assert.equal(users.length, 2)
+      assert.equal(users.length, conversations[`${currentConversationId}`].length)
+    })
+
+    it("user_3(p) try list admins", async () => {
+      await sendLogout(mockedWS)
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_3")).response.user._id
+
+      const requestData = {
+        request: {
+          get_admins_by_cids: {
+            cids: [currentConversationId],
+          },
+          id: "6_7",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.notEqual(responseData.response.users, undefined)
+      assert.equal(responseData.response.error, undefined)
+
+      const { users, conversations } = responseData.response
+
+      assert.equal(users.length, 0)
+      assert.equal(conversations[`${currentConversationId}`], undefined)
+    })
+
+    it("user_3(p) list conversation", async () => {
+      const requestData = {
+        request: {
+          conversation_list: {
+            ids: [currentConversationId],
+          },
+          id: "3_1",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      const conversations = responseData.response.conversations
+
+      assert.notEqual(responseData.response.conversations, undefined)
+      assert.equal(responseData.response.error, undefined)
+      assert.equal(conversations.at(0).subscribers_count, 3)
     })
   })
 

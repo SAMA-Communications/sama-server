@@ -503,6 +503,7 @@ A `type` param must have only one of two values:
 
 - `u` - (user) - a private conversations for two people only
 - `g` - (group) - conversations for a group of users, two or more.
+- `c` - (channel) - public channel conversation with admins and subscribers (admin access 'rw', subscribers access 'r')
 
 After conversation created, all the online participants will receive the following event about newly created conversation:
 
@@ -530,6 +531,8 @@ After conversation created, all the online participants will receive the followi
 
 ### Update / edit
 
+For type `g`,`c` only owner/admin can update conversation
+
 ```
 {
   request: {
@@ -540,6 +543,10 @@ After conversation created, all the online participants will receive the followi
       participants: {
         add: [ "63077ad836b78c3d82af0812", "63077ad836b78c3d82af0832" ],
         remove: [ "63077ad836b78c3d82af0816" ],
+      }
+      admins: {
+        add: ["63077ad836b78c3d82af0812"],
+        remove: ["63077ad836b78c3d82af0816"]
       }
     },
     id: "5"
@@ -670,6 +677,40 @@ The following message will also be sent to all users who are online and saved in
   },
   created_at: "2023-05-24T14:34:58.066Z"
 }
+```
+
+### Subscribe
+
+Users can subscribe to channel(receive/read messages):
+
+```
+{
+  request: {
+    conversation_subscribe: {
+      cid: "646e2092d80fe5c4e688dfa0",
+    },
+    id: "6_1"
+  }
+}
+
+{ response: { id: "6_1", success: true } }
+```
+
+### Unsubscribe
+
+Users can unsubscribe (leave):
+
+```
+{
+  request: {
+    conversation_unsubscribe: {
+      cid: "646e2092d80fe5c4e688dfa0",
+    },
+    id: "6_2"
+  }
+}
+
+{ response: { id: "6_2", success: true } }
 ```
 
 ### Delete
@@ -1071,6 +1112,40 @@ On each message sent to server - a server will deliver back to client a simple p
   }
 }
 
+It can also be used with the `ids` field:
+
+{
+  request: {
+    message_list: {
+      cid: "63077ad836b78c3d82af0812",
+      ids: [ "63760c34c35e750877677925", ... ]
+    },
+    id: "ef5326a5-b16b-4f75-9e88-cc42e5fea016"
+  }
+}
+
+{
+  response: {
+    id: "ef5326a5-b16b-4f75-9e88-cc42e5fea016",
+    messages: [
+      {
+        _id: "63760c34c35e750877677925",
+        body: "How is going?",
+        cid: "63563a2ad745dc1c6ad01b5f",
+        from: "63480e68f4794709f802a2fa",
+        status: "sent",
+        attachments: [
+          { file_id: "file_name_1", file_name: "file_1" }
+        ],
+        reactions: {}
+        t: 1668680757,
+        created_at: "2023-05-24T14:34:58.066Z"
+      },
+      ...
+    ]
+  }
+}
+
 ```
 
 ### Read status
@@ -1088,6 +1163,8 @@ On each message sent to server - a server will deliver back to client a simple p
 
 { response: { id: "3", success: true } }
 ```
+
+Conversation type `c` do not support read status
 
 If `ids` is omit, we mark all unread messages as read.
 
@@ -1920,12 +1997,12 @@ Updates the reactions of a message. Can add/remove reactions. All online partici
 
 #### 🧾 Request Parameters
 
-| Field                    | Type     | Description                                                        |
-| ------------------------ | -------- | ------------------------------------------------------------------ |
-| `senderId`               | `string` | **User ID** of the user who update reaction                        |
-| `messageReaction.mid`    | `string` | **Message ID** to update reaction                                  |
-| `messageReaction.add`    | `string` | Reaction to add                                                    |
-| `messageReaction.remove` | `string` | Reaction to remove                                                 |
+| Field                    | Type     | Description                                 |
+| ------------------------ | -------- | ------------------------------------------- |
+| `senderId`               | `string` | **User ID** of the user who update reaction |
+| `messageReaction.mid`    | `string` | **Message ID** to update reaction           |
+| `messageReaction.add`    | `string` | Reaction to add                             |
+| `messageReaction.remove` | `string` | Reaction to remove                          |
 
 ---
 

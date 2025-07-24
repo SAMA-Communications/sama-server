@@ -58,7 +58,7 @@ class MessageService {
       return processedResponse
     }
 
-    const existServerBot = await this.userRepo.findByLogin(organizationId, "server-chat-bot")
+    const existServerBot = await this.userRepo.findByLogin(organizationId, process.env.CHAT_BOT_LOGIN)
     if (existServerBot) {
       processedResponse.botMessageParams = { ...baseMessage, body, attachments }
       processedResponse.serverBot = existServerBot
@@ -69,6 +69,9 @@ class MessageService {
 
   async messagesList(cId, user, options, limit) {
     const filterOptions = {}
+    if (options.ids) {
+      filterOptions.ids = options.ids
+    }
     if (options.updatedAt?.gt) {
       filterOptions.updatedAtFrom = new Date(options.updatedAt.gt)
     }
@@ -110,26 +113,23 @@ class MessageService {
     return result
   }
 
-  async readMessagesInConversation(cid, user, mids) {
+  async readMessagesInConversation(organizationId, cid, userId, mids) {
     const findMessagesOptions = { mids }
     if (!mids) {
-      const lastReadMessagesByConvIds = await this.messageStatusRepo.findLastReadMessageByUserForCid(
-        [cid],
-        user.native_id
-      )
+      const lastReadMessagesByConvIds = await this.messageStatusRepo.findLastReadMessageByUserForCid([cid], userId)
       findMessagesOptions.lastReadMessageId = lastReadMessagesByConvIds[cid]?.mid || null
     }
 
     const unreadMessages = await this.messageRepo.findAllOpponentsMessagesFromConversation(
       cid,
-      user.native_id,
+      userId,
       findMessagesOptions
     )
 
     if (unreadMessages.length) {
       const mids = unreadMessages.map((message) => message._id).reverse()
 
-      await this.messageStatusRepo.upsertMessageReadStatuses(cid, mids, user.native_id, "read")
+      await this.messageStatusRepo.upsertMessageReadStatuses(cid, mids, userId, "read")
     }
 
     return unreadMessages
