@@ -1,5 +1,5 @@
 import config from "../config/index.js"
-import logger from "../logger/index.js"
+import maiLogger from "../logger/index.js"
 
 import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
@@ -8,6 +8,8 @@ import packetMapper from "./packet_mapper.js"
 
 import { buildWsEndpoint } from "../utils/build_ws_endpoint.js"
 import { CONSTANTS as MAIN_CONSTANTS } from "../constants/constants.js"
+
+const logger = maiLogger.child("[PacketManager]")
 
 class PacketManager {
   async deliverToUserOnThisNode(userId, packet, deviceId, senderInfo) {
@@ -44,7 +46,7 @@ class PacketManager {
           await recipient.ws.safeSend(mappedRecipientMessage)
         }
       } catch (error) {
-        logger.error(error, `[PacketProcessor] send on socket error`)
+        logger.error(error, `send on socket error`)
       }
     }
   }
@@ -81,7 +83,7 @@ class PacketManager {
         await clusterManager.senderClusterDeliverPacket(nodeUrl, clusterPacket)
       } catch (error) {
         await sessionService.clearNodeUsersSession(nodeUrl)
-        logger.error(error, "[PacketProcessor][deliverToUserDevices] createSocketWithNode error")
+        logger.error(error, "[deliverToUserDevices] createSocketWithNode error")
       }
     })
   }
@@ -130,7 +132,7 @@ class PacketManager {
       const { userId, packet, senderInfo } = deliverPacket
       await this.deliverToUserOnThisNode(userId, packet, null, senderInfo)
     } catch (error) {
-      logger.error(error, "[cluster_manager][deliverClusterMessageToUser] error")
+      logger.error(error, "[deliverClusterMessageToUser]")
     }
   }
 }

@@ -15,8 +15,10 @@ import HttpResponse from "@sama/networking/models/HttpResponse.js"
 import Response from "@sama/networking/models/Response.js"
 
 import config from "@sama/config/index.js"
-import logger from "@sama/logger/index.js"
+import mainLogger from "@sama/logger/index.js"
 import { asyncLoggerContextStore, createStore, updateStoreContext } from "@sama/logger/async_store.js"
+
+const logger = mainLogger.child("[Http]")
 
 const parseBaseParamsMiddleware = async (res, req) => {
   res.fakeWsSessionKey = Symbol("Http ws fake session")
@@ -38,7 +40,7 @@ const parseBaseParamsMiddleware = async (res, req) => {
       res.parsedCookies = cookies
       res.parsedSignedCookies = signedCookies
     } catch (error) {
-      logger.error(error, "[Http][Request][cookieParser][error]")
+      logger.error(error, "[cookieParser][error]")
     }
   }
 }
@@ -77,9 +79,9 @@ const parseJsonBodyMiddleware = async (res, req) => {
 
   try {
     res.parsedBody = JSON.parse(res.rawBody.toString())
-    logger.debug("[Http][payload] %j", res.parsedBody)
+    logger.debug("[payload] %j", res.parsedBody)
   } catch (error) {
-    logger.error(error, "[Http][parseJSONBody][error]")
+    logger.error(error, "[parseJSONBody][error]")
   }
 }
 
@@ -129,7 +131,7 @@ class HttpProtocol extends BaseProtocolProcessor {
   }
 
   async processHttpResponseMiddleware(res, req, handlerResponse) {
-    logger.debug("[Http][Response] %j", handlerResponse)
+    logger.debug("[Response] %j", handlerResponse)
 
     const { httpResponse } = handlerResponse
 
@@ -170,7 +172,7 @@ class HttpProtocol extends BaseProtocolProcessor {
   requestHandler = async (req, res, preMiddleware, handler) => {
     try {
       logger.debug(
-        "[Http][Request] %s %s %s %s",
+        "[Request] %s %s %s %s",
         req.getMethod(),
         req.getUrl(),
         req.getHeader("content-type"),
@@ -200,7 +202,7 @@ class HttpProtocol extends BaseProtocolProcessor {
         })
       }
     } catch (error) {
-      logger.error(error, "[Http][Error]")
+      logger.error(error, "[Error]")
 
       res.cork(() => {
         res.writeStatus(`${error.cause?.status ?? ERROR_STATUES.INTERNAL_SERVER.status}`)
@@ -271,7 +273,7 @@ class HttpProtocol extends BaseProtocolProcessor {
       })
     )
 
-    logger.debug("[HTTP] listening on [WS] port")
+    logger.debug("listening on [WS] port")
   }
 }
 

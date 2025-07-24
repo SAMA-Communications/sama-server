@@ -42,7 +42,7 @@ class ClusterSyncer {
         try {
           await clusterManager.createSocketWithNode(n.ip_address, n.port)
         } catch (err) {
-          logger.error(err)
+          logger.error(err, "[ClusterSyncer][createSocketWithNode]")
         }
     })
 

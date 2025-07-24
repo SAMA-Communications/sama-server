@@ -32,34 +32,40 @@ class PinoLogger {
 
   ignoreContextProps = [PinoLogger.START_REQUEST_TIME_PROP]
 
-  constructor() {
-    this.logger = pinoLogger
+  constructor(pinoLogger) {
+    this.pinoLogger = pinoLogger
   }
 
   debug(stringPattern, ...args) {
     const logContext = this.#logContext()
 
-    this.logger.debug(logContext, stringPattern, ...args)
+    this.pinoLogger.debug(logContext, stringPattern, ...args)
   }
 
   log(stringPattern, ...args) {
     const logContext = this.#logContext()
 
-    this.logger.trace(logContext, stringPattern, ...args)
+    this.pinoLogger.trace(logContext, stringPattern, ...args)
   }
 
   warn(stringPattern, ...args) {
     const logContext = this.#logContext()
 
-    this.logger.warn(logContext, stringPattern, ...args)
+    this.pinoLogger.warn(logContext, stringPattern, ...args)
   }
 
   error(error, stringPattern, ...args) {
     const logContext = this.#logContext()
 
-    const childLogger = this.logger.child(logContext)
+    const childLogger = this.pinoLogger.child(logContext)
 
     childLogger.error(error, stringPattern, ...args)
+  }
+
+  child(msgPrefix, contextBindings = {}) {
+    const childPinoLogger = this.pinoLogger.child(contextBindings, { msgPrefix: msgPrefix })
+
+    return new PinoLogger(childPinoLogger)
   }
 
   #logContext(context = {}) {
@@ -90,4 +96,4 @@ class PinoLogger {
   }
 }
 
-export default new PinoLogger()
+export default new PinoLogger(pinoLogger)

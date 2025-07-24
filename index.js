@@ -117,6 +117,7 @@ ServiceLocatorContainer.register(
     implementationName: "MongoConnection",
   })
 )
+
 logger.debug("[Register base]")
 
 for (const provider of providers) {

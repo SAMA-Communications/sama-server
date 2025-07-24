@@ -1,5 +1,7 @@
-import logger from "../logger/index.js"
+import mainLogger from "../logger/index.js"
 import RegisterProvider from "./RegisterProvider.js"
+
+const logger = mainLogger.child("[ServiceLocatorContainer]")
 
 class ServiceLocatorContainer {
   #providersStore = {}
@@ -44,14 +46,14 @@ class ServiceLocatorContainer {
 
     if (existed) {
       logger.warn(
-        "[ServiceLocatorContainer] [register] %s [replace implementation] %s -> %s",
+        "[register] %s [replace implementation] %s -> %s",
         registerProvider.name,
         existed.implementationName,
         registerProvider.implementationName
       )
     } else {
       logger.debug(
-        "[ServiceLocatorContainer] [register] %s [implementation] %s",
+        "[register] %s [implementation] %s",
         registerProvider.name,
         registerProvider.implementationName
       )
@@ -67,7 +69,7 @@ class ServiceLocatorContainer {
     for (const registerProvider of registerProviderToBoot) {
       await registerProvider.boot(this)
       registerProvider.booted = true
-      logger.debug("[ServiceLocatorContainer] [boot] %s [implementation] %s", registerProvider.name, registerProvider.implementationName)
+      logger.debug("[boot] %s [implementation] %s", registerProvider.name, registerProvider.implementationName)
     }
   }
 }

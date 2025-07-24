@@ -202,7 +202,7 @@ class BaseProtocolProcessor {
   }
 
   onProcessingError(socket, error, packageData) {
-    logger.error(error, "onPackage %j", packageData)
+    logger.error(error, "[onPackage] %j", packageData)
 
     return socket.safeSend(
       JSON.stringify({

@@ -3,12 +3,14 @@ import uWS from "uWebSockets.js"
 import { StringDecoder } from "string_decoder"
 
 import config from "../config/index.js"
-import logger from "../logger/index.js"
+import mainLogger from "../logger/index.js"
 
 import packetManager from "../networking/packet_manager.js"
 
 import { buildWsEndpoint } from "../utils/build_ws_endpoint.js"
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js"
+
+const logger = mainLogger.child("[ClusterManager]")
 
 const decoder = new StringDecoder("utf8")
 
@@ -62,19 +64,19 @@ class ClusterManager {
       const ws = new WebSocket(url)
 
       ws.on("error", async (event) => {
-        logger.error(event, "[ClusterManager][createSocketWithNode] ws on Error")
+        logger.error(event, "[createSocketWithNode] ws on Error")
         reject("[ClusterManager][createSocketWithNode] ws on error")
       })
 
       ws.on("open", async () => {
-        logger.debug("[ClusterManager][createSocketWithNode] ws on Open url %s", ws.url)
+        logger.debug("[createSocketWithNode] ws on Open url %s", ws.url)
         this.#shareCurrentNodeInfo(ws)
       })
 
       ws.on("message", async (data) => {
         const json = JSON.parse(decoder.write(Buffer.from(data)))
 
-        logger.debug("[ClusterManager] ws on Message %j", json)
+        logger.debug("ws on Message %j", json)
 
         if (json.node_info) {
           const nodeInfo = json.node_info
@@ -87,7 +89,7 @@ class ClusterManager {
       })
 
       ws.on("close", async () => {
-        logger.debug("[ClusterManager][createSocketWithNode] ws on Close %s", ws.url)
+        logger.debug("[createSocketWithNode] ws on Close %s", ws.url)
         delete this.clusterNodesWS[getIpFromWsUrl(ws.url)]
       })
     })
@@ -101,11 +103,11 @@ class ClusterManager {
         ...wsOptions,
 
         open: (ws) => {
-          logger.debug("[ClusterManager][WS] on Open IP: %s", Buffer.from(ws.getRemoteAddressAsText()).toString())
+          logger.debug("[WS] on Open IP: %s", Buffer.from(ws.getRemoteAddressAsText()).toString())
         },
 
         close: async (ws, code, message) => {
-          logger.debug("[ClusterManager][WS] on Close")
+          logger.debug("[WS] on Close")
           for (const nodeIp in this.clusterNodesWS) {
             if (this.clusterNodesWS[nodeIp] !== ws) {
               continue
@@ -119,7 +121,7 @@ class ClusterManager {
         message: async (ws, message, isBinary) => {
           const json = JSON.parse(decoder.write(Buffer.from(message)))
 
-          logger.debug("[ClusterManager][WS] on Message %j", json)
+          logger.debug("[WS] on Message %j", json)
 
           if (json.node_info) {
             const nodeInfo = json.node_info
@@ -139,7 +141,7 @@ class ClusterManager {
         }
 
         const clusterPort = uWS.us_socket_local_port(listenSocket)
-        logger.debug("[ClusterManager][WS] listening on port %s", clusterPort)
+        logger.debug("[WS] listening on port %s", clusterPort)
 
         return resolve(clusterPort)
       })
