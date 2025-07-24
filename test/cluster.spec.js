@@ -1,6 +1,6 @@
 import ip from "ip"
 import uWS from "uWebSockets.js"
-import assert from "assert"
+import assert from "node:assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 import clusterManager from "../app/cluster/cluster_manager.js"

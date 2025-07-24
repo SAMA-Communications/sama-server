@@ -1,5 +1,5 @@
+import os from "node:os"
 import ip from "ip"
-import os from "os"
 
 import CONFIG_VALUES from "./default.js"
 import Config from "./config.js"

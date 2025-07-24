@@ -1,5 +1,5 @@
-import { v4 as uuid4 } from "uuid"
-import { StringDecoder } from "string_decoder"
+import { v4 as uuid } from "uuid"
+import { StringDecoder } from "node:string_decoder"
 
 import logger from "../../logger/index.js"
 import { updateStoreContext } from "../../logger/async_store.js"
@@ -56,7 +56,7 @@ class BaseProtocolProcessor {
   }
 
   async onPackage(socket, packageData) {
-    updateStoreContext("srId", uuid4())
+    updateStoreContext("srId", uuid())
     updateStoreContext("cIp", this.socketAddress(socket))
     updateStoreContext("rStartTime", +new Date())
 

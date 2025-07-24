@@ -1,6 +1,6 @@
 import WebSocket from "ws"
 import uWS from "uWebSockets.js"
-import { StringDecoder } from "string_decoder"
+import { StringDecoder } from "node:string_decoder"
 
 import config from "../config/index.js"
 import mainLogger from "../logger/index.js"

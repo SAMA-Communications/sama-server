@@ -1,4 +1,4 @@
-import { v4 as uuid4 } from "uuid"
+import { v4 as uuid } from "uuid"
 import { CONSTANTS as MAIN_CONSTANTS } from "../../constants/constants.js"
 import { ERROR_STATUES } from "../../constants/errors.js"
 
@@ -220,7 +220,7 @@ class HttpProtocol extends BaseProtocolProcessor {
   onHttpRequestHandler(preMiddleware = [], handler) {
     return (res, req) => {
       asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
-        updateStoreContext("srId", uuid4())
+        updateStoreContext("srId", uuid())
         updateStoreContext("cIp", this.socketAddress(res))
         updateStoreContext("rStartTime", +new Date())
   
