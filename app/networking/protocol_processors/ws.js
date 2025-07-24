@@ -1,5 +1,7 @@
 import uWS from "uWebSockets.js"
 
+import logger from "../../logger/index.js"
+import { asyncLoggerContextStore, createStore } from "../../logger/async_store.js"
 import BaseProtocolProcessor from "./base.js"
 import { wsSafeSend } from "../../utils/sockets-utils.js"
 
@@ -7,8 +9,14 @@ class WsProtocol extends BaseProtocolProcessor {
   uwsOptions = {}
   uWSocket = void 0
 
+  requestCreateStoreContext = () => createStore({ pType: "WS" })
+
+  socketAddress(ws) {
+    return Buffer.from(ws.getRemoteAddressAsText()).toString()
+  }
+
   onOpen(ws) {
-    console.log("[ClientManager][WS] on Open", `IP: ${Buffer.from(ws.getRemoteAddressAsText()).toString()}`)
+    logger.debug("[Open] IP: %s", this.socketAddress(ws))
     super.onOpen(ws)
   }
 
@@ -21,7 +29,7 @@ class WsProtocol extends BaseProtocolProcessor {
   }
 
   async onClose(ws, code, message) {
-    console.log("[ClientManager][WS] on close", code)
+    logger.debug("[Close] Code: %s", code)
 
     return super.onClose(ws)
   }
@@ -39,21 +47,35 @@ class WsProtocol extends BaseProtocolProcessor {
       this.uWSocket.ws("/*", {
         ...uwsOptions.wsOptions,
 
-        open: (ws) => this.onOpen(ws),
+        open: (ws) => {
+          asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
+            this.onOpen(ws)
+          })
+        },
 
-        close: (ws, code, message) => this.onClose(ws, code, message),
+        close: (ws, code, message) => {
+          asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
+            this.onClose(ws, code, message)
+          })
+        },
 
-        message: (ws, message, isBinary) => this.onPackage(ws, message, isBinary),
+        message: (ws, message, isBinary) => {
+          asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
+            this.onPackage(ws, message, isBinary)
+          })
+        },
       })
 
-      this.uWSocket.listen(uwsOptions.port, uwsOptions.listenOptions, (listenSocket) => {
-        if (!listenSocket) {
-          throw new Error(`[ClientManager][WS] can't allocate port`)
-        }
+      asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
+        this.uWSocket.listen(uwsOptions.port, uwsOptions.listenOptions, (listenSocket) => {
+          if (!listenSocket) {
+            throw new Error(`[ClientManager][WS] can't allocate port`)
+          }
 
-        console.log(`[ClientManager][WS] listening on port ${uWS.us_socket_local_port(listenSocket)}, pid=${process.pid}`)
+          logger.debug("listening on port %s", uWS.us_socket_local_port(listenSocket))
 
-        return resolve(uwsOptions.port)
+          return resolve(uwsOptions.port)
+        })
       })
     })
   }

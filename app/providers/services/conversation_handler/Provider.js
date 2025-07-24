@@ -5,9 +5,10 @@ const name = "ConversationHandlerService"
 
 class ConversationHandlerServiceRegisterProvider extends RegisterProvider {
   register(slc) {
+    const logger = slc.use("Logger")
     const conversationHandlerRepo = slc.use("ConversationHandlerRepository")
 
-    return new ConversationHandlerService(conversationHandlerRepo)
+    return new ConversationHandlerService(logger, conversationHandlerRepo)
   }
 }
 

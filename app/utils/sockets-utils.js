@@ -1,10 +1,12 @@
+import logger from "../logger/index.js"
+
 export async function tcpSafeSend(socket, data) {
   try {
     await new Promise((resolve, reject) => {
       socket.write(data, (error) => (error ? reject(error) : resolve()))
     })
   } catch (error) {
-    console.log("[TCP][sent][error]", error)
+    logger.error(error)
   }
 }
 
@@ -12,7 +14,7 @@ export function wsSafeSend(ws, data) {
   try {
     ws.send(data)
   } catch (error) {
-    console.log("[WS][sent][error]", error)
+    logger.error(error)
   }
 }
 

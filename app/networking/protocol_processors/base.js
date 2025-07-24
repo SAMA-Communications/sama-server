@@ -1,5 +1,8 @@
+import { v4 as uuid4 } from "uuid"
 import { StringDecoder } from "string_decoder"
 
+import logger from "../../logger/index.js"
+import { updateStoreContext } from "../../logger/async_store.js"
 import { ERROR_STATUES } from "../../constants/errors.js"
 import { BASE_API, APIs, detectAPIType } from "../APIs.js"
 
@@ -20,6 +23,12 @@ class BaseProtocolProcessor {
     this.conversationService = conversationService
   }
 
+  requestCreateStoreContext = () => createStore({ pType: "Socket" })
+
+  socketAddress(socket) {
+    return socket.ip ?? "socket-address"
+  }
+
   onOpen(socket) {
     this.extendSocket(socket)
 
@@ -37,7 +46,7 @@ class BaseProtocolProcessor {
   decodePackage(socket, buffer) {
     const stringMessage = decoder.write(Buffer.from(buffer))?.trim()
 
-    console.log("[RECV]", stringMessage, stringMessage.length)
+    logger.debug("[RECV] %s %s", stringMessage, stringMessage.length)
 
     if (!stringMessage?.length) {
       return
@@ -47,12 +56,15 @@ class BaseProtocolProcessor {
   }
 
   async onPackage(socket, packageData) {
+    updateStoreContext("srId", uuid4())
+    updateStoreContext("cIp", this.socketAddress(socket))
+    updateStoreContext("rStartTime", +new Date())
+
     let stringMessage = packageData
     try {
       stringMessage = this.decodePackage(socket, packageData)
       await this.processPackage(socket, stringMessage)
     } catch (error) {
-      console.log("[ClientManager] onPackage error", error)
       this.onProcessingError(socket, error, stringMessage)
     }
   }
@@ -106,7 +118,7 @@ class BaseProtocolProcessor {
           backPackage = await backPackage.mapMessage(mapBackMessageFunc.bind(socket))
         }
 
-        console.log("[SENT]", backPackage)
+        logger.debug("[SENT] %s", backPackage)
 
         await socket.safeSend(backPackage)
       } catch (error) {
@@ -117,7 +129,7 @@ class BaseProtocolProcessor {
 
   async processUpdateLastActivityResponse(socket, response) {
     const userId = response.lastActivityStatusResponse.userId ?? this.sessionService.getSessionUserId(socket)
-    console.log("[UPDATE_LAST_ACTIVITY]", userId, response.lastActivityStatusResponse)
+    logger.debug("[UPDATE_LAST_ACTIVITY] %s %o", userId, response.lastActivityStatusResponse)
 
     const responses = await activitySender.updateAndBuildUserActivity(socket, userId, response.lastActivityStatusResponse.status)
     responses.forEach((activityResponse) => response.merge(activityResponse))
@@ -127,7 +139,7 @@ class BaseProtocolProcessor {
 
   async processDeliverResponse(socket, deliverPackages) {
     for (const deliverPackage of deliverPackages) {
-      console.log("[DELIVER]", deliverPackage)
+      logger.debug("[DELIVER] %o", deliverPackage)
 
       deliverPackage.ws ??= socket
 
@@ -149,8 +161,8 @@ class BaseProtocolProcessor {
         deliverMessage.notSaveInOfflineStorage,
         deliverMessage.ignoreSelf
       )
-    } catch (e) {
-      console.error("[ClientManager] connection with client socket is lost", e)
+    } catch (error) {
+      logger.error(error, "connection with client socket is lost")
     }
   }
 
@@ -177,7 +189,7 @@ class BaseProtocolProcessor {
   async updateLastUserLastActivityOnClose(socket) {
     const userId = this.sessionService.getSessionUserId(socket)
 
-    console.log("[ClientManager] on Close", userId)
+    logger.debug("Update Last Activity on Close %s", userId)
 
     if (!userId) {
       return
@@ -189,7 +201,7 @@ class BaseProtocolProcessor {
   }
 
   onProcessingError(socket, error, packageData) {
-    console.log("[ClientManager] onPackage error", error, packageData)
+    logger.error(error, "onPackage %j", packageData)
 
     return socket.safeSend(
       JSON.stringify({

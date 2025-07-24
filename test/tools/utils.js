@@ -4,6 +4,7 @@ import ServiceLocatorContainer from "../../app/common/ServiceLocatorContainer.js
 
 import packetJsonProcessor from "../../APIs/JSON/routes/packet_processor.js"
 
+const logger = ServiceLocatorContainer.use("Logger")
 const organizationService = ServiceLocatorContainer.use("OrganizationService")
 
 async function createOrganization(params) {
@@ -51,7 +52,7 @@ async function sendLogout(ws, currentUserToken) {
 
 const mockedWS = {
   send: (data) => {
-    console.log("[WS] send mocked data", data)
+    logger.debug("[WS] send mocked data %j", data)
   },
 }
 

@@ -1,3 +1,4 @@
+import logger from "../logger/index.js"
 import { detectAPIType, BASE_API, APIs } from "./APIs.js"
 
 class PacketMapper {
@@ -33,7 +34,7 @@ class PacketMapper {
   }
 
   mapRecipientPacket(destinationAPIType, packet, senderInfo, recipientInfo) {
-    console.log("[mapRecipientPacket]", destinationAPIType, packet, senderInfo, recipientInfo)
+    logger.debug("[mapRecipientPacket] %j %j %j %j", destinationAPIType, packet, senderInfo, recipientInfo)
 
     if (!destinationAPIType) {
       destinationAPIType = this.detectAPIType(packet)

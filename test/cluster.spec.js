@@ -9,6 +9,7 @@ import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 import packetManager from "../app/networking/packet_manager.js"
 
 const config = ServiceLocatorContainer.use("Config")
+const logger = ServiceLocatorContainer.use("Logger")
 const sessionService = ServiceLocatorContainer.use("SessionService")
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 const conversationRepo = ServiceLocatorContainer.use("ConversationRepository")
@@ -43,7 +44,7 @@ describe("Cluster Message function", async () => {
     CLUSTER_SOCKET.listen(0, (listenSocket) => {
       if (listenSocket) {
         const clusterPort = uWS.us_socket_local_port(listenSocket)
-        console.log(`CLUSTER listening on port ${clusterPort}`)
+        logger.debug("CLUSTER listening on port %s", clusterPort)
         secondClusterPort = clusterPort
       } else {
         throw "CLUSTER_SOCKET.listen error"

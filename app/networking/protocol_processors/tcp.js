@@ -1,6 +1,9 @@
 import net from "net"
 import tls from "tls"
 
+import logger from "../../logger/index.js"
+import { asyncLoggerContextStore, createStore, updateStoreContext } from "../../logger/async_store.js"
+
 import BaseProtocolProcessor from "./base.js"
 import { APIs, detectAPIType } from "../APIs.js"
 import { tcpSafeSend } from "../../utils/sockets-utils.js"
@@ -9,12 +12,18 @@ class TcpProtocol extends BaseProtocolProcessor {
   tcpOptions = {}
   tcpSocket = void 0
 
+  requestCreateStoreContext = () => createStore({ pType: "TCP" })
+
+  socketAddress(socket) {
+    return `${socket.remoteAddress}`
+  }
+
   socketListenerOnData = function () {}
   socketListenerOnClose = function () {}
   socketListenerOnUpgrade = function () {}
 
   onOpen(socket, isTls) {
-    console.log("[ClientManager][TCP] on Open", `IP: ${socket.remoteAddress}`)
+    logger.debug("[Open] IP: %s", this.socketAddress(socket))
     super.onOpen(socket)
     this.setUpSocketListeners(socket, isTls)
   }
@@ -28,7 +37,7 @@ class TcpProtocol extends BaseProtocolProcessor {
   }
 
   async onClose(socket) {
-    console.log("[ClientManager][TCP] on close", `IP: ${socket.remoteAddress}`)
+    logger.debug("[Close] IP: %s", this.socketAddress(socket))
 
     await super.onClose(socket)
 
@@ -52,7 +61,7 @@ class TcpProtocol extends BaseProtocolProcessor {
 
     const splittedPackages = api.splitPacket(decodedPackage)
 
-    console.log("[RECV][splitted]", splittedPackages)
+    logger.debug("[RECV][splitted] %j", splittedPackages)
 
     for (const splittedPackage of splittedPackages) {
       await super.processPackage(socket, splittedPackage)
@@ -76,19 +85,25 @@ class TcpProtocol extends BaseProtocolProcessor {
   }
 
   onSocketData(socket, packageData) {
-    this.onPackage(socket, packageData)
+    asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
+      this.onPackage(socket, packageData)
+    })
   }
 
   onSocketClose(socket) {
-    this.onClose(socket)
+    asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
+      this.onClose(socket)
+    })
   }
 
   onSocketError(error) {
-    console.log("[ClientManager][TCP] socket error", error)
+    asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
+      logger.error(error)
+    })
   }
 
   onSocketTlsUpgrade(socket) {
-    console.log("[Upgrade]")
+    logger.debug("[Upgrade]")
 
     this.removeSocketListeners(socket)
 
@@ -101,7 +116,9 @@ class TcpProtocol extends BaseProtocolProcessor {
     const tlsSocket = new tls.TLSSocket(socket, options)
 
     tlsSocket.on("session", () => {
-      console.log("TLS handshake complete")
+      console.trace(asyncLoggerContextStore.getStore())
+      updateStoreContext("pType", "TLS")
+      logger.debug("TLS handshake complete")
     })
 
     this.onOpen(tlsSocket, true)
@@ -131,12 +148,18 @@ class TcpProtocol extends BaseProtocolProcessor {
     this.prepareSocketsListeners()
 
     return new Promise((resolve) => {
-      this.tcpSocket = net.createServer((socket) => this.onOpen(socket))
+      this.tcpSocket = net.createServer((socket) => {
+        asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
+          this.onOpen(socket)
+        })
+      })
 
-      this.tcpSocket.listen(tcpOptions.port, () => {
-        console.log(`[ClientManager][TCP] listening on port ${tcpOptions.port}, pid=${process.pid}`)
+      asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
+        this.tcpSocket.listen(tcpOptions.port, () => {
+          logger.debug("listening on port %s", tcpOptions.port)
 
-        return resolve(tcpOptions.port)
+          return resolve(tcpOptions.port)
+        })
       })
     })
   }

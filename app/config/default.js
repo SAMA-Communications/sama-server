@@ -5,6 +5,10 @@ const CONFIG = {
     name: process.env.APP_NAME ?? "SAMA",
     hostName: process.env.HOSTNAME ?? "SAMA-SERVER",
   },
+  logger: {
+    logLevel: process.env.LOG_LEVEL ?? "trace",
+    singleLine: process.env.LOG_SINGLE_LINE === "true"
+  },
   ws: {
     options: {
       ssl: {

@@ -1,4 +1,5 @@
 import config from "../config/index.js"
+import logger from "../logger/index.js"
 
 import clusterManager from "./cluster_manager.js"
 
@@ -41,7 +42,7 @@ class ClusterSyncer {
         try {
           await clusterManager.createSocketWithNode(n.ip_address, n.port)
         } catch (err) {
-          console.log(err)
+          logger.error(err)
         }
     })
 

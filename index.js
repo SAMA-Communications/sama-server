@@ -3,6 +3,8 @@ import fs from "fs"
 import uWS from "uWebSockets.js"
 
 import config from "./app/config/index.js"
+import logger from "./app/logger/index.js"
+
 import ServiceLocatorContainer from "./app/common/ServiceLocatorContainer.js"
 import providers from "./app/providers/index.js"
 import RegisterProvider from "./app/common/RegisterProvider.js"
@@ -52,25 +54,25 @@ if (config.get("tcp.options.isTls")) {
 const clusterPort = await clusterManager.createLocalSocket(uWSOptions)
 config.set("ws.cluster.port", clusterPort)
 
-console.log("[Config]", JSON.stringify(config.toObject(), null, 5))
+logger.debug("[Config] %s", JSON.stringify(config.toObject(), null, 5))
 
 // perform a database connection when the server starts
 const dbConnection = await connectToDBPromise(config.get("db.mongo.main.url"))
   .then((dbConnection) => {
-    console.log("[Mongo][connect] Ok")
+    logger.debug("[Mongo][connect] Ok")
     return dbConnection
   })
   .catch((err) => {
-    console.log("[Mongo][connect] error", err)
+    logger.error(err, "[Mongo][connect]")
     process.exit()
   })
 
 await RedisClient.connect()
   .then(async () => {
-    console.log("[Redis][connect] Ok")
+    logger.debug("[Redis][connect] Ok")
   })
   .catch((err) => {
-    console.log("[Redis][connect] error", err)
+    logger.error(err, "[Redis][connect]")
     process.exit()
   })
 
@@ -83,6 +85,16 @@ ServiceLocatorContainer.register(
   })({
     name: "Config",
     implementationName: config.constructor.name,
+  })
+)
+ServiceLocatorContainer.register(
+  new (class extends RegisterProvider {
+    register(slc) {
+      return logger
+    }
+  })({
+    name: "Logger",
+    implementationName: logger.constructor.name,
   })
 )
 ServiceLocatorContainer.register(
@@ -105,14 +117,14 @@ ServiceLocatorContainer.register(
     implementationName: "MongoConnection",
   })
 )
-console.log("[Register base]")
+logger.debug("[Register base]")
 
 for (const provider of providers) {
   ServiceLocatorContainer.register(provider)
 }
 
 for (const api of Object.values(APIs)) {
-  console.log("[Register Api Providers]", api.constructor.name)
+  logger.debug("[Register Api Providers] %s", api.constructor.name)
 
   config.merge(api.config)
 
@@ -121,17 +133,17 @@ for (const api of Object.values(APIs)) {
   }
 }
 
-console.log("[Config][Merged]", JSON.stringify(config.toObject(), null, 5))
+logger.debug("[Config][Merged] %s", JSON.stringify(config.toObject(), null, 5))
 
 // Boot providers
-console.log("[Boot]")
+logger.debug("[Boot]")
 await ServiceLocatorContainer.boot()
 
-console.log("[Create singleton]")
+logger.debug("[Create singleton]")
 await ServiceLocatorContainer.createAllSingletonInstances()
 
 // Start Cluster Sync
-console.log("[Start sync]")
+logger.debug("[Start sync]")
 await clusterSyncer.startSyncingClusterNodes()
 
 // Start public protocols

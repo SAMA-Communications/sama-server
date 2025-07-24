@@ -1,3 +1,6 @@
+import logger from "@sama/logger/index.js"
+import { updateStoreContext } from "@sama/logger/async_store.js"
+
 import BasePacketProcessor from "@sama/common/packet_processor.js"
 import Response from "@sama/networking/models/Response.js"
 import { routes } from "./routes.js"
@@ -31,18 +34,19 @@ class PacketJsonProcessor extends BasePacketProcessor {
     let json
     try {
       json = this.#parseMessage(message)
+      updateStoreContext("rId", json?.request?.id ?? json?.message?.id ?? json?.system_message?.id ?? json?.id ?? "no-id")
       responseData = await this.#processMessage(ws, json)
       if (!responseData) {
         return new Response()
       }
-    } catch (e) {
-      console.error(e)
+    } catch (error) {
+      logger.error(error)
       let errorBackMessage = null
       if (json.request) {
         errorBackMessage = {
           response: {
             id: json.request.id,
-            error: e.cause || e.message,
+            error: error.cause || error.message,
           },
         }
       } else {
@@ -50,7 +54,7 @@ class PacketJsonProcessor extends BasePacketProcessor {
         errorBackMessage = {
           [topLevelElement]: {
             id: json[topLevelElement].id,
-            error: e.cause || e.message,
+            error: error.cause || error.message,
           },
         }
       }
