@@ -89,7 +89,6 @@ class MessageRepository extends BaseRepository {
     }
     if (options.updatedAtBefore) {
       query.updated_at = this.mergeOperators(query.updated_at, { $lt: options.updatedAtBefore })
-      sort = { created_at: -1 }
     }
 
     const messages = await this.findAll(query, null, limit, sort)
