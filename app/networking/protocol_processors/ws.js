@@ -66,16 +66,14 @@ class WsProtocol extends BaseProtocolProcessor {
         },
       })
 
-      asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
-        this.uWSocket.listen(uwsOptions.port, uwsOptions.listenOptions, (listenSocket) => {
-          if (!listenSocket) {
-            throw new Error(`[ClientManager][WS] can't allocate port`)
-          }
+      this.uWSocket.listen(uwsOptions.port, uwsOptions.listenOptions, (listenSocket) => {
+        if (!listenSocket) {
+          throw new Error(`[WS] can't allocate port`)
+        }
 
-          logger.debug("listening on port %s", uWS.us_socket_local_port(listenSocket))
+        logger.debug("[WS] listening on port %s", uWS.us_socket_local_port(listenSocket))
 
-          return resolve(uwsOptions.port)
-        })
+        return resolve(uwsOptions.port)
       })
     })
   }

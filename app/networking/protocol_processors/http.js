@@ -1,3 +1,4 @@
+import { v4 as uuid4 } from "uuid"
 import { CONSTANTS as MAIN_CONSTANTS } from "../../constants/constants.js"
 import { ERROR_STATUES } from "../../constants/errors.js"
 
@@ -15,6 +16,7 @@ import Response from "@sama/networking/models/Response.js"
 
 import config from "@sama/config/index.js"
 import logger from "@sama/logger/index.js"
+import { asyncLoggerContextStore, createStore, updateStoreContext } from "@sama/logger/async_store.js"
 
 const parseBaseParamsMiddleware = async (res, req) => {
   res.fakeWsSessionKey = Symbol("Http ws fake session")
@@ -24,6 +26,8 @@ const parseBaseParamsMiddleware = async (res, req) => {
   req.forEach((headerName, value) => {
     res.parsedHeaders[headerName] = value
   })
+
+  updateStoreContext("rId", res.parsedHeaders["x-request-id"] ?? "no-id")
 
   res.parsedCookies = {}
   res.parsedSignedCookies = {}
@@ -109,6 +113,12 @@ class HttpProtocol extends BaseProtocolProcessor {
     this.uWSocket = uWSocket
   }
 
+  requestCreateStoreContext = () => createStore({ "pType": "HTTP" })
+
+  socketAddress(res) {
+    return Buffer.from(res.getRemoteAddressAsText()).toString()
+  }
+
   async unbindSession(wsKey) {
     const session = this.sessionService.getSession(wsKey)
     if (!session?.userId) {
@@ -157,53 +167,63 @@ class HttpProtocol extends BaseProtocolProcessor {
     await this.processAPIResponse(res.fakeWsSessionKey, handlerResponse, true)
   }
 
-  onHttpRequestHandler(preMiddleware = [], handler) {
-    return async (res, req) => {
-      try {
-        logger.debug(
-          "[Http][Request] %s %s %s %s",
-          req.getMethod(),
-          req.getUrl(),
-          req.getHeader("content-type"),
-          req.getHeader("content-length")
-        )
+  requestHandler = async (req, res, preMiddleware, handler) => {
+    try {
+      logger.debug(
+        "[Http][Request] %s %s %s %s",
+        req.getMethod(),
+        req.getUrl(),
+        req.getHeader("content-type"),
+        req.getHeader("content-length")
+      )
 
-        await parseBaseParamsMiddleware(res, req)
+      await parseBaseParamsMiddleware(res, req)
 
-        for (const middleware of preMiddleware) {
-          await middleware(res, req)
-        }
+      for (const middleware of preMiddleware) {
+        await middleware(res, req)
+      }
 
-        await parseJsonBodyMiddleware(res, req)
+      await parseJsonBodyMiddleware(res, req)
 
-        const handlerResponse = await handler(res, req)
+      const handlerResponse = await handler(res, req)
 
-        if (handlerResponse) {
-          await this.processHttpResponseMiddleware(res, req, handlerResponse)
-        } else {
-          res.cork(() => {
-            res.writeStatus(`200`)
-
-            addCorsHeaders(res, req)
-            res.writeHeader("Content-Type", "text/plain")
-
-            res.end("Ok")
-          })
-        }
-      } catch (error) {
-        logger.error(error, "[Http][Error]")
-
+      if (handlerResponse) {
+        await this.processHttpResponseMiddleware(res, req, handlerResponse)
+      } else {
         res.cork(() => {
-          res.writeStatus(`${error.cause?.status ?? ERROR_STATUES.INTERNAL_SERVER.status}`)
+          res.writeStatus(`200`)
 
           addCorsHeaders(res, req)
           res.writeHeader("Content-Type", "text/plain")
 
-          res.end(error.message ?? ERROR_STATUES.INTERNAL_SERVER.message)
+          res.end("Ok")
         })
-      } finally {
-        await this.unbindSession(res.fakeWsSessionKey)
       }
+    } catch (error) {
+      logger.error(error, "[Http][Error]")
+
+      res.cork(() => {
+        res.writeStatus(`${error.cause?.status ?? ERROR_STATUES.INTERNAL_SERVER.status}`)
+
+        addCorsHeaders(res, req)
+        res.writeHeader("Content-Type", "text/plain")
+
+        res.end(error.message ?? ERROR_STATUES.INTERNAL_SERVER.message)
+      })
+    } finally {
+      await this.unbindSession(res.fakeWsSessionKey)
+    }
+  }
+
+  onHttpRequestHandler(preMiddleware = [], handler) {
+    return (res, req) => {
+      asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
+        updateStoreContext("srId", uuid4())
+        updateStoreContext("cIp", this.socketAddress(res))
+        updateStoreContext("rStartTime", +new Date())
+  
+        return this.requestHandler(req, res, preMiddleware, handler)
+      })
     }
   }
 
@@ -251,7 +271,7 @@ class HttpProtocol extends BaseProtocolProcessor {
       })
     )
 
-    logger.debug("listening on [WS] port")
+    logger.debug("[HTTP] listening on [WS] port")
   }
 }
 

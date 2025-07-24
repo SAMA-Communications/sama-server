@@ -155,12 +155,10 @@ class TcpProtocol extends BaseProtocolProcessor {
         })
       })
 
-      asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
-        this.tcpSocket.listen(tcpOptions.port, () => {
-          logger.debug("listening on port %s", tcpOptions.port)
+      this.tcpSocket.listen(tcpOptions.port, () => {
+        logger.debug("[TCP] listening on port %s", tcpOptions.port)
 
-          return resolve(tcpOptions.port)
-        })
+        return resolve(tcpOptions.port)
       })
     })
   }
