@@ -12,7 +12,7 @@ class TcpProtocol extends BaseProtocolProcessor {
   tcpOptions = {}
   tcpSocket = void 0
 
-  requestCreateStoreContext = () => createStore({ pType: "TCP" })
+  requestCreateStoreContext = (socket) => createStore({ pType: socket ? (socket instanceof tls.TLSSocket ? "TLS" : "TCP") : "TCP" })
 
   socketAddress(socket) {
     return `${socket.remoteAddress}`
@@ -21,6 +21,7 @@ class TcpProtocol extends BaseProtocolProcessor {
   socketListenerOnData = function () {}
   socketListenerOnClose = function () {}
   socketListenerOnUpgrade = function () {}
+  socketListenerOnError = function () {}
 
   onOpen(socket, isTls) {
     logger.debug("[Open] IP: %s", this.socketAddress(socket))
@@ -82,22 +83,26 @@ class TcpProtocol extends BaseProtocolProcessor {
     this.socketListenerOnUpgrade = function () {
       self.onSocketTlsUpgrade(this)
     }
+
+    this.socketListenerOnError = function (error) {
+      self.onSocketError(this, error)
+    }
   }
 
   onSocketData(socket, packageData) {
-    asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
+    asyncLoggerContextStore.run(this.requestCreateStoreContext(socket), () => {
       this.onPackage(socket, packageData)
     })
   }
 
   onSocketClose(socket) {
-    asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
+    asyncLoggerContextStore.run(this.requestCreateStoreContext(socket), () => {
       this.onClose(socket)
     })
   }
 
-  onSocketError(error) {
-    asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
+  onSocketError(socket, error) {
+    asyncLoggerContextStore.run(this.requestCreateStoreContext(socket), () => {
       logger.error(error)
     })
   }
@@ -123,7 +128,7 @@ class TcpProtocol extends BaseProtocolProcessor {
   setUpSocketListeners(socket, isTls) {
     socket.on("data", this.socketListenerOnData)
     socket.on("close", this.socketListenerOnClose)
-    socket.on("error", this.onSocketError)
+    socket.on("error", this.socketListenerOnError)
 
     if (!isTls) {
       socket.once("upgrade", this.socketListenerOnUpgrade)
@@ -133,7 +138,7 @@ class TcpProtocol extends BaseProtocolProcessor {
   removeSocketListeners(socket) {
     socket.removeListener("data", this.socketListenerOnData)
     socket.removeListener("close", this.socketListenerOnClose)
-    socket.removeListener("error", this.onSocketError)
+    socket.removeListener("error", this.socketListenerOnError)
 
     socket.removeListener("upgrade", this.socketListenerOnUpgrade)
   }

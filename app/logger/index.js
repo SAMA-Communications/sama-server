@@ -9,19 +9,19 @@ const pinoPrettyStream = pinoPretty({
   translateTime: `dd HH:MM:ss.l`,
   sync: true,
   levelFirst: true,
-  singleLine: config.get('logger.singleLine'),
+  singleLine: config.get("logger.singleLine"),
 })
 
 const streams = [
   {
-    level: config.get('logger.logLevel'),
+    level: config.get("logger.logLevel"),
     stream: pinoPrettyStream,
-  }
+  },
 ]
 
 const pinoLogger = pino(
   {
-    level: config.get('logger.logLevel'),
+    level: config.get("logger.logLevel"),
     base: null,
   },
   pino.multistream(streams)

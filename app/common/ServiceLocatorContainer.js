@@ -43,15 +43,17 @@ class ServiceLocatorContainer {
     const existed = this.#providersStore[registerProvider.name]
 
     if (existed) {
-      logger.warn("[ServiceLocatorContainer] [register] %s [replace implementation] %s -> %s",
+      logger.warn(
+        "[ServiceLocatorContainer] [register] %s [replace implementation] %s -> %s",
         registerProvider.name,
         existed.implementationName,
-        registerProvider.implementationName,
+        registerProvider.implementationName
       )
     } else {
-      logger.debug("[ServiceLocatorContainer] [register] %s [implementation] %s",
+      logger.debug(
+        "[ServiceLocatorContainer] [register] %s [implementation] %s",
         registerProvider.name,
-        registerProvider.implementationName,
+        registerProvider.implementationName
       )
     }
 

@@ -104,6 +104,7 @@ class BaseProtocolProcessor {
 
     if (response.closeSocket) {
       socket.end()
+      return
     }
 
     if (response.upgradeTls) {
@@ -122,7 +123,7 @@ class BaseProtocolProcessor {
 
         await socket.safeSend(backPackage)
       } catch (error) {
-        console.error("[ClientManager][error]", error)
+        logger.error(error, "[ClientManager][error]")
       }
     }
   }

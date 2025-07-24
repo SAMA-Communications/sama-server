@@ -62,7 +62,7 @@ class ClusterManager {
       const ws = new WebSocket(url)
 
       ws.on("error", async (event) => {
-        console.error("[ClusterManager][createSocketWithNode] ws on Error", event)
+        logger.error(event, "[ClusterManager][createSocketWithNode] ws on Error")
         reject("[ClusterManager][createSocketWithNode] ws on error")
       })
 

@@ -7,7 +7,7 @@ const CONFIG = {
   },
   logger: {
     logLevel: process.env.LOG_LEVEL ?? "trace",
-    singleLine: process.env.LOG_SINGLE_LINE === "true"
+    singleLine: process.env.LOG_SINGLE_LINE === "true",
   },
   ws: {
     options: {

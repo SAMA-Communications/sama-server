@@ -160,7 +160,13 @@ class HttpProtocol extends BaseProtocolProcessor {
   onHttpRequestHandler(preMiddleware = [], handler) {
     return async (res, req) => {
       try {
-        logger.debug("[Http][Request] %s %s %s %s", req.getMethod(), req.getUrl(), req.getHeader("content-type"), req.getHeader("content-length"))
+        logger.debug(
+          "[Http][Request] %s %s %s %s",
+          req.getMethod(),
+          req.getUrl(),
+          req.getHeader("content-type"),
+          req.getHeader("content-length")
+        )
 
         await parseBaseParamsMiddleware(res, req)
 

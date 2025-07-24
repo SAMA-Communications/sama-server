@@ -1,4 +1,5 @@
 import config from "../config/index.js"
+import logger from "../logger/index.js"
 
 import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
@@ -42,8 +43,8 @@ class PacketManager {
 
           await recipient.ws.safeSend(mappedRecipientMessage)
         }
-      } catch (err) {
-        console.error(`[PacketProcessor] send on socket error`, err)
+      } catch (error) {
+        logger.error(error, `[PacketProcessor] send on socket error`)
       }
     }
   }
@@ -78,9 +79,9 @@ class PacketManager {
       try {
         const clusterPacket = { userId, packet, senderInfo }
         await clusterManager.senderClusterDeliverPacket(nodeUrl, clusterPacket)
-      } catch (err) {
+      } catch (error) {
         await sessionService.clearNodeUsersSession(nodeUrl)
-        console.error("[PacketProcessor][deliverToUserDevices] createSocketWithNode error", err)
+        logger.error(error, "[PacketProcessor][deliverToUserDevices] createSocketWithNode error")
       }
     })
   }
@@ -128,8 +129,8 @@ class PacketManager {
     try {
       const { userId, packet, senderInfo } = deliverPacket
       await this.deliverToUserOnThisNode(userId, packet, null, senderInfo)
-    } catch (err) {
-      console.error("[cluster_manager][deliverClusterMessageToUser] error", err)
+    } catch (error) {
+      logger.error(error, "[cluster_manager][deliverClusterMessageToUser] error")
     }
   }
 }
