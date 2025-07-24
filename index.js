@@ -16,6 +16,7 @@ import HttpProtocol from "./app/networking/protocol_processors/http.js"
 
 import { connectToDBPromise } from "./app/lib/db.js"
 import RedisClient from "./app/lib/redis.js"
+import Logger from "./app/utils/logger.js"
 
 import { APIs } from "./app/networking/APIs.js"
 
@@ -67,10 +68,10 @@ const dbConnection = await connectToDBPromise(config.get("db.mongo.main.url"))
 
 await RedisClient.connect()
   .then(async () => {
-    console.log("[Redis][connect] Ok")
+    Logger.redis("connect", "ok", "Redis connection established")
   })
   .catch((err) => {
-    console.log("[Redis][connect] error", err)
+    Logger.redisError("connect", "error", err)
     process.exit()
   })
 
@@ -148,3 +149,37 @@ const tcpProtocolImp = new TcpProtocol(sessionService, conversationService)
 await tcpProtocolImp.listen(tcpOptions)
 
 // https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph
+
+// Graceful shutdown handling
+const gracefulShutdown = async (signal) => {
+  Logger.shutdown("start", `Received ${signal}, starting graceful shutdown...`)
+  
+  try {
+    // Close Redis connection
+    await RedisClient.disconnect()
+    Logger.shutdown("redis", "Redis disconnected")
+    
+    Logger.shutdown("complete", "Graceful shutdown completed")
+    process.exit(0)
+  } catch (error) {
+    Logger.shutdownError("graceful", error)
+    process.exit(1)
+  }
+}
+
+// Handle different shutdown signals
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
+process.on('SIGINT', () => gracefulShutdown('SIGINT'))
+process.on('SIGUSR2', () => gracefulShutdown('SIGUSR2')) // For nodemon restart
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  Logger.error(`[Uncaught Exception] ${error.message}`, error)
+  gracefulShutdown('uncaughtException')
+})
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  Logger.error(`[Unhandled Rejection] ${reason}`, reason)
+  gracefulShutdown('unhandledRejection')
+})

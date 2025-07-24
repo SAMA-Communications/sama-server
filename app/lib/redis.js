@@ -1,6 +1,8 @@
 import { createClient } from "redis"
 
 import config from "../config/index.js"
+import redisMonitor from "./redis-monitor.js"
+import Logger from "../utils/logger.js"
 
 class RedisManager {
   constructor() {
@@ -8,23 +10,95 @@ class RedisManager {
       url: config.get("redis.main.url"),
       socket: {
         reconnectStrategy: (retries) => {
-          console.log("[Redis][reconnect]", retries)
-          return 300
+          Logger.redis("reconnect", "attempt", retries)
+
+          const delay = Math.min(Math.pow(2, retries) * 1000, 30000)
+          Logger.redis("reconnect", "waiting", `Attempt ${retries}, waiting ${delay}ms`)
+          return delay
         },
+        connectTimeout: 10000,
+        lazyConnect: true,
+        keepAlive: 30000,
+        noDelay: true,
       },
+      // Add retry strategy for commands
+      retry_strategy: (options) => {
+        if (options.error && options.error.code === 'ECONNREFUSED') {
+          console.warn('[Redis][retry] Connection refused, retrying...')
+          return Math.min(options.attempt * 1000, 30000)
+        }
+        if (options.total_retry_time > 1000 * 60 * 60) {
+          console.error('[Redis][retry] Retry time exhausted')
+          return new Error('Retry time exhausted')
+        }
+        if (options.attempt > 10) {
+          console.error('[Redis][retry] Max retry attempts reached')
+          return undefined
+        }
+        return Math.min(options.attempt * 1000, 30000)
+      }
     })
 
     this.client.on("error", (err) => {
-      console.warn("[Redis][connection][error]", err)
+      Logger.redisError("connection", "error", err)
+      redisMonitor.recordError(err)
     })
 
     this.client.on("end", () => {
-      console.warn("[Redis][connection][end]")
+      Logger.redisWarn("connection", "end", "Connection ended")
     })
+
+    this.client.on("connect", () => {
+      Logger.redis("connection", "connect", "Connected to Redis")
+      redisMonitor.recordSuccessfulConnection()
+    })
+
+    this.client.on("ready", () => {
+      Logger.redis("connection", "ready", "Redis client ready")
+    })
+
+    this.client.on("reconnecting", () => {
+      Logger.redis("connection", "reconnecting", "Attempting to reconnect...")
+      redisMonitor.recordReconnection()
+    })
+
+    this.connectionHealthCheck()
+  }
+
+  async connectionHealthCheck() {
+    setInterval(async () => {
+      try {
+        if (this.client.isReady) {
+          await this.client.ping()
+          Logger.redis("health-check", "success", "Connection health check successful")
+        }
+      } catch (error) {
+        Logger.redisWarn("health-check", "failed", `Connection health check failed: ${error.message}`)
+      }
+    }, 30000) // Check every 30 seconds
   }
 
   async connect() {
-    return await this.client.connect()
+    try {
+      redisMonitor.recordConnectionAttempt()
+      await this.client.connect()
+      Logger.redis("connect", "success", "Successfully connected")
+      redisMonitor.startMonitoring()
+    } catch (error) {
+      Logger.redisError("connect", "failed", error)
+      redisMonitor.recordFailedConnection(error)
+      throw error
+    }
+  }
+
+  async disconnect() {
+    try {
+      redisMonitor.stopMonitoring()
+      await this.client.disconnect()
+      Logger.redis("disconnect", "success", "Successfully disconnected")
+    } catch (error) {
+      Logger.redisError("disconnect", "failed", error)
+    }
   }
 
   async scanWithPagination(type = "string", matchPattern = "*", offset = 0, limit = 10) {
