@@ -103,7 +103,7 @@ class TcpProtocol extends BaseProtocolProcessor {
   }
 
   onSocketTlsUpgrade(socket) {
-    logger.debug("[Upgrade]")
+    logger.debug("[Upgrade To TLS]")
 
     this.removeSocketListeners(socket)
 
@@ -115,11 +115,7 @@ class TcpProtocol extends BaseProtocolProcessor {
 
     const tlsSocket = new tls.TLSSocket(socket, options)
 
-    tlsSocket.on("session", () => {
-      console.trace(asyncLoggerContextStore.getStore())
-      updateStoreContext("pType", "TLS")
-      logger.debug("TLS handshake complete")
-    })
+    updateStoreContext("pType", "TLS")
 
     this.onOpen(tlsSocket, true)
   }
