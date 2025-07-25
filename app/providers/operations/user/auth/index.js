@@ -32,13 +32,7 @@ class UserAuthOperation {
 
     const updatedToken = await this.userTokenRepo.updateToken(token, organizationId, user.native_id, deviceId, jwtAccessToken, "access")
 
-    await this.sessionService.storeUserNodeData(
-      this.config.get("app.ip"),
-      this.config.get("ws.cluster.port"),
-      user.organization_id,
-      user.native_id,
-      deviceId
-    )
+    await this.sessionService.storeUserNodeData(user.organization_id, user.native_id, deviceId)
 
     const userWithAvatarUrl = (await this.userService.addAvatarUrl([user])).at(0)
 

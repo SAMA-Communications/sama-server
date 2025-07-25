@@ -6,8 +6,8 @@ import config from "./app/config/index.js"
 import logger from "./app/logger/index.js"
 
 import ServiceLocatorContainer from "./app/common/ServiceLocatorContainer.js"
-import providers from "./app/providers/index.js"
 import RegisterProvider from "./app/common/RegisterProvider.js"
+import providers from "./app/providers/index.js"
 
 import clusterManager from "./app/cluster/cluster_manager.js"
 import clusterSyncer from "./app/cluster/cluster_syncer.js"
@@ -20,6 +20,8 @@ import { connectToDBPromise } from "./app/lib/db.js"
 import RedisClient from "./app/lib/redis.js"
 
 import { APIs } from "./app/networking/APIs.js"
+
+import { buildWsEndpoint } from "./app/utils/build_ws_endpoint.js"
 
 const uWS_SSL_OPTIONS = {
   key_file_name: config.get("ws.options.ssl.key"),
@@ -53,6 +55,7 @@ if (config.get("tcp.options.isTls")) {
 
 const clusterPort = await clusterManager.createLocalSocket(uWSOptions)
 config.set("ws.cluster.port", clusterPort)
+config.set("ws.cluster.endpoint", buildWsEndpoint(config.get("app.ip"), config.get("ws.cluster.port")))
 
 logger.debug("[Config] %s", JSON.stringify(config.toObject(), null, 5))
 

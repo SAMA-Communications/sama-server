@@ -10,8 +10,9 @@ import { CONSTANTS } from "../../../constants/constants.js"
 */
 
 class SessionService {
-  constructor(activeSessions, redisConnection) {
+  constructor(activeSessions, config, redisConnection) {
     this.activeSessions = activeSessions
+    this.config = config
     this.redisConnection = redisConnection
   }
 
@@ -179,7 +180,10 @@ class SessionService {
     return userData
   }
 
-  async storeUserNodeData(nodeIp, nodePort, organizationId, userId, deviceId) {
+  async storeUserNodeData(organizationId, userId, deviceId, nodeIp, nodePort) {
+    nodeIp ??= this.config.get("app.ip")
+    nodePort ??= this.config.get("ws.cluster.port")
+
     const userDeviceIds = await this.listUserDevice(organizationId, userId)
 
     if (userDeviceIds.includes(deviceId)) {
@@ -286,6 +290,7 @@ class SessionService {
   async removeUserSession(ws, userId, deviceId) {
     userId = userId ?? this.getSessionUserId(ws)
     deviceId = deviceId ?? this.getDeviceId(ws, userId)
+    const orgId = this.getSession(ws)?.organizationId
 
     const leftActiveConnections = this.getUserDevices(userId).filter(({ deviceId: activeDeviceId }) => activeDeviceId !== deviceId)
 
@@ -303,7 +308,7 @@ class SessionService {
 
     const extraParams = await this.retrieveUserExtraParams(userId, deviceId)
 
-    await this.removeUserDevice(null, userId, deviceId)
+    await this.removeUserDevice(orgId, userId, deviceId)
     await this.deleteUserExtraParams(userId, deviceId)
 
     const nodeEndpoint = extraParams?.[CONSTANTS.SESSION_NODE_KEY]

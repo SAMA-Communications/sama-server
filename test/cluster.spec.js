@@ -56,7 +56,7 @@ describe("Cluster Message function", async () => {
         secondSocketResponse = data
       },
     }
-    await sessionService.storeUserNodeData(ip.address(), secondClusterPort, orgId, usersIds[1], deviceId)
+    await sessionService.storeUserNodeData(orgId, usersIds[1], deviceId, ip.address(), secondClusterPort)
   })
 
   describe("Send Message to other node", async () => {
@@ -76,6 +76,7 @@ describe("Cluster Message function", async () => {
       assert.equal(`${deliverMessage.cId}`, `${currentConversationId}`)
 
       await packetManager.deliverToUserOrUsers(
+        orgId,
         deliverMessage.ws || mockedWS,
         JSON.stringify(deliverMessage.packet),
         null,

@@ -6,14 +6,13 @@ import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 import clusterManager from "../cluster/cluster_manager.js"
 import packetMapper from "./packet_mapper.js"
 
-import { buildWsEndpoint } from "../utils/build_ws_endpoint.js"
 import { CONSTANTS as MAIN_CONSTANTS } from "../constants/constants.js"
 
 const logger = maiLogger.child("[PacketManager]")
 
 class PacketManager {
   async deliverToUserOnThisNode(userId, packet, deviceId, senderInfo) {
-    const currentNodeUrl = buildWsEndpoint(config.get("app.ip"), config.get("ws.cluster.port"))
+    const currentNodeUrl = config.get("ws.cluster.endpoint")
     const sessionService = ServiceLocatorContainer.use("SessionService")
     const activeDevices = sessionService
       .getUserDevices(userId)
@@ -56,7 +55,7 @@ class PacketManager {
     const senderUserSession = sessionService.getSession(ws)
     const senderDeviceId = senderUserSession ? sessionService.getDeviceId(ws, senderUserSession.userId) : null
 
-    const currentNodeUrl = buildWsEndpoint(config.get("app.ip"), config.get("ws.cluster.port"))
+    const currentNodeUrl = config.get("ws.cluster.endpoint")
 
     const senderInfo = {
       apiType: ws?.apiType,
@@ -88,7 +87,7 @@ class PacketManager {
     })
   }
 
-  async deliverToUserOrUsers(ws, packet, pushQueueMessage, usersIds, notSaveInOfflineStorage, ignoreSelf) {
+  async deliverToUserOrUsers(orgId, ws, packet, pushQueueMessage, usersIds, notSaveInOfflineStorage, ignoreSelf) {
     const sessionService = ServiceLocatorContainer.use("SessionService")
     const opLogsService = ServiceLocatorContainer.use("OperationLogsService")
     const pushQueueService = ServiceLocatorContainer.use("PushQueueService")
@@ -100,7 +99,7 @@ class PacketManager {
     const offlineUsersByPackets = []
 
     for (const userId of usersIds) {
-      const userNodeData = await sessionService.listUserData(null, userId)
+      const userNodeData = await sessionService.listUserData(orgId, userId)
       const isNoConnections = !userNodeData || !Object.keys(userNodeData).length
 
       if (isNoConnections) {

@@ -7,9 +7,10 @@ const name = "SessionService"
 
 class SessionServiceRegisterProvider extends RegisterProvider {
   register(slc) {
+    const config = slc.use("Config")
     const redisClient = slc.use("RedisClient")
 
-    return new SessionService(ACTIVE, redisClient)
+    return new SessionService(ACTIVE, config, redisClient)
   }
 }
 

@@ -52,11 +52,7 @@ class ServiceLocatorContainer {
         registerProvider.implementationName
       )
     } else {
-      logger.debug(
-        "[register] %s [implementation] %s",
-        registerProvider.name,
-        registerProvider.implementationName
-      )
+      logger.debug("[register] %s [implementation] %s", registerProvider.name, registerProvider.implementationName)
     }
 
     this.#providersStore[registerProvider.name] = registerProvider

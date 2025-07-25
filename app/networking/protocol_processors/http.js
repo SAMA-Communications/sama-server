@@ -29,7 +29,10 @@ const parseBaseParamsMiddleware = async (res, req) => {
     res.parsedHeaders[headerName] = value
   })
 
-  updateStoreContext("rId", res.parsedHeaders["x-request-id"] ?? "no-id")
+  updateStoreContext(
+    MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.REQUEST_ID,
+    res.parsedHeaders["x-request-id"] ?? MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.NO_REQUEST_ID
+  )
 
   res.parsedCookies = {}
   res.parsedSignedCookies = {}
@@ -115,7 +118,7 @@ class HttpProtocol extends BaseProtocolProcessor {
     this.uWSocket = uWSocket
   }
 
-  requestCreateStoreContext = () => createStore({ "pType": "HTTP" })
+  requestCreateStoreContext = () => createStore({ [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.PROTOCOL_TYPE]: "HTTP" })
 
   socketAddress(res) {
     return Buffer.from(res.getRemoteAddressAsText()).toString()
@@ -171,13 +174,7 @@ class HttpProtocol extends BaseProtocolProcessor {
 
   requestHandler = async (req, res, preMiddleware, handler) => {
     try {
-      logger.debug(
-        "[Request] %s %s %s %s",
-        req.getMethod(),
-        req.getUrl(),
-        req.getHeader("content-type"),
-        req.getHeader("content-length")
-      )
+      logger.debug("[Request] %s %s %s %s", req.getMethod(), req.getUrl(), req.getHeader("content-type"), req.getHeader("content-length"))
 
       await parseBaseParamsMiddleware(res, req)
 
@@ -220,10 +217,10 @@ class HttpProtocol extends BaseProtocolProcessor {
   onHttpRequestHandler(preMiddleware = [], handler) {
     return (res, req) => {
       asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
-        updateStoreContext("srId", uuid())
-        updateStoreContext("cIp", this.socketAddress(res))
-        updateStoreContext("rStartTime", +new Date())
-  
+        updateStoreContext(MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.SERVER_REQUEST_ID, uuid())
+        updateStoreContext(MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.CLIENT_IP, this.socketAddress(res))
+        updateStoreContext(MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.REQUEST_START_TIME, +new Date())
+
         return this.requestHandler(req, res, preMiddleware, handler)
       })
     }

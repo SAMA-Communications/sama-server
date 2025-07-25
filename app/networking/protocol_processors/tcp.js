@@ -1,6 +1,7 @@
 import net from "net"
 import tls from "tls"
 
+import { CONSTANTS as MAIN_CONSTANTS } from "../../constants/constants.js"
 import logger from "../../logger/index.js"
 import { asyncLoggerContextStore, createStore, updateStoreContext } from "../../logger/async_store.js"
 
@@ -12,7 +13,10 @@ class TcpProtocol extends BaseProtocolProcessor {
   tcpOptions = {}
   tcpSocket = void 0
 
-  requestCreateStoreContext = (socket) => createStore({ pType: socket ? (socket instanceof tls.TLSSocket ? "TLS" : "TCP") : "TCP" })
+  requestCreateStoreContext = (socket) =>
+    createStore({
+      [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.PROTOCOL_TYPE]: socket ? (socket instanceof tls.TLSSocket ? "TLS" : "TCP") : "TCP",
+    })
 
   socketAddress(socket) {
     return `${socket.remoteAddress}`
@@ -120,7 +124,7 @@ class TcpProtocol extends BaseProtocolProcessor {
 
     const tlsSocket = new tls.TLSSocket(socket, options)
 
-    updateStoreContext("pType", "TLS")
+    updateStoreContext(MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.PROTOCOL_TYPE, "TLS")
 
     this.onOpen(tlsSocket, true)
   }

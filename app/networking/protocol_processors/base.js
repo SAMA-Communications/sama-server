@@ -4,6 +4,7 @@ import { StringDecoder } from "node:string_decoder"
 import logger from "../../logger/index.js"
 import { updateStoreContext } from "../../logger/async_store.js"
 import { ERROR_STATUES } from "../../constants/errors.js"
+import { CONSTANTS as MAIN_CONSTANTS } from "../../constants/constants.js"
 import { BASE_API, APIs, detectAPIType } from "../APIs.js"
 
 import packetManager from "../packet_manager.js"
@@ -23,7 +24,7 @@ class BaseProtocolProcessor {
     this.conversationService = conversationService
   }
 
-  requestCreateStoreContext = () => createStore({ pType: "Socket" })
+  requestCreateStoreContext = () => createStore({ [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.PROTOCOL_TYPE]: "Socket" })
 
   socketAddress(socket) {
     return socket.ip ?? "socket-address"
@@ -56,9 +57,9 @@ class BaseProtocolProcessor {
   }
 
   async onPackage(socket, packageData) {
-    updateStoreContext("srId", uuid())
-    updateStoreContext("cIp", this.socketAddress(socket))
-    updateStoreContext("rStartTime", +new Date())
+    updateStoreContext(MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.SERVER_REQUEST_ID, uuid())
+    updateStoreContext(MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.CLIENT_IP, this.socketAddress(socket))
+    updateStoreContext(MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.REQUEST_START_TIME, +new Date())
 
     let stringMessage = packageData
     try {
@@ -155,6 +156,7 @@ class BaseProtocolProcessor {
   async processDeliverUserMessage(deliverMessage, participantIds) {
     try {
       await packetManager.deliverToUserOrUsers(
+        deliverMessage.orgId,
         deliverMessage.ws,
         deliverMessage.packet,
         deliverMessage.pushQueueMessage,

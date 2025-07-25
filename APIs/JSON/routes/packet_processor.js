@@ -1,3 +1,4 @@
+import { CONSTANTS as MAIN_CONSTANTS } from "@sama/constants/constants.js"
 import logger from "@sama/logger/index.js"
 import { updateStoreContext } from "@sama/logger/async_store.js"
 
@@ -34,7 +35,10 @@ class PacketJsonProcessor extends BasePacketProcessor {
     let json
     try {
       json = this.#parseMessage(message)
-      updateStoreContext("rId", json?.request?.id ?? json?.message?.id ?? json?.system_message?.id ?? json?.id ?? "no-id")
+      updateStoreContext(
+        MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.REQUEST_ID,
+        json?.request?.id ?? json?.message?.id ?? json?.system_message?.id ?? json?.id ?? MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.NO_REQUEST_ID
+      )
       responseData = await this.#processMessage(ws, json)
       if (!responseData) {
         return new Response()

@@ -1,5 +1,6 @@
 import uWS from "uWebSockets.js"
 
+import { CONSTANTS as MAIN_CONSTANTS } from "../../constants/constants.js"
 import logger from "../../logger/index.js"
 import { asyncLoggerContextStore, createStore } from "../../logger/async_store.js"
 import BaseProtocolProcessor from "./base.js"
@@ -9,7 +10,7 @@ class WsProtocol extends BaseProtocolProcessor {
   uwsOptions = {}
   uWSocket = void 0
 
-  requestCreateStoreContext = () => createStore({ pType: "WS" })
+  requestCreateStoreContext = () => createStore({ [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.PROTOCOL_TYPE]: "WS" })
 
   socketAddress(ws) {
     return Buffer.from(ws.getRemoteAddressAsText()).toString()

@@ -1,4 +1,12 @@
 export const CONSTANTS = {
+  LOGGER_BINDINGS_NAMES: {
+    SERVER_REQUEST_ID: "srId",
+    REQUEST_ID: "rId",
+    CLIENT_IP: "cIP",
+    PROTOCOL_TYPE: "pType",
+    REQUEST_START_TIME: "rStartTime",
+    NO_REQUEST_ID: "no-id",
+  },
   LAST_ACTIVITY_STATUS: {
     ONLINE: "online",
     OFFLINE: "offline",
