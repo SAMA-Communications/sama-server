@@ -188,7 +188,7 @@ describe("Message function", async () => {
       assert.equal(responseData.ask, undefined)
       assert.deepEqual(responseData.message.error, {
         status: 422,
-        message: "Incorrect additional message ID.",
+        message: "Incorrect reply message ID.",
       })
     })
 

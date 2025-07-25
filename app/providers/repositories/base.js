@@ -139,9 +139,10 @@ export default class BaseRepository {
     }, {})
 
     let records = await this.collectionCursor
-      .find(query, { limit: +limit })
+      .find(query)
       .project(projection)
       .sort(sortParams || { $natural: -1 })
+      .limit(limit)
       .toArray()
 
     if (sortParams) records = records.reverse()

@@ -40,9 +40,9 @@ class MessageCreateOperation {
       currentUserId
     )
 
-    const additionalMessageId = createMessageParams.replied_message_id
-    if (additionalMessageId) {
-      await this.#validateAdditionalMessageId(currentUserId, additionalMessageId)
+    const repliedMessageId = createMessageParams.replied_message_id
+    if (repliedMessageId) {
+      await this.#validateRepliedMessageId(createMessageParams.cid, currentUserId, repliedMessageId)
     }
 
     let conversationHandlerResponse = {}
@@ -157,16 +157,14 @@ class MessageCreateOperation {
     return { conversation, participantIds }
   }
 
-  async #validateAdditionalMessageId(userId, mid) {
-    const message = await this.messageService.messageRepo.findMessageById(null, userId, mid)
+  async #validateRepliedMessageId(cid, userId, mid) {
+    const message = await this.messageService.messageRepo.findMessageById(cid, userId, mid)
 
     if (!message) {
-      throw new Error(ERROR_STATUES.INCORRECT_ADDITIONAL_MESSAGE_ID.message, {
-        cause: ERROR_STATUES.INCORRECT_ADDITIONAL_MESSAGE_ID,
+      throw new Error(ERROR_STATUES.INCORRECT_REPLY_MESSAGE_ID.message, {
+        cause: ERROR_STATUES.INCORRECT_REPLY_MESSAGE_ID,
       })
     }
-
-    return message
   }
 
   async #checkBlocked(conversation, currentUserId, participantIds) {
