@@ -112,6 +112,9 @@ const CONFIG = {
   push: {
     queueName: process.env.SAMA_NATIVE_PUSH_QUEUE_NAME,
   },
+  chatBot: {
+    login: process.env.CHAT_BOT_LOGIN
+  }
 }
 
 export default CONFIG

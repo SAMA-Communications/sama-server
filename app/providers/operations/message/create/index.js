@@ -36,6 +36,11 @@ class MessageCreateOperation {
     const currentUser = await this.userService.userRepo.findById(currentUserId)
     const conversation = await this.#hasAccess(organizationId, createMessageParams.cid, currentUserId)
 
+    const repliedMessageId = createMessageParams.replied_message_id
+    if (repliedMessageId) {
+      await this.#validateRepliedMessageId(createMessageParams.cid, currentUserId, repliedMessageId)
+    }
+
     let conversationHandlerResponse = {}
     const conversationHandler = await this.conversationHandlerService.getHandlerByConversationId(conversation._id)
     if (conversationHandler) {
@@ -152,6 +157,16 @@ class MessageCreateOperation {
     }
 
     return conversation
+  }
+
+  async #validateRepliedMessageId(cid, userId, mid) {
+    const message = await this.messageService.messageRepo.findMessageById(cid, userId, mid)
+
+    if (!message) {
+      throw new Error(ERROR_STATUES.INCORRECT_REPLY_MESSAGE_ID.message, {
+        cause: ERROR_STATUES.INCORRECT_REPLY_MESSAGE_ID,
+      })
+    }
   }
 
   async #checkBlocked(conversation, currentUserId, participantIds) {

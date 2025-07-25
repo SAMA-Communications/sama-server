@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.33.0
+
+### Improvements
+
+- Extended `message_list` request with `ids` param
+- Added public conversations
+
+### Updated
+
+- Added `replied_message_id` field for Message object
+
 ## 0.32.0
 
 ### Improvements

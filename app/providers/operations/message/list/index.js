@@ -12,7 +12,7 @@ class MessageListOperation {
   }
 
   async perform(ws, messageListParams) {
-    const { cid: cId, limit, updated_at } = messageListParams
+    const { cid: cId, ids, limit, updated_at } = messageListParams
 
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
@@ -24,7 +24,7 @@ class MessageListOperation {
     const { messages, messagesStatuses, messagesReactions } = await this.messageService.messagesList(
       cId,
       currentUser,
-      { updatedAt: updated_at },
+      { ids, updatedAt: updated_at },
       normalizedLimit
     )
 

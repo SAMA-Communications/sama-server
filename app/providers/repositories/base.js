@@ -137,9 +137,10 @@ export default class BaseRepository {
     }, {})
 
     const records = await this.collectionCursor
-      .find(query, { limit: +limit })
+      .find(query)
       .project(projection)
       .sort(sortParams || { $natural: -1 })
+      .limit(limit)
       .toArray()
 
     const models = records.map((record) => this.wrapRawRecordInModel(record))
