@@ -16,7 +16,7 @@ class UserAuthOperation {
 
     const { user, token } = userInfo.token
       ? await this.#authByToken(userInfo.token, deviceId)
-      : await this.#authByLogin(organizationId, userInfo, deviceId)
+      : await this.#authByUserInfo(organizationId, userInfo, deviceId)
 
     // TODO: close connections
     if (!omitDeviceConnection) {
@@ -57,8 +57,8 @@ class UserAuthOperation {
     return { user, token }
   }
 
-  async #authByLogin(organizationId, userInfo, deviceId) {
-    const user = await this.userService.findByLogin(organizationId, userInfo.login)
+  async #authByUserInfo(organizationId, userInfo, deviceId) {
+    const user = userInfo?.userId ? await this.userService.userRepo.findById(userInfo?.userId) : await this.userService.findByLogin(organizationId, userInfo.login)
 
     if (!user) {
       throw new Error(ERROR_STATUES.INCORRECT_LOGIN_OR_PASSWORD.message, {

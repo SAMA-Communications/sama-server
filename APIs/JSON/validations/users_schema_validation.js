@@ -66,6 +66,7 @@ export const usersSchemaValidation = {
         cause: ERROR_STATUES.USER_LOGIN_OR_PASS,
       })
     ),
+    userId: Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()),
     token: Joi.string(),
     password: Joi.string(),
     device_id: Joi.alternatives()

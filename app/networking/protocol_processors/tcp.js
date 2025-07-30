@@ -13,6 +13,8 @@ class TcpProtocol extends BaseProtocolProcessor {
   tcpOptions = {}
   tcpSocket = void 0
 
+  static SOCKET_PACKAGES_LISTENER_CALLBACKS = new Map()
+
   requestCreateStoreContext = (socket) =>
     createStore({
       [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.PROTOCOL_TYPE]: socket ? (socket instanceof tls.TLSSocket ? "TLS" : "TCP") : "TCP",
@@ -54,23 +56,33 @@ class TcpProtocol extends BaseProtocolProcessor {
       return
     }
 
-    if (!socket.apiType) {
-      const apiType = detectAPIType(socket, decodedPackage)
-      if (!apiType) {
-        throw new Error("Unknown message format")
+    let onPackageListenerCallback = TcpProtocol.SOCKET_PACKAGES_LISTENER_CALLBACKS.get(socket)
+
+    if (!onPackageListenerCallback) {
+      if (!socket.apiType) {
+        const apiType = detectAPIType(socket, decodedPackage)
+        if (!apiType) {
+          throw new Error("Unknown message format")
+        }
+        socket.apiType = apiType.at(0)
       }
-      socket.apiType = apiType.at(0)
+  
+      const api = APIs[socket.apiType]
+      
+      onPackageListenerCallback = api.createOnPackagesListener((error, strPackage) => {
+        if (error) {
+          return logger.error(error, "[Parse package]")
+        }
+
+        logger.debug("[RECV][parsed] %s", strPackage)
+
+        super.processPackage(socket, strPackage)
+      })
+
+      TcpProtocol.SOCKET_PACKAGES_LISTENER_CALLBACKS.set(socket, onPackageListenerCallback)
     }
 
-    const api = APIs[socket.apiType]
-
-    const splittedPackages = api.splitPacket(decodedPackage)
-
-    logger.debug("[RECV][splitted] %j", splittedPackages)
-
-    for (const splittedPackage of splittedPackages) {
-      await super.processPackage(socket, splittedPackage)
-    }
+    onPackageListenerCallback(decodedPackage)
   }
 
   prepareSocketsListeners() {
@@ -145,6 +157,8 @@ class TcpProtocol extends BaseProtocolProcessor {
     socket.removeListener("error", this.socketListenerOnError)
 
     socket.removeListener("upgrade", this.socketListenerOnUpgrade)
+
+    delete TcpProtocol.SOCKET_PACKAGES_LISTENER_CALLBACKS[socket]
   }
 
   listen(tcpOptions) {

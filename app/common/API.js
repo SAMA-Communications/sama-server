@@ -6,8 +6,8 @@ export default class BaseAPI {
     // return true/false
   }
 
-  splitPacket(message) {
-    return []
+  createOnPackagesListener(callback) {
+    return packet => callback(null, packet)
   }
 
   async onMessage(ws, message) {
