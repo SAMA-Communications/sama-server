@@ -138,7 +138,7 @@ class TcpProtocol extends BaseProtocolProcessor {
     const tlsSocket = new tls.TLSSocket(socket, options)
 
     tlsSocket.once("secure", () => {
-      logger.debug("[TLS handshake completed] isAuth: %s authError %o", tlsSocket.authorized, tlsSocket.authorizationError)
+      logger.debug("[TLS handshake completed][isAuth]: %s [authError]: %o", tlsSocket.authorized, tlsSocket.authorizationError)
 
       updateStoreContext(MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.PROTOCOL_TYPE, "TLS")
 
