@@ -157,7 +157,7 @@ const conversationService = ServiceLocatorContainer.use("ConversationService")
 const wsProtocolImp = new WsProtocol(sessionService, conversationService)
 await wsProtocolImp.listen(uWSOptions)
 
-const httpProtocolImp = new HttpProtocol(sessionService, conversationService, wsProtocolImp.uWSocket)
+const httpProtocolImp = new HttpProtocol(sessionService, conversationService, wsProtocolImp.uWSocketServer)
 await httpProtocolImp.listen({})
 
 const tcpProtocolImp = new TcpProtocol(sessionService, conversationService)

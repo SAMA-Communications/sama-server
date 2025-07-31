@@ -1,5 +1,5 @@
-import net from "net"
-import tls from "tls"
+import net from "node:net"
+import tls from "node:tls"
 
 import { CONSTANTS as MAIN_CONSTANTS } from "../../constants/constants.js"
 import logger from "../../logger/index.js"
@@ -11,7 +11,7 @@ import { tcpSafeSend } from "../../utils/sockets-utils.js"
 
 class TcpProtocol extends BaseProtocolProcessor {
   tcpOptions = {}
-  tcpSocket = void 0
+  tcpSocketServer = void 0
 
   static SOCKET_PACKAGES_LISTENER_CALLBACKS = new Map()
 
@@ -130,15 +130,20 @@ class TcpProtocol extends BaseProtocolProcessor {
 
     const options = {
       isServer: true,
+      server: this.tcpSocketServer,
       key: this.tcpOptions.key,
       cert: this.tcpOptions.cert,
     }
 
     const tlsSocket = new tls.TLSSocket(socket, options)
 
-    updateStoreContext(MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.PROTOCOL_TYPE, "TLS")
+    tlsSocket.once("secure", () => {
+      logger.debug("[TLS handshake completed] isAuth: %s authError %o", tlsSocket.authorized, tlsSocket.authorizationError)
 
-    this.onOpen(tlsSocket, true)
+      updateStoreContext(MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.PROTOCOL_TYPE, "TLS")
+
+      this.onOpen(tlsSocket, true)
+    })
   }
 
   setUpSocketListeners(socket, isTls) {
@@ -158,7 +163,7 @@ class TcpProtocol extends BaseProtocolProcessor {
 
     socket.removeListener("upgrade", this.socketListenerOnUpgrade)
 
-    delete TcpProtocol.SOCKET_PACKAGES_LISTENER_CALLBACKS[socket]
+    TcpProtocol.SOCKET_PACKAGES_LISTENER_CALLBACKS.delete(socket)
   }
 
   listen(tcpOptions) {
@@ -167,13 +172,13 @@ class TcpProtocol extends BaseProtocolProcessor {
     this.prepareSocketsListeners()
 
     return new Promise((resolve) => {
-      this.tcpSocket = net.createServer((socket) => {
+      this.tcpSocketServer = net.createServer((socket) => {
         asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
           this.onOpen(socket)
         })
       })
 
-      this.tcpSocket.listen(tcpOptions.port, () => {
+      this.tcpSocketServer.listen(tcpOptions.port, () => {
         logger.debug("[TCP] listening on port %s", tcpOptions.port)
 
         return resolve(tcpOptions.port)

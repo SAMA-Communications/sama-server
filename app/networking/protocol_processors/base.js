@@ -1,5 +1,5 @@
-import { v4 as uuid } from "uuid"
 import { StringDecoder } from "node:string_decoder"
+import { v4 as uuid } from "uuid"
 
 import logger from "../../logger/index.js"
 import { updateStoreContext } from "../../logger/async_store.js"

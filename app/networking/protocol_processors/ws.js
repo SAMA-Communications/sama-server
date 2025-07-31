@@ -8,7 +8,7 @@ import { wsSafeSend } from "../../utils/sockets-utils.js"
 
 class WsProtocol extends BaseProtocolProcessor {
   uwsOptions = {}
-  uWSocket = void 0
+  uWSocketServer = void 0
 
   requestCreateStoreContext = () => createStore({ [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.PROTOCOL_TYPE]: "WS" })
 
@@ -43,9 +43,9 @@ class WsProtocol extends BaseProtocolProcessor {
     this.uwsOptions = uwsOptions
 
     return new Promise((resolve) => {
-      this.uWSocket = uwsOptions.isSSL ? uWS.SSLApp(uwsOptions.appOptions) : uWS.App(uwsOptions.appOptions)
+      this.uWSocketServer = uwsOptions.isSSL ? uWS.SSLApp(uwsOptions.appOptions) : uWS.App(uwsOptions.appOptions)
 
-      this.uWSocket.ws("/*", {
+      this.uWSocketServer.ws("/*", {
         ...uwsOptions.wsOptions,
 
         open: (ws) => {
@@ -67,7 +67,7 @@ class WsProtocol extends BaseProtocolProcessor {
         },
       })
 
-      this.uWSocket.listen(uwsOptions.port, uwsOptions.listenOptions, (listenSocket) => {
+      this.uWSocketServer.listen(uwsOptions.port, uwsOptions.listenOptions, (listenSocket) => {
         if (!listenSocket) {
           throw new Error(`[WS] can't allocate port`)
         }

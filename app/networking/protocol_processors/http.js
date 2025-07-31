@@ -111,11 +111,11 @@ const healthCheckHandler = async (res, req) => {
 }
 
 class HttpProtocol extends BaseProtocolProcessor {
-  uWSocket = void 0
+  uWSocketServer = void 0
 
-  constructor(sessionService, conversationService, uWSocket) {
+  constructor(sessionService, conversationService, uWSocketServer) {
     super(sessionService, conversationService)
-    this.uWSocket = uWSocket
+    this.uWSocketServer = uWSocketServer
   }
 
   requestCreateStoreContext = () => createStore({ [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.PROTOCOL_TYPE]: "HTTP" })
@@ -227,43 +227,43 @@ class HttpProtocol extends BaseProtocolProcessor {
   }
 
   listen(httpOptions) {
-    this.uWSocket.options("/*", this.onHttpRequestHandler([], optionsRequestHandler))
+    this.uWSocketServer.options("/*", this.onHttpRequestHandler([], optionsRequestHandler))
 
-    this.uWSocket.get("/health", this.onHttpRequestHandler([], healthCheckHandler))
+    this.uWSocketServer.get("/health", this.onHttpRequestHandler([], healthCheckHandler))
 
-    this.uWSocket.post("/login", this.onHttpRequestHandler([], HttpAuthController.login))
+    this.uWSocketServer.post("/login", this.onHttpRequestHandler([], HttpAuthController.login))
 
-    this.uWSocket.post("/logout", this.onHttpRequestHandler([], HttpAuthController.logout))
+    this.uWSocketServer.post("/logout", this.onHttpRequestHandler([], HttpAuthController.logout))
 
-    this.uWSocket.post(
+    this.uWSocketServer.post(
       "/admin/organization",
       this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpOrganizationController.create)
     )
 
-    this.uWSocket.post(
+    this.uWSocketServer.post(
       "/admin/message/system",
       this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.system_message)
     )
 
-    this.uWSocket.put("/admin/message/read", this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.read))
+    this.uWSocketServer.put("/admin/message/read", this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.read))
 
-    this.uWSocket.put("/admin/message", this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.edit))
+    this.uWSocketServer.put("/admin/message", this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.edit))
 
-    this.uWSocket.put(
+    this.uWSocketServer.put(
       "/admin/message/reaction",
       this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.reaction)
     )
 
-    this.uWSocket.del("/admin/message", this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.delete))
+    this.uWSocketServer.del("/admin/message", this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.delete))
 
-    this.uWSocket.post("/admin/message", this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.message))
+    this.uWSocketServer.post("/admin/message", this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpMessageController.message))
 
-    this.uWSocket.post(
+    this.uWSocketServer.post(
       "/admin/activity/online",
       this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpActivityController.online_list)
     )
 
-    this.uWSocket.any(
+    this.uWSocketServer.any(
       "/*",
       this.onHttpRequestHandler([], (res, req) => {
         throw new Error(ERROR_STATUES.ROUTE_NOT_FOUND.message, { cause: ERROR_STATUES.ROUTE_NOT_FOUND })
