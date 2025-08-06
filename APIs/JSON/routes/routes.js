@@ -2,7 +2,7 @@ import { default as ContactsController } from "../controllers/contacts.js"
 import { default as ConversationsController } from "../controllers/conversations.js"
 import { default as ConversationSchemesController } from "../controllers/conversation_handlers.js"
 import { default as FilesController } from "../controllers/files.js"
-import { default as LastActivityiesController } from "../controllers/activities.js"
+import { default as ActivitiesController } from "../controllers/activities.js"
 import { default as MessagesController } from "../controllers/messages.js"
 import { default as OperationsLogController } from "../controllers/operations_log.js"
 import { default as PushNotificationsController } from "../controllers/push_notifications.js"
@@ -133,21 +133,25 @@ export const routes = {
       .validate(json.block_list_enable, usersBlockSchemaValidation.enable)
       .enable(ws, json),
   user_last_activity_subscribe: (ws, json) =>
-    LastActivityiesController.middleware(authGuardMiddleware, ws, json)
+    ActivitiesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.user_last_activity_subscribe, activitiesSchemaValidation.status_subscribe)
       .status_subscribe(ws, json),
   user_last_activity_unsubscribe: (ws, json) =>
-    LastActivityiesController.middleware(authGuardMiddleware, ws, json)
+    ActivitiesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.user_last_activity_unsubscribe, activitiesSchemaValidation.status_unsubscribe)
       .status_unsubscribe(ws, json),
   user_last_activity: (ws, json) =>
-    LastActivityiesController.middleware(authGuardMiddleware, ws, json)
+    ActivitiesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.user_last_activity, activitiesSchemaValidation.get_user_status)
       .get_user_status(ws, json),
   online_list: (ws, json) =>
-    LastActivityiesController.middleware(authGuardMiddleware, ws, json)
+    ActivitiesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.online_list, activitiesSchemaValidation.online_list)
       .online_list(ws, json),
+  activity_status: (ws, json) =>
+    ActivitiesController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.activity_status, activitiesSchemaValidation.activity_status)
+      .activity_status(ws, json),
   get_participants_by_cids: (ws, json) =>
     ConversationsController.middleware(authGuardMiddleware, ws, json)
       .validate(json.get_participants_by_cids, conversationsSchemaValidation.get_participants_by_cids)

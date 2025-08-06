@@ -5,6 +5,7 @@ import { ACTIVITY } from "../app/store/activity.js"
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 import { generateNewOrganizationId, createUserArray, sendLogin, sendLogout } from "./tools/utils.js"
 
+const sessionService = ServiceLocatorContainer.use("SessionService")
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 const activityManagerService = ServiceLocatorContainer.use("ActivityManagerService")
 
@@ -191,6 +192,50 @@ describe("User activities", async () => {
     assert.deepEqual(ACTIVITY.SUBSCRIBERS[usersIds[1]], {})
 
     await sendLogout("line_2", currentUserToken1)
+  })
+
+  describe('MarkActive / MarkInactive', () => {
+    it('login', async () => {
+      await sendLogin("line_1", orgId, "user_1")
+    })
+
+    it('MarkInactive', async () => {
+      const requestData = {
+        request: {
+          activity_status: { isInactive: true },
+          id: "1",
+        },
+      }
+  
+      let responseData = await packetJsonProcessor.processMessageOrError("line_1", JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(responseData.response.id, requestData.request.id)
+      assert.strictEqual(responseData.response.success, true)
+
+      const isInactive = await sessionService.isUserInactive("line_1")
+      assert.strictEqual(isInactive, true)
+    })
+
+    it('MarkActive', async () => {
+      const requestData = {
+        request: {
+          activity_status: { isInactive: false },
+          id: "2",
+        },
+      }
+  
+      let responseData = await packetJsonProcessor.processMessageOrError("line_1", JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(responseData.response.id, requestData.request.id)
+      assert.strictEqual(responseData.response.success, true)
+
+      const isInactive = await sessionService.isUserInactive("line_1")
+      assert.strictEqual(!!isInactive, false)
+    })
   })
 
   after(async () => {

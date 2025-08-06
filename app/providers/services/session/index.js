@@ -131,7 +131,7 @@ class SessionService {
 
   async addUserExtraParams(userId, deviceId, extraParams) {
     const userHashKey = this.#usersHashKey(userId, deviceId)
-    const keyValuePairs = Object.entries(extraParams)
+    const keyValuePairs = Object.entries(extraParams).flat().map(val => `${val}`)
 
     await this.redisConnection.client.hSet(userHashKey, ...keyValuePairs)
   }
@@ -231,7 +231,7 @@ class SessionService {
 
   async setSessionInactiveState(ws, isInactive) {
     const { userId, extraParams } = this.getSession(ws)
-    const deviceId = this.getUserDevices(ws, userId)
+    const deviceId = this.getDeviceId(ws, userId)
 
     if (isInactive) {
       extraParams[CONSTANTS.SESSION_INACTIVE_STATE_KEY] = isInactive

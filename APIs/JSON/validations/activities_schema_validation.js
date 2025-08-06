@@ -24,4 +24,7 @@ export const activitiesSchemaValidation = {
     limit: Joi.number().max(100).min(1).optional(),
     offset: Joi.number().min(0).optional(),
   }),
+  activity_status: Joi.object({
+    isInactive: Joi.boolean().default(false)
+  }).required(),
 }
