@@ -4,7 +4,7 @@ import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
 import Response from "@sama/networking/models/Response.js"
 
-class LastActivitiesController extends BaseJSONController {
+class ActivitiesController extends BaseJSONController {
   async status_subscribe(ws, data) {
     const {
       id: requestId,
@@ -49,6 +49,15 @@ class LastActivitiesController extends BaseJSONController {
 
     return new Response().addBackMessage({ response: { id: requestId, ...response } })
   }
+
+  async activity_status(ws, data) {
+    const { id: requestId, activity_status: { isInactive } } = data
+
+    const markActiveInactiveOperation = ServiceLocatorContainer.use("ActivityMarkActiveInactiveOperation")
+    const result = await markActiveInactiveOperation.perform(ws, isInactive)
+
+    return new Response().addBackMessage({ response: { id: requestId, success: true } })
+  }
 }
 
-export default new LastActivitiesController()
+export default new ActivitiesController()

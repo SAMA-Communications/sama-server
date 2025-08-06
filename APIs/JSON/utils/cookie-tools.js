@@ -2,8 +2,10 @@ import cookieTool from "cookie"
 import cookieSignature from "cookie-signature"
 import cookieParser from "cookie-parser"
 
+import config from "@sama/config/index.js"
+
 export function parserCookies(cookieStr) {
-  let secret = process.env.COOKIE_SECRET
+  let secret = config.get("http.cookie.secret")
   let cookies = cookieTool.parse(cookieStr)
   let signedCookies = void 0
 
@@ -19,7 +21,7 @@ export function parserCookies(cookieStr) {
 }
 
 export function serializeCookie(name, value, options) {
-  value = options?.secure ? `s:${cookieSignature.sign(value, process.env.COOKIE_SECRET)}` : value
+  value = options?.secure ? `s:${cookieSignature.sign(value, config.get("http.cookie.secret"))}` : value
 
   return cookieTool.serialize(name, value, options)
 }

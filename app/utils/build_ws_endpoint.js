@@ -1,3 +1,3 @@
-export const buildWsEndpoint = (ip, port) => `${isSecureWs() ? "wss" : "ws"}://${ip}:${port}`
+import config from "@sama/config/index.js"
 
-export const isSecureWs = () => !!(process.env.SSL_KEY_FILE_NAME && process.env.SSL_CERT_FILE_NAME)
+export const buildWsEndpoint = (ip, port) => `${config.get("ws.options.isSecure") ? "wss" : "ws"}://${ip}:${port}`

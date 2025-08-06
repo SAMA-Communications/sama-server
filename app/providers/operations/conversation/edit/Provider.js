@@ -26,4 +26,5 @@ class ConversationEditOperationRegisterProvider extends RegisterProvider {
 export default new ConversationEditOperationRegisterProvider({
   name,
   implementationName: ConversationEditOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

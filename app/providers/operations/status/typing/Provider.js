@@ -12,4 +12,8 @@ class StatusTypingOperationRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new StatusTypingOperationRegisterProvider({ name, implementationName: StatusTypingOperation.name })
+export default new StatusTypingOperationRegisterProvider({
+  name,
+  implementationName: StatusTypingOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})

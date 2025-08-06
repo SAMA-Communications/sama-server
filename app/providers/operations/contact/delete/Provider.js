@@ -12,4 +12,8 @@ class ContactDeleteOperationRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new ContactDeleteOperationRegisterProvider({ name, implementationName: ContactDeleteOperation.name })
+export default new ContactDeleteOperationRegisterProvider({
+  name,
+  implementationName: ContactDeleteOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})

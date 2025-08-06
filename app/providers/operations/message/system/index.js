@@ -15,12 +15,13 @@ class MessageSendSystemOperation {
 
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    let recipientsIds = []
+    let recipientsIds = null
 
-    if (cid) {
-      recipientsIds = await this.#conversationParticipants(organizationId, cid, currentUserId)
-    } else {
+    if (!cid) {
       recipientsIds = await this.userService.userRepo.retrieveExistedIds(organizationId, uids)
+    } else {
+      const conversation = await this.#hasAccess(organizationId, cid, currentUserId)
+      recipientsIds = conversation.type === "u" ? [conversation.owner_id, conversation.opponent_id] : null
     }
 
     const systemMessageParams = {
@@ -31,11 +32,16 @@ class MessageSendSystemOperation {
       t: this.helpers.currentTimeStamp(),
     }
 
-    return { recipientsIds, systemMessage: new SystemMessagePublicFields(systemMessageParams) }
+    return {
+      organizationId,
+      cId: cid,
+      recipientsIds,
+      systemMessage: new SystemMessagePublicFields(systemMessageParams),
+    }
   }
 
-  async #conversationParticipants(organizationId, conversationId, currentUserId) {
-    const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
+  async #hasAccess(organizationId, conversationId, currentUserId) {
+    const { conversation, asParticipant } = await this.conversationService.hasAccessToConversation(
       organizationId,
       conversationId,
       currentUserId
@@ -53,7 +59,7 @@ class MessageSendSystemOperation {
       })
     }
 
-    return participantIds
+    return conversation
   }
 }
 

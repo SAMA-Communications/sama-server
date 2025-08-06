@@ -13,4 +13,8 @@ class MessageDeleteOperationRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new MessageDeleteOperationRegisterProvider({ name, implementationName: MessageDeleteOperation.name })
+export default new MessageDeleteOperationRegisterProvider({
+  name,
+  implementationName: MessageDeleteOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})

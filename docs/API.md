@@ -1475,7 +1475,7 @@ A user can request last activity of other users:
 
 ### Last activity subscription
 
-There is a way to subscribe to some user activity status upodate in real-time:
+There is a way to subscribe to some user activity status update in real-time:
 
 ```
 {
@@ -1502,6 +1502,26 @@ Once that user will go offline/online, you will be receiving his/her last activi
 ```
 last_activity: {
   uid1:  "online" | num_of_seconds
+}
+```
+
+## Ping
+
+There is a way to check ws connection:
+
+```
+{
+  request: {
+    ping: {},
+    id: "4"
+  }
+}
+
+{
+  response: {
+    id: "4",
+    pong: {}
+  }
 }
 ```
 

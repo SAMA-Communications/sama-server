@@ -21,13 +21,15 @@ class HttpMessageController extends BaseHttpController {
 
     const httpMessageCreateOperation = ServiceLocatorContainer.use("HttpMessageCreateOperation")
     const createMessageResponse = await httpMessageCreateOperation.perform(res.fakeWsSessionKey, payload)
-    const { messageId, message: message, deliverMessages, participantIds } = createMessageResponse
+    const { organizationId, messageId, message, deliverMessages, cId, participantIds, modifiedFields, botMessage } = createMessageResponse
 
     deliverMessages.forEach((event) => {
-      const deliverMessage = new DeliverMessage(
-        event.participantIds || participantIds,
-        new MessageResponse(event.message)
-      ).addPushQueueMessage(event.notification)
+      const deliverMessage = new DeliverMessage(organizationId, new MessageResponse(event.message)).addPushQueueMessage(event.notification)
+
+      const participantsDestination = event.participantIds ?? participantIds
+      deliverMessage.setUsersDestination(participantsDestination)
+      deliverMessage.setConversationDestination(cId)
+
       response.addDeliverMessage(deliverMessage)
     })
 
@@ -36,7 +38,7 @@ class HttpMessageController extends BaseHttpController {
         201,
         {},
         {
-          ask: { mid: messageId, server_mid: message._id, t: message.t },
+          ask: { mid: messageId, server_mid: message._id, t: message.t, modified: modifiedFields, bot_message: botMessage },
         }
       )
     )
@@ -46,24 +48,28 @@ class HttpMessageController extends BaseHttpController {
     const payload = res.parsedBody
 
     const messageSendSystemOperation = ServiceLocatorContainer.use("HttpMessageSendSystemOperation")
-    const { recipientsIds, systemMessage } = await messageSendSystemOperation.perform(res.fakeWsSessionKey, payload)
+    const { organizationId, cId, recipientsIds, systemMessage } = await messageSendSystemOperation.perform(res.fakeWsSessionKey, payload)
+
+    const deliverMessage = new DeliverMessage(organizationId, new SystemMessageResponse(systemMessage), true)
+      .setConversationDestination(cId)
+      .setUsersDestination(recipientsIds)
 
     return new Response()
       .setHttpResponse(new HttpResponse(201, {}, { ask: { mid: systemMessage._id, t: systemMessage.t } }))
-      .addDeliverMessage(new DeliverMessage(recipientsIds, new SystemMessageResponse(systemMessage), true))
+      .addDeliverMessage(deliverMessage)
   }
 
   async read(res, req) {
     const payload = res.parsedBody
 
     const messageReadOperation = ServiceLocatorContainer.use("HttpMessageReadOperation")
-    const { readMessagesGroups } = await messageReadOperation.perform(res.fakeWsSessionKey, payload)
+    const { organizationId, readMessagesGroups } = await messageReadOperation.perform(res.fakeWsSessionKey, payload)
 
     const response = new Response()
 
     for (const readMessagesGroup of readMessagesGroups) {
       const { userId, readMessages } = readMessagesGroup
-      response.addDeliverMessage(new DeliverMessage([userId], new ReadMessagesResponse(readMessages)))
+      response.addDeliverMessage(new DeliverMessage(organizationId, new ReadMessagesResponse(readMessages)).setUsersDestination([userId]))
     }
 
     return response.setHttpResponse(new HttpResponse(200, {}, { success: true }))
@@ -73,18 +79,22 @@ class HttpMessageController extends BaseHttpController {
     const payload = res.parsedBody
 
     const messageEditOperation = ServiceLocatorContainer.use("HttpMessageEditOperation")
-    const { editedMessage, participantIds } = await messageEditOperation.perform(res.fakeWsSessionKey, payload)
+    const { organizationId, cId, participantsIds, editedMessage } = await messageEditOperation.perform(res.fakeWsSessionKey, payload)
 
     return new Response()
       .setHttpResponse(new HttpResponse(200, {}, { success: true }))
-      .addDeliverMessage(new DeliverMessage(participantIds, new EditMessageResponse(editedMessage), true))
+      .addDeliverMessage(
+        new DeliverMessage(organizationId, new EditMessageResponse(editedMessage), true)
+          .setConversationDestination(cId)
+          .setUsersDestination(participantsIds)
+      )
   }
 
   async reaction(res, req) {
     const payload = res.parsedBody
 
     const messageReactionOperation = ServiceLocatorContainer.use("HttpMessageReactionOperation")
-    const { messageReactionsUpdate, participantIds } = await messageReactionOperation.perform(
+    const { organizationId, cId, participantsIds, messageReactionsUpdate } = await messageReactionOperation.perform(
       res.fakeWsSessionKey,
       payload
     )
@@ -92,7 +102,9 @@ class HttpMessageController extends BaseHttpController {
     return new Response()
       .setHttpResponse(new HttpResponse(200, {}, { success: true }))
       .addDeliverMessage(
-        new DeliverMessage(participantIds, new MessageReactionsUpdateResponse(messageReactionsUpdate), true)
+        new DeliverMessage(organizationId, new MessageReactionsUpdateResponse(messageReactionsUpdate), true)
+          .setConversationDestination(cId)
+          .setUsersDestination(participantsIds)
       )
   }
 
@@ -100,12 +112,16 @@ class HttpMessageController extends BaseHttpController {
     const payload = res.parsedBody
 
     const messageDeleteOperation = ServiceLocatorContainer.use("HttpMessageDeleteOperation")
-    const { deletedMessages, participantIds } = await messageDeleteOperation.perform(res.fakeWsSessionKey, payload)
+    const { organizationId, cId, participantsIds, deletedMessages } = await messageDeleteOperation.perform(res.fakeWsSessionKey, payload)
 
     const response = new Response()
 
     if (deletedMessages) {
-      response.addDeliverMessage(new DeliverMessage(participantIds, new DeleteMessagesResponse(deletedMessages), true))
+      response.addDeliverMessage(
+        new DeliverMessage(organizationId, new DeleteMessagesResponse(deletedMessages), true)
+          .setConversationDestination(cId)
+          .setUsersDestination(participantsIds)
+      )
     }
 
     return response.setHttpResponse(new HttpResponse(200, {}, { success: true }))

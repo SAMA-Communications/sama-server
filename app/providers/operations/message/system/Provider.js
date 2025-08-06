@@ -18,4 +18,5 @@ class MessageSendSystemOperationRegisterProvider extends RegisterProvider {
 export default new MessageSendSystemOperationRegisterProvider({
   name,
   implementationName: MessageSendSystemOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

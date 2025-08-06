@@ -13,4 +13,8 @@ class UserEditOperationRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new UserEditOperationRegisterProvider({ name, implementationName: UserEditOperation.name })
+export default new UserEditOperationRegisterProvider({
+  name,
+  implementationName: UserEditOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})

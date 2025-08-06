@@ -12,4 +12,8 @@ class UserListOperationRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new UserListOperationRegisterProvider({ name, implementationName: UserListOperation.name })
+export default new UserListOperationRegisterProvider({
+  name,
+  implementationName: UserListOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})

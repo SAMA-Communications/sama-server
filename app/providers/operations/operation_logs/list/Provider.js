@@ -12,4 +12,8 @@ class OpLogsListOperationRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new OpLogsListOperationRegisterProvider({ name, implementationName: OpLogsListOperation.name })
+export default new OpLogsListOperationRegisterProvider({
+  name,
+  implementationName: OpLogsListOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})

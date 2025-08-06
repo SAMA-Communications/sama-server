@@ -12,4 +12,8 @@ class FileDownloadOperationRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new FileDownloadOperationRegisterProvider({ name, implementationName: FileDownloadOperation.name })
+export default new FileDownloadOperationRegisterProvider({
+  name,
+  implementationName: FileDownloadOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})
