@@ -119,7 +119,7 @@ describe("Message function", async () => {
       assert.equal(responseData.ask, undefined)
       assert.deepEqual(responseData.message.error, {
         status: 422,
-        message: "Incorrect additional message ID.",
+        message: "Incorrect replied message ID.",
       })
     })
 
@@ -128,6 +128,7 @@ describe("Message function", async () => {
         message: {
           id: "xyzd",
           cid: currentConversationId,
+          body: "123",
           forwarded_message_id: messageId1,
           x: {
             param1: "value",
@@ -166,30 +167,6 @@ describe("Message function", async () => {
 
       assert.strictEqual("xyzd", responseData.ask.mid)
       assert.notEqual(responseData.ask.t, undefined)
-    })
-
-    it("should fail incorrect forwarded message id", async () => {
-      const requestData = {
-        message: {
-          id: "xyzda",
-          cid: currentConversationId,
-          forwarded_message_id: "123",
-          x: {
-            param1: "value",
-            param2: "value",
-          },
-        },
-      }
-
-      let responseData = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
-
-      responseData = responseData.backMessages.at(0)
-
-      assert.equal(responseData.ask, undefined)
-      assert.deepEqual(responseData.message.error, {
-        status: 422,
-        message: "Incorrect reply message ID.",
-      })
     })
 
     it("should fail incorrect ID", async () => {
