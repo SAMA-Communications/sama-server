@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.34.0
+
+### Updated
+
+- Added `forwarded_message_id` field for Message object
+
 ## 0.33.0
 
 ### Improvements
