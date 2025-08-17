@@ -280,6 +280,10 @@ class SessionService {
     const userData = await this.listUserData(organizationId, userId)
 
     for (const [deviceId, extraParams] of Object.entries(userData)) {
+      if (!extraParams[CONSTANTS.SESSION_NODE_KEY]) {
+        continue
+      }
+
       const [, nodeId, nodePort] = splitWsEndpoint(extraParams[CONSTANTS.SESSION_NODE_KEY])
       await this.removeUserDeviceFromNode(nodeId, nodePort, userId, deviceId)
     }
