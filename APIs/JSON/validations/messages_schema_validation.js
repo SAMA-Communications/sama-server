@@ -37,7 +37,7 @@ export const messagesSchemaValidation = {
             file_size: Joi.number().max(104857601),
             file_width: Joi.number().max(10000),
             file_height: Joi.number().max(10000),
-          })
+          }).unknown()
         )
         .min(1)
         .error(

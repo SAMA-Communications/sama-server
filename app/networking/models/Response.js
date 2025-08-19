@@ -3,13 +3,13 @@ class Response {
   deliverMessages = []
   lastActivityStatusResponse = null
   httpResponse = null
+  closeSocket = false
+  upgradeTls = false
 
   constructor(backMessages, deliverMessages, lastActivityStatusResponse, httpResponse) {
     this.backMessages = this.backMessages.concat(backMessages || [])
     this.deliverMessages = this.deliverMessages.concat(deliverMessages || [])
-    this.lastActivityStatusResponse = lastActivityStatusResponse
-      ? lastActivityStatusResponse
-      : this.lastActivityStatusResponse
+    this.lastActivityStatusResponse = lastActivityStatusResponse ? lastActivityStatusResponse : this.lastActivityStatusResponse
     this.httpResponse = httpResponse ? httpResponse : this.httpResponse
   }
 
@@ -41,6 +41,16 @@ class Response {
 
   setHttpResponse(httpResponse) {
     this.httpResponse = httpResponse
+    return this
+  }
+
+  setCloseSocket(needToClose) {
+    this.closeSocket = !!needToClose
+    return this
+  }
+
+  setUpgradeTls(needUpgrade) {
+    this.upgradeTls = !!needUpgrade
     return this
   }
 }

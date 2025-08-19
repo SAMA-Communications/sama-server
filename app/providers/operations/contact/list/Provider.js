@@ -12,4 +12,8 @@ class ContactListOperationRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new ContactListOperationRegisterProvider({ name, implementationName: ContactListOperation.name })
+export default new ContactListOperationRegisterProvider({
+  name,
+  implementationName: ContactListOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})

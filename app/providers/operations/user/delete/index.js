@@ -29,12 +29,7 @@ class UserDeleteOperation {
     }
 
     await this.blockListService.deleteAllBlocks(user.native_id)
-    await this.contactsMatchRepository.matchUserWithContactOnDelete(
-      user.organization_id,
-      user.native_id,
-      user.phone,
-      user.email
-    )
+    await this.contactsMatchRepository.matchUserWithContactOnDelete(user.organization_id, user.native_id, user.phone, user.email)
 
     await this.userService.userRepo.deleteById(user.native_id)
 

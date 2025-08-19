@@ -15,4 +15,5 @@ class HttpActivityOnlineListOperationRegisterProvider extends RegisterProvider {
 export default new HttpActivityOnlineListOperationRegisterProvider({
   name,
   implementationName: HttpActivityOnlineListOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

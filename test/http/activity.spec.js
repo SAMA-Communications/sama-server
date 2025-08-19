@@ -1,10 +1,11 @@
-import assert from "assert"
+import assert from "node:assert"
 
 import ServiceLocatorContainer from "../../app/common/ServiceLocatorContainer.js"
 
 import { generateNewOrganizationId, createUserArray, sendLogin } from "../tools/utils.js"
 import HttpActivityController from "../../APIs/JSON/controllers/http/activity.js"
 
+const logger = ServiceLocatorContainer.use("Logger")
 const redisClient = ServiceLocatorContainer.use("RedisClient")
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 
@@ -69,7 +70,7 @@ describe("Http Activity", async () => {
     const httpResponse = responseData.httpResponse
     const { users } = httpResponse.body
 
-    console.log(users)
+    logger.debug("[Online users] %j", users)
 
     const user = users.at(0)
 

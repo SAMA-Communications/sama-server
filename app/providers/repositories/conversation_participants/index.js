@@ -2,9 +2,9 @@ import BaseRepository from "../base.js"
 
 class ConversationParticipantRepository extends BaseRepository {
   async prepareParams(params) {
+    params.organization_id = this.castOrganizationId(params.organization_id)
     params.conversation_id = this.castObjectId(params.conversation_id)
     params.user_id = this.castUserId(params.user_id)
-    params.organization_id = this.castOrganizationId(params.organization_id)
 
     return await super.prepareParams(params)
   }
@@ -111,10 +111,16 @@ class ConversationParticipantRepository extends BaseRepository {
     return conversationParticipants.map((conversationParticipant) => conversationParticipant.conversation_id)
   }
 
-  async isConversationHasParticipants(conversationId) {
-    const participants = await this.findOne({ conversation_id: conversationId })
+  async findFirstConversationParticipant(conversationId, participantId) {
+    const query = { conversation_id: conversationId }
 
-    return !!participants
+    if (participantId) {
+      query.user_id = participantId
+    }
+
+    const participant = await this.findOne(query)
+
+    return participant
   }
 
   async extractParticipantIdsFromPrivateConversations(conversations) {
@@ -125,10 +131,40 @@ class ConversationParticipantRepository extends BaseRepository {
     }, new Set())
   }
 
-  async removeParticipants(conversationId, participantIds) {
+  async addNoExistedParticipants(conversationId, participantsParams) {
+    conversationId = this.castObjectId(conversationId)
+
+    const addedIds = []
+
+    for (let pParams of participantsParams) {
+      pParams = await this.prepareParams(pParams)
+      const findQuery = { conversation_id: conversationId, user_id: pParams.user_id }
+
+      const result = await this.updateOne(findQuery, { $setOnInsert: pParams }, { upsert: true })
+
+      if (result?.upsertedId) {
+        addedIds.push(pParams.user_id)
+      }
+    }
+
+    return addedIds
+  }
+
+  async removeExistedParticipants(conversationId, participantIds) {
+    conversationId = this.castObjectId(conversationId)
     participantIds = this.castUserIds(participantIds)
 
-    await this.deleteMany({ conversation_id: this.castObjectId(conversationId), user_id: { $in: participantIds } })
+    const removedIds = []
+
+    for (const pId of participantIds) {
+      const result = await this.deleteMany({ conversation_id: conversationId, user_id: pId })
+
+      if (result?.deletedCount > 0) {
+        removedIds.push(pId)
+      }
+    }
+
+    return removedIds
   }
 
   async addAdminRole(conversationId, participantIds) {

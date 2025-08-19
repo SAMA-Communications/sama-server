@@ -1,8 +1,8 @@
 import { ERROR_STATUES } from "../../../../constants/errors.js"
 
 class UserConnectSocketOperation {
-  constructor(RuntimeDefinedContext, sessionService, userService, userTokenRepo) {
-    this.RuntimeDefinedContext = RuntimeDefinedContext
+  constructor(config, sessionService, userService, userTokenRepo) {
+    this.config = config
     this.sessionService = sessionService
     this.userService = userService
     this.userTokenRepo = userTokenRepo
@@ -23,13 +23,7 @@ class UserConnectSocketOperation {
     // TODO: close connections
     this.sessionService.addUserDeviceConnection(ws, user.organization_id, user.native_id, deviceId)
 
-    await this.sessionService.storeUserNodeData(
-      this.RuntimeDefinedContext.APP_IP,
-      this.RuntimeDefinedContext.CLUSTER_PORT,
-      user.organization_id,
-      user.native_id,
-      deviceId
-    )
+    await this.sessionService.storeUserNodeData(user.organization_id, user.native_id, deviceId)
 
     return { user }
   }

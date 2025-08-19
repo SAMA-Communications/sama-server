@@ -11,24 +11,17 @@ class MessageReactionsUpdateOperation {
   async perform(ws, messageUpdateReactionParams) {
     const { mid: messageId, add: addReaction, remove: removeReaction } = messageUpdateReactionParams
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     const message = await this.#hasAccess(messageId, currentUserId)
 
-    const updateResult = await this.messageService.updateReactions(
-      message._id,
-      currentUserId,
-      addReaction,
-      removeReaction
-    )
+    const updateResult = await this.messageService.updateReactions(message._id, currentUserId, addReaction, removeReaction)
 
     if (!(updateResult.add || updateResult.remove)) {
       return { isUpdated: false }
     }
 
     const conversation = await this.conversationService.conversationRepo.findById(message.cid)
-
-    const participantIds = await this.conversationService.findConversationParticipants(message.cid)
 
     const messageUpdateReactionParamsResult = {
       mid: messageId,
@@ -45,9 +38,13 @@ class MessageReactionsUpdateOperation {
       messageUpdateReactionParamsResult.remove = removeReaction
     }
 
+    const participantsIds = conversation.type === "u" ? [conversation.owner_id, conversation.opponent_id] : null
+
     return {
+      organizationId,
+      cId: conversation._id,
+      participantsIds,
       messageReactionsUpdate: new MessageReactionsUpdatePublicFields(messageUpdateReactionParamsResult),
-      participantIds,
       isUpdated: true,
     }
   }

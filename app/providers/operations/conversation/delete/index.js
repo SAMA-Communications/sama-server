@@ -13,22 +13,19 @@ class ConversationDeleteOperation {
   async perform(ws, conversationId) {
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    const { conversation, participantIds } = await this.#getConversationDetails(
-      organizationId,
-      conversationId,
-      currentUserId
-    )
+    const { conversation } = await this.#getConversationDetails(organizationId, conversationId, currentUserId)
 
-    await this.conversationService.removeParticipants(conversation, [currentUserId], participantIds)
+    await this.conversationService.removeParticipants(conversation, [currentUserId])
 
-    const filteredParticipants = participantIds.filter(
-      (participantId) => !this.helpers.isEqualsNativeIds(participantId, currentUserId)
-    )
-
-    const result = { currentUserId }
+    const result = { organizationId, currentUserId }
 
     if (this.conversationNotificationService.isEnabled()) {
-      const conversationEvents = await this.#createActionEvents(conversation, currentUserId, filteredParticipants)
+      const conversationEvents = await this.#createActionEvents(conversation, currentUserId)
+      conversationEvents.forEach((conversationEvent) => {
+        conversationEvent.cId = conversation._id
+        conversationEvent.participantIds = conversation.type === "u" ? [conversation.opponent_id] : null
+      })
+
       result.conversationEvents = conversationEvents
     }
 
@@ -36,11 +33,7 @@ class ConversationDeleteOperation {
   }
 
   async #getConversationDetails(organizationId, conversationId, userId) {
-    const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
-      organizationId,
-      conversationId,
-      userId
-    )
+    const { conversation, asParticipant } = await this.conversationService.hasAccessToConversation(organizationId, conversationId, userId)
     if (!conversation) {
       throw new Error(ERROR_STATUES.BAD_REQUEST.message, {
         cause: ERROR_STATUES.BAD_REQUEST,
@@ -53,17 +46,16 @@ class ConversationDeleteOperation {
       })
     }
 
-    return { conversation, participantIds }
+    return { conversation }
   }
 
-  async #createActionEvents(conversation, currentUserId, participantIds) {
+  async #createActionEvents(conversation, currentUserId) {
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
     const conversationEvent = []
 
     const leftParticipantEvent = await this.#participantsActionEvent(conversation, currentUser, currentUserId)
 
-    leftParticipantEvent.participantIds = participantIds
     conversationEvent.push(leftParticipantEvent)
 
     return conversationEvent

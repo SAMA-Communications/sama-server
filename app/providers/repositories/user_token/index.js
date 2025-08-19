@@ -26,8 +26,7 @@ class UserTokenRepository extends BaseRepository {
   }
 
   async updateToken(token, organizationId, userId, deviceId, jwtToken, tokenType) {
-    const existedToken =
-      !token || tokenType !== token.type ? await this.findTokenByUserId(userId, deviceId, tokenType) : token
+    const existedToken = !token || tokenType !== token.type ? await this.findTokenByUserId(userId, deviceId, tokenType) : token
 
     if (existedToken) {
       await this.updateOne(

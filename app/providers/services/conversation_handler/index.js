@@ -3,7 +3,8 @@ import { loadQuickJs } from "@sebastianwessel/quickjs"
 import { ERROR_STATUES } from "../../../constants/errors.js"
 
 class ConversationHandlerService {
-  constructor(conversationHandlerRepo) {
+  constructor(logger, conversationHandlerRepo) {
+    this.logger = logger
     this.conversationHandlerRepo = conversationHandlerRepo
   }
 
@@ -83,7 +84,8 @@ class ConversationHandlerService {
         },
       })
     }
-    console.log(compilationResult)
+
+    this.logger.debug("[CompileResult] %j", compilationResult)
 
     return compilationResult
   }

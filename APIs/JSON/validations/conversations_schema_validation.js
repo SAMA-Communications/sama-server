@@ -1,5 +1,6 @@
 import Joi from "joi"
 import { ERROR_STATUES } from "@sama/constants/errors.js"
+import config from "@sama/config/index.js"
 
 export const conversationsSchemaValidation = {
   create: Joi.object({
@@ -42,7 +43,7 @@ export const conversationsSchemaValidation = {
     participants: Joi.array()
       .items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required())
       .min(1)
-      .max(parseInt(process.env.CONVERSATION_MAX_PARTICIPANTS))
+      .max(config.get("conversation.maxParticipants"))
       .when("type", {
         is: Joi.string().valid("c"),
         then: Joi.optional(),

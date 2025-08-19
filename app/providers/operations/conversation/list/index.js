@@ -1,8 +1,8 @@
-import { CONSTANTS as MAIN_CONSTANTS } from "../../../../constants/constants.js"
 import MessagePublicFields from "@sama/DTO/Response/message/create/public_fields.js"
 
 class ConversationListOperation {
-  constructor(sessionService, userService, messagesService, conversationService) {
+  constructor(config, sessionService, userService, messagesService, conversationService) {
+    this.config = config
     this.sessionService = sessionService
     this.userService = userService
     this.messagesService = messagesService
@@ -16,11 +16,7 @@ class ConversationListOperation {
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
-    const conversations = await this.conversationService.conversationsList(
-      currentUser,
-      { updatedAt: updated_at, ids },
-      normalizedLimit
-    )
+    const conversations = await this.conversationService.conversationsList(currentUser, { updatedAt: updated_at, ids }, normalizedLimit)
 
     await this.#addMessagesInfo(conversations, currentUser)
 
@@ -34,14 +30,8 @@ class ConversationListOperation {
   async #addMessagesInfo(conversations, currentUser) {
     const conversationIds = conversations.map((conversation) => conversation._id)
 
-    const lastMessagesListByCid = await this.messagesService.aggregateLastMessageForConversation(
-      conversationIds,
-      currentUser
-    )
-    const countOfUnreadMessagesByCid = await this.messagesService.aggregateCountOfUnreadMessagesByCid(
-      conversationIds,
-      currentUser
-    )
+    const lastMessagesListByCid = await this.messagesService.aggregateLastMessageForConversation(conversationIds, currentUser)
+    const countOfUnreadMessagesByCid = await this.messagesService.aggregateCountOfUnreadMessagesByCid(conversationIds, currentUser)
 
     for (const conversation of conversations) {
       const conversationId = conversation._id.toString()
@@ -55,11 +45,13 @@ class ConversationListOperation {
   }
 
   #normalizeLimitParam(limit) {
-    if (limit > MAIN_CONSTANTS.CONVERSATION_LIMIT_MAX) {
-      return MAIN_CONSTANTS.CONVERSATION_LIMIT_MAX
+    const preloadCount = this.config.get("conversation.preloadCount")
+
+    if (limit > preloadCount) {
+      return preloadCount
     }
 
-    return limit || MAIN_CONSTANTS.CONVERSATION_LIMIT_MAX
+    return limit || preloadCount
   }
 }
 
