@@ -5,6 +5,7 @@ import MessagePublicFields from "@sama/DTO/Response/message/create/public_fields
 
 class MessageCreateOperation {
   constructor(
+    config,
     sessionService,
     storageService,
     blockListService,
@@ -14,6 +15,7 @@ class MessageCreateOperation {
     conversationNotificationService,
     messageService
   ) {
+    this.config = config
     this.sessionService = sessionService
     this.storageService = storageService
     this.blockListService = blockListService
@@ -144,10 +146,12 @@ class MessageCreateOperation {
       })
     }
 
-    if (conversation.type === "c" && !(asOwner || asAdmin)) {
-      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
-        cause: ERROR_STATUES.FORBIDDEN,
-      })
+    if (!this.config.get("conversation.disableChannelsLogic")) {
+      if (conversation.type === "c" && !(asOwner || asAdmin)) {
+        throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+          cause: ERROR_STATUES.FORBIDDEN,
+        })
+      }
     }
 
     if (!asParticipant) {

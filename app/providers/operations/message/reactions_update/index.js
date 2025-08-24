@@ -2,7 +2,8 @@ import { ERROR_STATUES } from "../../../../constants/errors.js"
 import MessageReactionsUpdatePublicFields from "@sama/DTO/Response/message/reactions_update/public_fields.js"
 
 class MessageReactionsUpdateOperation {
-  constructor(sessionService, messageService, conversationService) {
+  constructor(config, sessionService, messageService, conversationService) {
+    this.config = config
     this.sessionService = sessionService
     this.messageService = messageService
     this.conversationService = conversationService
@@ -39,13 +40,18 @@ class MessageReactionsUpdateOperation {
     }
 
     const participantsIds = conversation.type === "u" ? [conversation.owner_id, conversation.opponent_id] : null
+    let isUpdated = true
+
+    if (!this.config.get("conversation.disableChannelsLogic") && conversation.type === "c") {
+      isUpdated = false
+    }
 
     return {
       organizationId,
       cId: conversation._id,
       participantsIds,
       messageReactionsUpdate: new MessageReactionsUpdatePublicFields(messageUpdateReactionParamsResult),
-      isUpdated: true,
+      isUpdated,
     }
   }
 

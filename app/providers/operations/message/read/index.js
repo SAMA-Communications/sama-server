@@ -3,7 +3,8 @@ import groupBy from "@sama/utils/groupBy.js"
 import ReadMessagesPublicFields from "@sama/DTO/Response/message/read/public_fields.js"
 
 class MessageReadOperation {
-  constructor(sessionService, userService, messageService, conversationService) {
+  constructor(config, sessionService, userService, messageService, conversationService) {
+    this.config = config
     this.sessionService = sessionService
     this.userService = userService
     this.messageService = messageService
@@ -54,10 +55,12 @@ class MessageReadOperation {
       })
     }
 
-    if (conversation.type === "c") {
-      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
-        cause: ERROR_STATUES.FORBIDDEN,
-      })
+    if (!this.config.get("conversation.disableChannelsLogic")) {
+      if (conversation.type === "c") {
+        throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+          cause: ERROR_STATUES.FORBIDDEN,
+        })
+      }
     }
 
     if (!asParticipant) {

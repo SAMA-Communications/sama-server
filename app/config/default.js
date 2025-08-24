@@ -98,6 +98,7 @@ const CONFIG = {
     },
   },
   conversation: {
+    disableChannelsLogic: process.env.CONVERSATION_DISABLE_CHANNELS_LOGIC === "true",
     isEventsEnabled: process.env.CONVERSATION_NOTIFICATIONS_ENABLED === "true",
     maxParticipants: +(process.env.CONVERSATION_MAX_PARTICIPANTS ?? 50),
     preloadCount: +(process.env.CONVERSATION_PRELOAD_COUNT ?? 30),
@@ -113,8 +114,8 @@ const CONFIG = {
     queueName: process.env.SAMA_NATIVE_PUSH_QUEUE_NAME,
   },
   chatBot: {
-    login: process.env.CHAT_BOT_LOGIN
-  }
+    login: process.env.CHAT_BOT_LOGIN,
+  },
 }
 
 export default CONFIG

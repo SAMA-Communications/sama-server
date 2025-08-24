@@ -5,11 +5,12 @@ const name = "MessageReactionsUpdateOperation"
 
 class MessageReactionsUpdateOperationRegisterProvider extends RegisterProvider {
   register(slc) {
+    const config = slc.use("Config")
     const sessionService = slc.use("SessionService")
     const messageService = slc.use("MessageService")
     const conversationService = slc.use("ConversationService")
 
-    return new MessageReactionsUpdateOperation(sessionService, messageService, conversationService)
+    return new MessageReactionsUpdateOperation(config, sessionService, messageService, conversationService)
   }
 }
 

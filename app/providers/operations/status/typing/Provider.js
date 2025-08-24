@@ -5,10 +5,11 @@ const name = "StatusTypingOperation"
 
 class StatusTypingOperationRegisterProvider extends RegisterProvider {
   register(slc) {
+    const config = slc.use("Config")
     const sessionService = slc.use("SessionService")
     const conversationService = slc.use("ConversationService")
 
-    return new StatusTypingOperation(sessionService, conversationService)
+    return new StatusTypingOperation(config, sessionService, conversationService)
   }
 }
 

@@ -1,7 +1,8 @@
 import { ERROR_STATUES } from "../../../../constants/errors.js"
 
 class StatusTypingOperation {
-  constructor(sessionService, conversationService) {
+  constructor(config, sessionService, conversationService) {
+    this.config = config
     this.sessionService = sessionService
     this.conversationService = conversationService
   }
@@ -38,6 +39,14 @@ class StatusTypingOperation {
       throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {
         cause: ERROR_STATUES.CONVERSATION_NOT_FOUND,
       })
+    }
+
+    if (!this.config.get("conversation.disableChannelsLogic")) {
+      if (conversation.type === "c") {
+        throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+          cause: ERROR_STATUES.FORBIDDEN,
+        })
+      }
     }
 
     if (!asParticipant) {

@@ -5,6 +5,7 @@ const name = "MessageCreateOperation"
 
 class MessageCreateOperationRegisterProvider extends RegisterProvider {
   register(slc) {
+    const config = slc.use("Config")
     const sessionService = slc.use("SessionService")
     const storageService = slc.use("StorageDriverClient")
     const blockListService = slc.use("BlockListService")
@@ -15,6 +16,7 @@ class MessageCreateOperationRegisterProvider extends RegisterProvider {
     const messageService = slc.use("MessageService")
 
     return new MessageCreateOperation(
+      config,
       sessionService,
       storageService,
       blockListService,
