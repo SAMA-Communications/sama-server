@@ -58,7 +58,9 @@ class UserAuthOperation {
   }
 
   async #authByUserInfo(organizationId, userInfo, deviceId) {
-    const user = userInfo?.userId ? await this.userService.userRepo.findById(userInfo?.userId) : await this.userService.findByLogin(organizationId, userInfo.login)
+    const user = userInfo?.userId
+      ? await this.userService.userRepo.findById(userInfo?.userId)
+      : await this.userService.findByLogin(organizationId, userInfo.login)
 
     if (!user) {
       throw new Error(ERROR_STATUES.INCORRECT_LOGIN_OR_PASSWORD.message, {

@@ -7,7 +7,7 @@ export default class BaseAPI {
   }
 
   createOnPackagesListener(callback) {
-    return packet => callback(null, packet)
+    return (packet) => callback(null, packet)
   }
 
   async onMessage(ws, message) {

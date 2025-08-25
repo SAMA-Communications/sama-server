@@ -25,6 +25,6 @@ export const activitiesSchemaValidation = {
     offset: Joi.number().min(0).optional(),
   }),
   activity_status: Joi.object({
-    isInactive: Joi.boolean().default(false)
+    isInactive: Joi.boolean().default(false),
   }).required(),
 }

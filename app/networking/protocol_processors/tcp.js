@@ -66,9 +66,9 @@ class TcpProtocol extends BaseProtocolProcessor {
         }
         socket.apiType = apiType.at(0)
       }
-  
+
       const api = APIs[socket.apiType]
-      
+
       onPackageListenerCallback = api.createOnPackagesListener((error, strPackage) => {
         if (error) {
           return logger.error(error, "[Parse package]")

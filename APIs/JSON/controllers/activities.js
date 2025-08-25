@@ -51,7 +51,10 @@ class ActivitiesController extends BaseJSONController {
   }
 
   async activity_status(ws, data) {
-    const { id: requestId, activity_status: { isInactive } } = data
+    const {
+      id: requestId,
+      activity_status: { isInactive },
+    } = data
 
     const markActiveInactiveOperation = ServiceLocatorContainer.use("ActivityMarkActiveInactiveOperation")
     const result = await markActiveInactiveOperation.perform(ws, isInactive)

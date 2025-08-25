@@ -131,7 +131,9 @@ class SessionService {
 
   async addUserExtraParams(userId, deviceId, extraParams) {
     const userHashKey = this.#usersHashKey(userId, deviceId)
-    const keyValuePairs = Object.entries(extraParams).flat().map(val => `${val}`)
+    const keyValuePairs = Object.entries(extraParams)
+      .flat()
+      .map((val) => `${val}`)
 
     await this.redisConnection.client.hSet(userHashKey, ...keyValuePairs)
   }

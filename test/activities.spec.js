@@ -194,19 +194,19 @@ describe("User activities", async () => {
     await sendLogout("line_2", currentUserToken1)
   })
 
-  describe('MarkActive / MarkInactive', () => {
-    it('login', async () => {
+  describe("MarkActive / MarkInactive", () => {
+    it("login", async () => {
       await sendLogin("line_1", orgId, "user_1")
     })
 
-    it('MarkInactive', async () => {
+    it("MarkInactive", async () => {
       const requestData = {
         request: {
           activity_status: { isInactive: true },
           id: "1",
         },
       }
-  
+
       let responseData = await packetJsonProcessor.processMessageOrError("line_1", JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
@@ -218,14 +218,14 @@ describe("User activities", async () => {
       assert.strictEqual(isInactive, true)
     })
 
-    it('MarkActive', async () => {
+    it("MarkActive", async () => {
       const requestData = {
         request: {
           activity_status: { isInactive: false },
           id: "2",
         },
       }
-  
+
       let responseData = await packetJsonProcessor.processMessageOrError("line_1", JSON.stringify(requestData))
 
       responseData = responseData.backMessages.at(0)
