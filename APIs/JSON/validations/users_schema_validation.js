@@ -90,6 +90,19 @@ export const usersSchemaValidation = {
     }),
     ignore_ids: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number())),
   }).required(),
+  send_otp: Joi.object({
+    organization_id: Joi.string().required(),
+    email: Joi.string().pattern(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/),
+    device_id: Joi.alternatives().try(Joi.number().max(255).required(), Joi.string().max(255).required()),
+  }).required(),
+  reset_password: Joi.object({
+    organization_id: Joi.string().required(),
+    email: Joi.string().pattern(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/),
+    device_id: Joi.alternatives().try(Joi.number().max(255).required(), Joi.string().max(255).required()),
+    token: Joi.alternatives().try(Joi.string(), Joi.number()),
+    new_password: Joi.string().min(3).max(40),
+    // .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,40}$/),
+  }).required(),
   list: Joi.object({
     ids: Joi.array()
       .items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()))

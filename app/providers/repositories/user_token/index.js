@@ -1,3 +1,5 @@
+import crypto from "crypto"
+
 import BaseRepository from "../base.js"
 
 class UserTokenRepository extends BaseRepository {
@@ -49,6 +51,34 @@ class UserTokenRepository extends BaseRepository {
         device_id: deviceId,
         type: tokenType,
         token: jwtToken,
+      })
+
+      return newToken
+    }
+  }
+
+  async upsertOTPToken(organizationId, userId, deviceId, tokenType = "otp") {
+    const existedToken = await this.findTokenByUserId(userId, deviceId, tokenType)
+
+    const newOtpToken = crypto.randomInt(100000, 999999)
+
+    const tokenFields = {
+      user_id: userId,
+      organization_id: organizationId,
+      device_id: deviceId,
+      type: tokenType,
+    }
+
+    if (existedToken) {
+      await this.updateOne(tokenFields, { $set: { token: newOtpToken, updated_at: new Date() } })
+
+      existedToken.set("token", jwtToken)
+
+      return existedToken
+    } else {
+      const newToken = await this.create({
+        ...tokenFields,
+        token: newOtpToken,
       })
 
       return newToken
