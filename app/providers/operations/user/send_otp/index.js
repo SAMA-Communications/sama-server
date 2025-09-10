@@ -1,4 +1,4 @@
-import { Resend } from "resend"
+import otpSender from "../../../../services/otp_sender.js"
 
 import { ERROR_STATUES } from "../../../../constants/errors.js"
 
@@ -6,8 +6,6 @@ class UserSendOTPOperation {
   constructor(userService, userTokenRepo) {
     this.userService = userService
     this.userTokenRepo = userTokenRepo
-
-    this.transporter = new Resend(process.env.SERVICE_MAIL_KEY)
   }
 
   async perform(ws, data) {
@@ -22,20 +20,7 @@ class UserSendOTPOperation {
 
     const otpToken = await this.userTokenRepo.upsertOTPToken(organization_id, user._id, device_id)
 
-    await this.sendOtpNotification(user.email, otpToken.token)
-  }
-
-  async sendOtpNotification(toEmail, otpToken) {
-    const mailOptions = {
-      from: "Acme <onboarding@resend.dev>",
-      to: toEmail,
-      subject: "OTP to Reset password",
-      html: `<p>Congrats on sending your ${otpToken} <strong>first email</strong>!</p>`,
-    }
-
-    const { data, error } = await this.transporter.emails.send(mailOptions)
-    if (error) return console.error({ error })
-    console.log({ data })
+    await otpSender.sendOtpNotification(user.email, otpToken.token)
   }
 }
 

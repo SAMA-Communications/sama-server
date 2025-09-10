@@ -21,10 +21,13 @@ class UserTokenRepository extends BaseRepository {
     return token
   }
 
-  async findTokenByUserId(userId, deviceId, tokenType) {
-    const token = await this.findOne({ user_id: userId, device_id: deviceId, token: tokenType })
+  async findTokenByUserId(userId, deviceId, token) {
+    const params = { user_id: userId, device_id: deviceId }
+    token && (params["token"] = token)
 
-    return token
+    const record = await this.findOne(params)
+
+    return record
   }
 
   async updateToken(token, organizationId, userId, deviceId, jwtToken, tokenType) {
@@ -57,8 +60,8 @@ class UserTokenRepository extends BaseRepository {
     }
   }
 
-  async upsertOTPToken(organizationId, userId, deviceId, tokenType = "otp") {
-    const existedToken = await this.findTokenByUserId(userId, deviceId, tokenType)
+  async upsertOTPToken(organizationId, userId, deviceId) {
+    const existedToken = await this.findTokenByUserId(userId, deviceId)
 
     const newOtpToken = crypto.randomInt(100000, 999999)
 
@@ -66,13 +69,13 @@ class UserTokenRepository extends BaseRepository {
       user_id: userId,
       organization_id: organizationId,
       device_id: deviceId,
-      type: tokenType,
+      type: "otp",
     }
 
     if (existedToken) {
       await this.updateOne(tokenFields, { $set: { token: newOtpToken, updated_at: new Date() } })
 
-      existedToken.set("token", jwtToken)
+      existedToken.set("token", newOtpToken)
 
       return existedToken
     } else {

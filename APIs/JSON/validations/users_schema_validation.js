@@ -24,7 +24,7 @@ export const usersSchemaValidation = {
         })
       ),
     // .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,40}$/),
-    email: Joi.string(),
+    email: Joi.string().required(),
     // .pattern(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/),
     phone: Joi.string().min(3).max(15),
     device_id: Joi.alternatives().try(Joi.number().max(255).required(), Joi.string().max(255).required()),
