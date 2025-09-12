@@ -169,6 +169,10 @@ export const ERROR_STATUES = {
     status: 401,
     message: "Missing authentication credentials.",
   },
+  MISSING_OTP_SENDER_SERVICE: {
+    status: 401,
+    message: "Failed to create OTP sender transporter.",
+  },
 }
 
 export const requiredError = (field) => {

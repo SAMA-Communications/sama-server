@@ -1,13 +1,25 @@
 import { Resend } from "resend"
 
+import { ERROR_STATUES } from "../constants/errors.js"
+
 class OTPSender {
   constructor() {
-    this.transporter = new Resend(process.env.SERVICE_MAIL_KEY)
+    try {
+      this.transporter = new Resend(process.env.RESEND_API_KEY)
+    } catch (err) {
+      console.log("[OTPSender.error]", err)
+    }
   }
 
   async sendOtpNotification(toEmail, otpToken) {
+    if (!this.transporter) {
+      throw new Error(ERROR_STATUES.MISSING_OTP_SENDER_SERVICE.message, {
+        cause: ERROR_STATUES.MISSING_OTP_SENDER_SERVICE,
+      })
+    }
+
     const mailOptions = {
-      from: "SAMASupport <onboarding@resend.dev>",
+      from: process.env.RESEND_SENDER,
       to: toEmail,
       subject: "Your One-Time Password (OTP) for Password Reset",
       html: `
