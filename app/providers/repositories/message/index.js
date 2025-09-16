@@ -124,7 +124,7 @@ class MessageRepository extends BaseRepository {
   }
 
   async updateBody(messageId, newBody) {
-    await this.updateOne({ _id: messageId }, { $set: { body: newBody } })
+    await this.updateOne({ _id: messageId }, { $set: { body: newBody, updated_at: new Date() } })
   }
 
   async updateDeleteForUser(messageIds, userId) {
