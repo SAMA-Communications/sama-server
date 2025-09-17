@@ -52,7 +52,7 @@ export const ERROR_STATUES = {
     status: 401,
     message: "Incorrect username or password.",
   },
-  INCORRECT_OTP_TOKEN: { status: 401, message: "Incorrect token for password recovery." },
+  INCORRECT_OTP_TOKEN: { status: 403, message: "Incorrect token for password recovery." },
   DEVICE_ID_MISSED: { status: 422, message: `'device_id' is required.` },
   // Contacts -->
   CONTACT_NOT_FOUND: { status: 422, message: "Contact not found." },
