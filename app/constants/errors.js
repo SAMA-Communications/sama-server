@@ -52,6 +52,7 @@ export const ERROR_STATUES = {
     status: 401,
     message: "Incorrect username or password.",
   },
+  INCORRECT_OTP_TOKEN: { status: 403, message: "Incorrect token for password recovery." },
   DEVICE_ID_MISSED: { status: 422, message: `'device_id' is required.` },
   // Contacts -->
   CONTACT_NOT_FOUND: { status: 422, message: "Contact not found." },
@@ -167,6 +168,10 @@ export const ERROR_STATUES = {
   MISSING_AUTH_CREDENTIALS: {
     status: 401,
     message: "Missing authentication credentials.",
+  },
+  MISSING_OTP_SENDER_SERVICE: {
+    status: 401,
+    message: "Failed to create OTP sender transporter.",
   },
 }
 

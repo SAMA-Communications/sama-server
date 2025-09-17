@@ -48,6 +48,8 @@ import UserDeleteOperationProvider from "./operations/user/delete/Provider.js"
 import UserSearchOperationProvider from "./operations/user/search/Provider.js"
 import UserListOperationProvider from "./operations/user/list/Provider.js"
 import UserConnectSocketOperationProvider from "./operations/user/connect/Provider.js"
+import UserSendOTPOperationRegisterProvider from "./operations/user/send_otp/Provider.js"
+import UserResetPasswordOperationRegisterProvider from "./operations/user/reset_password/Provider.js"
 
 import BlockListBlockOperationProvider from "./operations/block_list/block/Provider.js"
 import BlockListUnblockOperationProvider from "./operations/block_list/unblock/Provider.js"
@@ -165,6 +167,8 @@ const providers = [
   UserSearchOperationProvider,
   UserListOperationProvider,
   UserConnectSocketOperationProvider,
+  UserSendOTPOperationRegisterProvider,
+  UserResetPasswordOperationRegisterProvider,
 
   BlockListBlockOperationProvider,
   BlockListUnblockOperationProvider,
