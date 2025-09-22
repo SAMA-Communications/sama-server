@@ -39,15 +39,15 @@ Clients:
 
 [Local Development / Compete Deployment & E2E Tests](https://docs.samacloud.io/deployment/docker-server-setup/)
 
-## Public cloud DEMO
+## DEMO
 
 The whole SAMA stack can be tested using https://app.samacloud.io public cloud.
 
-## API
+## Documentation
 
 [API reference](https://docs.samacloud.io/api/wss/user/create/)
 
-Also, there is a set of detailed articles for each API:
+Also, there is a set of detailed articles for each API on Medium:
 
 - [Users API](https://medium.com/sama-communications/sama-chat-server-api-users-edf65ea6a341)
 - [Conversations API](https://medium.com/sama-communications/sama-chat-server-api-conversations-1ae505b07d17)
@@ -56,10 +56,6 @@ Also, there is a set of detailed articles for each API:
 - [Address Book API](https://medium.com/sama-communications/sama-chat-server-api-address-book-f297ce25faa1)
 - [Push Notifications API](https://medium.com/sama-communications/sama-chat-server-api-push-notifications-7e904eb04a0c)
 
-## Custom DI container
-
-- [SAMA/features/customization](https://docs.samacloud.io/features/customization/)
-
 ## Community and Support
 
 Join our community for support and discussions:
@@ -67,10 +63,6 @@ Join our community for support and discussions:
 - [GitHub Issues - SAMA server](https://github.com/SAMA-Communications/sama-server/issues), [GitHub Issues - SAMA client](https://github.com/SAMA-Communications/sama-client/issues), [GitHub Issues - SAMA Flutter client](https://github.com/SAMA-Communications/sama-client-flutter/issues)
 - [SAMA on Medium](https://medium.com/sama-communications)
 - Get help - [Discord 💬](https://discord.gg/bHSm9a7DpC)
-
-## Roadmap
-
-[Roadmap](https://docs.samacloud.io/overview/roadmap/)
 
 ## License
 
