@@ -45,7 +45,7 @@ The whole SAMA stack can be tested using https://app.samacloud.io public cloud.
 
 ## Documentation
 
-[API reference](https://docs.samacloud.io/api/wss/user/create/)
+API reference: https://docs.samacloud.io
 
 Also, there is a set of detailed articles for each API on Medium:
 
