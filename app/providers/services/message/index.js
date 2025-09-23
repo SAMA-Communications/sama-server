@@ -81,6 +81,10 @@ class MessageService {
 
     const messages = await this.messageRepo.list(cId, user.native_id, filterOptions, limit)
 
+    if (options.messagesOnly) {
+      return { messages }
+    }
+
     const messageIds = messages.map((message) => message._id)
 
     const messagesStatuses = await this.messageStatusRepo.findReadStatusForMids(messageIds)

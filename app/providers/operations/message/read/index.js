@@ -24,7 +24,7 @@ class MessageReadOperation {
       unreadMessages = await this.messageService.readMessagesInConversation(organizationId, cid, currentUserId, mids)
     } else {
       const currentUser = await this.userService.userRepo.findWithOrgScopeById(organizationId, currentUserId)
-      const { messages } = await this.messageService.messagesList(cid, currentUser, { mids: mids })
+      const { messages } = await this.messageService.messagesList(cid, currentUser, { ids: mids, messagesOnly: true })
       unreadMessages = messages
     }
 
