@@ -156,6 +156,22 @@ class MessagesController extends BaseJSONController {
       },
     })
   }
+
+  async tone(ws, data) {
+    const { id: requestId, message_tone: messagesToneOptions } = data
+
+    const messageToneOperation = ServiceLocatorContainer.use("MessageToneOperation")
+    const { message } = await messageToneOperation.perform(ws, messagesToneOptions)
+
+    const response = new Response()
+
+    return response.addBackMessage({
+      response: {
+        id: requestId,
+        message: message,
+      },
+    })
+  }
 }
 
 export default new MessagesController()

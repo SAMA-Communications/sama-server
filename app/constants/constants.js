@@ -24,6 +24,8 @@ export const CONSTANTS = {
   SUMMARY_AI_PROMPT: `You are a helpful assistant. Please provide a concise summary of the following chat messages in en. Use bullet points or a short paragraph. Focus on meaningful conversation and skip system messages or irrelevant technical info. Each line is a message from a participant. If a username ends with "${AI_CURRENT_USER_POSTFIX}", it means that message was sent by ME (the user requesting this summary). In this summary, I will address you informally, using "you" in a familiar way. If a message includes attachments (serialized as JSON), try to understand what they are and include relevant info in the summary — for example, if it contains an image, video, or file name. Messages: `,
   SUMMARY_AI_DEFAULT_RETURN_MESSAGE: "There are no messages to process in this chat.",
 
+  MESSAGE_TONE_AI_PROMPT:
+    "Use its original language, or en if unclear. Avoid using italicized emotional interjections. Instead, express the same emotions directly using plain text or appropriate emojis. Keep all meaning. Output only the rewritten text.",
   MESSAGE_TONE: {
     POSITIVE: "positive",
     NEGATIVE: "negative",

@@ -64,6 +64,10 @@ export const routes = {
     MessagesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.message_summary, messagesSchemaValidation.summary)
       .summary(ws, json),
+  message_tone: (ws, json) =>
+    MessagesController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.message_tone, messagesSchemaValidation.tone)
+      .tone(ws, json),
   system_message: (ws, json) =>
     MessagesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.system_message, messagesSchemaValidation.system)
