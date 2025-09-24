@@ -40,6 +40,7 @@ const CONFIG = {
       main: {
         url: process.env.MONGODB_URL,
       },
+      logQueries: process.env.MONGODB_LOG_QUERIES === "true",
     },
   },
   redis: {

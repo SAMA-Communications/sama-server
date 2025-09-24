@@ -23,6 +23,8 @@ import { APIs } from "./app/networking/APIs.js"
 
 import { buildWsEndpoint } from "./app/utils/build_ws_endpoint.js"
 
+logger.debug("[App staring] %s", process.pid)
+
 const uWS_SSL_OPTIONS = {
   key_file_name: config.get("ws.options.ssl.key"),
   cert_file_name: config.get("ws.options.ssl.cert"),
