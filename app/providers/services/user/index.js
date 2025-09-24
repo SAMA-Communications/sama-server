@@ -13,6 +13,12 @@ class UserService {
     return user
   }
 
+  async findUsersByIds(organizationId, userIds) {
+    const users = await this.userRepo.findByIds(organizationId, userIds)
+
+    return users
+  }
+
   async create(createParams) {
     const { password, ...newUserParams } = createParams
 

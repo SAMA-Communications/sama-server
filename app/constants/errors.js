@@ -128,6 +128,10 @@ export const ERROR_STATUES = {
     message: "Invalid attachment fields.",
   },
   CORS_RESTRICTIONS: "A CORS error occurred while trying to perform a network request.",
+  AI_AGENT_ERROR: {
+    status: 500,
+    message: "An error occurred while processing messages with the AI agent.",
+  },
   // Status -->
   STATUS_ID_MISSED: { status: 422, message: "Status ID missed." },
   STATUS_TYPE_MISSED: { status: 422, message: "Status type missed." },
