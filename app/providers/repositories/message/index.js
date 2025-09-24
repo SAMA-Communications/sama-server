@@ -74,6 +74,19 @@ class MessageRepository extends BaseRepository {
     return message
   }
 
+  async findAllUnreadMessagesByUser(cid, userId, from) {
+    cid = this.castObjectId(cid)
+    userId = this.castUserId(userId)
+
+    const query = {
+      cid: cid,
+      user_id: userId,
+      created_at: { $gt: from },
+    }
+
+    return await this.find(query)
+  }
+
   async list(conversationId, userId, options, limit) {
     const cid = this.castObjectId(conversationId)
     const query = { cid, deleted_for: { $nin: [this.castUserId(userId)] } }

@@ -90,6 +90,16 @@ class MessageService {
     return { messages, messagesStatuses, messagesReactions }
   }
 
+  async getUnreadMessages(cid, userId) {
+    const lastReadMessagesByConvIds = await this.messageStatusRepo.findLastReadMessageByUserForCid([cid], userId)
+
+    const lastReadMessage = await this.messageRepo.findMessageById(cid, userId, lastReadMessagesByConvIds[cid]?.mid)
+
+    const unreadMessages = await this.messageRepo.findAllUnreadMessagesByUser(cid, userId, lastReadMessage.created_at)
+
+    return unreadMessages
+  }
+
   async hasAccessToMessage(messageId, userId) {
     const result = { message: null, asOwner: false, selfDeleted: false }
 

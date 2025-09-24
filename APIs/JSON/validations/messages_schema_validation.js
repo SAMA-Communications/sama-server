@@ -1,5 +1,8 @@
 import Joi from "joi"
 import { ERROR_STATUES, requiredError } from "@sama/constants/errors.js"
+import { CONSTANTS as MAIN_CONSTANTS } from "@sama/constants/constants.js"
+
+const CHAT_SUMMARY_FILTERS_ARRAY = Object.values(MAIN_CONSTANTS.CHAT_SUMMARY_FITLERS)
 
 export const messagesSchemaValidation = {
   create: Joi.object()
@@ -183,4 +186,14 @@ export const messagesSchemaValidation = {
     })
     .oxor("cid", "uids")
     .required(),
+  summary: Joi.object({
+    cid: Joi.string()
+      .required()
+      .error(
+        new Error(ERROR_STATUES.CID_REQUIRED.message, {
+          cause: ERROR_STATUES.CID_REQUIRED,
+        })
+      ),
+    filter: Joi.string().valid(...CHAT_SUMMARY_FILTERS_ARRAY),
+  }).required(),
 }

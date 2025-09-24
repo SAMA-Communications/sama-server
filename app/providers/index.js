@@ -83,6 +83,7 @@ import MessageListOperationProvider from "./operations/message/list/Provider.js"
 import MessageReactionsUpdateOperationProvider from "./operations/message/reactions_update/Provider.js"
 import MessageReactionsListOperationProvider from "./operations/message/reactions_list/Provider.js"
 import MessageSendSystemOperationProvider from "./operations/message/system/Provider.js"
+import MessageSummaryOperationProvider from "./operations/message/summary/Provider.js"
 
 import OpLogsListOperationProvider from "./operations/operation_logs/list/Provider.js"
 
@@ -200,6 +201,7 @@ const providers = [
   MessageReactionsUpdateOperationProvider,
   MessageReactionsListOperationProvider,
   MessageSendSystemOperationProvider,
+  MessageSummaryOperationProvider,
 
   OpLogsListOperationProvider,
 

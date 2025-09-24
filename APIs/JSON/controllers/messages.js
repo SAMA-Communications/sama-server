@@ -140,6 +140,22 @@ class MessagesController extends BaseJSONController {
       },
     })
   }
+
+  async summary(ws, data) {
+    const { id: requestId, message_summary: messagesSummaryOptions } = data
+
+    const messageSummaryOperation = ServiceLocatorContainer.use("MessageSummaryOperation")
+    const { message } = await messageSummaryOperation.perform(ws, messagesSummaryOptions)
+
+    const response = new Response()
+
+    return response.addBackMessage({
+      response: {
+        id: requestId,
+        message: message,
+      },
+    })
+  }
 }
 
 export default new MessagesController()
