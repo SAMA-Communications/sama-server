@@ -87,7 +87,7 @@ class ConversationNotificationService {
 
     const eventMessage = new MessageResponse(new MessagePublicFields(createdMessage))
 
-    const eventNotification = new CreatePushEventOptions(userActionCreator, conversation, pushPayload)
+    const eventNotification = new CreatePushEventOptions(userActionCreator._id, pushPayload, {})
 
     return { message: eventMessage, notification: eventNotification }
   }
