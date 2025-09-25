@@ -62,7 +62,8 @@ class MessageRepository extends BaseRepository {
   }
 
   async findMessageById(conversationId, userId, mid) {
-    const query = { _id: mid, cid: this.castObjectId(conversationId), deleted_for: { $nin: [this.castUserId(userId)] } }
+    const query = { _id: mid, deleted_for: { $nin: [this.castUserId(userId)] } }
+    conversationId && (query.cid = this.castObjectId(conversationId))
 
     const message = await this.findOne(query)
 
@@ -70,10 +71,8 @@ class MessageRepository extends BaseRepository {
   }
 
   async list(conversationId, userId, options, limit) {
-    const query = {
-      cid: this.castObjectId(conversationId),
-      deleted_for: { $nin: [this.castUserId(userId)] },
-    }
+    const cid = this.castObjectId(conversationId)
+    const query = { cid, deleted_for: { $nin: [this.castUserId(userId)] } }
     let sort = null
 
     if (options.ids) {
@@ -118,7 +117,7 @@ class MessageRepository extends BaseRepository {
   }
 
   async updateBody(messageId, newBody) {
-    await this.updateOne({ _id: messageId }, { $set: { body: newBody } })
+    await this.updateOne({ _id: messageId }, { $set: { body: newBody, updated_at: new Date() } })
   }
 
   async updateDeleteForUser(messageIds, userId) {

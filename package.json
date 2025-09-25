@@ -1,6 +1,6 @@
 {
   "name": "sama",
-  "version": "0.33.0",
+  "version": "0.34.0",
   "description": "Simple but Advanced Messaging Alternative",
   "main": "index.js",
   "type": "module",

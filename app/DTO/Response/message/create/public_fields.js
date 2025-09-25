@@ -13,7 +13,9 @@ class MessagePublicFields {
     this.attachments = messageModel.attachments
     this.x = messageModel.x
     this.replied_message_id = messageModel.replied_message_id
+    this.forwarded_message_id = messageModel.forwarded_message_id
 
+    this.updated_at = messageModel.updated_at
     this.created_at = messageModel.created_at
 
     this.status = messageModel.status

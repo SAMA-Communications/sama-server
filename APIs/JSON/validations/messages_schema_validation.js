@@ -46,6 +46,7 @@ export const messagesSchemaValidation = {
           })
         ),
       replied_message_id: Joi.string(),
+      forwarded_message_id: Joi.string(),
       deleted_for: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required()),
     })
     .or("body", "attachments"),
