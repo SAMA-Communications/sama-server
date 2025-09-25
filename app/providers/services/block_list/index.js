@@ -5,9 +5,7 @@ class BlockListService {
   }
 
   async blockMany(organizationId, userId, blockUserIds) {
-    const isSelfUserBlocked = blockUserIds.find((blockedUserId) =>
-      this.helpers.isEqualsNativeIds(userId, blockedUserId)
-    )
+    const isSelfUserBlocked = blockUserIds.find((blockedUserId) => this.helpers.isEqualsNativeIds(userId, blockedUserId))
     if (isSelfUserBlocked) {
       throw new Error(`Can't block self user`)
     }

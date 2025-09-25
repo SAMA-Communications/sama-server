@@ -121,9 +121,7 @@ export default class BaseRepository {
       query._id.$in && (query._id.$in = this.castObjectIds(query._id.$in))
     }
     if (query.user_id && !query.user_id.$ne) {
-      query.user_id.$in
-        ? (query.user_id.$in = this.castUserIds(query.user_id.$in))
-        : (query.user_id = this.castUserId(query.user_id))
+      query.user_id.$in ? (query.user_id.$in = this.castUserIds(query.user_id.$in)) : (query.user_id = this.castUserId(query.user_id))
     }
     if (query.conversation_id) {
       query.conversation_id.$in
@@ -138,10 +136,10 @@ export default class BaseRepository {
       return { ...acc, [p]: 1 }
     }, {})
 
-    let records = await this.collectionCursor
+    const records = await this.collectionCursor
       .find(query)
       .project(projection)
-      .sort(sortParams || { $natural: -1 })
+      .sort(sortParams ?? { $natural: -1 })
       .limit(limit)
       .toArray()
 
@@ -190,10 +188,10 @@ export default class BaseRepository {
 
     const count = await this.collectionCursor.count(query)
 
-    return count || 0
+    return count ?? 0
   }
 
-  async updateOne(query, update) {
+  async updateOne(query, update, options) {
     if (query._id) {
       query._id = this.castObjectId(query._id)
     }
@@ -204,7 +202,9 @@ export default class BaseRepository {
       query.conversation_id = this.castObjectId(query.conversation_id)
     }
 
-    await this.collectionCursor.updateOne(query, update)
+    const result = await this.collectionCursor.updateOne(query, update, options)
+
+    return result
   }
 
   async findOneAndUpdate(query, update) {
@@ -218,9 +218,7 @@ export default class BaseRepository {
       query.user_id = this.castUserId(query.user_id)
     }
 
-    const record = await this.collectionCursor
-      .findOneAndUpdate(query, update, { returnDocument: "after" })
-      .catch((error) => null)
+    const record = await this.collectionCursor.findOneAndUpdate(query, update, { returnDocument: "after" }).catch((error) => null)
 
     const model = record ? this.wrapRawRecordInModel(record) : null
 
@@ -248,13 +246,13 @@ export default class BaseRepository {
   }
 
   async deleteById(_id) {
-    await this.collectionCursor.deleteOne({ _id: this.castObjectId(_id) })
+    return await this.collectionCursor.deleteOne({ _id: this.castObjectId(_id) })
   }
 
   async deleteByIds(ids) {
     ids = this.castObjectIds(ids)
 
-    await this.deleteMany({ _id: { $in: ids } })
+    return await this.deleteMany({ _id: { $in: ids } })
   }
 
   async deleteMany(query) {
@@ -271,7 +269,9 @@ export default class BaseRepository {
       query.user_id = this.castUserId(query.user_id)
     }
 
-    return await this.collectionCursor.deleteMany(query)
+    const result = await this.collectionCursor.deleteMany(query)
+
+    return result
   }
 
   wrapRawRecordInModel(rawRecord) {

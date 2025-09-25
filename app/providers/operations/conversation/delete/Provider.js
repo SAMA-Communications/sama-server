@@ -11,17 +11,12 @@ class ConversationDeleteOperationRegisterProvider extends RegisterProvider {
     const conversationService = slc.use("ConversationService")
     const conversationNotificationService = slc.use("ConversationNotificationService")
 
-    return new ConversationDeleteOperation(
-      helpers,
-      sessionService,
-      userService,
-      conversationService,
-      conversationNotificationService
-    )
+    return new ConversationDeleteOperation(helpers, sessionService, userService, conversationService, conversationNotificationService)
   }
 }
 
 export default new ConversationDeleteOperationRegisterProvider({
   name,
   implementationName: ConversationDeleteOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

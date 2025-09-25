@@ -15,4 +15,5 @@ class PushSubscriptionDeleteOperationRegisterProvider extends RegisterProvider {
 export default new PushSubscriptionDeleteOperationRegisterProvider({
   name,
   implementationName: PushSubscriptionDeleteOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

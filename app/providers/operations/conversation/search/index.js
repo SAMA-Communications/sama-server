@@ -1,7 +1,6 @@
-import { CONSTANTS as MAIN_CONSTANTS } from "../../../../constants/constants.js"
-
 class ConversationSearchOperation {
-  constructor(sessionService, conversationService) {
+  constructor(config, sessionService, conversationService) {
+    this.config = config
     this.sessionService = sessionService
     this.conversationService = conversationService
   }
@@ -11,7 +10,8 @@ class ConversationSearchOperation {
 
     const ignoreIds = []
 
-    const limit = Math.min(searchParams.limit || MAIN_CONSTANTS.SEARCH_LIMIT_MAX, MAIN_CONSTANTS.SEARCH_LIMIT_MAX)
+    const maxSearchLimit = this.config.get("conversation.searchLimit")
+    const limit = Math.min(searchParams.limit || maxSearchLimit, maxSearchLimit)
 
     const conversationsSearchResult = await this.conversationService.conversationRepo.search(
       organizationId,

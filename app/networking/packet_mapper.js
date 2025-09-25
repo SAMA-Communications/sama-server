@@ -1,3 +1,4 @@
+import logger from "../logger/index.js"
 import { detectAPIType, BASE_API, APIs } from "./APIs.js"
 
 class PacketMapper {
@@ -30,6 +31,16 @@ class PacketMapper {
     if (destinationAPIType === BASE_API) {
       return await APIs[sourceAPIType].mapPacketToAnotherAPI(destinationAPIType, packet, senderInfo, recipientInfo)
     }
+  }
+
+  mapRecipientPacket(destinationAPIType, packet, senderInfo, recipientInfo) {
+    logger.debug("[mapRecipientPacket] %j %j %j %j", destinationAPIType, packet, senderInfo, recipientInfo)
+
+    if (!destinationAPIType) {
+      destinationAPIType = this.detectAPIType(packet)
+    }
+
+    return APIs[destinationAPIType].mapRecipientPacket(packet, senderInfo, recipientInfo)
   }
 }
 

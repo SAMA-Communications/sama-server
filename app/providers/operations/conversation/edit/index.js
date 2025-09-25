@@ -3,14 +3,7 @@ import { CONVERSATION_EVENTS } from "../../../../constants/conversation.js"
 import MessagePublicFields from "@sama/DTO/Response/message/create/public_fields.js"
 
 class ConversationEditOperation {
-  constructor(
-    helpers,
-    sessionService,
-    userService,
-    conversationService,
-    conversationNotificationService,
-    messagesService
-  ) {
+  constructor(helpers, sessionService, userService, conversationService, conversationNotificationService, messagesService) {
     this.helpers = helpers
     this.sessionService = sessionService
     this.userService = userService
@@ -25,23 +18,17 @@ class ConversationEditOperation {
 
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    const { participantIds: currentParticipantIds } = await this.#hasAccess(
-      organizationId,
-      conversationId,
-      currentUserId
-    )
+    await this.#hasAccess(organizationId, conversationId, currentUserId)
 
     const updatedConversation = await this.conversationService.conversationRepo.update(conversationId, updateFields)
 
-    const result = { currentUserId, conversation: updatedConversation }
+    const result = { organizationId, currentUserId, conversation: updatedConversation }
 
     if (updatedConversation.type === "u") {
       return result
     }
 
-    const adminsToAdd = updateAdmins?.add?.length
-      ? await this.#prepareAddAdmins(updatedConversation, updateAdmins.add, currentParticipantIds)
-      : []
+    const adminsToAdd = updateAdmins?.add?.length ? await this.#prepareAddAdmins(updatedConversation, updateAdmins.add) : []
 
     if (adminsToAdd.length) {
       if (!updateParticipants) {
@@ -53,21 +40,17 @@ class ConversationEditOperation {
 
     let updateParticipantsResult = {}
     if (updateParticipants) {
-      updateParticipantsResult = await this.#updateParticipants(
-        updatedConversation,
-        updateParticipants,
-        currentParticipantIds
-      )
+      updateParticipantsResult = await this.#updateParticipants(updatedConversation, updateParticipants)
     }
 
-    const { isEmptyAndDeleted, addedIds, removedIds, currentIds } = updateParticipantsResult
+    const { isEmptyAndDeleted, addedIds, removedIds } = updateParticipantsResult
 
     if (isEmptyAndDeleted) {
       return null
     }
 
     if (updateAdmins) {
-      await this.#updateAdmins(updatedConversation, updateAdmins, currentParticipantIds)
+      await this.#updateAdmins(updatedConversation, updateAdmins)
     }
 
     if (!this.conversationNotificationService.isEnabled()) {
@@ -83,10 +66,13 @@ class ConversationEditOperation {
       currentUserId,
       addedIds,
       removedIds,
-      currentIds,
       isUpdateConversationFields,
       isUpdateConversationImage
     )
+
+    createdEvents.forEach((event) => {
+      event.cId = updatedConversation._id
+    })
 
     result.conversationEvents = createdEvents
 
@@ -94,7 +80,7 @@ class ConversationEditOperation {
   }
 
   async #hasAccess(organizationId, conversationId, userId) {
-    const { conversation, asOwner, asAdmin, participantIds } = await this.conversationService.hasAccessToConversation(
+    const { conversation, asOwner, asAdmin } = await this.conversationService.hasAccessToConversation(
       organizationId,
       conversationId,
       userId
@@ -112,17 +98,13 @@ class ConversationEditOperation {
       })
     }
 
-    return { conversation, participantIds }
+    return { conversation }
   }
 
-  async #prepareAddAdmins(conversation, addAdmins, currentParticipantIds) {
+  async #prepareAddAdmins(conversation, addAdmins) {
     addAdmins = await this.userService.userRepo.retrieveExistedIds(conversation.organization_id, addAdmins)
 
-    const addedParticipantsIds = addAdmins.filter(
-      (aId) => !currentParticipantIds.find((uId) => this.helpers.isEqualsNativeIds(uId, aId))
-    )
-
-    return addedParticipantsIds
+    return addAdmins
   }
 
   async #updateAdmins(conversation, updateAdmins) {
@@ -137,41 +119,27 @@ class ConversationEditOperation {
     }
   }
 
-  async #updateParticipants(conversation, updateParticipants, currentParticipantIds) {
+  async #updateParticipants(conversation, updateParticipants) {
     let { add: addParticipants, remove: removeParticipants } = updateParticipants
 
     if (addParticipants?.length) {
-      addParticipants = await this.userService.userRepo.retrieveExistedIds(
-        conversation.organization_id,
-        addParticipants
-      )
+      addParticipants = await this.userService.userRepo.retrieveExistedIds(conversation.organization_id, addParticipants)
     }
 
     if (removeParticipants?.length) {
-      removeParticipants = await this.userService.userRepo.retrieveExistedIds(
-        conversation.organization_id,
-        removeParticipants
-      )
+      removeParticipants = await this.userService.userRepo.retrieveExistedIds(conversation.organization_id, removeParticipants)
     }
 
     addParticipants ??= []
     removeParticipants ??= []
 
-    const result = await this.conversationService.updateParticipants(
-      conversation,
-      addParticipants,
-      removeParticipants,
-      currentParticipantIds
-    )
+    const result = await this.conversationService.updateParticipants(conversation, addParticipants, removeParticipants)
 
     return result
   }
 
   async #addMessagesInfo(conversation, user) {
-    const lastMessagesListByCid = await this.messagesService.aggregateLastMessageForConversation(
-      [conversation._id],
-      user
-    )
+    const lastMessagesListByCid = await this.messagesService.aggregateLastMessageForConversation([conversation._id], user)
 
     const conversationId = conversation._id.toString()
     const lastMessage = lastMessagesListByCid[conversationId]
@@ -188,7 +156,6 @@ class ConversationEditOperation {
     currentUserId,
     addedParticipantIds,
     removedParticipantIds,
-    currentParticipantIds,
     isUpdateConversation,
     isUpdateConversationImage
   ) {
@@ -198,14 +165,7 @@ class ConversationEditOperation {
 
     if (addedParticipantIds.length) {
       for (const addedParticipantId of addedParticipantIds) {
-        const addParticipantEvent = await this.#participantsActionEvent(
-          conversation,
-          currentUser,
-          addedParticipantId,
-          false
-        )
-
-        addParticipantEvent.participantIds = currentParticipantIds
+        const addParticipantEvent = await this.#participantsActionEvent(conversation, currentUser, addedParticipantId, false)
 
         conversationEvent.push(addParticipantEvent)
       }
@@ -219,14 +179,7 @@ class ConversationEditOperation {
 
     if (removedParticipantIds.length) {
       for (const removedParticipantId of removedParticipantIds) {
-        const removedParticipantEvent = await this.#participantsActionEvent(
-          conversation,
-          currentUser,
-          removedParticipantId,
-          true
-        )
-
-        removedParticipantEvent.participantIds = currentParticipantIds
+        const removedParticipantEvent = await this.#participantsActionEvent(conversation, currentUser, removedParticipantId, true)
 
         conversationEvent.push(removedParticipantEvent)
       }
@@ -240,14 +193,12 @@ class ConversationEditOperation {
     if (isUpdateConversation) {
       const updatedEvent = await this.#actionEvent(conversation, currentUser, false)
 
-      updatedEvent.participantIds = currentParticipantIds
       conversationEvent.push({ ...updatedEvent, ignoreOwnDelivery: true })
     }
 
     if (isUpdateConversationImage) {
       const updatedEvent = await this.#imageActionEvent(conversation, currentUser)
 
-      updatedEvent.participantIds = currentParticipantIds
       conversationEvent.push({ ...updatedEvent, ignoreOwnDelivery: false })
     }
 
@@ -255,15 +206,9 @@ class ConversationEditOperation {
   }
 
   async #actionEvent(conversation, currentUser, isDelete) {
-    const eventType = isDelete
-      ? CONVERSATION_EVENTS.CONVERSATION_EVENT.DELETE
-      : CONVERSATION_EVENTS.CONVERSATION_EVENT.UPDATE
+    const eventType = isDelete ? CONVERSATION_EVENTS.CONVERSATION_EVENT.DELETE : CONVERSATION_EVENTS.CONVERSATION_EVENT.UPDATE
 
-    const actionMessageNotification = await this.conversationNotificationService.actionEvent(
-      eventType,
-      conversation,
-      currentUser
-    )
+    const actionMessageNotification = await this.conversationNotificationService.actionEvent(eventType, conversation, currentUser)
 
     return actionMessageNotification
   }
@@ -271,11 +216,7 @@ class ConversationEditOperation {
   async #imageActionEvent(conversation, currentUser) {
     const eventType = CONVERSATION_EVENTS.CONVERSATION_EVENT.UPDATE_IMAGE
 
-    const actionMessageNotification = await this.conversationNotificationService.imageActionEvent(
-      eventType,
-      conversation,
-      currentUser
-    )
+    const actionMessageNotification = await this.conversationNotificationService.imageActionEvent(eventType, conversation, currentUser)
 
     return actionMessageNotification
   }

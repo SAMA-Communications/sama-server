@@ -3,8 +3,8 @@ import jwt from "jsonwebtoken"
 import { ERROR_STATUES } from "../../../../constants/errors.js"
 
 class UserAuthOperation {
-  constructor(RuntimeDefinedContext, sessionService, userService, userTokenRepo) {
-    this.RuntimeDefinedContext = RuntimeDefinedContext
+  constructor(config, sessionService, userService, userTokenRepo) {
+    this.config = config
     this.sessionService = sessionService
     this.userService = userService
     this.userTokenRepo = userTokenRepo
@@ -16,7 +16,7 @@ class UserAuthOperation {
 
     const { user, token } = userInfo.token
       ? await this.#authByToken(userInfo.token, deviceId)
-      : await this.#authByLogin(organizationId, userInfo, deviceId)
+      : await this.#authByUserInfo(organizationId, userInfo, deviceId)
 
     // TODO: close connections
     if (!omitDeviceConnection) {
@@ -26,26 +26,13 @@ class UserAuthOperation {
     const jwtAccessToken = this.#generateToken(
       user,
       "access",
-      process.env.JWT_ACCESS_SECRET,
-      +process.env.JWT_ACCESS_TOKEN_EXPIRES_IN
+      this.config.get("jwt.access.secret"),
+      +this.config.get("jwt.access.expiresIn")
     )
 
-    const updatedToken = await this.userTokenRepo.updateToken(
-      token,
-      organizationId,
-      user.native_id,
-      deviceId,
-      jwtAccessToken,
-      "access"
-    )
+    const updatedToken = await this.userTokenRepo.updateToken(token, organizationId, user.native_id, deviceId, jwtAccessToken, "access")
 
-    await this.sessionService.storeUserNodeData(
-      this.RuntimeDefinedContext.APP_IP,
-      this.RuntimeDefinedContext.CLUSTER_PORT,
-      user.organization_id,
-      user.native_id,
-      deviceId
-    )
+    await this.sessionService.storeUserNodeData(user.organization_id, user.native_id, deviceId)
 
     const userWithAvatarUrl = (await this.userService.addAvatarUrl([user])).at(0)
 
@@ -70,8 +57,10 @@ class UserAuthOperation {
     return { user, token }
   }
 
-  async #authByLogin(organizationId, userInfo, deviceId) {
-    const user = await this.userService.findByLogin(organizationId, userInfo.login)
+  async #authByUserInfo(organizationId, userInfo, deviceId) {
+    const user = userInfo?.userId
+      ? await this.userService.userRepo.findById(userInfo?.userId)
+      : await this.userService.findByLogin(organizationId, userInfo.login)
 
     if (!user) {
       throw new Error(ERROR_STATUES.INCORRECT_LOGIN_OR_PASSWORD.message, {
@@ -93,21 +82,9 @@ class UserAuthOperation {
   }
 
   async createRefreshToken(user, deviceId) {
-    const jwtToken = this.#generateToken(
-      user,
-      "refresh",
-      process.env.JWT_REFRESH_SECRET,
-      +process.env.JWT_REFRESH_TOKEN_EXPIRES_IN
-    )
+    const jwtToken = this.#generateToken(user, "refresh", this.config.get("jwt.refresh.secret"), +this.config.get("jwt.refresh.expiresIn"))
 
-    const refreshToken = await this.userTokenRepo.updateToken(
-      null,
-      user.organization_id,
-      user.native_id,
-      deviceId,
-      jwtToken,
-      "refresh"
-    )
+    const refreshToken = await this.userTokenRepo.updateToken(null, user.organization_id, user.native_id, deviceId, jwtToken, "refresh")
 
     return refreshToken
   }

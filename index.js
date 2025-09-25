@@ -1,95 +1,83 @@
-/* Simplified stock exchange made with uWebSockets.js pub/sub */
-import ip from "ip"
-import os from "os"
+import fs from "node:fs"
 
 import uWS from "uWebSockets.js"
 
-import RuntimeDefinedContext from "./app/store/RuntimeDefinedContext.js"
+import config from "./app/config/index.js"
+import logger from "./app/logger/index.js"
+
 import ServiceLocatorContainer from "./app/common/ServiceLocatorContainer.js"
-import providers from "./app/providers/index.js"
 import RegisterProvider from "./app/common/RegisterProvider.js"
+import providers from "./app/providers/index.js"
 
 import clusterManager from "./app/cluster/cluster_manager.js"
 import clusterSyncer from "./app/cluster/cluster_syncer.js"
 
-import clientManager from "./app/networking/client_manager.js"
-
-// get MongoDB driver connection
-import Minio from "./app/lib/storage/minio.js"
-import S3 from "./app/lib/storage/s3.js"
-import Spaces from "./app/lib/storage/spaces.js"
+import WsProtocol from "./app/networking/protocol_processors/ws.js"
+import TcpProtocol from "./app/networking/protocol_processors/tcp.js"
+import HttpProtocol from "./app/networking/protocol_processors/http.js"
 
 import { connectToDBPromise } from "./app/lib/db.js"
 import RedisClient from "./app/lib/redis.js"
 
 import { APIs } from "./app/networking/APIs.js"
 
-RuntimeDefinedContext.APP_HOSTNAME = process.env.HOSTNAME || os.hostname()
-RuntimeDefinedContext.APP_IP = ip.address()
+import { buildWsEndpoint } from "./app/utils/build_ws_endpoint.js"
 
-switch (process.env.STORAGE_DRIVER) {
-  case "minio":
-    RuntimeDefinedContext.STORAGE_DRIVER = new Minio()
-    break
-  case "spaces":
-    RuntimeDefinedContext.STORAGE_DRIVER = new Spaces()
-    break
-  default:
-    RuntimeDefinedContext.STORAGE_DRIVER = new S3()
-    break
+logger.debug("[App staring] %s", process.pid)
+
+const uWS_SSL_OPTIONS = {
+  key_file_name: config.get("ws.options.ssl.key"),
+  cert_file_name: config.get("ws.options.ssl.cert"),
 }
 
-const APP_OPTIONS = {}
-const SSL_APP_OPTIONS = {
-  key_file_name: process.env.SSL_KEY_FILE_NAME,
-  cert_file_name: process.env.SSL_CERT_FILE_NAME,
+const uWSOptions = {
+  appOptions: config.get("ws.options.isSecure") ? uWS_SSL_OPTIONS : {},
+  wsOptions: {
+    compression: uWS.SHARED_COMPRESSOR,
+    idleTimeout: 12,
+    maxBackpressure: 1024,
+    maxPayloadLength: 16 * 1024 * 1024,
+  },
+  listenOptions: {
+    LIBUS_LISTEN_EXCLUSIVE_PORT: 1,
+  },
+  isSSL: config.get("ws.options.isSecure"),
+  port: parseInt(config.get("ws.api.port")),
 }
-const WS_OPTIONS = {
-  compression: uWS.SHARED_COMPRESSOR,
-  idleTimeout: 12,
-  maxBackpressure: 1024,
-  maxPayloadLength: 16 * 1024 * 1024,
+
+const tcpOptions = {
+  port: parseInt(config.get("tcp.api.port")),
 }
-const WS_LISTEN_OPTIONS = {
-  LIBUS_LISTEN_EXCLUSIVE_PORT: 1,
+if (config.get("tcp.options.isTls")) {
+  Object.assign(tcpOptions, {
+    key: fs.readFileSync(config.get("tcp.options.tls.key")),
+    cert: fs.readFileSync(config.get("tcp.options.tls.cert")),
+  })
 }
-const isSSL = !!SSL_APP_OPTIONS.key_file_name && !!SSL_APP_OPTIONS.cert_file_name
-const appPort = parseInt(process.env.APP_PORT || process.env.PORT)
 
-await clientManager.createLocalSocket(
-  isSSL ? SSL_APP_OPTIONS : APP_OPTIONS,
-  WS_OPTIONS,
-  WS_LISTEN_OPTIONS,
-  isSSL,
-  appPort
-)
+const clusterPort = await clusterManager.createLocalSocket(uWSOptions)
+config.set("ws.cluster.port", clusterPort)
+config.set("ws.cluster.endpoint", buildWsEndpoint(config.get("app.ip"), config.get("ws.cluster.port")))
 
-RuntimeDefinedContext.CLUSTER_PORT = await clusterManager.createLocalSocket(
-  isSSL ? SSL_APP_OPTIONS : APP_OPTIONS,
-  WS_OPTIONS,
-  WS_LISTEN_OPTIONS,
-  isSSL
-)
-
-console.log("[RuntimeDefinedContext]", RuntimeDefinedContext)
+logger.debug("[Config] %s", JSON.stringify(config.toObject(), null, 5))
 
 // perform a database connection when the server starts
-const dbConnection = await connectToDBPromise(process.env.MONGODB_URL)
+const dbConnection = await connectToDBPromise(config.get("db.mongo.main.url"))
   .then((dbConnection) => {
-    console.log("[Mongo][connect] Ok")
+    logger.debug("[Mongo][connect] Ok")
     return dbConnection
   })
   .catch((err) => {
-    console.log("[Mongo][connect] error", err)
+    logger.error(err, "[Mongo][connect]")
     process.exit()
   })
 
 await RedisClient.connect()
-  .then(() => {
-    console.log("[Redis][connect] Ok")
+  .then(async () => {
+    logger.debug("[Redis][connect] Ok")
   })
   .catch((err) => {
-    console.log("[Redis][connect] error", err)
+    logger.error(err, "[Redis][connect]")
     process.exit()
   })
 
@@ -97,12 +85,21 @@ await RedisClient.connect()
 ServiceLocatorContainer.register(
   new (class extends RegisterProvider {
     register(slc) {
-      return RuntimeDefinedContext
+      return config
     }
   })({
-    name: "RuntimeDefinedContext",
-    implementationName: RuntimeDefinedContext.name,
-    scope: RegisterProvider.SCOPE.SINGLETON,
+    name: "Config",
+    implementationName: config.constructor.name,
+  })
+)
+ServiceLocatorContainer.register(
+  new (class extends RegisterProvider {
+    register(slc) {
+      return logger
+    }
+  })({
+    name: "Logger",
+    implementationName: logger.constructor.name,
   })
 )
 ServiceLocatorContainer.register(
@@ -113,7 +110,6 @@ ServiceLocatorContainer.register(
   })({
     name: "RedisClient",
     implementationName: RedisClient.constructor.name,
-    scope: RegisterProvider.SCOPE.SINGLETON,
   })
 )
 ServiceLocatorContainer.register(
@@ -124,33 +120,49 @@ ServiceLocatorContainer.register(
   })({
     name: "MongoConnection",
     implementationName: "MongoConnection",
-    scope: RegisterProvider.SCOPE.SINGLETON,
   })
 )
-ServiceLocatorContainer.register(
-  new (class extends RegisterProvider {
-    register(slc) {
-      return RuntimeDefinedContext.STORAGE_DRIVER
-    }
-  })({ name: "StorageDriverClient", implementationName: RuntimeDefinedContext.STORAGE_DRIVER.constructor.name })
-)
+
+logger.debug("[Register base]")
 
 for (const provider of providers) {
   ServiceLocatorContainer.register(provider)
 }
 
 for (const api of Object.values(APIs)) {
+  logger.debug("[Register Api Providers] %s", api.constructor.name)
+
+  config.merge(api.config)
+
   for (const provider of api.providers) {
     ServiceLocatorContainer.register(provider)
   }
 }
 
+logger.debug("[Config][Merged] %s", JSON.stringify(config.toObject(), null, 5))
+
 // Boot providers
-await ServiceLocatorContainer.createAllSingletonInstances()
+logger.debug("[Boot]")
 await ServiceLocatorContainer.boot()
 
-// Start Cluster Sync
+logger.debug("[Create singleton]")
+await ServiceLocatorContainer.createAllSingletonInstances()
 
+// Start Cluster Sync
+logger.debug("[Start sync]")
 await clusterSyncer.startSyncingClusterNodes()
+
+// Start public protocols
+const sessionService = ServiceLocatorContainer.use("SessionService")
+const conversationService = ServiceLocatorContainer.use("ConversationService")
+
+const wsProtocolImp = new WsProtocol(sessionService, conversationService)
+await wsProtocolImp.listen(uWSOptions)
+
+const httpProtocolImp = new HttpProtocol(sessionService, conversationService, wsProtocolImp.uWSocketServer)
+await httpProtocolImp.listen({})
+
+const tcpProtocolImp = new TcpProtocol(sessionService, conversationService)
+await tcpProtocolImp.listen(tcpOptions)
 
 // https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph

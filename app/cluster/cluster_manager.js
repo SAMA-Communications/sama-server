@@ -1,14 +1,16 @@
 import WebSocket from "ws"
 import uWS from "uWebSockets.js"
+import { StringDecoder } from "node:string_decoder"
 
-import { StringDecoder } from "string_decoder"
-
-import RuntimeDefinedContext from "../store/RuntimeDefinedContext.js"
+import config from "../config/index.js"
+import mainLogger from "../logger/index.js"
 
 import packetManager from "../networking/packet_manager.js"
 
 import { buildWsEndpoint } from "../utils/build_ws_endpoint.js"
 import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js"
+
+const logger = mainLogger.child("[ClusterManager]")
 
 const decoder = new StringDecoder("utf8")
 
@@ -25,7 +27,7 @@ class ClusterManager {
     ws.send(
       JSON.stringify({
         node_info: {
-          ip: RuntimeDefinedContext.APP_IP,
+          ip: config.get("app.ip"),
         },
       })
     )
@@ -62,19 +64,19 @@ class ClusterManager {
       const ws = new WebSocket(url)
 
       ws.on("error", async (event) => {
-        console.error("[ClusterManager][createSocketWithNode] ws on Error", event)
+        logger.error(event, "[createSocketWithNode] ws on Error")
         reject("[ClusterManager][createSocketWithNode] ws on error")
       })
 
       ws.on("open", async () => {
-        console.log("[ClusterManager][createSocketWithNode] ws on Open", `url ${ws.url}`)
+        logger.debug("[createSocketWithNode] ws on Open url %s", ws.url)
         this.#shareCurrentNodeInfo(ws)
       })
 
       ws.on("message", async (data) => {
         const json = JSON.parse(decoder.write(Buffer.from(data)))
 
-        console.log("[ClusterManager] ws on Message", json)
+        logger.debug("ws on Message %j", json)
 
         if (json.node_info) {
           const nodeInfo = json.node_info
@@ -87,13 +89,13 @@ class ClusterManager {
       })
 
       ws.on("close", async () => {
-        console.log("[ClusterManager][createSocketWithNode] ws on Close", ws.url)
+        logger.debug("[createSocketWithNode] ws on Close %s", ws.url)
         delete this.clusterNodesWS[getIpFromWsUrl(ws.url)]
       })
     })
   }
 
-  async createLocalSocket(appOptions, wsOptions, listenOptions, isSSL) {
+  async createLocalSocket({ isSSL, appOptions, wsOptions, listenOptions }) {
     return new Promise((resolve) => {
       this.#localSocket = isSSL ? uWS.SSLApp(appOptions) : uWS.App(appOptions)
 
@@ -101,14 +103,11 @@ class ClusterManager {
         ...wsOptions,
 
         open: (ws) => {
-          console.log(
-            "[ClusterManager][createLocalSocket] ws on Open",
-            `IP: ${Buffer.from(ws.getRemoteAddressAsText()).toString()}`
-          )
+          logger.debug("[WS] on Open IP: %s", Buffer.from(ws.getRemoteAddressAsText()).toString())
         },
 
         close: async (ws, code, message) => {
-          console.log("[ClusterManager][createLocalSocket] ws on Close")
+          logger.debug("[WS] on Close")
           for (const nodeIp in this.clusterNodesWS) {
             if (this.clusterNodesWS[nodeIp] !== ws) {
               continue
@@ -122,7 +121,7 @@ class ClusterManager {
         message: async (ws, message, isBinary) => {
           const json = JSON.parse(decoder.write(Buffer.from(message)))
 
-          console.log("[ClusterManager] ws on Message", json)
+          logger.debug("[WS] on Message %j", json)
 
           if (json.node_info) {
             const nodeInfo = json.node_info
@@ -137,14 +136,14 @@ class ClusterManager {
       })
 
       this.#localSocket.listen(0, listenOptions, (listenSocket) => {
-        if (listenSocket) {
-          const clusterPort = uWS.us_socket_local_port(listenSocket)
-          console.log(`[ClusterManager][createLocalSocket] listening on port ${clusterPort}`)
-
-          return resolve(clusterPort)
-        } else {
-          throw new Error(`[ClusterManager][createLocalSocket] socket.listen error: can't allocate port`)
+        if (!listenSocket) {
+          throw new Error(`[ClusterManager][WS] socket.listen error: can't allocate port`)
         }
+
+        const clusterPort = uWS.us_socket_local_port(listenSocket)
+        logger.debug("[WS] listening on port %s", clusterPort)
+
+        return resolve(clusterPort)
       })
     })
   }

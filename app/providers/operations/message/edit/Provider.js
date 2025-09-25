@@ -13,4 +13,8 @@ class MessageEditOperationRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new MessageEditOperationRegisterProvider({ name, implementationName: MessageEditOperation.name })
+export default new MessageEditOperationRegisterProvider({
+  name,
+  implementationName: MessageEditOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})

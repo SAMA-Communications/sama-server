@@ -4,6 +4,7 @@ import ServiceLocatorContainer from "../../app/common/ServiceLocatorContainer.js
 
 import packetJsonProcessor from "../../APIs/JSON/routes/packet_processor.js"
 
+const logger = ServiceLocatorContainer.use("Logger")
 const organizationService = ServiceLocatorContainer.use("OrganizationService")
 
 async function createOrganization(params) {
@@ -51,7 +52,7 @@ async function sendLogout(ws, currentUserToken) {
 
 const mockedWS = {
   send: (data) => {
-    console.log("[WS] send mocked data", data)
+    logger.debug("[WS] send mocked data %j", data)
   },
 }
 
@@ -73,10 +74,7 @@ async function createUserArray(organizationId, count, currentCountOfUsers, email
       },
     }
 
-    const createUserResponse = await packetJsonProcessor.processMessageOrError(
-      "UserCreate",
-      JSON.stringify(requestData)
-    )
+    const createUserResponse = await packetJsonProcessor.processMessageOrError("UserCreate", JSON.stringify(requestData))
 
     usersIds[i] = createUserResponse?.backMessages?.at?.(0)?.response.user._id
   }
@@ -108,12 +106,4 @@ async function createConversation(ws, name, description, type, participants) {
   return responseData?.response.conversation._id.toString()
 }
 
-export {
-  createOrganization,
-  generateNewOrganizationId,
-  sendLogin,
-  sendLogout,
-  createUserArray,
-  createConversation,
-  mockedWS,
-}
+export { createOrganization, generateNewOrganizationId, sendLogin, sendLogout, createUserArray, createConversation, mockedWS }

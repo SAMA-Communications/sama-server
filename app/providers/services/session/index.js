@@ -10,10 +10,10 @@ import { CONSTANTS } from "../../../constants/constants.js"
 */
 
 class SessionService {
-  constructor(activeSessions, redisConnection, RuntimeDefinedContext) {
+  constructor(activeSessions, config, redisConnection) {
     this.activeSessions = activeSessions
+    this.config = config
     this.redisConnection = redisConnection
-    this.RuntimeDefinedContext = RuntimeDefinedContext
   }
 
   totalSessions() {
@@ -132,6 +132,8 @@ class SessionService {
   async addUserExtraParams(userId, deviceId, extraParams) {
     const userHashKey = this.#usersHashKey(userId, deviceId)
     const keyValuePairs = Object.entries(extraParams)
+      .flat()
+      .map((val) => `${val}`)
 
     await this.redisConnection.client.hSet(userHashKey, ...keyValuePairs)
   }
@@ -180,7 +182,10 @@ class SessionService {
     return userData
   }
 
-  async storeUserNodeData(nodeIp, nodePort, organizationId, userId, deviceId) {
+  async storeUserNodeData(organizationId, userId, deviceId, nodeIp, nodePort) {
+    nodeIp ??= this.config.get("app.ip")
+    nodePort ??= this.config.get("ws.cluster.port")
+
     const userDeviceIds = await this.listUserDevice(organizationId, userId)
 
     if (userDeviceIds.includes(deviceId)) {
@@ -228,7 +233,7 @@ class SessionService {
 
   async setSessionInactiveState(ws, isInactive) {
     const { userId, extraParams } = this.getSession(ws)
-    const deviceId = this.getUserDevices(ws, userId)
+    const deviceId = this.getDeviceId(ws, userId)
 
     if (isInactive) {
       extraParams[CONSTANTS.SESSION_INACTIVE_STATE_KEY] = isInactive
@@ -277,6 +282,10 @@ class SessionService {
     const userData = await this.listUserData(organizationId, userId)
 
     for (const [deviceId, extraParams] of Object.entries(userData)) {
+      if (!extraParams[CONSTANTS.SESSION_NODE_KEY]) {
+        continue
+      }
+
       const [, nodeId, nodePort] = splitWsEndpoint(extraParams[CONSTANTS.SESSION_NODE_KEY])
       await this.removeUserDeviceFromNode(nodeId, nodePort, userId, deviceId)
     }
@@ -287,10 +296,9 @@ class SessionService {
   async removeUserSession(ws, userId, deviceId) {
     userId = userId ?? this.getSessionUserId(ws)
     deviceId = deviceId ?? this.getDeviceId(ws, userId)
+    const orgId = this.getSession(ws)?.organizationId
 
-    const leftActiveConnections = this.getUserDevices(userId).filter(
-      ({ deviceId: activeDeviceId }) => activeDeviceId !== deviceId
-    )
+    const leftActiveConnections = this.getUserDevices(userId).filter(({ deviceId: activeDeviceId }) => activeDeviceId !== deviceId)
 
     if (!leftActiveConnections.length) {
       this.removeAllUserSessions(ws)
@@ -306,7 +314,7 @@ class SessionService {
 
     const extraParams = await this.retrieveUserExtraParams(userId, deviceId)
 
-    await this.removeUserDevice(null, userId, deviceId)
+    await this.removeUserDevice(orgId, userId, deviceId)
     await this.deleteUserExtraParams(userId, deviceId)
 
     const nodeEndpoint = extraParams?.[CONSTANTS.SESSION_NODE_KEY]

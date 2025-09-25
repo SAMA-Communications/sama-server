@@ -12,4 +12,8 @@ class UserLogoutOperationRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new UserLogoutOperationRegisterProvider({ name, implementationName: UserLogoutOperation.name })
+export default new UserLogoutOperationRegisterProvider({
+  name,
+  implementationName: UserLogoutOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})

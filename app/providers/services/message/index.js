@@ -1,7 +1,8 @@
 import { ERROR_STATUES } from "../../../constants/errors.js"
 
 class MessageService {
-  constructor(helpers, userRepo, messageRepo, messageStatusRepo, messageReactionRepo) {
+  constructor(config, helpers, userRepo, messageRepo, messageStatusRepo, messageReactionRepo) {
+    this.config = config
     this.helpers = helpers
     this.userRepo = userRepo
     this.messageRepo = messageRepo
@@ -9,9 +10,8 @@ class MessageService {
     this.messageReactionRepo = messageReactionRepo
   }
 
-  async create(user, conversation, blockedUserIds, messageParams) {
+  async create(user, conversation, messageParams) {
     messageParams.cid = conversation._id
-    messageParams.deleted_for = blockedUserIds
     messageParams.from = user.native_id
     messageParams.organization_id = user.organization_id
 
@@ -58,7 +58,7 @@ class MessageService {
       return processedResponse
     }
 
-    const existServerBot = await this.userRepo.findByLogin(organizationId, process.env.CHAT_BOT_LOGIN)
+    const existServerBot = await this.userRepo.findByLogin(organizationId, this.config.get("chatBot.login"))
     if (existServerBot) {
       processedResponse.botMessageParams = { ...baseMessage, body, attachments }
       processedResponse.serverBot = existServerBot
@@ -80,6 +80,10 @@ class MessageService {
     }
 
     const messages = await this.messageRepo.list(cId, user.native_id, filterOptions, limit)
+
+    if (options.messagesOnly) {
+      return { messages }
+    }
 
     const messageIds = messages.map((message) => message._id)
 
@@ -120,11 +124,7 @@ class MessageService {
       findMessagesOptions.lastReadMessageId = lastReadMessagesByConvIds[cid]?.mid || null
     }
 
-    const unreadMessages = await this.messageRepo.findAllOpponentsMessagesFromConversation(
-      cid,
-      userId,
-      findMessagesOptions
-    )
+    const unreadMessages = await this.messageRepo.findAllOpponentsMessagesFromConversation(cid, userId, findMessagesOptions)
 
     if (unreadMessages.length) {
       const mids = unreadMessages.map((message) => message._id).reverse()
@@ -155,16 +155,9 @@ class MessageService {
   }
 
   async aggregateCountOfUnreadMessagesByCid(cids, user) {
-    const lastReadMessageByUserForCids = await this.messageStatusRepo.findLastReadMessageByUserForCid(
-      cids,
-      user.native_id
-    )
+    const lastReadMessageByUserForCids = await this.messageStatusRepo.findLastReadMessageByUserForCid(cids, user.native_id)
 
-    const unreadMessageCountByCids = await this.messageRepo.countUnreadMessagesByCids(
-      cids,
-      user.native_id,
-      lastReadMessageByUserForCids
-    )
+    const unreadMessageCountByCids = await this.messageRepo.countUnreadMessagesByCids(cids, user.native_id, lastReadMessageByUserForCids)
 
     return unreadMessageCountByCids
   }

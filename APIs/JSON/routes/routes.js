@@ -2,7 +2,7 @@ import { default as ContactsController } from "../controllers/contacts.js"
 import { default as ConversationsController } from "../controllers/conversations.js"
 import { default as ConversationSchemesController } from "../controllers/conversation_handlers.js"
 import { default as FilesController } from "../controllers/files.js"
-import { default as LastActivityiesController } from "../controllers/activities.js"
+import { default as ActivitiesController } from "../controllers/activities.js"
 import { default as MessagesController } from "../controllers/messages.js"
 import { default as OperationsLogController } from "../controllers/operations_log.js"
 import { default as PushNotificationsController } from "../controllers/push_notifications.js"
@@ -25,14 +25,11 @@ import { usersBlockSchemaValidation } from "../validations/users_block_schema_va
 import { usersSchemaValidation } from "../validations/users_schema_validation.js"
 
 export const routes = {
+  ping: (ws, json) => StatusesController.ping(ws, json),
   typing: (ws, json) =>
-    StatusesController.middleware(authGuardMiddleware, ws, json)
-      .validate(json.typing, statusSchemaValidation.typing)
-      .typing(ws, json),
+    StatusesController.middleware(authGuardMiddleware, ws, json).validate(json.typing, statusSchemaValidation.typing).typing(ws, json),
   message: (ws, json) =>
-    MessagesController.middleware(authGuardMiddleware, ws, json)
-      .validate(json.message, messagesSchemaValidation.create)
-      .create(ws, json),
+    MessagesController.middleware(authGuardMiddleware, ws, json).validate(json.message, messagesSchemaValidation.create).create(ws, json),
   message_edit: (ws, json) =>
     MessagesController.middleware(authGuardMiddleware, ws, json)
       .middleware(authGuardMiddleware, ws, json)
@@ -44,18 +41,14 @@ export const routes = {
       .validate(json.message_reactions_update, messagesSchemaValidation.reactions_update)
       .reactions_update(ws, json),
   message_list: (ws, json) =>
-    MessagesController.middleware(authGuardMiddleware, ws, json)
-      .validate(json.message_list, messagesSchemaValidation.list)
-      .list(ws, json),
+    MessagesController.middleware(authGuardMiddleware, ws, json).validate(json.message_list, messagesSchemaValidation.list).list(ws, json),
   message_reactions_list: (ws, json) =>
     MessagesController.middleware(authGuardMiddleware, ws, json)
       .middleware(authGuardMiddleware, ws, json)
       .validate(json.message_reactions_list, messagesSchemaValidation.reactions_list)
       .reactions_list(ws, json),
   message_read: (ws, json) =>
-    MessagesController.middleware(authGuardMiddleware, ws, json)
-      .validate(json.message_read, messagesSchemaValidation.read)
-      .read(ws, json),
+    MessagesController.middleware(authGuardMiddleware, ws, json).validate(json.message_read, messagesSchemaValidation.read).read(ws, json),
   message_delete: (ws, json) =>
     MessagesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.message_delete, messagesSchemaValidation.delete)
@@ -65,13 +58,9 @@ export const routes = {
       .validate(json.system_message, messagesSchemaValidation.system)
       .sendSystem(ws, json),
   connect: (ws, json) =>
-    UsersController.middleware(authGuardMiddleware, ws, json)
-      .validate(json.connect, usersSchemaValidation.connect)
-      .connect(ws, json),
+    UsersController.middleware(authGuardMiddleware, ws, json).validate(json.connect, usersSchemaValidation.connect).connect(ws, json),
   user_create: (ws, json) =>
-    UsersController.middleware(authGuardMiddleware, ws, json)
-      .validate(json.user_create, usersSchemaValidation.create)
-      .create(ws, json),
+    UsersController.middleware(authGuardMiddleware, ws, json).validate(json.user_create, usersSchemaValidation.create).create(ws, json),
   user_edit: (ws, json) =>
     UsersController.middleware(authGuardMiddleware, ws, json)
       .validate(json.user_edit, usersSchemaValidation.edit)
@@ -82,29 +71,19 @@ export const routes = {
    * Therefore, we recommend using the new http route `/login` for user authorization.
    */
   user_login: (ws, json) =>
-    UsersController.middleware(authGuardMiddleware, ws, json)
-      .validate(json.user_login, usersSchemaValidation.login)
-      .login(ws, json),
+    UsersController.middleware(authGuardMiddleware, ws, json).validate(json.user_login, usersSchemaValidation.login).login(ws, json),
   /**
    * @deprecated **WARNING**: `user_logout` request is deprecated
    * Therefore, we recommend using the new http route `/logout` to log the user out of the system.
    */
   user_logout: (ws, json) =>
-    UsersController.middleware(authGuardMiddleware, ws, json)
-      .validate(json.user_logout, usersSchemaValidation.logout)
-      .logout(ws, json),
+    UsersController.middleware(authGuardMiddleware, ws, json).validate(json.user_logout, usersSchemaValidation.logout).logout(ws, json),
   user_delete: (ws, json) =>
-    UsersController.middleware(authGuardMiddleware, ws, json)
-      .validate(json.user_delete, usersSchemaValidation.delete)
-      .delete(ws, json),
+    UsersController.middleware(authGuardMiddleware, ws, json).validate(json.user_delete, usersSchemaValidation.delete).delete(ws, json),
   user_search: (ws, json) =>
-    UsersController.middleware(authGuardMiddleware, ws, json)
-      .validate(json.user_search, usersSchemaValidation.search)
-      .search(ws, json),
+    UsersController.middleware(authGuardMiddleware, ws, json).validate(json.user_search, usersSchemaValidation.search).search(ws, json),
   get_users_by_ids: (ws, json) =>
-    UsersController.middleware(authGuardMiddleware, ws, json)
-      .validate(json.get_users_by_ids, usersSchemaValidation.list)
-      .list(ws, json),
+    UsersController.middleware(authGuardMiddleware, ws, json).validate(json.get_users_by_ids, usersSchemaValidation.list).list(ws, json),
   contact_add: (ws, json) =>
     ContactsController.middleware(authGuardMiddleware, ws, json)
       .validate(json.contact_add, contactsSchemaValidation.contact_add)
@@ -154,21 +133,25 @@ export const routes = {
       .validate(json.block_list_enable, usersBlockSchemaValidation.enable)
       .enable(ws, json),
   user_last_activity_subscribe: (ws, json) =>
-    LastActivityiesController.middleware(authGuardMiddleware, ws, json)
+    ActivitiesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.user_last_activity_subscribe, activitiesSchemaValidation.status_subscribe)
       .status_subscribe(ws, json),
   user_last_activity_unsubscribe: (ws, json) =>
-    LastActivityiesController.middleware(authGuardMiddleware, ws, json)
+    ActivitiesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.user_last_activity_unsubscribe, activitiesSchemaValidation.status_unsubscribe)
       .status_unsubscribe(ws, json),
   user_last_activity: (ws, json) =>
-    LastActivityiesController.middleware(authGuardMiddleware, ws, json)
+    ActivitiesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.user_last_activity, activitiesSchemaValidation.get_user_status)
       .get_user_status(ws, json),
   online_list: (ws, json) =>
-    LastActivityiesController.middleware(authGuardMiddleware, ws, json)
+    ActivitiesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.online_list, activitiesSchemaValidation.online_list)
       .online_list(ws, json),
+  activity_status: (ws, json) =>
+    ActivitiesController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.activity_status, activitiesSchemaValidation.activity_status)
+      .activity_status(ws, json),
   get_participants_by_cids: (ws, json) =>
     ConversationsController.middleware(authGuardMiddleware, ws, json)
       .validate(json.get_participants_by_cids, conversationsSchemaValidation.get_participants_by_cids)

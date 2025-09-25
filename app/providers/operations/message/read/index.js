@@ -3,25 +3,30 @@ import groupBy from "@sama/utils/groupBy.js"
 import ReadMessagesPublicFields from "@sama/DTO/Response/message/read/public_fields.js"
 
 class MessageReadOperation {
-  constructor(sessionService, messageService, conversationService) {
+  constructor(config, sessionService, userService, messageService, conversationService) {
+    this.config = config
     this.sessionService = sessionService
+    this.userService = userService
     this.messageService = messageService
     this.conversationService = conversationService
   }
 
   async perform(ws, messageParams) {
-    const { cid, ids: mids } = messageParams
+    const { cid, ids: mids, resultMessageOnly } = messageParams
 
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     await this.#hasAccess(organizationId, cid, currentUserId)
 
-    const unreadMessages = await this.messageService.readMessagesInConversation(
-      organizationId,
-      cid,
-      currentUserId,
-      mids
-    )
+    let unreadMessages = void 0
+
+    if (!resultMessageOnly) {
+      unreadMessages = await this.messageService.readMessagesInConversation(organizationId, cid, currentUserId, mids)
+    } else {
+      const currentUser = await this.userService.userRepo.findWithOrgScopeById(organizationId, currentUserId)
+      const { messages } = await this.messageService.messagesList(cid, currentUser, { ids: mids, messagesOnly: true })
+      unreadMessages = messages
+    }
 
     const unreadMessagesGroupedByFrom = groupBy(unreadMessages, "from")
 
@@ -34,7 +39,7 @@ class MessageReadOperation {
       return { userId, readMessages }
     })
 
-    return { readMessagesGroups }
+    return { organizationId, readMessagesGroups }
   }
 
   async #hasAccess(organizationId, conversationId, currentUserId) {
@@ -50,10 +55,12 @@ class MessageReadOperation {
       })
     }
 
-    if (conversation.type === "c") {
-      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
-        cause: ERROR_STATUES.FORBIDDEN,
-      })
+    if (!this.config.get("conversation.disableChannelsLogic")) {
+      if (conversation.type === "c") {
+        throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+          cause: ERROR_STATUES.FORBIDDEN,
+        })
+      }
     }
 
     if (!asParticipant) {

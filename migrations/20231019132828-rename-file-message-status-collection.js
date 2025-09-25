@@ -9,9 +9,7 @@ export const up = async (db, client) => {
   })
 
   const existCollection = db.collection("message_statuses")
-  const newCollection = existCollection
-    ? db.collection("message_statuses")
-    : await db.createCollection("message_statuses")
+  const newCollection = existCollection ? db.collection("message_statuses") : await db.createCollection("message_statuses")
   for (const { key, options } of indexes) {
     await newCollection.createIndex(key, options)
   }

@@ -15,4 +15,5 @@ class BlockListRetrieveOperationRegisterProvider extends RegisterProvider {
 export default new BlockListRetrieveOperationRegisterProvider({
   name,
   implementationName: BlockListRetrieveOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

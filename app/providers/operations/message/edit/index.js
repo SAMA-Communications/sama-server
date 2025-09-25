@@ -19,8 +19,6 @@ class MessageEditOperation {
 
     const conversation = await this.conversationService.conversationRepo.findById(message.cid)
 
-    const participantIds = await this.conversationService.findConversationParticipants(message.cid)
-
     const editedMessageParams = {
       messageId,
       cid: message.cid,
@@ -29,7 +27,14 @@ class MessageEditOperation {
       body: newBody,
     }
 
-    return { editedMessage: new EditMessagePublicFields(editedMessageParams), participantIds }
+    const participantsIds = conversation.type === "u" ? [conversation.owner_id, conversation.opponent_id] : null
+
+    return {
+      organizationId,
+      cId: conversation._id,
+      participantsIds,
+      editedMessage: new EditMessagePublicFields(editedMessageParams),
+    }
   }
 
   async #hasAccess(messageId, currentUserId) {
