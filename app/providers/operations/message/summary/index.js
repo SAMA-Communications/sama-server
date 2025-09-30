@@ -20,21 +20,22 @@ class MessageSummaryOperation {
     await this.#hasAccess(organizationId, cid, currentUserId)
 
     let filteredMessages = []
-    let since
 
     switch (filter) {
-      case MAIN_CONSTANTS.CHAT_SUMMARY_FITLERS.LAST_7_DAYS:
-        since = new Date(Date.now() - MAIN_CONSTANTS.WEEK_IN_MS)
+      case MAIN_CONSTANTS.CHAT_SUMMARY_FITLERS.LAST_7_DAYS: {
+        const since = new Date(Date.now() - MAIN_CONSTANTS.WEEK_IN_MS)
         filteredMessages =
           (await this.messageService.messagesList(cid, { native_id: currentUserId }, { updatedAt: { gt: since } }))
             ?.messages ?? []
         break
-      case MAIN_CONSTANTS.CHAT_SUMMARY_FITLERS.LAST_DAY:
-        since = new Date(Date.now() - MAIN_CONSTANTS.DAY_IN_MS)
+      }
+      case MAIN_CONSTANTS.CHAT_SUMMARY_FITLERS.LAST_DAY: {
+        const since = new Date(Date.now() - MAIN_CONSTANTS.DAY_IN_MS)
         filteredMessages =
           (await this.messageService.messagesList(cid, { native_id: currentUserId }, { updatedAt: { gt: since } }))
             ?.messages ?? []
         break
+      }
       case MAIN_CONSTANTS.CHAT_SUMMARY_FITLERS.UNREADS:
         filteredMessages = (await this.messageService.getUnreadMessages(cid, currentUserId)) ?? []
         break
@@ -42,36 +43,33 @@ class MessageSummaryOperation {
         break
     }
 
-    let returnMessage = MAIN_CONSTANTS.SUMMARY_AI_DEFAULT_RETURN_MESSAGE
-
-    if (filteredMessages.length) {
-      const userIds = [...new Set(filteredMessages.map(({ from }) => from))]
-      const users = await this.userService.findUsersByIds(organizationId, userIds)
-      const userObjectsByIds = Object.fromEntries(users.map((user) => [user._id, user]))
-
-      const messagesString = filteredMessages
-        .filter(({ body }) => body)
-        .map(({ from, body }) => {
-          const userName = this.helpers.getDisplayName(userObjectsByIds[from])
-          return `- ${this.helpers.isEqualsNativeIds(from, currentUserId) ? `${userName}${MAIN_CONSTANTS.AI_CURRENT_USER_POSTFIX}` : userName}: ${body}`
-        })
-        .join("\n")
-
-      try {
-        const result = await generateText({
-          model: google(process.env.GOOGLE_GENERATIVE_AI_MODEL),
-          prompt: (MAIN_CONSTANTS.SUMMARY_AI_PROMPT + messagesString).trim(),
-        })
-        returnMessage = result.text
-      } catch (err) {
-        console.error("[ai.agent.error]:", err)
-        throw new Error(ERROR_STATUES.AI_AGENT_ERROR.message, {
-          cause: ERROR_STATUES.AI_AGENT_ERROR,
-        })
-      }
+    if (filteredMessages.length === 0) {
+      return { message: MAIN_CONSTANTS.SUMMARY_AI_DEFAULT_RETURN_MESSAGE }
     }
 
-    return { message: returnMessage }
+    const userIds = [...new Set(filteredMessages.map(({ from }) => from))]
+    const users = await this.userService.findUsersByIds(organizationId, userIds)
+    const userObjectsByIds = Object.fromEntries(users.map((user) => [user._id, user]))
+
+    const messagesString = filteredMessages
+      .map(({ from, body }) => {
+        const userName = this.helpers.getDisplayName(userObjectsByIds[from])
+        return `- ${this.helpers.isEqualsNativeIds(from, currentUserId) ? `${userName}${MAIN_CONSTANTS.AI_CURRENT_USER_POSTFIX}` : userName}: ${body}`
+      })
+      .join("\n")
+
+    try {
+      const result = await generateText({
+        model: google(process.env.GOOGLE_GENERATIVE_AI_MODEL),
+        prompt: (MAIN_CONSTANTS.SUMMARY_AI_PROMPT + messagesString).trim(),
+      })
+      return { message: result.text }
+    } catch (err) {
+      console.error("[ai.agent.error]:", err)
+      throw new Error(ERROR_STATUES.AI_AGENT_ERROR.message, {
+        cause: ERROR_STATUES.AI_AGENT_ERROR,
+      })
+    }
   }
 
   async #hasAccess(organizationId, conversationId, currentUserId) {
