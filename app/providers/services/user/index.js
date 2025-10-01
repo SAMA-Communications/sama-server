@@ -13,6 +13,12 @@ class UserService {
     return user
   }
 
+  async findByEmail(organizationId, email) {
+    const user = await this.userRepo.findByEmail(organizationId, email)
+
+    return user
+  }
+
   async create(createParams) {
     const { password, ...newUserParams } = createParams
 
@@ -71,6 +77,16 @@ class UserService {
     })
 
     return await Promise.all(avatarUrlPromises)
+  }
+
+  async updatePassword(userId, newPassword) {
+    const { encryptedPassword, salt } = await this.encryptAndSetPassword(newPassword)
+
+    const updateFieldsParams = { password_salt: salt, encrypted_password: encryptedPassword }
+
+    const updatedUser = await this.userRepo.update(userId, updateFieldsParams)
+
+    return updatedUser
   }
 
   async updateActivity(userId, reactActivity) {
