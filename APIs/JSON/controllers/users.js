@@ -63,6 +63,24 @@ class UsersController extends BaseJSONController {
       .updateLastActivityStatus(new LastActivityStatusResponse(userId, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE))
   }
 
+  async send_otp(ws, data) {
+    const { id: requestId, user_send_otp: userParams } = data
+
+    const UserSendOTPOperation = ServiceLocatorContainer.use("UserSendOTPOperation")
+    await UserSendOTPOperation.perform(ws, userParams)
+
+    return new Response().addBackMessage({ response: { id: requestId, success: true } })
+  }
+
+  async reset_password(ws, data) {
+    const { id: requestId, user_reset_password: resetParams } = data
+
+    const UserResetPasswordOperation = ServiceLocatorContainer.use("UserResetPasswordOperation")
+    await UserResetPasswordOperation.perform(ws, resetParams)
+
+    return new Response().addBackMessage({ response: { id: requestId, success: true } })
+  }
+
   async delete(ws, data) {
     const { id: requestId } = data
 
