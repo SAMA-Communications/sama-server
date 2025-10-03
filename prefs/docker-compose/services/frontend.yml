@@ -16,7 +16,7 @@ services:
         BRANCH: development
     volumes:
       - sama-client-dist:/dist
-    command: ["echo", "Static files are ready"]
+    command: /bin/sh -c "cp -r /tmp/dist/* /dist && echo 'Static files are ready'"
 
   nginx:
     depends_on:
