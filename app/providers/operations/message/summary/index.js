@@ -53,8 +53,9 @@ class MessageSummaryOperation {
 
     const messagesString = filteredMessages
       .map(({ from, body }) => {
+        if (!body) return ``
         const userName = this.helpers.getDisplayName(userObjectsByIds[from])
-        return `- ${this.helpers.isEqualsNativeIds(from, currentUserId) ? `${userName}${MAIN_CONSTANTS.AI_CURRENT_USER_POSTFIX}` : userName}: ${body}`
+        return `- ${userName}: ${body}`
       })
       .join("\n")
 
