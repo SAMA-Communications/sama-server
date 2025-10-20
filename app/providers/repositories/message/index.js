@@ -65,6 +65,15 @@ class MessageRepository extends BaseRepository {
     return result
   }
 
+  async findLastUserMessageForConversation(cid, userId) {
+    cid = this.castObjectId(cid)
+    userId = this.castObjectId(userId)
+
+    const result = this.findOne({ cid, from: userId })
+
+    return result
+  }
+
   async findMessageById(conversationId, userId, mid) {
     const query = { _id: mid, deleted_for: { $nin: [this.castUserId(userId)] } }
     conversationId && (query.cid = this.castObjectId(conversationId))
@@ -74,7 +83,7 @@ class MessageRepository extends BaseRepository {
     return message
   }
 
-  async list(conversationId, userId, options, limit) {
+  async list(conversationId, userId, options, limit = 100) {
     const cid = this.castObjectId(conversationId)
     const query = { cid, deleted_for: { $nin: [this.castUserId(userId)] } }
     let sort = null
@@ -88,6 +97,12 @@ class MessageRepository extends BaseRepository {
     }
     if (options.updatedAtBefore) {
       query.updated_at = this.mergeOperators(query.updated_at, { $lt: options.updatedAtBefore })
+    }
+    if (options.createdAtFrom) {
+      query.created_at = this.mergeOperators(query.created_at, { $gt: options.createdAtFrom })
+    }
+    if (options.bodyNotEmpty) {
+      query.body = { $exists: true, $ne: null, $regex: /\S/ }
     }
 
     const messages = await this.findAll(query, null, limit, sort)

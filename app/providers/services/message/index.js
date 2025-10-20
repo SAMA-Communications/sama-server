@@ -78,6 +78,9 @@ class MessageService {
     if (options.updatedAt?.lt) {
       filterOptions.updatedAtBefore = new Date(options.updatedAt.lt)
     }
+    if (options.body?.notEmpty) {
+      filterOptions.bodyNotEmpty = true
+    }
 
     const messages = await this.messageRepo.list(cId, user.native_id, filterOptions, limit)
 
@@ -88,6 +91,23 @@ class MessageService {
     const messagesReactions = await this.messageReactionRepo.aggregateForUserMessages(messageIds, user.native_id)
 
     return { messages, messagesStatuses, messagesReactions }
+  }
+
+  async getUnreadMessages(cid, userId) {
+    const lastReadMessagesByConvIds = await this.messageStatusRepo.findLastReadMessageByUserForCid([cid], userId)
+    const lastUserMessageInChat = await this.messageRepo.findLastUserMessageForConversation(cid, userId)
+
+    const lastReadMessageId = lastReadMessagesByConvIds[cid]
+    const lastStatusTime = await this.messageStatusRepo.getLastReadTimeByUser(cid, userId, lastReadMessageId)
+    const lastReadTime = Math.max(lastUserMessageInChat?.created_at ?? 0, lastStatusTime ?? 0)
+
+    const filterOptions = { createdAtFrom: lastReadTime, bodyNotEmpty: true }
+
+    const unreadMessages = await this.messageRepo.list(cid, userId, filterOptions)
+
+    console.log(unreadMessages)
+
+    return unreadMessages
   }
 
   async hasAccessToMessage(messageId, userId) {

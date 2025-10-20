@@ -13,6 +13,12 @@ class UserService {
     return user
   }
 
+  async findUsersByIds(organizationId, userIds) {
+    const users = await this.userRepo.findByIds(organizationId, userIds)
+
+    return users
+  }
+  
   async findByEmail(organizationId, email) {
     const user = await this.userRepo.findByEmail(organizationId, email)
 

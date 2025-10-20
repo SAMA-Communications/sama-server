@@ -71,6 +71,16 @@ class MessageStatusRepository extends BaseRepository {
 
     return result
   }
+
+  async getLastReadTimeByUser(cid, userId, mid) {
+    ;[cid, mid, userId] = this.castObjectIds([cid, mid, userId])
+
+    const query = { cid, mid, user_id: userId }
+
+    const result = await this.findOne(query)
+
+    return result.created_at
+  }
 }
 
 export default MessageStatusRepository
