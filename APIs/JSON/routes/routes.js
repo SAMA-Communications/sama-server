@@ -35,12 +35,10 @@ export const routes = {
       .create(ws, json),
   message_edit: (ws, json) =>
     MessagesController.middleware(authGuardMiddleware, ws, json)
-      .middleware(authGuardMiddleware, ws, json)
       .validate(json.message_edit, messagesSchemaValidation.edit)
       .edit(ws, json),
   message_reactions_update: (ws, json) =>
     MessagesController.middleware(authGuardMiddleware, ws, json)
-      .middleware(authGuardMiddleware, ws, json)
       .validate(json.message_reactions_update, messagesSchemaValidation.reactions_update)
       .reactions_update(ws, json),
   message_list: (ws, json) =>
@@ -49,7 +47,6 @@ export const routes = {
       .list(ws, json),
   message_reactions_list: (ws, json) =>
     MessagesController.middleware(authGuardMiddleware, ws, json)
-      .middleware(authGuardMiddleware, ws, json)
       .validate(json.message_reactions_list, messagesSchemaValidation.reactions_list)
       .reactions_list(ws, json),
   message_read: (ws, json) =>
@@ -60,6 +57,14 @@ export const routes = {
     MessagesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.message_delete, messagesSchemaValidation.delete)
       .delete(ws, json),
+  message_summary: (ws, json) =>
+    MessagesController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.message_summary, messagesSchemaValidation.summary)
+      .summary(ws, json),
+  message_tone: (ws, json) =>
+    MessagesController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.message_tone, messagesSchemaValidation.tone)
+      .tone(ws, json),
   system_message: (ws, json) =>
     MessagesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.system_message, messagesSchemaValidation.system)
@@ -97,6 +102,14 @@ export const routes = {
     UsersController.middleware(authGuardMiddleware, ws, json)
       .validate(json.user_delete, usersSchemaValidation.delete)
       .delete(ws, json),
+  user_send_otp: (ws, json) =>
+    UsersController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.user_send_otp, usersSchemaValidation.send_otp)
+      .send_otp(ws, json),
+  user_reset_password: (ws, json) =>
+    UsersController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.user_reset_password, usersSchemaValidation.reset_password)
+      .reset_password(ws, json),
   user_search: (ws, json) =>
     UsersController.middleware(authGuardMiddleware, ws, json)
       .validate(json.user_search, usersSchemaValidation.search)

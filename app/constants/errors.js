@@ -52,6 +52,7 @@ export const ERROR_STATUES = {
     status: 401,
     message: "Incorrect username or password.",
   },
+  INCORRECT_OTP_TOKEN: { status: 403, message: "Incorrect token for password recovery." },
   DEVICE_ID_MISSED: { status: 422, message: `'device_id' is required.` },
   // Contacts -->
   CONTACT_NOT_FOUND: { status: 422, message: "Contact not found." },
@@ -128,6 +129,10 @@ export const ERROR_STATUES = {
     message: "Invalid attachment fields.",
   },
   CORS_RESTRICTIONS: "A CORS error occurred while trying to perform a network request.",
+  AI_AGENT_ERROR: {
+    status: 500,
+    message: "An error occurred while processing messages with the AI agent.",
+  },
   // Status -->
   STATUS_ID_MISSED: { status: 422, message: "Status ID missed." },
   STATUS_TYPE_MISSED: { status: 422, message: "Status type missed." },
@@ -167,6 +172,10 @@ export const ERROR_STATUES = {
   MISSING_AUTH_CREDENTIALS: {
     status: 401,
     message: "Missing authentication credentials.",
+  },
+  MISSING_OTP_SENDER_SERVICE: {
+    status: 401,
+    message: "Failed to create OTP sender transporter.",
   },
 }
 

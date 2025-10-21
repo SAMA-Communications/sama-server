@@ -19,6 +19,7 @@ export default class Message extends BaseModel {
       "replied_message_id",
       "forwarded_message_id",
 
+      "updated_at",
       "created_at",
 
       "status", // virtual

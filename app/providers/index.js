@@ -48,6 +48,8 @@ import UserDeleteOperationProvider from "./operations/user/delete/Provider.js"
 import UserSearchOperationProvider from "./operations/user/search/Provider.js"
 import UserListOperationProvider from "./operations/user/list/Provider.js"
 import UserConnectSocketOperationProvider from "./operations/user/connect/Provider.js"
+import UserSendOTPOperationRegisterProvider from "./operations/user/send_otp/Provider.js"
+import UserResetPasswordOperationRegisterProvider from "./operations/user/reset_password/Provider.js"
 
 import BlockListBlockOperationProvider from "./operations/block_list/block/Provider.js"
 import BlockListUnblockOperationProvider from "./operations/block_list/unblock/Provider.js"
@@ -83,6 +85,8 @@ import MessageListOperationProvider from "./operations/message/list/Provider.js"
 import MessageReactionsUpdateOperationProvider from "./operations/message/reactions_update/Provider.js"
 import MessageReactionsListOperationProvider from "./operations/message/reactions_list/Provider.js"
 import MessageSendSystemOperationProvider from "./operations/message/system/Provider.js"
+import MessageSummaryOperationProvider from "./operations/message/summary/Provider.js"
+import MessageToneOperationProvider from "./operations/message/tone/Provider.js"
 
 import OpLogsListOperationProvider from "./operations/operation_logs/list/Provider.js"
 
@@ -165,6 +169,8 @@ const providers = [
   UserSearchOperationProvider,
   UserListOperationProvider,
   UserConnectSocketOperationProvider,
+  UserSendOTPOperationRegisterProvider,
+  UserResetPasswordOperationRegisterProvider,
 
   BlockListBlockOperationProvider,
   BlockListUnblockOperationProvider,
@@ -200,6 +206,8 @@ const providers = [
   MessageReactionsUpdateOperationProvider,
   MessageReactionsListOperationProvider,
   MessageSendSystemOperationProvider,
+  MessageSummaryOperationProvider,
+  MessageToneOperationProvider,
 
   OpLogsListOperationProvider,
 

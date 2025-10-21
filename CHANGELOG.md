@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.35.0
+
+### Features
+
+- Moved manuals and updated links to documentation
+- Implemented methods for password reset feature
+- Integrated AI agent for changing tone of messages and summarizing them
+
+### Updated
+
+- Added `forwarded_message_id` field for Message object
+- Added `updated_at` to response filed of Message object
+- Added migration to change `_id` field in default org record
+
+### Docker
+
+- Improved logic for building the Docker container
+
+# Changelog
+
 ## 0.34.0
 
 ### Updated
