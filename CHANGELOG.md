@@ -1,5 +1,80 @@
 # Changelog
 
+## 0.35.0
+
+### Features
+
+- Moved manuals and updated links to documentation
+- Implemented methods for password reset feature
+- Integrated AI agent for changing tone of messages and summarizing them
+
+### Updated
+
+- Added `forwarded_message_id` field for Message object
+- Added `updated_at` to response filed of Message object
+- Added migration to change `_id` field in default org record
+
+### Docker
+
+- Improved logic for building the Docker container
+
+# Changelog
+
+## 0.34.0
+
+### Updated
+
+- Added `forwarded_message_id` field for Message object
+
+## 0.33.0
+
+### Improvements
+
+- Extended `message_list` request with `ids` param
+- Added public conversations
+
+### Updated
+
+- Added `replied_message_id` field for Message object
+
+## 0.32.0
+
+### Improvements
+
+- Extended allowed fields for the `attachments` field in the `Message` object
+- Added message reactions support
+
+### Updated
+
+- Added a handler for fetch logic in conversation handler
+- Added image support for conversation handler
+- Updated mongo/redis connection providers
+
+## 0.31.0
+
+### Improvements
+
+- Implemented support for conversation schemes for programmable chat
+- Updated API requests for 1-on-1 chats
+- Added support for checking if a user belongs to a specific organization
+
+### Updated
+
+- Improved real-time “Online” status updates for better compatibility with mobile apps
+- Updated project startup commands
+- Added more different users for get_participants_by_cids response
+
+## 0.30.0
+
+### Improvements
+
+- Added message admin api
+- Minor fixes for validation in the `conversation_list` query
+
+### Docker
+
+- Improved logic for building the Docker container
+
 ## 0.29.0
 
 ### Updated

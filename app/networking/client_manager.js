@@ -1,17 +1,15 @@
 import uWS from "uWebSockets.js"
 import { StringDecoder } from "string_decoder"
 
-import { CONSTANTS as MAIN_CONSTANTS } from "../constants/constants.js"
 import { ERROR_STATUES } from "../constants/errors.js"
 
-import { APIs, detectAPIType } from "./APIs.js"
+import { BASE_API, APIs, detectAPIType } from "./APIs.js"
 
 import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
-import HttpAuthController from "../../APIs/JSON/controllers/http/auth.js"
-
 import packetManager from "./packet_manager.js"
 import packetMapper from "./packet_mapper.js"
+import HttpServerApp from "./http_server.js"
 
 import activitySender from "../services/activity_sender.js"
 
@@ -36,12 +34,20 @@ const onMessage = async (ws, message) => {
   const api = APIs[ws.apiType]
   const response = await api.onMessage(ws, stringMessage)
 
+  await processMessageResponse(ws, response)
+}
+
+const processMessageResponse = async (ws, response, needStringify) => {
+  if (needStringify) {
+    response = APIs[BASE_API].stringifyResponse(response)
+  }
+
   if (response.lastActivityStatusResponse) {
     const sessionService = ServiceLocatorContainer.use("SessionService")
 
     const userId = response.lastActivityStatusResponse.userId || sessionService.getSessionUserId(ws)
     console.log("[UPDATE_LAST_ACTIVITY]", userId, response.lastActivityStatusResponse)
-    const responses = await activitySender.updateAndSendUserActivity(
+    const responses = await activitySender.updateAndBuildUserActivity(
       ws,
       userId,
       response.lastActivityStatusResponse.status
@@ -62,8 +68,13 @@ const onMessage = async (ws, message) => {
   }
 
   for (const deliverMessage of response.deliverMessages) {
+    console.log("[DELIVER]", deliverMessage)
     try {
-      console.log("[DELIVER]", deliverMessage)
+      if (deliverMessage.cId) {
+        await processDeliverConversationMessageMessage(deliverMessage)
+        continue
+      }
+
       await packetManager.deliverToUserOrUsers(
         deliverMessage.ws || ws,
         deliverMessage.packet,
@@ -77,23 +88,34 @@ const onMessage = async (ws, message) => {
   }
 }
 
+const processDeliverConversationMessageMessage = async (deliverMessage) => {
+  const { cId, exceptUserIds } = deliverMessage
+
+  const conversationService = ServiceLocatorContainer.use("ConversationService")
+
+  for await (const participantIds of conversationService.conversationParticipantIdsIterator(cId, exceptUserIds)) {
+    if (!participantIds.length) {
+      continue
+    }
+
+    await packetManager.deliverToUserOrUsers(
+      deliverMessage.ws || ws,
+      deliverMessage.packet,
+      deliverMessage.pushQueueMessage,
+      participantIds,
+      deliverMessage.notSaveInOfflineStorage
+    )
+  }
+}
+
+const unbindSessionCallback = async (wsKey) => {
+  const sessionService = ServiceLocatorContainer.use("SessionService")
+  await sessionService.removeAllUserSessions(wsKey)
+}
+
 class ClientManager {
   #localSocket = null
-
-  #setCorsHeaders(res) {
-    res.writeHeader("Access-Control-Allow-Origin", process.env.CORS_ORIGIN || "*")
-    res.writeHeader("Access-Control-Allow-Credentials", "true")
-    res.writeHeader("Access-Control-Allow-Methods", "POST")
-    res.writeHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
-  }
-
-  #handleHttpRequest(handler, withCors = false) {
-    return (res, req) => {
-      withCors && this.#setCorsHeaders(res)
-      res.onAborted(() => (res.aborted = true))
-      handler(res, req)
-    }
-  }
+  #httpServerApp = null
 
   async createLocalSocket(appOptions, wsOptions, listenOptions, isSSL, port) {
     return new Promise((resolve) => {
@@ -120,7 +142,7 @@ class ClientManager {
 
           await sessionService.removeUserSession(ws, userId)
 
-          await activitySender.updateAndSendUserActivity(ws, userId, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE)
+          await processMessageResponse(ws, activitySender.buildOfflineActivityResponse(userId), true)
         },
 
         message: async (ws, message, isBinary) => {
@@ -144,20 +166,10 @@ class ClientManager {
         },
       })
 
-      this.#localSocket.options(
-        "/*",
-        this.#handleHttpRequest((res) => res.end(), true)
-      )
-
-      this.#localSocket.post(
-        "/login",
-        this.#handleHttpRequest((res, req) => HttpAuthController.login(res, req))
-      )
-
-      this.#localSocket.post(
-        "/logout",
-        this.#handleHttpRequest((res, req) => HttpAuthController.logout(res, req))
-      )
+      this.#httpServerApp = new HttpServerApp(this.#localSocket)
+      this.#httpServerApp.setResponseProcessor(processMessageResponse)
+      this.#httpServerApp.setUnbindSessionCallback(unbindSessionCallback)
+      this.#httpServerApp.bindRoutes()
 
       this.#localSocket.listen(port, listenOptions, (listenSocket) => {
         if (listenSocket) {

@@ -37,6 +37,18 @@ class LastActivitiesController extends BaseJSONController {
 
     return new Response().addBackMessage({ response: { id: requestId, last_activity: lastActivities } })
   }
+
+  async online_list(ws, data) {
+    const { id: requestId, online_list: onlineListParams } = data
+    const { count: isCountRequest } = onlineListParams
+
+    const onlineListOperation = ServiceLocatorContainer.use("OnlineListOperation")
+    const result = await onlineListOperation.perform(ws, onlineListParams)
+
+    const response = isCountRequest ? { count: result } : { users: result }
+
+    return new Response().addBackMessage({ response: { id: requestId, ...response } })
+  }
 }
 
 export default new LastActivitiesController()

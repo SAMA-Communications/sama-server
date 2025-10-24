@@ -19,9 +19,13 @@ class ConversationService {
 
   async create(user, conversationParams, participantIds) {
     conversationParams.owner_id = user.native_id
+    conversationParams.organization_id = user.organization_id
+
     const conversation = await this.conversationRepo.create(conversationParams)
 
-    await this.addParticipants(conversation, participantIds, [])
+    if (participantIds?.length) {
+      await this.addParticipants(conversation, participantIds, [])
+    }
 
     return conversation
   }
@@ -38,7 +42,7 @@ class ConversationService {
     const imageUrlPromises = conversations.map(async (conv) => {
       if (conv.image_object) {
         ;(conv.params ? conv.params : conv)["image_url"] = await this.storageService.getFileDownloadUrl(
-          conv._id,
+          conv.organization_id,
           conv.image_object.file_id
         )
       }
@@ -49,16 +53,16 @@ class ConversationService {
   }
 
   async conversationsList(user, options, limit) {
-    const conversationIds = await (options.ids?.length
-      ? this.validateConvIdsWhichUserHasAccess(options.ids, user.native_id)
-      : this.conversationParticipantRepo.findParticipantConversations(user.native_id, limit))
-
     const filterOptions = {
       ...(options.updatedAt?.gt && { updatedAtFrom: new Date(options.updatedAt.gt) }),
       ...(options.updatedAt?.lt && { updatedAtTo: new Date(options.updatedAt.lt) }),
     }
 
-    const conversations = await this.conversationRepo.list(conversationIds, filterOptions, limit)
+    const conversationIds = await (options.ids?.length
+      ? this.validateConvIdsWhichUserHasAccess(user.organization_id, options.ids, user.native_id)
+      : this.conversationParticipantRepo.findParticipantConversations(user.native_id, filterOptions, limit))
+
+    const conversations = await this.conversationRepo.list(user.organization_id, conversationIds, filterOptions, limit)
 
     return conversations
   }
@@ -81,25 +85,90 @@ class ConversationService {
     return conversation
   }
 
-  async findConversationParticipants(conversationId) {
+  async findConversationParticipants(conversationId, full) {
     const participants = await this.conversationParticipantRepo.findConversationParticipants(conversationId)
 
-    return participants.map((participant) => participant.user_id)
+    return full ? participants : participants.map((participant) => participant.user_id)
   }
 
-  async findConversationsParticipantIds(conversationIds, user) {
-    const conversationsParticipants = await this.conversationParticipantRepo.findConversationsParticipants(
-      conversationIds,
-      user.native_id
+  async *conversationParticipantIdsIterator(conversationId, exceptUserIds, batchSize = 100) {
+    let lastObjectId = null
+
+    const totalParticipants = await this.conversationParticipantRepo.countConversationParticipants(
+      conversationId,
+      exceptUserIds
     )
 
-    const participantIds = [...new Set(Object.values(conversationsParticipants).flat())]
+    const totalBatches = Math.ceil(totalParticipants / batchSize)
+
+    for (let i = 0; i < totalBatches; i++) {
+      const conversationParticipants = await this.conversationParticipantRepo.findConversationParticipants(
+        conversationId,
+        exceptUserIds,
+        lastObjectId,
+        batchSize
+      )
+
+      lastObjectId = conversationParticipants.at(-1)?._id
+
+      const participantsIds = conversationParticipants.map((cParticipant) => cParticipant["user_id"])
+
+      yield participantsIds
+    }
+  }
+
+  async findConversationsParticipantIds(organizationId, conversationIds, userId) {
+    const availableConversationIds = await this.validateConvIdsWhichUserHasAccess(
+      organizationId,
+      conversationIds,
+      userId
+    )
+
+    const conversationsParticipants =
+      await this.conversationParticipantRepo.findConversationsParticipants(availableConversationIds)
+
+    const privateConversations = await this.conversationRepo.findAvailablePrivateConversation(
+      availableConversationIds,
+      userId
+    )
+
+    const allParticipantIdsFromPrivateConversation =
+      await this.conversationParticipantRepo.extractParticipantIdsFromPrivateConversations(privateConversations)
+
+    const participantIds = [
+      ...new Set([...Object.values(conversationsParticipants).flat(), ...allParticipantIdsFromPrivateConversation]),
+    ]
 
     return { participantIds, participantsIdsByCids: conversationsParticipants }
   }
 
-  async validateConvIdsWhichUserHasAccess(conversationIds, userId) {
-    const verifiedConversationIds = await this.conversationParticipantRepo.findUserConversationIds(
+  async findConversationsAdminIds(conversations) {
+    const conversationIds = conversations.map((conversation) => conversation._id)
+    const conversationsOwnersIds = conversations.reduce((acc, conversation) => {
+      acc[conversation._id] = [conversation.owner_id]
+      return acc
+    }, {})
+
+    const conversationsAdminsIds = await this.conversationParticipantRepo.findConversationsParticipants(
+      conversationIds,
+      "admin"
+    )
+
+    Object.keys(conversationsOwnersIds).forEach((conversationId) => {
+      const adminsIds = conversationsAdminsIds[conversationId] ?? []
+      conversationsOwnersIds[conversationId] = conversationsOwnersIds[conversationId].concat(adminsIds)
+      delete conversationsAdminsIds[conversationId]
+    })
+
+    Object.assign(conversationsOwnersIds, conversationsAdminsIds)
+
+    const adminIds = [...new Set([...Object.values(conversationsOwnersIds).flat()])]
+
+    return { adminIds, adminIdsByCids: conversationsOwnersIds }
+  }
+
+  async validateConvIdsWhichUserHasAccess(organizationId, conversationIds, userId) {
+    const verifiedConversationIds = await this.conversationParticipantRepo.filterAvailableConversationIds(
       conversationIds,
       userId
     )
@@ -107,21 +176,73 @@ class ConversationService {
     return verifiedConversationIds
   }
 
-  async hasAccessToConversation(conversationId, userId) {
+  async validateConvIdsWhichUserHasAccessAsAdmin(organizationId, conversationIds, userId) {
+    const conversations = await this.conversationRepo.findByIdsWithOrgScope(organizationId, conversationIds)
+
+    const { asOwner, left } = conversations.reduce(
+      (acc, conversation) => {
+        const isOwner = this.helpers.isEqualsNativeIds(conversation.owner_id, userId)
+        isOwner ? acc.asOwner.push(conversation) : acc.left.push(conversation)
+        return acc
+      },
+      { asOwner: [], left: [] }
+    )
+
+    if (!left.length) {
+      return asOwner
+    }
+
+    const expectAdminConversationIds = left.map((conversation) => conversation._id)
+
+    let verifiedConversationIds = await this.conversationParticipantRepo.filterAvailableConversationIds(
+      expectAdminConversationIds,
+      userId,
+      "admin"
+    )
+
+    verifiedConversationIds = verifiedConversationIds.map((cId) => `${cId}`)
+
+    const conversationsAsAdmin = left.filter((conversation) => verifiedConversationIds.includes(`${conversation._id}`))
+
+    const verifiedConversations = asOwner.concat(conversationsAsAdmin)
+
+    return verifiedConversations
+  }
+
+  async hasAccessToConversation(organizationId, conversationId, userId) {
     const result = { conversation: null, asParticipant: false, asOwner: false, participantIds: null }
 
-    result.conversation = await this.conversationRepo.findById(conversationId)
+    result.conversation = await this.conversationRepo.findByIdWithOrgScope(organizationId, conversationId)
 
     if (!result.conversation) {
       return result
     }
 
-    const participantIds = await this.findConversationParticipants(conversationId)
-    result.asParticipant = !!participantIds.find((pId) => this.helpers.isEqualsNativeIds(pId, userId))
+    const participants = await this.findConversationParticipants(conversationId, true)
+    const currentParticipant = participants.find((p) => this.helpers.isEqualsNativeIds(p.user_id, userId))
+
+    result.asParticipant = !!currentParticipant
+    result.asAdmin = currentParticipant?.role === "admin"
     result.asOwner = this.helpers.isEqualsNativeIds(result.conversation.owner_id, userId)
-    result.participantIds = participantIds
+    result.participantIds = participants.map((p) => p.user_id)
 
     return result
+  }
+
+  async validateAccessToConversation(organizationId, conversationId, userId) {
+    const { conversation, asOwner } = await this.hasAccessToConversation(organizationId, conversationId, userId)
+
+    if (!conversation) {
+      throw new Error(ERROR_STATUES.BAD_REQUEST.message, {
+        cause: ERROR_STATUES.BAD_REQUEST,
+      })
+    }
+
+    if (!asOwner) {
+      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+        cause: ERROR_STATUES.FORBIDDEN,
+      })
+    }
   }
 
   async updateParticipants(conversation, addParticipants, removeParticipants, currentParticipantIds) {
@@ -166,9 +287,15 @@ class ConversationService {
       const createParticipantsParams = participantIds.map((participantId) => ({
         conversation_id: conversation._id,
         user_id: participantId,
+        organization_id: conversation.organization_id,
       }))
 
       await this.conversationParticipantRepo.createMany(createParticipantsParams)
+    }
+
+    if (conversation.type === "c") {
+      await this.conversationRepo.updateSubscribersCount(conversation._id, participantsCount)
+      conversation.set("subscribers_count", participantsCount)
     }
 
     return participantIds
@@ -207,7 +334,20 @@ class ConversationService {
       result.newOwnerId = newOwnerId
     }
 
+    if (conversation.type === "c") {
+      await this.conversationRepo.updateSubscribersCount(conversation._id, currentParticipantIds.length)
+      conversation.set("subscribers_count", currentParticipantIds.length)
+    }
+
     return result
+  }
+
+  async participantsAddAdminRole(conversationId, participantsIds) {
+    await this.conversationParticipantRepo.addAdminRole(conversationId, participantsIds)
+  }
+
+  async participantsRemoveAdminRole(conversationId, participantsIds) {
+    await this.conversationParticipantRepo.removeAdminRole(conversationId, participantsIds)
   }
 }
 

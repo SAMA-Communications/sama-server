@@ -8,6 +8,7 @@ export default class Message extends BaseModel {
   static get visibleFields() {
     return [
       "_id",
+      "organization_id",
       "cid",
 
       "t",
@@ -16,11 +17,32 @@ export default class Message extends BaseModel {
       "x",
       "attachments",
       "encrypted_message_type",
+      "replied_message_id",
+      "forwarded_message_id",
 
+      "updated_at",
       "created_at",
 
       "status", // virtual
+      "reactions", // virtual
     ]
+  }
+
+  static get allowedAttachmentFields() {
+    return [
+      "file_id",
+      "file_name",
+      "file_url",
+      "file_blur_hash",
+      "file_content_type",
+      "file_size",
+      "file_width",
+      "file_height",
+    ]
+  }
+
+  static get allowedBotAttachmentFields() {
+    return ["file_url", "file_blur_hash", "file_content_type", "file_size", "file_width", "file_height"]
   }
 
   static get hiddenFields() {

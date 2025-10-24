@@ -5,7 +5,7 @@ class ActivityUserUnsubscribeOperation {
   }
 
   async perform(ws) {
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     await this.activityManagerService.unsubscribeObserver(currentUserId)
   }

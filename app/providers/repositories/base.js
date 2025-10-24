@@ -27,6 +27,18 @@ export default class BaseRepository {
     return ids.map((id) => this.castObjectId(id))
   }
 
+  castOrganizationId(id) {
+    return this.castObjectId(id)
+  }
+
+  castUserId(id) {
+    return this.castObjectId(id)
+  }
+
+  castUserIds(ids) {
+    return ids.map((id) => this.castUserId(id))
+  }
+
   async prepareParams(params) {
     const currentDate = new Date()
 
@@ -40,6 +52,14 @@ export default class BaseRepository {
   }
 
   async create(createParams) {
+    if (createParams._id) {
+      createParams._id = this.castObjectId(createParams._id)
+    }
+
+    if (createParams.organization_id) {
+      createParams.organization_id = this.castOrganizationId(createParams.organization_id)
+    }
+
     const insertParams = await this.prepareParams(createParams)
 
     const result = await this.collectionCursor.insertOne(insertParams)
@@ -89,9 +109,12 @@ export default class BaseRepository {
     return models
   }
 
-  async findAll(query, projectionParams, limit, sortParams) {
+  async findAll(query, projectionParams, limit = 100, sortParams) {
     if (query.cid) {
       query.cid = this.castObjectId(query.cid)
+    }
+    if (query.organization_id) {
+      query.organization_id = this.castOrganizationId(query.organization_id)
     }
     if (query._id) {
       query._id.$nin && (query._id.$nin = this.castObjectIds(query._id.$nin))
@@ -99,8 +122,8 @@ export default class BaseRepository {
     }
     if (query.user_id && !query.user_id.$ne) {
       query.user_id.$in
-        ? (query.user_id.$in = this.castObjectIds(query.user_id.$in))
-        : (query.user_id = this.castObjectId(query.user_id))
+        ? (query.user_id.$in = this.castUserIds(query.user_id.$in))
+        : (query.user_id = this.castUserId(query.user_id))
     }
     if (query.conversation_id) {
       query.conversation_id.$in
@@ -115,10 +138,11 @@ export default class BaseRepository {
       return { ...acc, [p]: 1 }
     }, {})
 
-    const records = await this.collectionCursor
-      .find(query, { limit: limit || 100 })
+    let records = await this.collectionCursor
+      .find(query)
       .project(projection)
       .sort(sortParams || { $natural: -1 })
+      .limit(limit)
       .toArray()
 
     const models = records.map((record) => this.wrapRawRecordInModel(record))
@@ -130,8 +154,11 @@ export default class BaseRepository {
     if (query._id) {
       query._id = this.castObjectId(query._id)
     }
+    if (query.organization_id) {
+      query.organization_id = this.castOrganizationId(query.organization_id)
+    }
     if (query.user_id) {
-      query.user_id = this.castObjectId(query.user_id)
+      query.user_id = this.castUserId(query.user_id)
     }
     if (query.conversation_id) {
       query.conversation_id = this.castObjectId(query.conversation_id)
@@ -145,17 +172,20 @@ export default class BaseRepository {
   }
 
   async count(query) {
+    if (query.organization_id) {
+      query.organization_id = this.castOrganizationId(query.organization_id)
+    }
     if (query.conversation_id) {
       query.conversation_id = this.castObjectId(query.conversation_id)
     }
     if (query.user_id && !query.user_id.$ne) {
-      query.user_id = this.castObjectId(query.user_id)
+      query.user_id = this.castUserId(query.user_id)
     }
     if (query.user_id?.$ne) {
-      query.user_id.$ne = this.castObjectId(query.user_id.$ne)
+      query.user_id.$ne = this.castUserId(query.user_id.$ne)
     }
     if (query.from?.$ne) {
-      query.from.$ne = this.castObjectId(query.from.$ne)
+      query.from.$ne = this.castUserId(query.from.$ne)
     }
 
     const count = await this.collectionCursor.count(query)
@@ -167,6 +197,12 @@ export default class BaseRepository {
     if (query._id) {
       query._id = this.castObjectId(query._id)
     }
+    if (query.organization_id) {
+      query.organization_id = this.castOrganizationId(query.organization_id)
+    }
+    if (query.conversation_id) {
+      query.conversation_id = this.castObjectId(query.conversation_id)
+    }
 
     await this.collectionCursor.updateOne(query, update)
   }
@@ -175,13 +211,16 @@ export default class BaseRepository {
     if (query._id) {
       query._id = this.castObjectId(query._id)
     }
+    if (query.organization_id) {
+      query.organization_id = this.castOrganizationId(query.organization_id)
+    }
     if (query.user_id) {
-      query.user_id = this.castObjectId(query.user_id)
+      query.user_id = this.castUserId(query.user_id)
     }
 
     const record = await this.collectionCursor
       .findOneAndUpdate(query, update, { returnDocument: "after" })
-      .catch((error) => error)
+      .catch((error) => null)
 
     const model = record ? this.wrapRawRecordInModel(record) : null
 
@@ -229,11 +268,14 @@ export default class BaseRepository {
       }
       query._id = this.castObjectId(query._id)
     }
+    if (query.organization_id) {
+      query.organization_id = this.castOrganizationId(query.organization_id)
+    }
     if (query.user_id) {
-      query.user_id = this.castObjectId(query.user_id)
+      query.user_id = this.castUserId(query.user_id)
     }
 
-    await this.collectionCursor.deleteMany(query)
+    return await this.collectionCursor.deleteMany(query)
   }
 
   wrapRawRecordInModel(rawRecord) {

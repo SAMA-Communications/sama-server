@@ -1,5 +1,7 @@
 # JMeter Load Testing for SAMA Server
 
+- Also in Documentation: https://docs.samacloud.io/features/load-tests/
+
 ## Prerequisites
 
 1. **Install JMeter**: Ensure JMeter is installed and the `bin` directory is accessible in your system PATH.

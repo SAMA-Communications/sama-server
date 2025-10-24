@@ -1,10 +1,10 @@
-import CreatePushEventOptions from "@sama/lib/push_queue/models/CreatePushEventOptions.js"
+import CreatePushEventOptions from "@sama/providers/services/push_queue_service/models/CreatePushEventOptions.js"
 
 class PushNotificationService {
-  constructor(RuntimeDefinedContext, pushEventRepo, pushSubscriptionsRepo) {
-    this.RuntimeDefinedContext = RuntimeDefinedContext
+  constructor(pushEventRepo, pushSubscriptionsRepo, pushQueueService) {
     this.pushEventRepo = pushEventRepo
     this.pushSubscriptionsRepo = pushSubscriptionsRepo
+    this.pushQueueService = pushQueueService
   }
 
   async findSubscription(userId, deviceId) {
@@ -46,7 +46,7 @@ class PushNotificationService {
       user_ids: recipientIds,
     })
 
-    const pushEvent = await this.RuntimeDefinedContext.PUSH_QUEUE_DRIVER.createPushEvent(createPushEventOptions)
+    const pushEvent = await this.pushQueueService.createPushEvent(createPushEventOptions)
 
     return pushEvent
   }

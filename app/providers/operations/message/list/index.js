@@ -12,34 +12,40 @@ class MessageListOperation {
   }
 
   async perform(ws, messageListParams) {
-    const { cid: cId, limit, updated_at } = messageListParams
+    const { cid: cId, ids, limit, updated_at } = messageListParams
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
-    const { conversation } = await this.#hasAccess(cId, currentUserId)
+    const { conversation } = await this.#hasAccess(organizationId, cId, currentUserId)
     const isEncrypted = !!conversation.is_encrypted
 
     const normalizedLimit = this.#normalizeLimitParam(limit)
 
     const deviceId = this.sessionService.getDeviceId(ws, currentUser._id)
 
-    const { messages, messagesStatuses } = await this.messageService.messagesList(
+    const { messages, messagesStatuses, messagesReactions } = await this.messageService.messagesList(
       cId,
       currentUser,
-      { updatedAt: updated_at },
+      { ids, updatedAt: updated_at },
       normalizedLimit,
       isEncrypted,
       deviceId
     )
 
-    const messagesWithStatus = await this.#assignMessageStatus(messages, messagesStatuses, currentUserId)
+    const messagesWithVirtualFields = await this.#assignMessageVirtualFields(
+      messages,
+      messagesStatuses,
+      messagesReactions,
+      currentUserId
+    )
 
-    return messagesWithStatus.map((message) => new MessagePublicFields(message))
+    return messagesWithVirtualFields.map((message) => new MessagePublicFields(message))
   }
 
-  async #hasAccess(conversationId, currentUserId) {
+  async #hasAccess(organizationId, conversationId, currentUserId) {
     const { conversation, asParticipant } = await this.conversationService.hasAccessToConversation(
+      organizationId,
       conversationId,
       currentUserId
     )
@@ -59,24 +65,26 @@ class MessageListOperation {
     return { conversation }
   }
 
-  async #assignMessageStatus(messages, messagesStatuses, currentUserId) {
+  async #assignMessageVirtualFields(messages, messagesStatuses, messagesReactions, currentUserId) {
     for (const message of messages) {
       if (this.helpers.isEqualsNativeIds(message.from, currentUserId)) {
         const status = messagesStatuses[message._id]
         const statusName = status?.length ? "read" : "sent"
         message.set("status", statusName)
       }
+
+      message.set("reactions", messagesReactions[message._id] ?? {})
     }
 
     return messages
   }
 
   #normalizeLimitParam(limit) {
-    if (limit > MAIN_CONSTANTS.LIMIT_MAX) {
-      return MAIN_CONSTANTS.LIMIT_MAX
+    if (limit > MAIN_CONSTANTS.MESSAGE_LIMIT_MAX) {
+      return MAIN_CONSTANTS.MESSAGE_LIMIT_MAX
     }
 
-    return limit || MAIN_CONSTANTS.LIMIT_MAX
+    return limit || MAIN_CONSTANTS.MESSAGE_LIMIT_MAX
   }
 }
 

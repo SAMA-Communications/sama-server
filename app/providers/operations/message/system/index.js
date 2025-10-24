@@ -13,14 +13,14 @@ class MessageSendSystemOperation {
   async perform(ws, createSystemMessageParams) {
     const { id, cid, uids, x } = createSystemMessageParams
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     let recipientsIds = []
 
     if (cid) {
-      recipientsIds = await this.#conversationParticipants(cid, currentUserId)
+      recipientsIds = await this.#conversationParticipants(organizationId, cid, currentUserId)
     } else {
-      recipientsIds = await this.userService.userRepo.retrieveExistedIds(uids)
+      recipientsIds = await this.userService.userRepo.retrieveExistedIds(organizationId, uids)
     }
 
     const systemMessageParams = {
@@ -34,8 +34,9 @@ class MessageSendSystemOperation {
     return { recipientsIds, systemMessage: new SystemMessagePublicFields(systemMessageParams) }
   }
 
-  async #conversationParticipants(conversationId, currentUserId) {
+  async #conversationParticipants(organizationId, conversationId, currentUserId) {
     const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
+      organizationId,
       conversationId,
       currentUserId
     )

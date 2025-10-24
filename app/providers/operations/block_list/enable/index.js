@@ -5,7 +5,7 @@ class BlockListEnableOperation {
   }
 
   async perform(ws, isEnabled) {
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     await this.blockListService.enable(currentUserId, isEnabled)
 

@@ -21,11 +21,12 @@ class UserConnectSocketOperation {
     const user = await this.userService.userRepo.findById(token.user_id)
 
     // TODO: close connections
-    this.sessionService.addUserDeviceConnection(ws, user.native_id, deviceId)
+    this.sessionService.addUserDeviceConnection(ws, user.organization_id, user.native_id, deviceId)
 
     await this.sessionService.storeUserNodeData(
       this.RuntimeDefinedContext.APP_IP,
       this.RuntimeDefinedContext.CLUSTER_PORT,
+      user.organization_id,
       user.native_id,
       deviceId
     )

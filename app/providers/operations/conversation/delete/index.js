@@ -11,9 +11,13 @@ class ConversationDeleteOperation {
   }
 
   async perform(ws, conversationId) {
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    const { conversation, participantIds } = await this.#getConversationDetails(conversationId, currentUserId)
+    const { conversation, participantIds } = await this.#getConversationDetails(
+      organizationId,
+      conversationId,
+      currentUserId
+    )
 
     await this.conversationService.removeParticipants(conversation, [currentUserId], participantIds)
 
@@ -21,13 +25,19 @@ class ConversationDeleteOperation {
       (participantId) => !this.helpers.isEqualsNativeIds(participantId, currentUserId)
     )
 
-    const conversationEvents = await this.#createActionEvents(conversation, currentUserId, filteredParticipants)
+    const result = { currentUserId }
 
-    return { currentUserId, conversationEvents }
+    if (this.conversationNotificationService.isEnabled()) {
+      const conversationEvents = await this.#createActionEvents(conversation, currentUserId, filteredParticipants)
+      result.conversationEvents = conversationEvents
+    }
+
+    return result
   }
 
-  async #getConversationDetails(conversationId, userId) {
+  async #getConversationDetails(organizationId, conversationId, userId) {
     const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
+      organizationId,
       conversationId,
       userId
     )

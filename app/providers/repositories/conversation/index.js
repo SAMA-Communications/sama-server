@@ -2,12 +2,35 @@ import BaseRepository from "../base.js"
 
 class ConversationRepository extends BaseRepository {
   async prepareParams(params) {
-    params.owner_id = this.castObjectId(params.owner_id)
+    params.organization_id = this.castOrganizationId(params.organization_id)
+    params.owner_id = this.castUserId(params.owner_id)
     if (params.opponent_id) {
-      params.opponent_id = this.castObjectId(params.opponent_id)
+      params.opponent_id = this.castUserId(params.opponent_id)
     }
 
     return await super.prepareParams(params)
+  }
+
+  async findByIdWithOrgScope(organizationId, conversationId) {
+    const query = {
+      organization_id: organizationId,
+      _id: conversationId,
+    }
+
+    const conversation = await this.findOne(query)
+
+    return conversation
+  }
+
+  async findByIdsWithOrgScope(organizationId, conversationIds) {
+    const query = {
+      organization_id: organizationId,
+      _id: { $in: this.castObjectIds(conversationIds) },
+    }
+
+    const conversation = await this.findAll(query)
+
+    return conversation
   }
 
   async findExistedPrivateConversation(ownerId, opponentId, isEncrypted) {
@@ -17,6 +40,7 @@ class ConversationRepository extends BaseRepository {
     const query = { type: "u", is_encrypted: { $exists: isEncrypted || false } }
 
     const conversation = await this.findOne({
+      type: "u",
       $or: [
         {
           owner_id: ownerId,
@@ -34,9 +58,22 @@ class ConversationRepository extends BaseRepository {
     return conversation
   }
 
-  async search({ chatNameMatch, ignoreIds, timeFromUpdate }, limit) {
+  async findAvailablePrivateConversation(conversationIds, user_id) {
+    const participantId = this.castObjectId(user_id)
+
+    const conversations = await this.findAll({
+      _id: { $in: conversationIds },
+      type: "u",
+      $or: [{ owner_id: participantId }, { opponent_id: participantId }],
+    })
+
+    return conversations
+  }
+
+  async search(organizationId, { chatNameMatch, ignoreIds, timeFromUpdate }, limit) {
     const query = {
       _id: { $nin: ignoreIds },
+      organization_id: organizationId,
       name: { $regex: new RegExp(`${chatNameMatch}.*`, "i") },
     }
 
@@ -49,8 +86,9 @@ class ConversationRepository extends BaseRepository {
     return conversations
   }
 
-  async list(conversationIds, options, limit) {
+  async list(organizationId, conversationIds, options, limit) {
     const query = {
+      organization_id: organizationId,
       _id: { $in: conversationIds },
     }
 
@@ -72,6 +110,10 @@ class ConversationRepository extends BaseRepository {
 
   async updateLastActivity(conversationId, updatedAt) {
     await this.updateOne({ _id: conversationId }, { $set: { updated_at: updatedAt } })
+  }
+
+  async updateSubscribersCount(conversationId, subscribersCount) {
+    await this.updateOne({ _id: conversationId }, { $set: { subscribers_count: subscribersCount } })
   }
 
   async update(conversationId, updateParams) {

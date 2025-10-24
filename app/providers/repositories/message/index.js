@@ -3,10 +3,14 @@ import BaseRepository from "../base.js"
 class MessageRepository extends BaseRepository {
   async prepareParams(params) {
     if (params.deleted_for?.length) {
-      params.deleted_for = this.castObjectIds(params.deleted_for)
+      params.deleted_for = this.castUserIds(params.deleted_for)
     }
-    params.from = this.castObjectId(params.from)
+    params.from = this.castUserId(params.from)
     params.cid = this.castObjectId(params.cid)
+    params.organization_id = this.castOrganizationId(params.organization_id)
+    if (params.replied_message_id) {
+      params.replied_message_id = this.castObjectId(params.replied_message_id)
+    }
 
     return await super.prepareParams(params)
   }
@@ -34,7 +38,7 @@ class MessageRepository extends BaseRepository {
 
   async findLastMessageForConversations(cids, userId) {
     cids = this.castObjectIds(cids)
-    userId = this.castObjectId(userId)
+    userId = this.castUserId(userId)
 
     const $match = {
       cid: { $in: cids },
@@ -71,30 +75,62 @@ class MessageRepository extends BaseRepository {
     return baseOptions
   }
 
-  async list(conversationId, userId, options, limit) {
-    let query = {
-      cid: this.castObjectId(conversationId),
-      deleted_for: { $nin: [this.castObjectId(userId)] },
-    }
-
-    query = await this.buildOptions(query, options)
-    const messages = await this.findAll(query, null, limit)
-
-    return messages
-  }
-
   async listByMids(mids, options, limit) {
     let query = { _id: { $in: mids } }
 
     query = await this.buildOptions(query, options)
     const messages = await this.findAll(query, null, limit)
+    return messages
+  }
+
+  async findLastUserMessageForConversation(cid, userId) {
+    cid = this.castObjectId(cid)
+    userId = this.castObjectId(userId)
+
+    const result = this.findOne({ cid, from: userId })
+
+    return result
+  }
+
+  async findMessageById(conversationId, userId, mid) {
+    const query = { _id: mid, deleted_for: { $nin: [this.castUserId(userId)] } }
+    conversationId && (query.cid = this.castObjectId(conversationId))
+
+    const message = await this.findOne(query)
+
+    return message
+  }
+
+  async list(conversationId, userId, options, limit = 100) {
+    const cid = this.castObjectId(conversationId)
+    const query = { cid, deleted_for: { $nin: [this.castUserId(userId)] } }
+    let sort = null
+
+    if (options.ids) {
+      query._id = this.mergeOperators(query.updated_at, { $in: this.castObjectIds(options.ids) })
+    }
+    if (options.updatedAtFrom) {
+      query.updated_at = this.mergeOperators(query.updated_at, { $gt: options.updatedAtFrom })
+      sort = { created_at: 1 }
+    }
+    if (options.updatedAtBefore) {
+      query.updated_at = this.mergeOperators(query.updated_at, { $lt: options.updatedAtBefore })
+    }
+    if (options.createdAtFrom) {
+      query.created_at = this.mergeOperators(query.created_at, { $gt: options.createdAtFrom })
+    }
+    if (options.bodyNotEmpty) {
+      query.body = { $exists: true, $ne: null, $regex: /\S/ }
+    }
+
+    const messages = await this.findAll(query, null, limit, sort)
 
     return messages
   }
 
   async countUnreadMessagesByCids(cids, userId, lastReadMessageByUserForCids) {
     const arrayParams = cids.map((cid) => {
-      const query = { cid: this.castObjectId(cid), from: { $ne: this.castObjectId(userId) } }
+      const query = { cid: this.castObjectId(cid), from: { $ne: this.castUserId(userId) } }
       if (lastReadMessageByUserForCids[cid]) {
         query._id = { $gt: lastReadMessageByUserForCids[cid] }
       }
@@ -121,11 +157,12 @@ class MessageRepository extends BaseRepository {
   }
 
   async updateBody(messageId, newBody) {
-    await this.updateOne({ _id: messageId }, { $set: { body: newBody } })
+    await this.updateOne({ _id: messageId }, { $set: { body: newBody, updated_at: new Date() } })
   }
 
   async updateDeleteForUser(messageIds, userId) {
     messageIds = this.castObjectIds(messageIds)
+    userId = this.castUserId(userId)
 
     await this.updateMany({ _id: { $in: messageIds } }, { $addToSet: { deleted_for: userId } })
   }

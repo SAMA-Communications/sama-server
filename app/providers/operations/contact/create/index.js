@@ -5,17 +5,19 @@ class ContactAddOperation {
   }
 
   async perform(ws, contactData, isBatch) {
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
     if (!isBatch) {
-      return this.singleAdd(currentUserId, contactData)
+      return this.singleAdd(organizationId, currentUserId, contactData)
     } else {
-      return this.batchAdd(currentUserId, contactData)
+      return this.batchAdd(organizationId, currentUserId, contactData)
     }
   }
 
-  async singleAdd(currentUserId, contactData) {
-    await this.contactService.matchContactWithUser(contactData)
+  async singleAdd(organizationId, currentUserId, contactData) {
+    await this.contactService.matchContactWithUser(organizationId, contactData)
+
+    contactData.organization_id = organizationId
     contactData.user_id = currentUserId
 
     const contact = await this.contactService.create(contactData)
@@ -23,7 +25,7 @@ class ContactAddOperation {
     return contact
   }
 
-  async batchAdd(currentUserId, contactsData) {
+  async batchAdd(organizationId, currentUserId, contactsData) {
     const contactsList = []
 
     for (const contactData of contactsData) {
@@ -31,7 +33,7 @@ class ContactAddOperation {
         continue
       }
 
-      const contact = await this.singleAdd(currentUserId, contactData)
+      const contact = await this.singleAdd(organizationId, currentUserId, contactData)
 
       contactsList.push(contact)
     }

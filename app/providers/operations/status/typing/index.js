@@ -8,9 +8,9 @@ class StatusTypingOperation {
 
   async perform(ws, statusTypingParams) {
     const { cid: conversationId, status } = statusTypingParams
-    const currentUserId = this.sessionService.getSessionUserId(ws)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    const { conversation, participantIds } = await this.#hasAccess(conversationId, currentUserId)
+    const { conversation, participantIds } = await this.#hasAccess(organizationId, conversationId, currentUserId)
 
     const currentTs = parseInt(Math.round(Date.now() / 1000))
 
@@ -27,8 +27,9 @@ class StatusTypingOperation {
     return { status: typingStatus, participantIds }
   }
 
-  async #hasAccess(conversationId, currentUserId) {
+  async #hasAccess(organizationId, conversationId, currentUserId) {
     const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
+      organizationId,
       conversationId,
       currentUserId
     )

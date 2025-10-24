@@ -11,8 +11,10 @@ export const ERROR_STATUES = {
     status: 422,
     message: "The type you entered is incorrect.",
   },
+  ORG_NOT_FOUND: { status: 404, message: "Organization not found" },
   INCORRECT_TOKEN: { status: 422, message: "Incorrect token." },
   TOKEN_EXPIRED: { status: 422, message: "The token has expired." },
+  ROUTE_NOT_FOUND: { status: 404, message: "Route not found" },
   // Users -->
   USER_ID_MISSED: { status: 422, message: "User ID missed." },
   USER_NOT_FOUND: {
@@ -43,13 +45,14 @@ export const ERROR_STATUES = {
   },
   INCORRECT_LOGIN: { status: 422, message: "The login provided is incorrect." },
   INCORRECT_CURRENT_PASSWORD: {
-    status: 422,
+    status: 401,
     message: "The current password you entered is incorrect.",
   },
   INCORRECT_LOGIN_OR_PASSWORD: {
-    status: 422,
+    status: 401,
     message: "Incorrect username or password.",
   },
+  INCORRECT_OTP_TOKEN: { status: 403, message: "Incorrect token for password recovery." },
   DEVICE_ID_MISSED: { status: 422, message: `'device_id' is required.` },
   // Contacts -->
   CONTACT_NOT_FOUND: { status: 422, message: "Contact not found." },
@@ -86,6 +89,7 @@ export const ERROR_STATUES = {
     message: `You've reached the maximum participant limit.`,
   },
   OPPONENT_NOT_FOUND: { status: 422, message: "Opponent ID not found." },
+  HANDLER_NOT_FOUND: { status: 422, message: "Handler for this conversation not found." },
   // File -->
   FILE_IDS_MISSED: { status: 422, message: "File IDS missed." },
   FILE_LIMIT_EXCEEDED: {
@@ -106,6 +110,7 @@ export const ERROR_STATUES = {
   MESSAGE_ID_NOT_FOUND: { status: 422, message: "Message ID not found." },
   MESSAGE_ID_MISSED: { status: 422, message: "Message ID missed." },
   INCORRECT_MESSAGE_ID: { status: 422, message: "Incorrect message ID." },
+  INCORRECT_REPLY_MESSAGE_ID: { status: 422, message: "Incorrect replied message ID." },
   MESSAGE_TYPE_MISSED: { status: 422, message: "Message type missed." },
   MESSAGE_BODY_AND_ATTACHMENTS_EMPTY: {
     status: 422,
@@ -115,12 +120,26 @@ export const ERROR_STATUES = {
     status: 422,
     message: "Communication is not possible - you are in a block list of the recipient.",
   },
+  INCORRECT_TYPE_OF_BODY: {
+    status: 422,
+    message: "Incorrect type of message body.",
+  },
+  INVALID_ATTACHMENT_FIELDS: {
+    status: 422,
+    message: "Invalid attachment fields.",
+  },
+  CORS_RESTRICTIONS: "A CORS error occurred while trying to perform a network request.",
+  AI_AGENT_ERROR: {
+    status: 500,
+    message: "An error occurred while processing messages with the AI agent.",
+  },
   // Status -->
   STATUS_ID_MISSED: { status: 422, message: "Status ID missed." },
   STATUS_TYPE_MISSED: { status: 422, message: "Status type missed." },
   STATUS_T_MISSED: { status: 422, message: `Status 't' missed.` },
+  MESSAGE_BLOCKED_BY_HANDLER: { status: 422, message: "Message blocked by conversation rules." },
   // Push Notification -->
-  INCORRECT_PLATFROM_TYPE: { status: 422, message: "Incorrect platform type." },
+  INCORRECT_PLATFORM_TYPE: { status: 422, message: "Incorrect platform type." },
   INCORRECT_DEVICE_ID: { status: 422, message: "Incorrect device id." },
   INCORRECT_RECIPIENTS_IDS: {
     status: 422,
@@ -143,7 +162,7 @@ export const ERROR_STATUES = {
   INCORRECT_USER_ID: { status: 422, message: "Incorrect user id." },
   INCORRECT_USERS_ARRAY: { status: 422, message: "Incorrect users array." },
   // Other -->
-  LOG_TIMETAMP_MISSED: { status: 422, message: "Gt or lt query missed." },
+  LOG_TIMESTAMP_MISSED: { status: 422, message: "Gt or lt query missed." },
   CID_REQUIRED: {
     status: 422,
     message: `'cid' field is required.`,
@@ -159,6 +178,10 @@ export const ERROR_STATUES = {
   MISSING_AUTH_CREDENTIALS: {
     status: 401,
     message: "Missing authentication credentials.",
+  },
+  MISSING_OTP_SENDER_SERVICE: {
+    status: 401,
+    message: "Failed to create OTP sender transporter.",
   },
 }
 

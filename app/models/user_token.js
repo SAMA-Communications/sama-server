@@ -6,6 +6,6 @@ export default class UserToken extends BaseModel {
   }
 
   static get visibleFields() {
-    return ["_id", "user_id", "device_id", "token", "created_at", "updated_at"]
+    return ["_id", "organization_id", "user_id", "device_id", "token", "created_at", "updated_at"]
   }
 }

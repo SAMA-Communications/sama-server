@@ -1,6 +1,6 @@
 {
   "name": "sama",
-  "version": "0.29.0",
+  "version": "0.35.0",
   "description": "Simple but Advanced Messaging Alternative",
   "main": "index.js",
   "type": "module",
@@ -10,8 +10,10 @@
     "migrate-mongo-down": "npm run migrate-mongo down",
     "migrate-mongo-status": "npm run migrate-mongo status",
     "migrate-mongo-create": "npm run migrate-mongo create",
-    "start": "nodemon --experimental-loader ./sama-loader.mjs --import dotenv/config index.js",
-    "test": "nyc mocha --node-option experimental-loader=./sama-loader.mjs --node-option import=dotenv/config --exit"
+    "start": "node --experimental-loader ./sama-loader.mjs --import dotenv/config index.js",
+    "start:dev": "nodemon --experimental-loader ./sama-loader.mjs --import dotenv/config index.js",
+    "test": "mocha",
+    "test:cover": "c8 npm run test"
   },
   "repository": {
     "type": "git",
@@ -20,9 +22,15 @@
   "author": "Igor Khomenko",
   "license": "GPL-3.0",
   "dependencies": {
+    "@ai-sdk/google": "^2.0.16",
     "@aws-sdk/client-s3": "^3.327.0",
     "@aws-sdk/s3-request-presigner": "^3.328.0",
+    "@jitl/quickjs-ng-wasmfile-release-sync": "^0.31.0",
+    "@sebastianwessel/quickjs": "^2.1.1",
+    "ai": "^5.0.51",
     "bull": "^4.10.4",
+    "cookie": "1.0.2",
+    "cookie-parser": "1.4.7",
     "cookie-signature": "^1.2.2",
     "dotenv": "^16.0.1",
     "joi": "^17.8.3",
@@ -32,14 +40,15 @@
     "mongodb": "^6.13.0",
     "nodemon": "^2.0.19",
     "redis": "^4.5.1",
+    "resend": "^6.0.3",
     "string_decoder": "^1.3.0",
     "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.51.0",
     "websocket": "^1.0.34",
     "ws": "^8.12.0"
   },
   "devDependencies": {
+    "c8": "^10.1.3",
     "mocha": "^10.0.0",
-    "nyc": "^15.1.0",
     "prettier": "3.2.5"
   },
   "engines": {

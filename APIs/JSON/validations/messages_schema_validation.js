@@ -1,5 +1,9 @@
 import Joi from "joi"
 import { ERROR_STATUES, requiredError } from "@sama/constants/errors.js"
+import { CONSTANTS as MAIN_CONSTANTS } from "@sama/constants/constants.js"
+
+const CHAT_SUMMARY_FILTERS_ARRAY = Object.values(MAIN_CONSTANTS.CHAT_SUMMARY_FITLERS)
+const MESSAGE_TONE_ARRAY = Object.values(MAIN_CONSTANTS.MESSAGE_TONE)
 
 export const messagesSchemaValidation = {
   create: Joi.object()
@@ -33,6 +37,10 @@ export const messagesSchemaValidation = {
             file_id: Joi.string(),
             file_name: Joi.string().max(255),
             file_blur_hash: Joi.string().max(255),
+            file_content_type: Joi.string().max(255),
+            file_size: Joi.number().max(104857601),
+            file_width: Joi.number().max(10000),
+            file_height: Joi.number().max(10000),
           })
         )
         .min(1)
@@ -41,6 +49,8 @@ export const messagesSchemaValidation = {
             cause: ERROR_STATUES.MESSAGE_BODY_AND_ATTACHMENTS_EMPTY,
           })
         ),
+      replied_message_id: Joi.string(),
+      forwarded_message_id: Joi.string(),
       deleted_for: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required()),
       encrypted_message_type: Joi.number().allow(1, 0),
     })
@@ -62,6 +72,18 @@ export const messagesSchemaValidation = {
         })
       ),
   }).required(),
+  reactions_update: Joi.object({
+    mid: Joi.alternatives()
+      .required()
+      .try(Joi.object(), Joi.string())
+      .error(
+        new Error(ERROR_STATUES.INCORRECT_MESSAGE_ID.message, {
+          cause: ERROR_STATUES.INCORRECT_MESSAGE_ID,
+        })
+      ),
+    add: Joi.string().max(10).optional(),
+    remove: Joi.string().max(10).optional(),
+  }).or("add", "remove"),
   list: Joi.object({
     cid: Joi.string()
       .required()
@@ -70,9 +92,20 @@ export const messagesSchemaValidation = {
           cause: ERROR_STATUES.CID_REQUIRED,
         })
       ),
+    ids: Joi.array().items(Joi.string()).max(100),
     limit: Joi.number(),
     updated_at: Joi.object().allow({ gt: Joi.date() }, { lt: Joi.date() }),
   }).required(),
+  reactions_list: Joi.object({
+    mid: Joi.alternatives()
+      .required()
+      .try(Joi.object(), Joi.string())
+      .error(
+        new Error(ERROR_STATUES.INCORRECT_MESSAGE_ID.message, {
+          cause: ERROR_STATUES.INCORRECT_MESSAGE_ID,
+        })
+      ),
+  }),
   read: Joi.object({
     cid: Joi.string()
       .required()
@@ -165,4 +198,12 @@ export const messagesSchemaValidation = {
     })
     .oxor("cid", "uids")
     .required(),
+  summary: Joi.object({
+    cid: Joi.string().required(),
+    filter: Joi.string().valid(...CHAT_SUMMARY_FILTERS_ARRAY),
+  }).required(),
+  tone: Joi.object({
+    body: Joi.string().min(1).required(),
+    tone: Joi.string().valid(...MESSAGE_TONE_ARRAY),
+  }).required(),
 }

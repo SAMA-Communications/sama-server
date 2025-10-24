@@ -1,10 +1,10 @@
+import { ERROR_STATUES } from "../../../../constants/errors.js"
 import groupBy from "@sama/utils/groupBy.js"
 import ReadMessagesPublicFields from "@sama/DTO/Response/message/read/public_fields.js"
 
 class MessageReadOperation {
-  constructor(sessionService, userService, messageService, conversationService) {
+  constructor(sessionService, messageService, conversationService) {
     this.sessionService = sessionService
-    this.userService = userService
     this.messageService = messageService
     this.conversationService = conversationService
   }
@@ -12,10 +12,16 @@ class MessageReadOperation {
   async perform(ws, messageParams) {
     const { cid, ids: mids } = messageParams
 
-    const currentUserId = this.sessionService.getSessionUserId(ws)
-    const currentUser = await this.userService.userRepo.findById(currentUserId)
+    const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    const unreadMessages = await this.messageService.readMessagesInConversation(cid, currentUser, mids)
+    await this.#hasAccess(organizationId, cid, currentUserId)
+
+    const unreadMessages = await this.messageService.readMessagesInConversation(
+      organizationId,
+      cid,
+      currentUserId,
+      mids
+    )
 
     const unreadMessagesGroupedByFrom = groupBy(unreadMessages, "from")
 
@@ -29,6 +35,32 @@ class MessageReadOperation {
     })
 
     return { readMessagesGroups }
+  }
+
+  async #hasAccess(organizationId, conversationId, currentUserId) {
+    const { conversation, asParticipant } = await this.conversationService.hasAccessToConversation(
+      organizationId,
+      conversationId,
+      currentUserId
+    )
+
+    if (!conversation) {
+      throw new Error(ERROR_STATUES.CONVERSATION_NOT_FOUND.message, {
+        cause: ERROR_STATUES.CONVERSATION_NOT_FOUND,
+      })
+    }
+
+    if (conversation.type === "c") {
+      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+        cause: ERROR_STATUES.FORBIDDEN,
+      })
+    }
+
+    if (!asParticipant) {
+      throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+        cause: ERROR_STATUES.FORBIDDEN,
+      })
+    }
   }
 }
 

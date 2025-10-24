@@ -5,10 +5,11 @@ const name = "UserCreateOperation"
 
 class UserCreateOperationRegisterProvider extends RegisterProvider {
   register(slc) {
+    const orgService = slc.use("OrganizationService")
     const userService = slc.use("UserService")
     const contactService = slc.use("ContactService")
 
-    return new UserCreateOperation(userService, contactService)
+    return new UserCreateOperation(orgService, userService, contactService)
   }
 }
 

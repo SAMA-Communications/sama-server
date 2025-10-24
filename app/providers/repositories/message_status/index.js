@@ -4,7 +4,7 @@ class MessageStatusRepository extends BaseRepository {
   async prepareParams(params) {
     params.cid = this.castObjectId(params.cid)
     params.mid = this.castObjectId(params.mid)
-    params.user_id = this.castObjectId(params.user_id)
+    params.user_id = this.castUserId(params.user_id)
 
     return await super.prepareParams(params)
   }
@@ -47,7 +47,7 @@ class MessageStatusRepository extends BaseRepository {
 
   async findLastReadMessageByUserForCid(cids, userId) {
     cids = this.castObjectIds(cids)
-    userId = this.castObjectId(userId)
+    userId = this.castUserId(userId)
 
     const $match = {
       cid: { $in: cids },
@@ -74,6 +74,16 @@ class MessageStatusRepository extends BaseRepository {
 
   async deleteByMidsAndCid(mids, cid) {
     await this.deleteMany({ mid: { $in: mids }, cid })
+  }
+
+  async getLastReadTimeByUser(cid, userId, mid) {
+    ;[cid, mid, userId] = this.castObjectIds([cid, mid, userId])
+
+    const query = { cid, mid, user_id: userId }
+
+    const result = await this.findOne(query)
+
+    return result.created_at
   }
 }
 
