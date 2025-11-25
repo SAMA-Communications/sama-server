@@ -75,6 +75,12 @@ class ConversationEditOperation {
     }
 
     const isUpdateConversationFields = !!Object.keys(updateFields).length
+    console.log(
+      "isUpdateConversationFields",
+      Object.keys(updateFields),
+      Object.keys(updateFields).filter((el) => el !== "participants")
+    )
+
     const isUpdateConversationImage = !!updateFields.image_object
     const updatedConversationWithImageUrl = await this.conversationService.addImageUrl([updatedConversation])
 
@@ -211,10 +217,6 @@ class ConversationEditOperation {
       }
 
       await this.#addMessagesInfo(conversation, currentUser)
-      const updateEvent = await this.#actionEvent(conversation, currentUser, false)
-      updateEvent.participantIds = addedParticipantIds
-
-      conversationEvent.push(updateEvent)
     }
 
     if (removedParticipantIds.length) {
