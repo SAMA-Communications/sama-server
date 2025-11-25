@@ -211,6 +211,10 @@ class ConversationEditOperation {
       }
 
       await this.#addMessagesInfo(conversation, currentUser)
+      const updateEvent = await this.#actionEvent(conversation, currentUser, false)
+      updateEvent.participantIds = addedParticipantIds
+
+      conversationEvent.push(updateEvent)
     }
 
     if (removedParticipantIds.length) {
@@ -236,7 +240,7 @@ class ConversationEditOperation {
     if (isUpdateConversation) {
       const updatedEvent = await this.#actionEvent(conversation, currentUser, false)
 
-      updatedEvent.participantIds = currentParticipantIds
+      updatedEvent.participantIds = currentParticipantIds.filter((id) => !addedParticipantIds.includes(id))
       conversationEvent.push({ ...updatedEvent, ignoreOwnDelivery: true })
     }
 
