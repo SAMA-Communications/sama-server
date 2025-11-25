@@ -75,12 +75,6 @@ class ConversationEditOperation {
     }
 
     const isUpdateConversationFields = !!Object.keys(updateFields).length
-    console.log(
-      "isUpdateConversationFields",
-      Object.keys(updateFields),
-      Object.keys(updateFields).filter((el) => el !== "participants")
-    )
-
     const isUpdateConversationImage = !!updateFields.image_object
     const updatedConversationWithImageUrl = await this.conversationService.addImageUrl([updatedConversation])
 
