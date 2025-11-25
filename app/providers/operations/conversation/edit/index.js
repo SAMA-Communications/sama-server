@@ -240,7 +240,9 @@ class ConversationEditOperation {
     if (isUpdateConversation) {
       const updatedEvent = await this.#actionEvent(conversation, currentUser, false)
 
-      updatedEvent.participantIds = currentParticipantIds.filter((id) => !addedParticipantIds.includes(id))
+      updatedEvent.participantIds = currentParticipantIds.filter(
+        (id) => !addedParticipantIds.some((addedId) => this.helpers.isEqualsNativeIds(id, addedId))
+      )
       conversationEvent.push({ ...updatedEvent, ignoreOwnDelivery: true })
     }
 
