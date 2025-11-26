@@ -197,6 +197,12 @@ class ConversationEditOperation {
     const conversationEvent = []
 
     if (addedParticipantIds.length) {
+      await this.#addMessagesInfo(conversation, currentUser)
+      const updateEvent = await this.#actionEvent(conversation, currentUser, false)
+      updateEvent.participantIds = addedParticipantIds
+
+      conversationEvent.push(updateEvent)
+
       for (const addedParticipantId of addedParticipantIds) {
         const addParticipantEvent = await this.#participantsActionEvent(
           conversation,
@@ -209,12 +215,6 @@ class ConversationEditOperation {
 
         conversationEvent.push(addParticipantEvent)
       }
-
-      await this.#addMessagesInfo(conversation, currentUser)
-      const updateEvent = await this.#actionEvent(conversation, currentUser, false)
-      updateEvent.participantIds = addedParticipantIds
-
-      conversationEvent.push(updateEvent)
     }
 
     if (removedParticipantIds.length) {
