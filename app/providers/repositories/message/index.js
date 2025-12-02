@@ -65,20 +65,16 @@ class MessageRepository extends BaseRepository {
     return result
   }
 
-  async buildOptions(baseOptions, options) {
-    if (options.updatedAtFrom) {
-      baseOptions.updated_at = this.mergeOperators(baseOptions.updated_at, { $gt: options.updatedAtFrom })
-    }
-    if (options.updatedAtBefore) {
-      baseOptions.updated_at = this.mergeOperators(baseOptions.updated_at, { $lt: options.updatedAtBefore })
-    }
-    return baseOptions
-  }
-
   async listByMids(mids, options, limit) {
     let query = { _id: { $in: mids } }
 
-    query = await this.buildOptions(query, options)
+    if (options.updatedAtFrom) {
+      query.updated_at = this.mergeOperators(query.updated_at, { $gt: options.updatedAtFrom })
+    }
+    if (options.updatedAtBefore) {
+      query.updated_at = this.mergeOperators(query.updated_at, { $lt: options.updatedAtBefore })
+    }
+
     const messages = await this.findAll(query, null, limit)
     return messages
   }
