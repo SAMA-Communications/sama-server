@@ -229,7 +229,10 @@ export default class BaseRepository {
 
   async updateMany(query, update) {
     if (query.user_id) {
-      query.user_id.$in = this.castObjectIds(query.user_id.$in)
+      if (query.user_id.$in) {
+        query.user_id.$in = this.castObjectIds(query.user_id.$in)
+      }
+      query.user_id = this.castObjectId(query.user_id)
     }
 
     await this.collectionCursor.updateMany(query, update)
