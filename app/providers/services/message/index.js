@@ -175,7 +175,6 @@ class MessageService {
       const mids = unreadMessages.map((message) => message._id).reverse()
 
       await this.messageStatusRepo.upsertMessageStatus(cid, mids, userId, "read")
-      await this.messageStatusRepo.upsertMessageReadStatuses(cid, mids, userId, "read")
     }
 
     return unreadMessages
