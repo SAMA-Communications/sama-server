@@ -75,7 +75,7 @@ class MessageService {
     return processedResponse
   }
 
-  async messagesList(cId, user, options, limit, isEncrypted, deviceId) {
+  async messagesList(cid, user, options, limit, isEncrypted, deviceId) {
     const filterOptions = {}
     if (options.ids) {
       filterOptions.ids = options.ids
