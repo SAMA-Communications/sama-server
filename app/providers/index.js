@@ -15,8 +15,11 @@ import ConversationHandlerRepoProvider from "./repositories/conversation_handler
 import ConversationParticipantRepoProvider from "./repositories/conversation_participants/Provider.js"
 import MessageRepoProvider from "./repositories/message/Provider.js"
 import MessageStatusRepoProvider from "./repositories/message_status/Provider.js"
+import EncryptionRepoProvider from "./repositories/encryption/Provider.js"
+import EncryptedMessageStatusRepoProvider from "./repositories/encrypted_message_status/Provider.js"
 import MessageReactionRepoProvider from "./repositories/message_reaction/Provider.js"
 import ContactRepositoryProvider from "./repositories/contact/Provider.js"
+import OperationLogRepoProvider from "./repositories/operation_log/Provider.js"
 import OperationsLogRepositoryProvider from "./repositories/operations_log/Provider.js"
 import PushEventRepositoryProvider from "./repositories/push_event/Provider.js"
 import PushSubscriptionRepositoryProvider from "./repositories/push_subscriptions/Provider.js"
@@ -31,6 +34,8 @@ import OperationsLogServiceProvider from "./services/operation_logs/Provider.js"
 import ActivityManagerServiceProvider from "./services/activity_manager/Provider.js"
 import ConversationServiceProvider from "./services/conversation/Provider.js"
 import ConversationHandlerServiceProvider from "./services/conversation_handler/Provider.js"
+import EncryptionServiceProvider from "./services/encryption/Provider.js"
+import EncryptedMessageStatusServiceProvider from "./services/encrypted_message_status/Provider.js"
 import MessageServiceProvider from "./services/message/Provider.js"
 import ConversationNotificationProvider from "./services/conversation_notification/Provider.js"
 import ContactServiceProvider from "./services/contacts/Provider.js"
@@ -79,6 +84,7 @@ import ConversationHandlerDeleteOperationProvider from "./operations/conversatio
 
 import MessageCreateOperationProvider from "./operations/message/create/Provider.js"
 import MessageEditOperationProvider from "./operations/message/edit/Provider.js"
+import MessageDecryptionFailedOperationProvider from "./operations/message/decryption_failed/Provider.js"
 import MessageReadOperationProvider from "./operations/message/read/Provider.js"
 import MessageDeleteOperationProvider from "./operations/message/delete/Provider.js"
 import MessageListOperationProvider from "./operations/message/list/Provider.js"
@@ -91,6 +97,13 @@ import MessageToneOperationProvider from "./operations/message/tone/Provider.js"
 import OpLogsListOperationProvider from "./operations/operation_logs/list/Provider.js"
 
 import StatusTypingOperationProvider from "./operations/status/typing/Provider.js"
+
+import EncryptionRegisterOperationProvider from "./operations/encryption/register/Provider.js"
+import EncryptionListOperationProvider from "./operations/encryption/list/Provider.js"
+import EncryptionRequestKeysOperationProvider from "./operations/encryption/request_keys/Provider.js"
+import EncryptionDeleteOperationProvider from "./operations/encryption/delete/Provider.js"
+
+import OperationLogLogsOperationProvider from "./operations/operation_log/logs/Provider.js"
 
 import ContactCreateOperationProvider from "./operations/contact/create/Provider.js"
 import ContactEditOperationProvider from "./operations/contact/edit/Provider.js"
@@ -134,10 +147,13 @@ const providers = [
   ConversationRepoProvider,
   ConversationHandlerRepoProvider,
   ConversationParticipantRepoProvider,
+  EncryptionRepoProvider,
+  EncryptedMessageStatusRepoProvider,
   MessageRepoProvider,
   MessageStatusRepoProvider,
   MessageReactionRepoProvider,
   ContactRepositoryProvider,
+  OperationLogRepoProvider,
   OperationsLogRepositoryProvider,
   PushEventRepositoryProvider,
   PushSubscriptionRepositoryProvider,
@@ -154,6 +170,8 @@ const providers = [
   ConversationHandlerServiceProvider,
   MessageServiceProvider,
   ConversationNotificationProvider,
+  EncryptionServiceProvider,
+  EncryptedMessageStatusServiceProvider,
   ContactServiceProvider,
   PushNotificationServiceProvider,
   PushQueueServiceProvider,
@@ -201,6 +219,7 @@ const providers = [
   MessageCreateOperationProvider,
   MessageEditOperationProvider,
   MessageReadOperationProvider,
+  MessageDecryptionFailedOperationProvider,
   MessageDeleteOperationProvider,
   MessageListOperationProvider,
   MessageReactionsUpdateOperationProvider,
@@ -213,6 +232,12 @@ const providers = [
 
   StatusTypingOperationProvider,
 
+  EncryptionRegisterOperationProvider,
+  EncryptionListOperationProvider,
+  EncryptionRequestKeysOperationProvider,
+  EncryptionDeleteOperationProvider,
+
+  OperationLogLogsOperationProvider,
   ContactCreateOperationProvider,
   ContactEditOperationProvider,
   ContactListOperationProvider,

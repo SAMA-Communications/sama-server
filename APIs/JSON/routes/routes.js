@@ -1,6 +1,7 @@
 import { default as ContactsController } from "../controllers/contacts.js"
 import { default as ConversationsController } from "../controllers/conversations.js"
 import { default as ConversationSchemesController } from "../controllers/conversation_handlers.js"
+import { default as EncryptionController } from "../controllers/encryption.js"
 import { default as FilesController } from "../controllers/files.js"
 import { default as LastActivityiesController } from "../controllers/activities.js"
 import { default as MessagesController } from "../controllers/messages.js"
@@ -16,6 +17,7 @@ import { activitiesSchemaValidation } from "../validations/activities_schema_val
 import { contactsSchemaValidation } from "../validations/contacts_schema_validation.js"
 import { conversationsSchemaValidation } from "../validations/conversations_schema_validation.js"
 import { conversationHandlersSchemaValidation } from "../validations/conversation_handlers_schema_validation.js"
+import { encryptionSchemaValidation } from "../validations/encryption_schema_validation.js"
 import { filesSchemaValidation } from "../validations/files_schema_validation.js"
 import { messagesSchemaValidation } from "../validations/messages_schema_validation.js"
 import { operationsLogSchemaValidation } from "../validations/operations_log_schema_validation.js"
@@ -53,6 +55,10 @@ export const routes = {
     MessagesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.message_read, messagesSchemaValidation.read)
       .read(ws, json),
+  message_decryption_failed: (ws, json) =>
+    MessagesController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.message_decryption_failed, messagesSchemaValidation.decryption_failed)
+      .decryption_failed(ws, json),
   message_delete: (ws, json) =>
     MessagesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.message_delete, messagesSchemaValidation.delete)
@@ -246,4 +252,20 @@ export const routes = {
     PushNotificationsController.middleware(authGuardMiddleware, ws, json)
       .validate(json.push_event_create, pushNotificationsSchemaValidation.push_event_create)
       .push_event_create(ws, json),
+  device_register: (ws, json) =>
+    EncryptionController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.device_register, encryptionSchemaValidation.device_register)
+      .register(ws, json),
+  device_list: (ws, json) =>
+    EncryptionController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.device_list, encryptionSchemaValidation.device_list)
+      .list(ws, json),
+  request_keys: (ws, json) =>
+    EncryptionController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.request_keys, encryptionSchemaValidation.request_keys)
+      .request_keys(ws, json),
+  device_delete: (ws, json) =>
+    EncryptionController.middleware(authGuardMiddleware, ws, json)
+      .validate(json.device_delete, encryptionSchemaValidation.device_delete)
+      .delete(ws, json),
 }

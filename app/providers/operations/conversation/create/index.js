@@ -72,9 +72,11 @@ class ConversationCreateOperation {
     )
 
     let normalizedParticipants = participantIds
+
     let existedConversation = await this.conversationService.findExistedPrivateConversation(
       user,
-      conversationParams.opponent_id
+      conversationParams.opponent_id,
+      conversationParams.is_encrypted
     )
 
     if (existedConversation) {

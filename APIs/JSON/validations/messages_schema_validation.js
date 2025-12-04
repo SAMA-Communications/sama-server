@@ -52,6 +52,7 @@ export const messagesSchemaValidation = {
       replied_message_id: Joi.string(),
       forwarded_message_id: Joi.string(),
       deleted_for: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required()),
+      encrypted_message_type: Joi.number().allow(1, 0),
     })
     .or("body", "attachments"),
   edit: Joi.object({
@@ -114,6 +115,16 @@ export const messagesSchemaValidation = {
         })
       ),
     ids: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string())),
+  }).required(),
+  decryption_failed: Joi.object({
+    cid: Joi.string()
+      .required()
+      .error(
+        new Error(ERROR_STATUES.CID_REQUIRED.message, {
+          cause: ERROR_STATUES.CID_REQUIRED,
+        })
+      ),
+    ids: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string())).min(1).required(),
   }).required(),
   delete: Joi.object({
     cid: Joi.string()
