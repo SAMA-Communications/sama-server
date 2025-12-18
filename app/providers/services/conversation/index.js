@@ -22,6 +22,14 @@ class ConversationService {
     return conversation
   }
 
+  async findOpponentId(cid, currentUserId) {
+    const conversation = await this.conversationRepo.findOne({ _id: cid })
+
+    return this.helpers.isEqualsNativeIds(conversation.owner_id, currentUserId)
+      ? conversation.opponent_id
+      : conversation.owner_id
+  }
+
   async addImageUrl(conversations) {
     const imageUrlPromises = conversations.map(async (conv) => {
       if (conv.image_object) {
@@ -59,8 +67,12 @@ class ConversationService {
     return missedParticipantIds
   }
 
-  async findExistedPrivateConversation(userOwner, participantId) {
-    const conversation = await this.conversationRepo.findExistedPrivateConversation(userOwner.native_id, participantId)
+  async findExistedPrivateConversation(userOwner, participantId, isEncrypted) {
+    const conversation = await this.conversationRepo.findExistedPrivateConversation(
+      userOwner.native_id,
+      participantId,
+      isEncrypted
+    )
 
     return conversation
   }

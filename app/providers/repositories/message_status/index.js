@@ -9,7 +9,7 @@ class MessageStatusRepository extends BaseRepository {
     return await super.prepareParams(params)
   }
 
-  async upsertMessageReadStatuses(cid, mids, user_id, status) {
+  async upsertMessageStatus(cid, mids, user_id, status) {
     const operations = []
 
     for (const mid of mids) {
@@ -70,6 +70,20 @@ class MessageStatusRepository extends BaseRepository {
     })
 
     return result
+  }
+
+  async deleteByMidsAndCid(mids, cid) {
+    await this.deleteMany({ mid: { $in: mids }, cid })
+  }
+
+  async getLastReadTimeByUser(cid, userId, mid) {
+    ;[cid, mid, userId] = this.castObjectIds([cid, mid, userId])
+
+    const query = { cid, mid, user_id: userId }
+
+    const result = await this.findOne(query)
+
+    return result.created_at
   }
 }
 

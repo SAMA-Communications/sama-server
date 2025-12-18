@@ -164,17 +164,17 @@ class ConversationEditOperation {
     const conversationEvent = []
 
     if (addedParticipantIds.length) {
-      for (const addedParticipantId of addedParticipantIds) {
-        const addParticipantEvent = await this.#participantsActionEvent(conversation, currentUser, addedParticipantId, false)
-
-        conversationEvent.push(addParticipantEvent)
-      }
-
       await this.#addMessagesInfo(conversation, currentUser)
       const updateEvent = await this.#actionEvent(conversation, currentUser, false)
       updateEvent.participantIds = addedParticipantIds
 
       conversationEvent.push(updateEvent)
+
+      for (const addedParticipantId of addedParticipantIds) {
+        const addParticipantEvent = await this.#participantsActionEvent(conversation, currentUser, addedParticipantId, false)
+
+        conversationEvent.push(addParticipantEvent)
+      }
     }
 
     if (removedParticipantIds.length) {
@@ -193,6 +193,9 @@ class ConversationEditOperation {
     if (isUpdateConversation) {
       const updatedEvent = await this.#actionEvent(conversation, currentUser, false)
 
+      updatedEvent.participantIds = currentParticipantIds.filter(
+        (id) => !addedParticipantIds.some((addedId) => this.helpers.isEqualsNativeIds(id, addedId))
+      )
       conversationEvent.push({ ...updatedEvent, ignoreOwnDelivery: true })
     }
 

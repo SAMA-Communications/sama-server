@@ -1,13 +1,24 @@
 import { ERROR_STATUES } from "../../../constants/errors.js"
 
 class MessageService {
-  constructor(config, helpers, userRepo, messageRepo, messageStatusRepo, messageReactionRepo) {
+  constructor(
+    config,
+    helpers,
+    userRepo,
+    messageRepo,
+    messageStatusRepo,
+    messageReactionRepo,
+    encryptionRepo,
+    encryptedMessageStatusRepo
+  ) {
     this.config = config
     this.helpers = helpers
     this.userRepo = userRepo
     this.messageRepo = messageRepo
     this.messageStatusRepo = messageStatusRepo
     this.messageReactionRepo = messageReactionRepo
+    this.encryptionRepo = encryptionRepo
+    this.encryptedMessageStatusRepo = encryptedMessageStatusRepo
   }
 
   async create(user, conversation, messageParams) {
@@ -17,9 +28,7 @@ class MessageService {
 
     messageParams.t = this.helpers.currentTimeStamp()
 
-    const message = await this.messageRepo.create(messageParams)
-
-    return message
+    return await this.messageRepo.create(messageParams)
   }
 
   #validateAttachmentInMessage(attachment) {
@@ -67,7 +76,7 @@ class MessageService {
     return processedResponse
   }
 
-  async messagesList(cId, user, options, limit) {
+  async messagesList(cid, user, options, limit, isEncrypted, deviceId) {
     const filterOptions = {}
     if (options.ids) {
       filterOptions.ids = options.ids
@@ -78,20 +87,57 @@ class MessageService {
     if (options.updatedAt?.lt) {
       filterOptions.updatedAtBefore = new Date(options.updatedAt.lt)
     }
+    if (options.body?.notEmpty) {
+      filterOptions.bodyNotEmpty = true
+    }
 
-    const messages = await this.messageRepo.list(cId, user.native_id, filterOptions, limit)
+    let messageIds = [],
+      messageIdsToRemove = [],
+      messages
+
+    if (isEncrypted) {
+      const identityKey = await this.encryptionRepo.getIdentityKeyByUserId(user.native_id, deviceId)
+      const { midsToDelivery, midsToRemove } = await this.encryptedMessageStatusRepo.getMidsByIdentityKey(
+        identityKey,
+        cid
+      )
+
+      messageIds = midsToDelivery
+      messageIdsToRemove = midsToRemove
+      messages = await this.messageRepo.listByMids(messageIds, filterOptions, limit)
+    } else {
+      messages = await this.messageRepo.list(cid, user.native_id, filterOptions, limit)
+      messageIds = messages.map((message) => message._id)
+    }
 
     if (options.messagesOnly) {
       return { messages }
     }
 
-    const messageIds = messages.map((message) => message._id)
-
     const messagesStatuses = await this.messageStatusRepo.findReadStatusForMids(messageIds)
-
     const messagesReactions = await this.messageReactionRepo.aggregateForUserMessages(messageIds, user.native_id)
 
+    if (messageIdsToRemove.length) {
+      await this.messageRepo.deleteMessageByMids(messageIdsToRemove)
+      await this.messageStatusRepo.deleteByMidsAndCid(messageIdsToRemove, cid, user.native_id)
+    }
+
     return { messages, messagesStatuses, messagesReactions }
+  }
+
+  async getUnreadMessages(cid, userId) {
+    const lastReadMessagesByConvIds = await this.messageStatusRepo.findLastReadMessageByUserForCid([cid], userId)
+    const lastUserMessageInChat = await this.messageRepo.findLastUserMessageForConversation(cid, userId)
+
+    const lastReadMessageId = lastReadMessagesByConvIds[cid]
+    const lastStatusTime = await this.messageStatusRepo.getLastReadTimeByUser(cid, userId, lastReadMessageId)
+    const lastReadTime = Math.max(lastUserMessageInChat?.created_at ?? 0, lastStatusTime ?? 0)
+
+    const filterOptions = { createdAtFrom: lastReadTime, bodyNotEmpty: true }
+
+    const unreadMessages = await this.messageRepo.list(cid, userId, filterOptions)
+
+    return unreadMessages
   }
 
   async hasAccessToMessage(messageId, userId) {
@@ -129,7 +175,7 @@ class MessageService {
     if (unreadMessages.length) {
       const mids = unreadMessages.map((message) => message._id).reverse()
 
-      await this.messageStatusRepo.upsertMessageReadStatuses(cid, mids, userId, "read")
+      await this.messageStatusRepo.upsertMessageStatus(cid, mids, userId, "read")
     }
 
     return unreadMessages

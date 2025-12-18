@@ -52,6 +52,7 @@ export const ERROR_STATUES = {
     status: 401,
     message: "Incorrect username or password.",
   },
+  INCORRECT_OTP_TOKEN: { status: 403, message: "Incorrect token for password recovery." },
   DEVICE_ID_MISSED: { status: 422, message: `'device_id' is required.` },
   // Contacts -->
   CONTACT_NOT_FOUND: { status: 422, message: "Contact not found." },
@@ -128,6 +129,10 @@ export const ERROR_STATUES = {
     message: "Invalid attachment fields.",
   },
   CORS_RESTRICTIONS: "A CORS error occurred while trying to perform a network request.",
+  AI_AGENT_ERROR: {
+    status: 500,
+    message: "An error occurred while processing messages with the AI agent.",
+  },
   // Status -->
   STATUS_ID_MISSED: { status: 422, message: "Status ID missed." },
   STATUS_TYPE_MISSED: { status: 422, message: "Status type missed." },
@@ -150,6 +155,12 @@ export const ERROR_STATUES = {
     message: "Push notification record not found.",
   },
   INCORRECT_KEYS: { status: 422, message: "Incorrect keys." },
+  //Encryption -->
+  INCORRECT_IDENTITY_KEY: { status: 422, message: "Incorrect identity device key." },
+  INCORRECT_SIGNED_KEY: { status: 422, message: "Incorrect signed key." },
+  INCORRECT_ONE_TIME_PRE_KEYS: { status: 422, message: "Incorrect one time pre keys." },
+  INCORRECT_USER_ID: { status: 422, message: "Incorrect user id." },
+  INCORRECT_USERS_ARRAY: { status: 422, message: "Incorrect users array." },
   // Other -->
   LOG_TIMESTAMP_MISSED: { status: 422, message: "Gt or lt query missed." },
   CID_REQUIRED: {
@@ -167,6 +178,10 @@ export const ERROR_STATUES = {
   MISSING_AUTH_CREDENTIALS: {
     status: 401,
     message: "Missing authentication credentials.",
+  },
+  MISSING_OTP_SENDER_SERVICE: {
+    status: 401,
+    message: "Failed to create OTP sender transporter.",
   },
 }
 

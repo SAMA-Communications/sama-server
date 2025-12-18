@@ -19,7 +19,7 @@ export const CONSTANTS = {
     },
   },
   ACTION_PARTICIPANT_MESSAGE: {
-    added_participant: "has been added to the group",
-    removed_participant: "has been removed from the group",
+    added_participant: "has been added to the conversation",
+    removed_participant: "has been removed from the conversation",
   },
 }

@@ -17,15 +17,20 @@ class MessageListOperation {
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
-    await this.#hasAccess(organizationId, cId, currentUserId)
+    const { conversation } = await this.#hasAccess(organizationId, cId, currentUserId)
+    const isEncrypted = !!conversation.is_encrypted
 
     const normalizedLimit = this.#normalizeLimitParam(limit)
+
+    const deviceId = this.sessionService.getDeviceId(ws, currentUser._id)
 
     const { messages, messagesStatuses, messagesReactions } = await this.messageService.messagesList(
       cId,
       currentUser,
       { ids, updatedAt: updated_at },
-      normalizedLimit
+      normalizedLimit,
+      isEncrypted,
+      deviceId
     )
 
     const messagesWithVirtualFields = await this.#assignMessageVirtualFields(messages, messagesStatuses, messagesReactions, currentUserId)
@@ -51,6 +56,8 @@ class MessageListOperation {
         cause: ERROR_STATUES.FORBIDDEN,
       })
     }
+
+    return { conversation }
   }
 
   async #assignMessageVirtualFields(messages, messagesStatuses, messagesReactions, currentUserId) {

@@ -226,6 +226,13 @@ export default class BaseRepository {
   }
 
   async updateMany(query, update) {
+    if (query.user_id) {
+      if (query.user_id.$in) {
+        query.user_id.$in = this.castUserIds(query.user_id.$in)
+      }
+      query.user_id = this.castUserId(query.user_id)
+    }
+
     await this.collectionCursor.updateMany(query, update)
   }
 

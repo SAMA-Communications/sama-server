@@ -16,6 +16,7 @@ export default class Message extends BaseModel {
       "body",
       "x",
       "attachments",
+      "encrypted_message_type",
       "replied_message_id",
       "forwarded_message_id",
 

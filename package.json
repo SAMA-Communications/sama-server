@@ -1,6 +1,6 @@
 {
   "name": "sama",
-  "version": "0.34.0",
+  "version": "0.35.0",
   "description": "Simple but Advanced Messaging Alternative",
   "main": "index.js",
   "type": "module",
@@ -22,10 +22,12 @@
   "author": "Igor Khomenko",
   "license": "GPL-3.0",
   "dependencies": {
+    "@ai-sdk/google": "^2.0.16",
     "@aws-sdk/client-s3": "^3.327.0",
     "@aws-sdk/s3-request-presigner": "^3.328.0",
     "@jitl/quickjs-ng-wasmfile-release-sync": "^0.31.0",
     "@sebastianwessel/quickjs": "^2.1.1",
+    "ai": "^5.0.51",
     "bull": "^4.10.4",
     "cookie": "1.0.2",
     "cookie-parser": "1.4.7",
@@ -41,6 +43,7 @@
     "pino-pretty": "13.0.0",
     "redis": "^4.5.1",
     "uuid": "11.1.0",
+    "resend": "^6.0.3",
     "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.51.0",
     "ws": "^8.12.0"
   },

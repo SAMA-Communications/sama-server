@@ -53,6 +53,7 @@ describe("User cycle", async () => {
           user_create: {
             organization_id: orgId,
             login: "test_register",
+            email: "email@email.com",
             password: "user_paswword_1",
             device_id: "deveice1",
           },
@@ -69,6 +70,7 @@ describe("User cycle", async () => {
           user_create: {
             organization_id: orgId,
             login: "TeSt_REGISTER",
+            email: "email@email.com",
             password: "user_paswword_2",
             device_id: "deveice1",
           },
@@ -121,6 +123,7 @@ describe("User cycle", async () => {
             organization_id: orgId,
             login: "test_login",
             phone: "phone_1",
+            email: "email1@email.com",
             password: "user_paswword_1",
             device_id: "deveice1",
           },
@@ -146,6 +149,7 @@ describe("User cycle", async () => {
           user_create: {
             organization_id: orgId,
             login: userLogin,
+            email: "email2@email.com",
             password: "user_paswword_1",
             device_id: "deveice1",
           },
