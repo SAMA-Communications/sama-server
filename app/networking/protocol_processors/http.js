@@ -169,7 +169,9 @@ class HttpProtocol extends BaseProtocolProcessor {
       emptyBody ? res.endWithoutBody() : res.end(bodyStr)
     })
 
-    await this.processAPIResponse(res.fakeWsSessionKey, handlerResponse, true)
+    this.processAPIResponse(res.fakeWsSessionKey, handlerResponse, true)
+      .then(() => logger.debug("[processAPIResponse][success]"))
+      .catch((error) => logger.error(error, "[processAPIResponse][Error]"))
   }
 
   requestHandler = async (req, res, preMiddleware, handler) => {
