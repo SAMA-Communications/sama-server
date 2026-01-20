@@ -1,3 +1,5 @@
+import os from "node:os"
+
 import { v4 as uuid } from "uuid"
 import { CONSTANTS as MAIN_CONSTANTS } from "../../constants/constants.js"
 import { ERROR_STATUES } from "../../constants/errors.js"
@@ -105,7 +107,7 @@ const optionsRequestHandler = async (res, req) => {
 }
 
 const healthCheckHandler = async (res, req) => {
-  const httpResponse = new HttpResponse(200, { "Content-Type": "application/json" }, { status: "ok" })
+  const httpResponse = new HttpResponse(200, { "Content-Type": "application/json" }, { status: "ok", hostname: os.hostname() })
 
   return new Response().setHttpResponse(httpResponse)
 }
