@@ -3,7 +3,7 @@ const CONFIG = {
     env: process.env.NODE_ENV ?? "development",
     ip: void 0,
     name: process.env.APP_NAME ?? "SAMA",
-    hostName: process.env.HOSTNAME ?? "SAMA-SERVER",
+    hostName: process.env.HOSTNAME,
   },
   logger: {
     logLevel: process.env.LOG_LEVEL ?? "trace",

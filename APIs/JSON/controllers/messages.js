@@ -136,10 +136,7 @@ class MessagesController extends BaseJSONController {
     const { id: requestId, message_decryption_failed: messagesDecryptionFailedOptions } = data
 
     const messageDecryptionFailedOperation = ServiceLocatorContainer.use("MessageDecryptionFailedOperation")
-    const { receiverUserId, statuses } = await messageDecryptionFailedOperation.perform(
-      ws,
-      messagesDecryptionFailedOptions
-    )
+    const { receiverUserId, statuses } = await messageDecryptionFailedOperation.perform(ws, messagesDecryptionFailedOptions)
 
     const response = new Response()
 

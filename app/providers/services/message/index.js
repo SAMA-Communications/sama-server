@@ -1,16 +1,7 @@
 import { ERROR_STATUES } from "../../../constants/errors.js"
 
 class MessageService {
-  constructor(
-    config,
-    helpers,
-    userRepo,
-    messageRepo,
-    messageStatusRepo,
-    messageReactionRepo,
-    encryptionRepo,
-    encryptedMessageStatusRepo
-  ) {
+  constructor(config, helpers, userRepo, messageRepo, messageStatusRepo, messageReactionRepo, encryptionRepo, encryptedMessageStatusRepo) {
     this.config = config
     this.helpers = helpers
     this.userRepo = userRepo
@@ -97,10 +88,7 @@ class MessageService {
 
     if (isEncrypted) {
       const identityKey = await this.encryptionRepo.getIdentityKeyByUserId(user.native_id, deviceId)
-      const { midsToDelivery, midsToRemove } = await this.encryptedMessageStatusRepo.getMidsByIdentityKey(
-        identityKey,
-        cid
-      )
+      const { midsToDelivery, midsToRemove } = await this.encryptedMessageStatusRepo.getMidsByIdentityKey(identityKey, cid)
 
       messageIds = midsToDelivery
       messageIdsToRemove = midsToRemove

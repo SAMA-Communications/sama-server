@@ -107,7 +107,7 @@ const optionsRequestHandler = async (res, req) => {
 }
 
 const healthCheckHandler = async (res, req) => {
-  const httpResponse = new HttpResponse(200, { "Content-Type": "application/json" }, { status: "ok", hostname: os.hostname() })
+  const httpResponse = new HttpResponse(200, { "Content-Type": "application/json" }, { status: "ok", hostname: config.get("app.hostName") })
 
   return new Response().setHttpResponse(httpResponse)
 }

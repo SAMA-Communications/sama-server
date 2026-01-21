@@ -25,15 +25,13 @@ class MessageSummaryOperation {
       case MAIN_CONSTANTS.CHAT_SUMMARY_FITLERS.LAST_7_DAYS: {
         const since = new Date(Date.now() - MAIN_CONSTANTS.WEEK_IN_MS)
         filteredMessages =
-          (await this.messageService.messagesList(cid, { native_id: currentUserId }, { updatedAt: { gt: since } }))
-            ?.messages ?? []
+          (await this.messageService.messagesList(cid, { native_id: currentUserId }, { updatedAt: { gt: since } }))?.messages ?? []
         break
       }
       case MAIN_CONSTANTS.CHAT_SUMMARY_FITLERS.LAST_DAY: {
         const since = new Date(Date.now() - MAIN_CONSTANTS.DAY_IN_MS)
         filteredMessages =
-          (await this.messageService.messagesList(cid, { native_id: currentUserId }, { updatedAt: { gt: since } }))
-            ?.messages ?? []
+          (await this.messageService.messagesList(cid, { native_id: currentUserId }, { updatedAt: { gt: since } }))?.messages ?? []
         break
       }
       case MAIN_CONSTANTS.CHAT_SUMMARY_FITLERS.UNREADS:

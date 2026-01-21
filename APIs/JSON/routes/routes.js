@@ -33,9 +33,7 @@ export const routes = {
   message: (ws, json) =>
     MessagesController.middleware(authGuardMiddleware, ws, json).validate(json.message, messagesSchemaValidation.create).create(ws, json),
   message_edit: (ws, json) =>
-    MessagesController.middleware(authGuardMiddleware, ws, json)
-      .validate(json.message_edit, messagesSchemaValidation.edit)
-      .edit(ws, json),
+    MessagesController.middleware(authGuardMiddleware, ws, json).validate(json.message_edit, messagesSchemaValidation.edit).edit(ws, json),
   message_reactions_update: (ws, json) =>
     MessagesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.message_reactions_update, messagesSchemaValidation.reactions_update)
@@ -47,9 +45,7 @@ export const routes = {
       .validate(json.message_reactions_list, messagesSchemaValidation.reactions_list)
       .reactions_list(ws, json),
   message_read: (ws, json) =>
-    MessagesController.middleware(authGuardMiddleware, ws, json)
-      .validate(json.message_read, messagesSchemaValidation.read)
-      .read(ws, json),
+    MessagesController.middleware(authGuardMiddleware, ws, json).validate(json.message_read, messagesSchemaValidation.read).read(ws, json),
   message_decryption_failed: (ws, json) =>
     MessagesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.message_decryption_failed, messagesSchemaValidation.decryption_failed)
@@ -63,9 +59,7 @@ export const routes = {
       .validate(json.message_summary, messagesSchemaValidation.summary)
       .summary(ws, json),
   message_tone: (ws, json) =>
-    MessagesController.middleware(authGuardMiddleware, ws, json)
-      .validate(json.message_tone, messagesSchemaValidation.tone)
-      .tone(ws, json),
+    MessagesController.middleware(authGuardMiddleware, ws, json).validate(json.message_tone, messagesSchemaValidation.tone).tone(ws, json),
   system_message: (ws, json) =>
     MessagesController.middleware(authGuardMiddleware, ws, json)
       .validate(json.system_message, messagesSchemaValidation.system)
@@ -92,9 +86,7 @@ export const routes = {
   user_logout: (ws, json) =>
     UsersController.middleware(authGuardMiddleware, ws, json).validate(json.user_logout, usersSchemaValidation.logout).logout(ws, json),
   user_delete: (ws, json) =>
-    UsersController.middleware(authGuardMiddleware, ws, json)
-      .validate(json.user_delete, usersSchemaValidation.delete)
-      .delete(ws, json),
+    UsersController.middleware(authGuardMiddleware, ws, json).validate(json.user_delete, usersSchemaValidation.delete).delete(ws, json),
   user_send_otp: (ws, json) =>
     UsersController.middleware(authGuardMiddleware, ws, json)
       .validate(json.user_send_otp, usersSchemaValidation.send_otp)
