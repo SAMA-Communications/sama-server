@@ -85,7 +85,7 @@ class ConversationHandlerService {
       })
     }
 
-    this.logger.debug("[CompileResult] %j", compilationResult)
+    this.logger.trace("[CompileResult] %j", compilationResult)
 
     return compilationResult
   }

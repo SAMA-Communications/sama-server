@@ -52,7 +52,7 @@ async function sendLogout(ws, currentUserToken) {
 
 const mockedWS = {
   send: (data) => {
-    logger.debug("[WS] send mocked data %j", data)
+    logger.trace("[WS] send mocked data %j", data)
   },
 }
 

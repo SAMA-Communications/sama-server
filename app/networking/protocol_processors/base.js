@@ -47,7 +47,7 @@ class BaseProtocolProcessor {
   decodePackage(socket, buffer) {
     const stringMessage = decoder.write(Buffer.from(buffer))
 
-    logger.debug("[RECV] %s %s", stringMessage, stringMessage?.length)
+    logger.trace("[RECV] %s %s", stringMessage, stringMessage?.length)
 
     if (!stringMessage?.length) {
       return
@@ -120,7 +120,7 @@ class BaseProtocolProcessor {
           backPackage = await backPackage.mapMessage(mapBackMessageFunc.bind(socket))
         }
 
-        logger.debug("[SENT] %s", backPackage)
+        logger.trace("[SENT] %s", backPackage)
 
         await socket.safeSend(backPackage)
       } catch (error) {
@@ -134,7 +134,7 @@ class BaseProtocolProcessor {
     organizationId = response.lastActivityStatusResponse.orgId ?? organizationId
     userId = response.lastActivityStatusResponse.userId ?? userId
 
-    logger.debug("[UPDATE_LAST_ACTIVITY] %o", response.lastActivityStatusResponse)
+    logger.trace("[UPDATE_LAST_ACTIVITY] %o", response.lastActivityStatusResponse)
 
     const responses = await activitySender.updateAndBuildUserActivity(socket, organizationId, userId, response.lastActivityStatusResponse.status)
     responses.forEach((activityResponse) => response.merge(activityResponse))
@@ -144,7 +144,7 @@ class BaseProtocolProcessor {
 
   async processDeliverResponse(socket, deliverPackages) {
     for (const deliverPackage of deliverPackages) {
-      logger.debug("[DELIVER] %o", deliverPackage)
+      logger.trace("[DELIVER] %o", deliverPackage)
 
       deliverPackage.ws ??= socket
 
@@ -195,7 +195,7 @@ class BaseProtocolProcessor {
   async updateLastUserLastActivityOnClose(socket) {
     const { organizationId, userId } = (this.sessionService.getSession(socket) ?? {})
 
-    logger.debug("[UPDATE_LAST_ACTIVITY][CLOSE] OrgId: %s UserId: %s", organizationId, userId)
+    logger.trace("[UPDATE_LAST_ACTIVITY][CLOSE] OrgId: %s UserId: %s", organizationId, userId)
 
     if (!userId) {
       return

@@ -70,7 +70,7 @@ describe("Http Activity", async () => {
     const httpResponse = responseData.httpResponse
     const { users } = httpResponse.body
 
-    logger.debug("[Online users] %j", users)
+    logger.trace("[Online users] %j", users)
 
     const user = users.at(0)
 

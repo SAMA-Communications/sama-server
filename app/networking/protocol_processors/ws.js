@@ -17,7 +17,7 @@ class WsProtocol extends BaseProtocolProcessor {
   }
 
   onOpen(ws) {
-    logger.debug("[Open] IP: %s", this.socketAddress(ws))
+    logger.trace("[Open] IP: %s", this.socketAddress(ws))
     super.onOpen(ws)
   }
 
@@ -30,7 +30,7 @@ class WsProtocol extends BaseProtocolProcessor {
   }
 
   async onClose(ws, code, message) {
-    logger.debug("[Close] Code: %s", code)
+    logger.trace("[Close] Code: %s", code)
 
     return super.onClose(ws)
   }

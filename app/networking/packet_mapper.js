@@ -34,7 +34,7 @@ class PacketMapper {
   }
 
   mapRecipientPacket(destinationAPIType, packet, senderInfo, recipientInfo) {
-    logger.debug("[mapRecipientPacket] %j %j %j %j", destinationAPIType, packet, senderInfo, recipientInfo)
+    logger.trace("[mapRecipientPacket] %j %j %j %j", destinationAPIType, packet, senderInfo, recipientInfo)
 
     if (!destinationAPIType) {
       destinationAPIType = this.detectAPIType(packet)

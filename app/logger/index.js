@@ -36,6 +36,12 @@ class PinoLogger {
     this.pinoLogger = pinoLogger
   }
 
+  trace(stringPattern, ...args) {
+    const logContext = this.#logContext()
+
+    this.pinoLogger.trace(logContext, stringPattern, ...args)
+  }
+
   debug(stringPattern, ...args) {
     const logContext = this.#logContext()
 

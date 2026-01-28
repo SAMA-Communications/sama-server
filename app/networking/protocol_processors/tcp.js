@@ -30,7 +30,7 @@ class TcpProtocol extends BaseProtocolProcessor {
   socketListenerOnError = function () {}
 
   onOpen(socket, isTls) {
-    logger.debug("[Open] IP: %s", this.socketAddress(socket))
+    logger.trace("[Open] IP: %s", this.socketAddress(socket))
     super.onOpen(socket)
     this.setUpSocketListeners(socket, isTls)
   }
@@ -44,7 +44,7 @@ class TcpProtocol extends BaseProtocolProcessor {
   }
 
   async onClose(socket) {
-    logger.debug("[Close] IP: %s", this.socketAddress(socket))
+    logger.trace("[Close] IP: %s", this.socketAddress(socket))
 
     await super.onClose(socket)
 
@@ -74,7 +74,7 @@ class TcpProtocol extends BaseProtocolProcessor {
           return logger.error(error, "[Parse package]")
         }
 
-        logger.debug("[RECV][parsed] %s", strPackage)
+        logger.trace("[RECV][parsed] %s", strPackage)
 
         super.processPackage(socket, strPackage)
       })
@@ -124,7 +124,7 @@ class TcpProtocol extends BaseProtocolProcessor {
   }
 
   onSocketTlsUpgrade(socket) {
-    logger.debug("[Upgrade To TLS]")
+    logger.trace("[Upgrade To TLS]")
 
     this.removeSocketListeners(socket)
 
@@ -138,7 +138,7 @@ class TcpProtocol extends BaseProtocolProcessor {
     const tlsSocket = new tls.TLSSocket(socket, options)
 
     tlsSocket.once("secure", () => {
-      logger.debug("[TLS handshake completed][isAuth]: %s [authError]: %o", tlsSocket.authorized, tlsSocket.authorizationError)
+      logger.trace("[TLS handshake completed][isAuth]: %s [authError]: %o", tlsSocket.authorized, tlsSocket.authorizationError)
 
       updateStoreContext(MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.PROTOCOL_TYPE, "TLS")
 

@@ -84,7 +84,7 @@ const parseJsonBodyMiddleware = async (res, req) => {
 
   try {
     res.parsedBody = JSON.parse(res.rawBody.toString())
-    logger.debug("[payload] %j", res.parsedBody)
+    logger.trace("[payload] %j", res.parsedBody)
   } catch (error) {
     logger.error(error, "[parseJSONBody][error]")
   }
@@ -136,7 +136,7 @@ class HttpProtocol extends BaseProtocolProcessor {
   }
 
   async processHttpResponseMiddleware(res, req, handlerResponse) {
-    logger.debug("[Response] %j", handlerResponse)
+    logger.trace("[Response] %j", handlerResponse)
 
     const { httpResponse } = handlerResponse
 
@@ -172,13 +172,13 @@ class HttpProtocol extends BaseProtocolProcessor {
     })
 
     this.processAPIResponse(res.fakeWsSessionKey, handlerResponse, true)
-      .then(() => logger.debug("[processAPIResponse][success]"))
+      .then(() => logger.trace("[processAPIResponse][success]"))
       .catch((error) => logger.error(error, "[processAPIResponse][Error]"))
   }
 
   requestHandler = async (req, res, preMiddleware, handler) => {
     try {
-      logger.debug("[Request] %s %s %s %s", req.getMethod(), req.getUrl(), req.getHeader("content-type"), req.getHeader("content-length"))
+      logger.trace("[Request] %s %s %s %s", req.getMethod(), req.getUrl(), req.getHeader("content-type"), req.getHeader("content-length"))
 
       await parseBaseParamsMiddleware(res, req)
 

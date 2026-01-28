@@ -76,7 +76,7 @@ class ClusterManager {
       ws.on("message", async (data) => {
         const json = JSON.parse(decoder.write(Buffer.from(data)))
 
-        logger.debug("ws on Message %j", json)
+        logger.trace("ws on Message %j", json)
 
         if (json.node_info) {
           const nodeInfo = json.node_info
@@ -121,7 +121,7 @@ class ClusterManager {
         message: async (ws, message, isBinary) => {
           const json = JSON.parse(decoder.write(Buffer.from(message)))
 
-          logger.debug("[WS] on Message %j", json)
+          logger.trace("[WS] on Message %j", json)
 
           if (json.node_info) {
             const nodeInfo = json.node_info

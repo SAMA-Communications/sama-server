@@ -6,7 +6,7 @@ const CONFIG = {
     hostName: process.env.HOSTNAME,
   },
   logger: {
-    logLevel: process.env.LOG_LEVEL ?? "trace",
+    logLevel: process.env.LOG_LEVEL ?? "debug",
     singleLine: process.env.LOG_SINGLE_LINE === "true",
   },
   ws: {

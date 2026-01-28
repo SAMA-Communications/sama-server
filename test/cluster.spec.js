@@ -44,7 +44,7 @@ describe("Cluster Message function", async () => {
     CLUSTER_SOCKET.listen(0, (listenSocket) => {
       if (listenSocket) {
         const clusterPort = uWS.us_socket_local_port(listenSocket)
-        logger.debug("CLUSTER listening on port %s", clusterPort)
+        logger.trace("CLUSTER listening on port %s", clusterPort)
         secondClusterPort = clusterPort
       } else {
         throw "CLUSTER_SOCKET.listen error"
