@@ -25,7 +25,7 @@ class UsersController extends BaseJSONController {
 
     return new Response()
       .addBackMessage({ response: { id: requestId, success: true } })
-      .updateLastActivityStatus(new LastActivityStatusResponse(user.native_id, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE))
+      .updateLastActivityStatus(new LastActivityStatusResponse(user.organization_id, user.native_id, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE))
   }
 
   async login(ws, data) {
@@ -36,7 +36,7 @@ class UsersController extends BaseJSONController {
 
     return new Response()
       .addBackMessage({ response: { id: requestId, user: user.visibleParams(), token: token.token } })
-      .updateLastActivityStatus(new LastActivityStatusResponse(user.native_id, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE))
+      .updateLastActivityStatus(new LastActivityStatusResponse(user.organization_id, user.native_id, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE))
   }
 
   async edit(ws, data) {
@@ -52,11 +52,11 @@ class UsersController extends BaseJSONController {
     const { id: requestId } = data
 
     const userLogoutOperation = ServiceLocatorContainer.use("UserLogoutOperation")
-    const userId = await userLogoutOperation.perform(ws)
+    const { organizationId, userId } = await userLogoutOperation.perform(ws)
 
     return new Response()
       .addBackMessage({ response: { id: requestId, success: true } })
-      .updateLastActivityStatus(new LastActivityStatusResponse(userId, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE))
+      .updateLastActivityStatus(new LastActivityStatusResponse(organizationId, userId, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE))
   }
 
   async send_otp(ws, data) {

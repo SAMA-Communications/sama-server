@@ -93,38 +93,20 @@ class SessionService {
   }
 
   async removeUserDevice(organizationId, userId, deviceId) {
-    const userKey = organizationId
-      ? this.#usersSetKey(organizationId, userId)
-      : await this.redisConnection.findKeyByPattern(`user:*:${userId}`)
-
-    if (!userKey) {
-      return
-    }
+    const userKey = this.#usersSetKey(organizationId, userId)
 
     await this.redisConnection.client.sRem(userKey, deviceId)
   }
 
   async listUserDevice(organizationId, userId) {
-    const userKey = organizationId
-      ? this.#usersSetKey(organizationId, userId)
-      : await this.redisConnection.findKeyByPattern(`user:*:${userId}`)
-
-    if (!userKey) {
-      return []
-    }
+    const userKey = this.#usersSetKey(organizationId, userId)
 
     const deviceIds = await this.redisConnection.client.sMembers(userKey)
-    return deviceIds
+    return deviceIds ?? []
   }
 
   async deleteUserDevices(organizationId, userId) {
-    const userKey = organizationId
-      ? this.#usersSetKey(organizationId, userId)
-      : await this.redisConnection.findKeyByPattern(`user:*:${userId}`)
-
-    if (!userKey) {
-      return
-    }
+    const userKey = this.#usersSetKey(organizationId, userId)
 
     await this.redisConnection.client.del(userKey)
   }

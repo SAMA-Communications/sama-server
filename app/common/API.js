@@ -14,7 +14,7 @@ export default class BaseAPI {
     // Response object
   }
 
-  buildLastActivityPackage(userId, timestamp, status) {
+  buildLastActivityPackage(orgId, subscriber, userId, status) {
     // return string/null
   }
 

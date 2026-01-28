@@ -130,10 +130,13 @@ class BaseProtocolProcessor {
   }
 
   async processUpdateLastActivityResponse(socket, response) {
-    const userId = response.lastActivityStatusResponse.userId ?? this.sessionService.getSessionUserId(socket)
-    logger.debug("[UPDATE_LAST_ACTIVITY] %s %o", userId, response.lastActivityStatusResponse)
+    let { organizationId, userId } = (this.sessionService.getSession(socket) ?? {})
+    organizationId = response.lastActivityStatusResponse.orgId ?? organizationId
+    userId = response.lastActivityStatusResponse.userId ?? userId
 
-    const responses = await activitySender.updateAndBuildUserActivity(socket, userId, response.lastActivityStatusResponse.status)
+    logger.debug("[UPDATE_LAST_ACTIVITY] %o", response.lastActivityStatusResponse)
+
+    const responses = await activitySender.updateAndBuildUserActivity(socket, organizationId, userId, response.lastActivityStatusResponse.status)
     responses.forEach((activityResponse) => response.merge(activityResponse))
 
     return response
@@ -190,9 +193,9 @@ class BaseProtocolProcessor {
   }
 
   async updateLastUserLastActivityOnClose(socket) {
-    const userId = this.sessionService.getSessionUserId(socket)
+    const { organizationId, userId } = (this.sessionService.getSession(socket) ?? {})
 
-    logger.debug("Update Last Activity on Close %s", userId)
+    logger.debug("[UPDATE_LAST_ACTIVITY][CLOSE] OrgId: %s UserId: %s", organizationId, userId)
 
     if (!userId) {
       return
@@ -200,7 +203,7 @@ class BaseProtocolProcessor {
 
     await this.sessionService.removeUserSession(socket, userId)
 
-    await this.processAPIResponse(socket, activitySender.buildOfflineActivityResponse(userId), true)
+    await this.processAPIResponse(socket, activitySender.buildOfflineActivityResponse(organizationId, userId), true)
   }
 
   onProcessingError(socket, error, packageData) {

@@ -15,14 +15,14 @@ class ActivitySender {
     return api
   }
 
-  buildOfflineActivityResponse(userId) {
+  buildOfflineActivityResponse(orgId, userId) {
     const response = new Response().updateLastActivityStatus(
-      new LastActivityStatusResponse(userId, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE)
+      new LastActivityStatusResponse(orgId, userId, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE)
     )
     return response
   }
 
-  async updateAndBuildUserActivity(ws, userId, status) {
+  async updateAndBuildUserActivity(ws, orgId, userId, status) {
     const activityManagerService = ServiceLocatorContainer.use("ActivityManagerService")
 
     const deliver = await activityManagerService.updateUserActivity(userId, status)
@@ -36,13 +36,13 @@ class ActivitySender {
     const api = this.detectSocketAPI(ws)
 
     for (const subscriberUserId of deliver.subscribers) {
-      const lastActivityMessage = await api.buildLastActivityPackage(subscriberUserId, deliver.targetUserId, {
+      const lastActivityMessage = await api.buildLastActivityPackage(orgId, subscriberUserId, deliver.targetUserId, {
         timestamp: deliver.activityStatus.timestamp,
         status: deliver.activityStatus.status,
       })
 
       const response = new Response().addDeliverMessage(
-        new DeliverMessage(null, lastActivityMessage, true).setUsersDestination([subscriberUserId])
+        new DeliverMessage(orgId, lastActivityMessage, true).setUsersDestination([subscriberUserId])
       )
 
       responses.push(response)
