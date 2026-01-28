@@ -45,9 +45,9 @@ class BaseProtocolProcessor {
   }
 
   decodePackage(socket, buffer) {
-    const stringMessage = decoder.write(Buffer.from(buffer))?.trim()
+    const stringMessage = decoder.write(Buffer.from(buffer))
 
-    logger.debug("[RECV] %s %s", stringMessage, stringMessage.length)
+    logger.debug("[RECV] %s %s", stringMessage, stringMessage?.length)
 
     if (!stringMessage?.length) {
       return
