@@ -9,6 +9,7 @@ class RedisManager {
   constructor() {
     this.client = createClient({
       url: config.get("redis.main.url"),
+      pingInterval: 3_000,
       socket: {
         reconnectStrategy: (retries) => {
           logger.warn("[reconnect] %s", retries)
