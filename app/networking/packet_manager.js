@@ -14,14 +14,17 @@ class PacketManager {
   async deliverToUserOnThisNode(userId, packet, deviceId, senderInfo) {
     const currentNodeUrl = config.get("ws.cluster.endpoint")
     const sessionService = ServiceLocatorContainer.use("SessionService")
-    const activeDevices = sessionService
+    let activeDevices = sessionService
       .getUserDevices(userId)
       .filter((activeDevice) => activeDevice?.deviceId !== MAIN_CONSTANTS.HTTP_DEVICE_ID)
 
-    let wsRecipient = deviceId ? [activeDevices.find((obj) => obj.deviceId === deviceId)] : activeDevices
-    wsRecipient = wsRecipient.filter(recipient => !!recipient.ws)
+    if (deviceId) {
+      activeDevices = activeDevices.filter(recipient => recipient?.deviceId === deviceId)
+    }
 
-    for (const recipient of wsRecipient) {
+    activeDevices = activeDevices.filter(recipient => !!recipient?.ws)
+
+    for (const recipient of activeDevices) {
       try {
         const recipientInfo = {
           apiType: recipient.ws?.apiType,
