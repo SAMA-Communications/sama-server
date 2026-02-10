@@ -20,7 +20,7 @@ class UserAuthOperation {
 
     // TODO: close connections
     if (!omitDeviceConnection) {
-      this.sessionService.addUserDeviceConnection(ws, user.organization_id, user.native_id, deviceId)
+      const wsToClose = this.sessionService.addUserDeviceConnection(ws, user.organization_id, user.native_id, deviceId)
     }
 
     const jwtAccessToken = this.#generateToken(
