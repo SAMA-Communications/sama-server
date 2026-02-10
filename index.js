@@ -2,6 +2,7 @@ import fs from "node:fs"
 
 import uWS from "uWebSockets.js"
 
+import { CONSTANTS } from "./app/constants/constants.js"
 import config from "./app/config/index.js"
 import logger from "./app/logger/index.js"
 
@@ -22,6 +23,16 @@ import RedisClient from "./app/lib/redis.js"
 import { APIs } from "./app/networking/APIs.js"
 
 import { buildWsEndpoint } from "./app/utils/build_ws_endpoint.js"
+
+if (config.get("app.env") === CONSTANTS.ENVS.PROD) {
+  process.on("unhandledRejection", (reason, promise) => {
+    logger.fatal(reason, "[unhandledRejection] %o", promise)
+  })
+  
+  process.on("uncaughtException", (error, nodeError) => {
+    logger.fatal(error, "[uncaughtException] %o", nodeError)
+  })
+}
 
 logger.debug("[App staring] %s", process.pid)
 

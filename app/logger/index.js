@@ -68,6 +68,14 @@ class PinoLogger {
     childLogger.error(error, stringPattern, ...args)
   }
 
+  fatal(error, stringPattern, ...args) {
+    const logContext = this.#logContext()
+
+    const childLogger = this.pinoLogger.child(logContext)
+
+    childLogger.fatal(error, stringPattern, ...args)
+  }
+
   child(msgPrefix, contextBindings = {}) {
     const childPinoLogger = this.pinoLogger.child(contextBindings, { msgPrefix: msgPrefix })
 

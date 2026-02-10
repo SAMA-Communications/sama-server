@@ -1,13 +1,15 @@
+import { CONSTANTS } from "../constants/constants.js"
+
 const CONFIG = {
   app: {
-    env: process.env.NODE_ENV ?? "development",
+    env: process.env.NODE_ENV ?? CONSTANTS.ENVS.DEV,
     ip: void 0,
     name: process.env.APP_NAME ?? "SAMA",
     hostName: process.env.HOSTNAME,
   },
   logger: {
     logLevel: process.env.LOG_LEVEL ?? "debug",
-    singleLine: process.env.LOG_SINGLE_LINE === "true",
+    singleLine: process.env.LOG_SINGLE_LINE === CONSTANTS.ENV_TRUE,
   },
   ws: {
     options: {
@@ -40,7 +42,7 @@ const CONFIG = {
       main: {
         url: process.env.MONGODB_URL,
       },
-      logQueries: process.env.MONGODB_LOG_QUERIES === "true",
+      logQueries: process.env.MONGODB_LOG_QUERIES === CONSTANTS.ENV_TRUE,
     },
   },
   redis: {
@@ -62,7 +64,7 @@ const CONFIG = {
       endpoint: process.env.MINIO_ENDPOINT || null,
       bucket: process.env.MINIO_BUCKET_NAME,
       port: (process.env.MINIO_PORT = 9010),
-      useSSL: process.env.MINIO_PORT === "true",
+      useSSL: process.env.MINIO_PORT === CONSTANTS.ENV_TRUE,
     },
     s3: {
       key: process.env.S3_ACCESS_KEY,
@@ -99,8 +101,8 @@ const CONFIG = {
     },
   },
   conversation: {
-    disableChannelsLogic: process.env.CONVERSATION_DISABLE_CHANNELS_LOGIC === "true",
-    isEventsEnabled: process.env.CONVERSATION_NOTIFICATIONS_ENABLED === "true",
+    disableChannelsLogic: process.env.CONVERSATION_DISABLE_CHANNELS_LOGIC === CONSTANTS.ENV_TRUE,
+    isEventsEnabled: process.env.CONVERSATION_NOTIFICATIONS_ENABLED === CONSTANTS.ENV_TRUE,
     maxParticipants: +(process.env.CONVERSATION_MAX_PARTICIPANTS ?? 50),
     preloadCount: +(process.env.CONVERSATION_PRELOAD_COUNT ?? 30),
     searchLimit: +(process.env.SEARCH_PRELOAD_COUNT ?? 30),

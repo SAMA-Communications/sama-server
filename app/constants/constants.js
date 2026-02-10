@@ -31,4 +31,11 @@ export const CONSTANTS = {
     NEGATIVE: "negative",
     CRINGE: "cringe",
   },
+  ENVS: {
+    DEV: "development",
+    PROD: "production",
+    LOCAL: "local",
+    TESTING: "testing"
+  },
+  ENV_TRUE: "true"
 }
