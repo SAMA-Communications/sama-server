@@ -18,7 +18,8 @@ class PacketManager {
       .getUserDevices(userId)
       .filter((activeDevice) => activeDevice?.deviceId !== MAIN_CONSTANTS.HTTP_DEVICE_ID)
 
-    const wsRecipient = deviceId ? [activeDevices.find((obj) => obj.deviceId === deviceId)] : activeDevices
+    let wsRecipient = deviceId ? [activeDevices.find((obj) => obj.deviceId === deviceId)] : activeDevices
+    wsRecipient = wsRecipient.filter(recipient => !!recipient.ws)
 
     for (const recipient of wsRecipient) {
       try {
@@ -66,6 +67,10 @@ class PacketManager {
 
     Object.entries(nodeConnections).forEach(async ([nodeDeviceId, extraParams]) => {
       const nodeUrl = extraParams[MAIN_CONSTANTS.SESSION_NODE_KEY]
+
+      if (!nodeUrl) {
+        return
+      }
 
       if (currentNodeUrl === nodeUrl) {
         if (senderDeviceId === nodeDeviceId && ignoreSelf) {
