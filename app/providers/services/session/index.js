@@ -25,6 +25,8 @@ class SessionService {
     const activeConnections = this.activeSessions.DEVICES[userId]
     const wsToClose = []
 
+    const connection = { ws: socket, deviceId, organizationId }
+
     if (activeConnections) {
       const devices = activeConnections.filter((connection) => {
         if (connection.deviceId !== deviceId) {
@@ -34,9 +36,9 @@ class SessionService {
           return false
         }
       })
-      this.activeSessions.DEVICES[userId] = [...devices, { ws: socket, deviceId }]
+      this.activeSessions.DEVICES[userId] = [...devices, connection]
     } else {
-      this.activeSessions.DEVICES[userId] = [{ ws: socket, deviceId }]
+      this.activeSessions.DEVICES[userId] = [connection]
     }
 
     this.setSessionUserId(socket, organizationId, userId, { [CONSTANTS.SESSION_DEVICE_ID_KEY]: deviceId })
@@ -368,32 +370,34 @@ class SessionService {
   }
 
   onlineUsersListLocal(organizationId, offset, limit) {
-    const sessions = this.retrieveLocalActiveSession(organizationId)
+    const userIds = this.retrieveLocalActiveSessionUserIds(organizationId)
     
-    sessions.slice(offset, offset + limit)
+    userIds.slice(offset, offset + limit)
 
-    this.logger.debug("[list] %j", sessions)
+    this.logger.debug("[list] %j", userIds)
 
-    return sessions
-      .map(session => session.userId)
-      .filter(userId => userId)
+    return userIds
   }
 
   onlineUsersCountLocal(organizationId) {
-    const sessions = this.retrieveLocalActiveSession(organizationId)
+    const userIds = this.retrieveLocalActiveSessionUserIds(organizationId)
 
-    this.logger.debug("[count] %j", sessions)
+    this.logger.debug("[count] %j", userIds)
 
-    return sessions.length
+    return userIds.length
   }
 
-  retrieveLocalActiveSession(organizationId) {
-    const session = Array.from(this.activeSessions.SESSIONS.values())
-      .filter(session => ((session?.organizationId === organizationId) 
-      && (session?.extraParams[CONSTANTS.SESSION_DEVICE_ID_KEY] !== CONSTANTS.HTTP_DEVICE_ID)))
-      .sort((sessionA, sessionB) => sessionA.userId - sessionB.userId)
-
-    return session
+  retrieveLocalActiveSessionUserIds(organizationId) {
+    const userIds = Array.from(this.activeSessions.SESSIONS.values())
+      .filter(session => (
+        (session?.organizationId === organizationId) &&
+        (session?.extraParams[CONSTANTS.SESSION_DEVICE_ID_KEY] !== CONSTANTS.HTTP_DEVICE_ID) &&
+        session?.userId)
+      )
+      .map(session => session.userId)
+      .sort((userIdA, userIdB) => userIdA - userIdB)
+  
+    return Array.from(new Set(userIds))
   }
 }
 
