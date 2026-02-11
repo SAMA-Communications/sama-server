@@ -10,9 +10,10 @@ import { CONSTANTS } from "../../../constants/constants.js"
 */
 
 class SessionService {
-  constructor(activeSessions, config, redisConnection) {
+  constructor(activeSessions, config, logger, redisConnection) {
     this.activeSessions = activeSessions
     this.config = config
+    this.logger = logger
     this.redisConnection = redisConnection
   }
 
@@ -162,7 +163,7 @@ class SessionService {
 
     if (this.config.get("app.isStandAloneNode")) {
       for (const connection of this.getUserDevices(userId)) {
-        if (!connection?.ws) continue
+        if (!connection?.ws || connection?.deviceId === CONSTANTS.HTTP_DEVICE_ID) continue
         const session = this.getSession(connection.ws) 
         if (session?.extraParams) {
           userData[connection.deviceId] = session.extraParams
@@ -371,6 +372,8 @@ class SessionService {
     
     sessions.slice(offset, offset + limit)
 
+    this.logger.debug("[list] %j", sessions)
+
     return sessions
       .map(session => session.userId)
       .filter(userId => userId)
@@ -378,6 +381,8 @@ class SessionService {
 
   onlineUsersCountLocal(organizationId) {
     const sessions = this.retrieveLocalActiveSession(organizationId)
+
+    this.logger.debug("[count] %j", sessions)
 
     return sessions.length
   }
