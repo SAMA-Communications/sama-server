@@ -32,7 +32,7 @@ class UserAuthOperation {
 
     const updatedToken = await this.userTokenRepo.updateToken(token, organizationId, user.native_id, deviceId, jwtAccessToken, "access")
 
-    await this.sessionService.storeUserNodeData(user.organization_id, user.native_id, deviceId)
+    await this.sessionService.storeUserNodeData(ws, user.organization_id, user.native_id, deviceId)
 
     const userWithAvatarUrl = (await this.userService.addAvatarUrl([user])).at(0)
 

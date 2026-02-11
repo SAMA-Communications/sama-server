@@ -23,7 +23,7 @@ class UserConnectSocketOperation {
     // TODO: close connections
     this.sessionService.addUserDeviceConnection(ws, user.organization_id, user.native_id, deviceId)
 
-    await this.sessionService.storeUserNodeData(user.organization_id, user.native_id, deviceId)
+    await this.sessionService.storeUserNodeData(ws, user.organization_id, user.native_id, deviceId)
 
     return { user }
   }
