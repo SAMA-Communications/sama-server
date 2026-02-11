@@ -39,7 +39,7 @@ class SessionService {
       this.activeSessions.DEVICES[userId] = [{ ws: socket, deviceId }]
     }
 
-    this.setSessionUserId(socket, organizationId, userId)
+    this.setSessionUserId(socket, organizationId, userId, { [CONSTANTS.SESSION_DEVICE_ID_KEY]: deviceId })
 
     return wsToClose
   }
@@ -217,14 +217,14 @@ class SessionService {
     await this.deleteNodeConnections(void 0, void 0, nodeUrl)
   }
 
-  setSessionUserId(socket, organizationId, userId) {
+  setSessionUserId(socket, organizationId, userId, extraParams) {
     const session = this.getSession(socket)
 
     if (session) {
       this.activeSessions.SESSIONS.delete(socket)
     }
 
-    this.setSession(socket, organizationId, userId)
+    this.setSession(socket, organizationId, userId, extraParams)
   }
 
   setSession(socket, organizationId, userId, extraParams = {}) {
@@ -389,11 +389,8 @@ class SessionService {
 
   retrieveLocalActiveSession(organizationId) {
     const session = Array.from(this.activeSessions.SESSIONS.values())
-      .filter(session => session?.organizationId === organizationId)
-      .filter(session => 
-        this.getUserDevices(session.userId)
-        .filter(connection => connection.deviceId !== CONSTANTS.HTTP_DEVICE_ID).length
-      )
+      .filter(session => ((session?.organizationId === organizationId) 
+      && (session?.extraParams[CONSTANTS.SESSION_DEVICE_ID_KEY] !== CONSTANTS.HTTP_DEVICE_ID)))
       .sort((sessionA, sessionB) => sessionA.userId - sessionB.userId)
 
     return session
