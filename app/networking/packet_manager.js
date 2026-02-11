@@ -85,6 +85,10 @@ class PacketManager {
         return
       }
 
+      if (config.get("app.isStandAloneNode")) {
+        return
+      }
+
       try {
         const clusterPacket = { userId, packet, senderInfo }
         await clusterManager.senderClusterDeliverPacket(nodeUrl, clusterPacket)
