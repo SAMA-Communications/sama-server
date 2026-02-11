@@ -374,15 +374,11 @@ class SessionService {
     
     userIds.slice(offset, offset + limit)
 
-    this.logger.debug("[list] %j", userIds)
-
     return userIds
   }
 
   onlineUsersCountLocal(organizationId) {
     const userIds = this.retrieveLocalActiveSessionUserIds(organizationId)
-
-    this.logger.debug("[count] %j", userIds)
 
     return userIds.length
   }
