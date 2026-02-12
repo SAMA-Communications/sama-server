@@ -12,7 +12,6 @@ const logger = maiLogger.child("[PacketManager]")
 
 class PacketManager {
   async deliverToUserOnThisNode(userId, packet, deviceId, senderInfo) {
-    const currentNodeUrl = config.get("ws.cluster.endpoint")
     const sessionService = ServiceLocatorContainer.use("SessionService")
     let activeDevices = sessionService
       .getUserDevices(userId)
@@ -22,18 +21,17 @@ class PacketManager {
       activeDevices = activeDevices.filter(recipient => recipient?.deviceId === deviceId)
     }
 
-    activeDevices = activeDevices.filter(recipient => !!recipient?.ws)
+    activeDevices = activeDevices.filter(recipient => !!recipient?.socket)
 
     for (const recipient of activeDevices) {
       try {
         const recipientInfo = {
-          apiType: recipient.ws?.apiType,
-          session: sessionService.getSession(recipient.ws),
+          apiType: recipient.socket?.apiType,
+          session: sessionService.getSession(recipient.socket),
           deviceId: recipient.deviceId,
-          node: currentNodeUrl,
         }
 
-        let mappedMessage = await packetMapper.mapPacket(senderInfo.apiType, recipient.ws?.apiType, packet, senderInfo, recipientInfo)
+        let mappedMessage = await packetMapper.mapPacket(senderInfo.apiType, recipient.socket?.apiType, packet, senderInfo, recipientInfo)
 
         if (!mappedMessage) {
           continue
@@ -44,9 +42,9 @@ class PacketManager {
         }
 
         for (const message of mappedMessage) {
-          const mappedRecipientMessage = await packetMapper.mapRecipientPacket(recipient.ws?.apiType, message, senderInfo, recipientInfo)
+          const mappedRecipientMessage = await packetMapper.mapRecipientPacket(recipient.socket?.apiType, message, senderInfo, recipientInfo)
 
-          await recipient.ws?.safeSend(mappedRecipientMessage)
+          await recipient.socket?.safeSend(mappedRecipientMessage)
         }
       } catch (error) {
         logger.error(error, `send on socket error`)
@@ -54,15 +52,15 @@ class PacketManager {
     }
   }
 
-  #deliverToUserDevices(ws, nodeConnections, userId, packet, ignoreSelf) {
+  #deliverToUserDevices(socket, nodeConnections, userId, packet, ignoreSelf) {
     const sessionService = ServiceLocatorContainer.use("SessionService")
-    const senderUserSession = sessionService.getSession(ws)
-    const senderDeviceId = senderUserSession ? sessionService.getDeviceId(ws, senderUserSession.userId) : null
+    const senderUserSession = sessionService.getSession(socket)
+    const senderDeviceId = senderUserSession ? sessionService.getDeviceId(socket, senderUserSession.userId) : null
 
     const currentNodeUrl = config.get("ws.cluster.endpoint")
 
     const senderInfo = {
-      apiType: ws?.apiType,
+      apiType: socket?.apiType,
       session: senderUserSession,
       deviceId: senderDeviceId,
       node: currentNodeUrl,
@@ -105,7 +103,7 @@ class PacketManager {
     }
   }
 
-  async deliverToUserOrUsers(orgId, ws, packet, pushQueueMessage, usersIds, notSaveInOfflineStorage, ignoreSelf) {
+  async deliverToUserOrUsers(orgId, socket, packet, pushQueueMessage, usersIds, notSaveInOfflineStorage, ignoreSelf) {
     const sessionService = ServiceLocatorContainer.use("SessionService")
     const opLogsService = ServiceLocatorContainer.use("OperationLogsService")
     const pushQueueService = ServiceLocatorContainer.use("PushQueueService")
@@ -135,7 +133,7 @@ class PacketManager {
         offlineUsersByPackets.push(userId)
       }
 
-      this.#deliverToUserDevices(ws, userNodeData, userId, packet, ignoreSelf)
+      this.#deliverToUserDevices(socket, userNodeData, userId, packet, ignoreSelf)
     }
 
     if (pushQueueMessage && offlineUsersByPackets.length) {

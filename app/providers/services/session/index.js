@@ -4,9 +4,9 @@ import { CONSTANTS } from "../../../constants/constants.js"
 
 /*
   Structs:
-  SET - node:{node-endpoint} -> {userId}:{deviceId}
-  SET - user:{organizationId}:{userId} -> {deviceId}
-  HASH - user:{userId}:{deviceId} -> extra params
+  SET - sama-node:{node-endpoint} -> {userId}:{deviceId}
+  SET - sama-user:{organizationId}:{userId} -> {deviceId}
+  HASH - sama-user-data:{userId}:{deviceId} -> extra params
 */
 
 class SessionService {
@@ -23,16 +23,16 @@ class SessionService {
 
   addUserDeviceConnection(socket, organizationId, userId, deviceId) {
     const activeConnections = this.activeSessions.DEVICES[userId]
-    const wsToClose = []
+    const socketsToClose = []
 
-    const connection = { ws: socket, deviceId, organizationId }
+    const connection = { socket: socket, deviceId, organizationId }
 
     if (activeConnections) {
       const devices = activeConnections.filter((connection) => {
         if (connection.deviceId !== deviceId) {
           return true
         } else {
-          wsToClose.push(connection.ws)
+          socketsToClose.push(connection.socket)
           return false
         }
       })
@@ -43,11 +43,11 @@ class SessionService {
 
     this.setSessionUserId(socket, organizationId, userId, { [CONSTANTS.SESSION_DEVICE_ID_KEY]: deviceId })
 
-    return wsToClose
+    return socketsToClose
   }
 
   #nodesSetCacheKey(nodeIp, nodePort, nodeEndpoint) {
-    return `node:${nodeEndpoint ? nodeEndpoint : buildWsEndpoint(nodeIp, nodePort)}`
+    return `sama-node:${nodeEndpoint ? nodeEndpoint : buildWsEndpoint(nodeIp, nodePort)}`
   }
 
   async addUserDeviceToNode(nodeIp, nodePort, userId, deviceId) {
@@ -83,11 +83,11 @@ class SessionService {
   }
 
   #usersSetCacheKey(organizationId, userId) {
-    return `user:${organizationId}:${userId}`
+    return `sama-user:${organizationId}:${userId}`
   }
 
   #usersHashCacheKey(userId, deviceId) {
-    return `user:${userId}:${deviceId}`
+    return `sama-user-data:${userId}:${deviceId}`
   }
 
   async addUserDevice(organizationId, userId, deviceId) {
@@ -165,8 +165,8 @@ class SessionService {
 
     if (this.config.get("app.isStandAloneNode")) {
       for (const connection of this.getUserDevices(userId)) {
-        if (!connection?.ws || connection?.deviceId === CONSTANTS.HTTP_DEVICE_ID) continue
-        const session = this.getSession(connection.ws) 
+        if (!connection?.socket || connection?.deviceId === CONSTANTS.HTTP_DEVICE_ID) continue
+        const session = this.getSession(connection.socket) 
         if (session?.extraParams) {
           userData[connection.deviceId] = session.extraParams
         }
@@ -273,7 +273,7 @@ class SessionService {
 
   getDeviceId(socket, userId) {
     if (this.activeSessions.DEVICES[userId]) {
-      return this.activeSessions.DEVICES[userId].find((el) => el.ws === socket)?.deviceId
+      return this.activeSessions.DEVICES[userId].find((el) => el.socket === socket)?.deviceId
     }
 
     return null
