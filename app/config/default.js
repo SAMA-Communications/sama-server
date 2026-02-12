@@ -6,6 +6,7 @@ const CONFIG = {
     ip: void 0,
     name: process.env.APP_NAME ?? "SAMA",
     hostName: process.env.HOSTNAME,
+    isStandAloneNode: process.env.STANDALONE_NODE === CONSTANTS.ENV_TRUE,
   },
   logger: {
     logLevel: process.env.LOG_LEVEL ?? "debug",

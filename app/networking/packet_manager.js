@@ -68,31 +68,41 @@ class PacketManager {
       node: currentNodeUrl,
     }
 
-    Object.entries(nodeConnections).forEach(async ([nodeDeviceId, extraParams]) => {
-      const nodeUrl = extraParams[MAIN_CONSTANTS.SESSION_NODE_KEY]
-
-      if (!nodeUrl) {
-        return
-      }
-
-      if (currentNodeUrl === nodeUrl) {
+    if (config.get("app.isStandAloneNode")) {
+      Object.keys(nodeConnections).forEach(async nodeDeviceId => {
         if (senderDeviceId === nodeDeviceId && ignoreSelf) {
+          return // carbon message
+        }
+  
+        await this.deliverToUserOnThisNode(userId, packet, nodeDeviceId, senderInfo)
+      })
+    } else {
+      Object.entries(nodeConnections).forEach(async ([nodeDeviceId, extraParams]) => {
+        const nodeUrl = extraParams[MAIN_CONSTANTS.SESSION_NODE_KEY]
+  
+        if (!nodeUrl) {
           return
         }
-
-        await this.deliverToUserOnThisNode(userId, packet, nodeDeviceId, senderInfo, ignoreSelf) // carbon message
-
-        return
-      }
-
-      try {
-        const clusterPacket = { userId, packet, senderInfo }
-        await clusterManager.senderClusterDeliverPacket(nodeUrl, clusterPacket)
-      } catch (error) {
-        await sessionService.clearNodeUsersSession(nodeUrl)
-        logger.error(error, "[deliverToUserDevices] createSocketWithNode error")
-      }
-    })
+  
+        if (currentNodeUrl === nodeUrl) {
+          if (senderDeviceId === nodeDeviceId && ignoreSelf) {
+            return
+          }
+  
+          await this.deliverToUserOnThisNode(userId, packet, nodeDeviceId, senderInfo) // carbon message
+  
+          return
+        }
+  
+        try {
+          const clusterPacket = { userId, packet, senderInfo }
+          await clusterManager.senderClusterDeliverPacket(nodeUrl, clusterPacket)
+        } catch (error) {
+          await sessionService.clearNodeUsersSession(nodeUrl)
+          logger.error(error, "[deliverToUserDevices] createSocketWithNode error")
+        }
+      })
+    }
   }
 
   async deliverToUserOrUsers(orgId, ws, packet, pushQueueMessage, usersIds, notSaveInOfflineStorage, ignoreSelf) {

@@ -51,12 +51,14 @@ describe("Cluster Message function", async () => {
       }
     })
 
-    clusterManager.clusterNodesWS[ip.address()] = {
+    const mockedWS2 = {
       send: (data) => {
         secondSocketResponse = data
       },
     }
-    await sessionService.storeUserNodeData(orgId, usersIds[1], deviceId, ip.address(), secondClusterPort)
+    clusterManager.clusterNodesWS[ip.address()] = mockedWS2
+
+    await sessionService.storeUserNodeData(mockedWS2, orgId, usersIds[1], deviceId, ip.address(), secondClusterPort)
   })
 
   describe("Send Message to other node", async () => {
