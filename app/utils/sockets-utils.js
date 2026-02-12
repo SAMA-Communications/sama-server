@@ -10,6 +10,10 @@ export async function tcpSafeSend(socket, data) {
   }
 }
 
+export function tcpClose(socket) {
+  socket.end()
+}
+
 export function wsSafeSend(ws, data) {
   try {
     ws.send(data)

@@ -46,7 +46,7 @@ class PacketManager {
         for (const message of mappedMessage) {
           const mappedRecipientMessage = await packetMapper.mapRecipientPacket(recipient.ws?.apiType, message, senderInfo, recipientInfo)
 
-          await recipient.ws.safeSend(mappedRecipientMessage)
+          await recipient.ws?.safeSend(mappedRecipientMessage)
         }
       } catch (error) {
         logger.error(error, `send on socket error`)

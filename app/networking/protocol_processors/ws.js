@@ -10,29 +10,28 @@ class WsProtocol extends BaseProtocolProcessor {
   uwsOptions = {}
   uWSocketServer = void 0
 
-  requestCreateStoreContext = () => createStore({ [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.PROTOCOL_TYPE]: "WS" })
-
-  socketAddress(ws) {
-    return Buffer.from(ws.getRemoteAddressAsText()).toString()
+  static defineProtocolTpe(socket) {
+    return "WS"
   }
 
-  onOpen(ws) {
-    logger.trace("[Open] IP: %s", this.socketAddress(ws))
-    super.onOpen(ws)
+  socketAddress(ws) {
+    try {
+      return Buffer.from(ws.getRemoteAddressAsText()).toString()
+    } finally {
+      return "no-ip"
+    }
   }
 
   extendSocket(ws) {
+    super.extendSocket(ws)
     ws.safeSend = wsSafeSend.bind(ws, ws)
+    return ws
   }
 
   removeExtends(ws) {
+    super.removeExtends(ws)
     ws.safeSend = void 0
-  }
-
-  async onClose(ws, code, message) {
-    logger.trace("[Close] Code: %s", code)
-
-    return super.onClose(ws)
+    return ws
   }
 
   async onPackage(ws, packageData, isBinary) {
@@ -49,19 +48,19 @@ class WsProtocol extends BaseProtocolProcessor {
         ...uwsOptions.wsOptions,
 
         open: (ws) => {
-          asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
+          asyncLoggerContextStore.run(this.requestCreateStoreContext(ws), () => {
             this.onOpen(ws)
           })
         },
 
         close: (ws, code, message) => {
-          asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
+          asyncLoggerContextStore.run(this.requestCreateStoreContext(ws), () => {
             this.onClose(ws, code, message)
           })
         },
 
         message: (ws, message, isBinary) => {
-          asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
+          asyncLoggerContextStore.run(this.requestCreateStoreContext(ws), () => {
             this.onPackage(ws, message, isBinary)
           })
         },
