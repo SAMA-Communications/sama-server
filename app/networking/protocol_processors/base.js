@@ -28,12 +28,13 @@ class BaseProtocolProcessor {
     return "Socket"
   }
 
-  requestCreateStoreContext = (socket) => createStore({
-    [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.PROTOCOL_TYPE]: this.constructor.defineProtocolTpe(socket),
-    [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.CLIENT_ID]: socket?.clientId ?? this.socketAddress(socket),
-    [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.SERVER_REQUEST_ID]: uuid(),
-    [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.REQUEST_START_TIME]: +(new Date())
-  })
+  requestCreateStoreContext = (socket) =>
+    createStore({
+      [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.PROTOCOL_TYPE]: this.constructor.defineProtocolTpe(socket),
+      [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.CLIENT_ID]: socket?.clientId ?? this.socketAddress(socket),
+      [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.SERVER_REQUEST_ID]: uuid(),
+      [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.REQUEST_START_TIME]: +new Date(),
+    })
 
   socketAddress(socket) {
     return socket?.ip ?? "socket-address"
@@ -139,13 +140,18 @@ class BaseProtocolProcessor {
   }
 
   async processUpdateLastActivityResponse(socket, response) {
-    let { organizationId, userId } = (this.sessionService.getSession(socket) ?? {})
+    let { organizationId, userId } = this.sessionService.getSession(socket) ?? {}
     organizationId = response.lastActivityStatusResponse.orgId ?? organizationId
     userId = response.lastActivityStatusResponse.userId ?? userId
 
     logger.trace("[UPDATE_LAST_ACTIVITY] %o", response.lastActivityStatusResponse)
 
-    const responses = await activitySender.updateAndBuildUserActivity(socket, organizationId, userId, response.lastActivityStatusResponse.status)
+    const responses = await activitySender.updateAndBuildUserActivity(
+      socket,
+      organizationId,
+      userId,
+      response.lastActivityStatusResponse.status
+    )
     responses.forEach((activityResponse) => response.merge(activityResponse))
 
     return response
@@ -206,7 +212,7 @@ class BaseProtocolProcessor {
   }
 
   async updateLastUserLastActivityOnClose(socket) {
-    const { organizationId, userId } = (this.sessionService.getSession(socket) ?? {})
+    const { organizationId, userId } = this.sessionService.getSession(socket) ?? {}
 
     logger.trace("[UPDATE_LAST_ACTIVITY][CLOSE] OrgId: %s UserId: %s", organizationId, userId)
 

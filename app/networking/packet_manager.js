@@ -18,10 +18,10 @@ class PacketManager {
       .filter((activeDevice) => activeDevice?.deviceId !== MAIN_CONSTANTS.HTTP_DEVICE_ID)
 
     if (deviceId) {
-      activeDevices = activeDevices.filter(recipient => recipient?.deviceId === deviceId)
+      activeDevices = activeDevices.filter((recipient) => recipient?.deviceId === deviceId)
     }
 
-    activeDevices = activeDevices.filter(recipient => !!recipient?.socket)
+    activeDevices = activeDevices.filter((recipient) => !!recipient?.socket)
 
     for (const recipient of activeDevices) {
       try {
@@ -42,7 +42,12 @@ class PacketManager {
         }
 
         for (const message of mappedMessage) {
-          const mappedRecipientMessage = await packetMapper.mapRecipientPacket(recipient.socket?.apiType, message, senderInfo, recipientInfo)
+          const mappedRecipientMessage = await packetMapper.mapRecipientPacket(
+            recipient.socket?.apiType,
+            message,
+            senderInfo,
+            recipientInfo
+          )
 
           await recipient.socket?.safeSend(mappedRecipientMessage)
         }
@@ -67,31 +72,31 @@ class PacketManager {
     }
 
     if (config.get("app.isStandAloneNode")) {
-      Object.keys(nodeConnections).forEach(async nodeDeviceId => {
+      Object.keys(nodeConnections).forEach(async (nodeDeviceId) => {
         if (senderDeviceId === nodeDeviceId && ignoreSelf) {
           return // carbon message
         }
-  
+
         await this.deliverToUserOnThisNode(userId, packet, nodeDeviceId, senderInfo)
       })
     } else {
       Object.entries(nodeConnections).forEach(async ([nodeDeviceId, extraParams]) => {
         const nodeUrl = extraParams[MAIN_CONSTANTS.SESSION_NODE_KEY]
-  
+
         if (!nodeUrl) {
           return
         }
-  
+
         if (currentNodeUrl === nodeUrl) {
           if (senderDeviceId === nodeDeviceId && ignoreSelf) {
             return
           }
-  
+
           await this.deliverToUserOnThisNode(userId, packet, nodeDeviceId, senderInfo) // carbon message
-  
+
           return
         }
-  
+
         try {
           const clusterPacket = { userId, packet, senderInfo }
           await clusterManager.senderClusterDeliverPacket(nodeUrl, clusterPacket)

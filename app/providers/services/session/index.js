@@ -104,8 +104,8 @@ class SessionService {
   async listUserDevice(organizationId, userId) {
     if (this.config.get("app.isStandAloneNode")) {
       return this.getUserDevices(userId)
-        .map(connection => connection?.deviceId)
-        .filter(deviceId => deviceId !== CONSTANTS.HTTP_DEVICE_ID)
+        .map((connection) => connection?.deviceId)
+        .filter((deviceId) => deviceId !== CONSTANTS.HTTP_DEVICE_ID)
     }
 
     const userKey = this.#usersSetCacheKey(organizationId, userId)
@@ -166,7 +166,7 @@ class SessionService {
     if (this.config.get("app.isStandAloneNode")) {
       for (const connection of this.getUserDevices(userId)) {
         if (!connection?.socket || connection?.deviceId === CONSTANTS.HTTP_DEVICE_ID) continue
-        const session = this.getSession(connection.socket) 
+        const session = this.getSession(connection.socket)
         if (session?.extraParams) {
           userData[connection.deviceId] = session.extraParams
         }
@@ -340,16 +340,15 @@ class SessionService {
     await this.removeUserDeviceFromNode(nodeId, nodePort, userId, deviceId)
   }
 
-
   async onlineUsersList(organizationId, offset = 0, limit = 10) {
-    return this.config.get("app.isStandAloneNode") ? 
-      this.onlineUsersListLocal(organizationId, offset, limit) 
+    return this.config.get("app.isStandAloneNode")
+      ? this.onlineUsersListLocal(organizationId, offset, limit)
       : await this.onlineUsersListWithNode(organizationId, offset, limit)
   }
 
   async onlineUsersCount(organizationId) {
-    return this.config.get("app.isStandAloneNode") ? 
-      this.onlineUsersCountLocal(organizationId) 
+    return this.config.get("app.isStandAloneNode")
+      ? this.onlineUsersCountLocal(organizationId)
       : await this.onlineUsersCountWithNodes(organizationId)
   }
 
@@ -371,7 +370,7 @@ class SessionService {
 
   onlineUsersListLocal(organizationId, offset, limit) {
     const userIds = this.retrieveLocalActiveSessionUserIds(organizationId)
-    
+
     userIds.slice(offset, offset + limit)
 
     return userIds
@@ -385,14 +384,15 @@ class SessionService {
 
   retrieveLocalActiveSessionUserIds(organizationId) {
     const userIds = Array.from(this.activeSessions.SESSIONS.values())
-      .filter(session => (
-        (session?.organizationId === organizationId) &&
-        (session?.extraParams[CONSTANTS.SESSION_DEVICE_ID_KEY] !== CONSTANTS.HTTP_DEVICE_ID) &&
-        session?.userId)
+      .filter(
+        (session) =>
+          session?.organizationId === organizationId &&
+          session?.extraParams[CONSTANTS.SESSION_DEVICE_ID_KEY] !== CONSTANTS.HTTP_DEVICE_ID &&
+          session?.userId
       )
-      .map(session => session.userId)
+      .map((session) => session.userId)
       .sort((userIdA, userIdB) => userIdA - userIdB)
-  
+
     return Array.from(new Set(userIds))
   }
 }

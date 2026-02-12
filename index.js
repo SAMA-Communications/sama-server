@@ -28,7 +28,7 @@ if (config.get("app.env") === CONSTANTS.ENVS.PROD) {
   process.on("unhandledRejection", (reason, promise) => {
     logger.fatal(reason, "[unhandledRejection] %o", promise)
   })
-  
+
   process.on("uncaughtException", (error, nodeError) => {
     logger.fatal(error, "[uncaughtException] %o", nodeError)
   })

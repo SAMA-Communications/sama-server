@@ -36,7 +36,7 @@ export const CONSTANTS = {
     DEV: "development",
     PROD: "production",
     LOCAL: "local",
-    TESTING: "testing"
+    TESTING: "testing",
   },
-  ENV_TRUE: "true"
+  ENV_TRUE: "true",
 }

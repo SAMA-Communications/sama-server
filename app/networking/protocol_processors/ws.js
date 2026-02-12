@@ -17,7 +17,7 @@ class WsProtocol extends BaseProtocolProcessor {
   socketAddress(ws) {
     try {
       return Buffer.from(ws.getRemoteAddressAsText()).toString()
-    } finally {
+    } catch (error) {
       return "no-ip"
     }
   }
