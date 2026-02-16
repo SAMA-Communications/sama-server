@@ -114,7 +114,7 @@ class BaseProtocolProcessor {
     await this.processDeliverResponse(socket, response.deliverMessages ?? [])
 
     if (response.closeSocket) {
-      socket.close()
+      this.closeSocket(socket)
       return
     }
 
@@ -223,6 +223,10 @@ class BaseProtocolProcessor {
     await this.sessionService.removeUserSession(socket, userId)
 
     await this.processAPIResponse(socket, activitySender.buildOfflineActivityResponse(organizationId, userId), true)
+  }
+
+  closeSocket(socket) {
+    socket.close()
   }
 
   onProcessingError(socket, error, packageData) {

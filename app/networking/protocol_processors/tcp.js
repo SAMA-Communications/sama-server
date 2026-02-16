@@ -7,7 +7,7 @@ import { asyncLoggerContextStore, createStore, updateStoreContext } from "../../
 
 import BaseProtocolProcessor from "./base.js"
 import { APIs, detectAPIType } from "../APIs.js"
-import { tcpSafeSend, tcpClose } from "../../utils/sockets-utils.js"
+import { tcpSafeSend } from "../../utils/sockets-utils.js"
 
 class TcpProtocol extends BaseProtocolProcessor {
   tcpOptions = {}
@@ -36,7 +36,6 @@ class TcpProtocol extends BaseProtocolProcessor {
   extendSocket(socket) {
     super.extendSocket(socket)
     socket.safeSend = tcpSafeSend.bind(socket, socket)
-    socket.close = tcpClose.bind(socket, socket)
     return socket
   }
 
@@ -44,6 +43,10 @@ class TcpProtocol extends BaseProtocolProcessor {
     super.removeExtends(socket)
     socket.safeSend = void 0
     return socket
+  }
+
+  closeSocket(socket) {
+    socket.end()
   }
 
   async onClose(socket) {
