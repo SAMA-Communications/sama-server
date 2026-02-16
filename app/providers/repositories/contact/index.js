@@ -20,7 +20,7 @@ class ContactRepository extends BaseRepository {
     email && query.$or.push({ [`phone.value`]: phone })
     phone && query.$or.push({ [`email.value`]: email })
 
-    const contacts = await this.findAll(query, null, limit, { sort: -1 })
+    const contacts = await this.findAll(query, null, limit, { _id: -1 })
 
     return contacts
   }
@@ -32,7 +32,7 @@ class ContactRepository extends BaseRepository {
       queryParams.updated_at = { $gt: new Date(query.updated_at) }
     }
 
-    const contacts = await this.findAll(queryParams, null, limit)
+    const contacts = await this.findAll(queryParams, null, limit, { _id: -1 })
 
     return contacts
   }
