@@ -353,7 +353,7 @@ class SessionService {
   }
 
   async onlineUsersListWithNode(organizationId, offset, limit) {
-    const matchPattern = `user:${organizationId}:*`
+    const matchPattern = this.#usersSetCacheKey(organizationId, '*')
 
     const userKeys = await this.redisConnection.scanWithPagination("set", matchPattern, offset, limit)
 
@@ -361,7 +361,7 @@ class SessionService {
   }
 
   async onlineUsersCountWithNodes(organizationId) {
-    const matchPattern = `user:${organizationId}:*`
+    const matchPattern = this.#usersSetCacheKey(organizationId, '*')
 
     const count = await this.redisConnection.countWithMatch("set", matchPattern)
 
