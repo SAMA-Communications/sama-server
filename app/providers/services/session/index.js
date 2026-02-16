@@ -317,7 +317,11 @@ class SessionService {
 
     const leftActiveConnections = this.getUserDevices(userId).filter(({ deviceId: activeDeviceId }) => activeDeviceId !== deviceId)
 
-    this.activeSessions.DEVICES[userId] = leftActiveConnections
+    if (leftActiveConnections?.length) {
+      this.activeSessions.DEVICES[userId] = leftActiveConnections
+    } else {
+      delete this.activeSessions.DEVICES[userId]
+    }
     this.activeSessions.SESSIONS.delete(socket)
 
     if (!deviceId) {
