@@ -7,9 +7,10 @@ class StatusTypingOperationRegisterProvider extends RegisterProvider {
   register(slc) {
     const config = slc.use("Config")
     const sessionService = slc.use("SessionService")
+    const blockListService = slc.use("BlockListService")
     const conversationService = slc.use("ConversationService")
 
-    return new StatusTypingOperation(config, sessionService, conversationService)
+    return new StatusTypingOperation(config, sessionService, blockListService, conversationService)
   }
 }
 
