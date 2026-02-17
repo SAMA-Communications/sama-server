@@ -1,5 +1,4 @@
 import process from "node:process"
-import cron from "node-cron"
 import prettyMs from "pretty-ms"
 
 class StatsService {
@@ -11,6 +10,10 @@ class StatsService {
     this.config = config
     this.sessionService = sessionService
   }
+
+  static ONE_MINUTE_IN_MS = 60 * 1_000
+  static ONE_HOUR_IN_MS = this.ONE_MINUTE_IN_MS * 60
+  static ONE_DAY_IN_MS = this.ONE_HOUR_IN_MS * 24
 
   incMessagesCount(inc = 1) {
     inc = this.normalizeInc(inc)
@@ -85,21 +88,25 @@ class StatsService {
   }
 
   startResetLastMinute() {
-    cron.schedule("0 * * * * *", () => {
+    this.schedule(() => {
       this.resetPerMinute()
-    }, { name: "ResetLastMinuteStats" })
+    }, StatsService.ONE_MINUTE_IN_MS)
   }
 
   startResetLastHour() {
-    cron.schedule("0 0 * * * *", () => {
+    this.schedule(() => {
       this.resetPerHour()
-    }, { name: "ResetLastHourStats" })
+    }, StatsService.ONE_HOUR_IN_MS)
   }
 
   startResetLastDay() {
-    cron.schedule("0 0 10 * * *", () => {
+    this.schedule(() => {
       this.resetPerDay()
-    }, { name: "ResetLastDayStats" })
+    }, StatsService.ONE_DAY_IN_MS)
+  }
+
+  schedule(fun, delay) {
+    return setInterval(fun, delay)
   }
 }
 

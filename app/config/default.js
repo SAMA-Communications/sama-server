@@ -120,9 +120,6 @@ const CONFIG = {
   chatBot: {
     login: process.env.CHAT_BOT_LOGIN,
   },
-  crons: {
-    resetMessagesPerDay: process.env.CRON_MESSAGES_PER_DAY_RESET ?? "0 0 10 * * *"
-  }
 }
 
 export default CONFIG
