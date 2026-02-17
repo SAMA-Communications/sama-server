@@ -551,7 +551,6 @@ describe("PushNotification functions", async () => {
       assert.ok(conversationId)
     })
 
-
     it("send message", async () => {
       const requestData = {
         message: {
@@ -596,8 +595,8 @@ describe("PushNotification functions", async () => {
       assert.equal(pushQueueItem.user_ids.length, 1)
       assert.equal(`${pushQueueItem.user_ids.at(0)}`, `${usersIds.at(1)}`)
       assert.ok(pushQueueItem.message)
-      
-      const messagePayload = JSON.parse(Buffer.from(pushQueueItem.message, 'base64').toString('utf8'))
+
+      const messagePayload = JSON.parse(Buffer.from(pushQueueItem.message, "base64").toString("utf8"))
       assert.equal(messagePayload.body, messageBody)
       assert.equal(messagePayload.cid, conversationId)
     })

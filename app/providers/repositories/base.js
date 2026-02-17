@@ -139,7 +139,7 @@ export default class BaseRepository {
     const records = await this.collectionCursor
       .find(query)
       .project(projection)
-      .sort(sortParams ?? { })
+      .sort(sortParams ?? {})
       .limit(limit)
       .toArray()
 
