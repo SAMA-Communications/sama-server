@@ -12,6 +12,7 @@ import { default as UsersBlockController } from "../controllers/users_block.js"
 import { default as UsersController } from "../controllers/users.js"
 
 import authGuardMiddleware from "../middleware/auth_guard.js"
+import statsMessagesMiddleWare from "@sama/common/stats_messages_middleware.js"
 
 import { activitiesSchemaValidation } from "../validations/activities_schema_validation.js"
 import { contactsSchemaValidation } from "../validations/contacts_schema_validation.js"
@@ -31,11 +32,21 @@ export const routes = {
   typing: (ws, json) =>
     StatusesController.middleware(authGuardMiddleware, ws, json).validate(json.typing, statusSchemaValidation.typing).typing(ws, json),
   message: (ws, json) =>
-    MessagesController.middleware(authGuardMiddleware, ws, json).validate(json.message, messagesSchemaValidation.create).create(ws, json),
+    MessagesController
+      .middleware(authGuardMiddleware, ws, json)
+      .middleware(statsMessagesMiddleWare, ws, json)
+      .validate(json.message, messagesSchemaValidation.create)
+      .create(ws, json),
   message_edit: (ws, json) =>
-    MessagesController.middleware(authGuardMiddleware, ws, json).validate(json.message_edit, messagesSchemaValidation.edit).edit(ws, json),
+    MessagesController
+      .middleware(authGuardMiddleware, ws, json)
+      .middleware(statsMessagesMiddleWare, ws, json)
+      .validate(json.message_edit, messagesSchemaValidation.edit)
+      .edit(ws, json),
   message_reactions_update: (ws, json) =>
-    MessagesController.middleware(authGuardMiddleware, ws, json)
+    MessagesController
+      .middleware(authGuardMiddleware, ws, json)
+      .middleware(statsMessagesMiddleWare, ws, json)
       .validate(json.message_reactions_update, messagesSchemaValidation.reactions_update)
       .reactions_update(ws, json),
   message_list: (ws, json) =>
@@ -61,7 +72,9 @@ export const routes = {
   message_tone: (ws, json) =>
     MessagesController.middleware(authGuardMiddleware, ws, json).validate(json.message_tone, messagesSchemaValidation.tone).tone(ws, json),
   system_message: (ws, json) =>
-    MessagesController.middleware(authGuardMiddleware, ws, json)
+    MessagesController
+      .middleware(authGuardMiddleware, ws, json)
+      .middleware(statsMessagesMiddleWare, ws, json)
       .validate(json.system_message, messagesSchemaValidation.system)
       .sendSystem(ws, json),
   connect: (ws, json) =>
