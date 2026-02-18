@@ -19,6 +19,7 @@ import HttpProtocol from "./app/networking/protocol_processors/http.js"
 
 import { connectToDBPromise } from "./app/lib/db.js"
 import RedisClient from "./app/lib/redis.js"
+import OTPSender from "./app/lib/otp_sender.js"
 
 import { APIs } from "./app/networking/APIs.js"
 
@@ -94,6 +95,8 @@ await RedisClient.connect()
     process.exit()
   })
 
+const optSender = new OTPSender()
+
 // Register providers
 ServiceLocatorContainer.register(
   new (class extends RegisterProvider {
@@ -133,6 +136,16 @@ ServiceLocatorContainer.register(
   })({
     name: "MongoConnection",
     implementationName: "MongoConnection",
+  })
+)
+ServiceLocatorContainer.register(
+  new (class extends RegisterProvider {
+    register(slc) {
+      return optSender
+    }
+  })({
+    name: "OptSender",
+    implementationName: OTPSender.name,
   })
 )
 
