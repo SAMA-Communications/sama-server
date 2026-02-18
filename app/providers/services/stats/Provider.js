@@ -10,11 +10,6 @@ class StatsServiceRegisterProvider extends RegisterProvider {
 
     return new StatsService(config, sessionService)
   }
-
-  boot(slc) {
-    const statsService = slc.use("StatsService")
-    statsService.boot()
-  }
 }
 
 export default new StatsServiceRegisterProvider({ name, implementationName: StatsService.name })

@@ -1,26 +1,73 @@
 import process from "node:process"
 import prettyMs from "pretty-ms"
 
+export class IncPairDateVal {
+  static DATE_TYPES = {
+    MIN: 1,
+    HOUR: 2,
+    DAY: 3
+  }
+
+  constructor(dateTypeKey, val = 0) {
+    this.dateTypeKey = dateTypeKey ?? IncrementableKeyValue.DATE_TYPES.MIN
+    this.val = val
+    this.key = this.keyName(new Date())
+  }
+
+  inc(inc, date) {
+    const checkKey = this.keyName(date)
+
+    if (checkKey === this.key) {
+      return this.val += inc
+    }
+
+    this.val = inc
+    this.key = checkKey
+
+    return this.val
+  }
+
+  retrieve(date) {
+    if (this.keyName(date) === this.key) {
+      return this.val
+    }
+  }
+
+  reset(date) {
+    this.val = 0
+    this.key = this.keyName(date)
+  }
+
+  keyName(date) {
+    switch (this.dateTypeKey) {
+      case IncPairDateVal.DATE_TYPES.MIN:
+        return `${date.getDate()}:${date.getHours()}:${date.getMinutes()}`
+      case IncPairDateVal.DATE_TYPES.HOUR:
+        return `${date.getDate()}:${date.getHours()}`
+      case IncPairDateVal.DATE_TYPES.DAY:
+        return `${date.getDate()}`
+    }
+
+    return `${date}`
+  }
+}
+
 class StatsService {
-  messagesPerMinute = 0
-  messagesPerHour = 0
-  messagesPerDay = 0
+  messagesPerMinute = new IncPairDateVal(IncPairDateVal.DATE_TYPES.MIN)
+  messagesPerHour = new IncPairDateVal(IncPairDateVal.DATE_TYPES.HOUR)
+  messagesPerDay = new IncPairDateVal(IncPairDateVal.DATE_TYPES.DAY)
 
   constructor(config, sessionService) {
     this.config = config
     this.sessionService = sessionService
   }
 
-  static ONE_MINUTE_IN_MS = 60 * 1_000
-  static ONE_HOUR_IN_MS = this.ONE_MINUTE_IN_MS * 60
-  static ONE_DAY_IN_MS = this.ONE_HOUR_IN_MS * 24
-
-  incMessagesCount(inc = 1) {
+  incMessagesCount(inc = 1, date = new Date()) {
     inc = this.normalizeInc(inc)
 
-    this.messagesPerMinute += inc
-    this.messagesPerHour += inc 
-    this.messagesPerDay += inc
+    this.messagesPerMinute.inc(inc, date)
+    this.messagesPerHour.inc(inc, date)
+    this.messagesPerDay.inc(inc, date)
   }
 
   normalizeInc(inc) {
@@ -29,7 +76,7 @@ class StatsService {
     return isNaN(parsed) ? 0 : parsed
   }
 
-  collectServerStats(format) {
+  collectServerStats(format, date) {
     const uptime = Math.floor(process.uptime())
 
     const formattedUptime = format ? prettyMs(uptime * 1000) : uptime
@@ -39,74 +86,46 @@ class StatsService {
     }
   }
 
-  collectUsersStats(format) {
+  collectUsersStats(format, date) {
     return {
       online_users: this.sessionService.totalSessions()
     }
   }
 
-  collectChatStats(format) {
+  collectChatStats(format, date) {
     return {
-      messages_per_minute: this.messagesPerMinute,
-      messages_per_hour: this.messagesPerHour,
-      messages_per_day: this.messagesPerDay
+      messages_per_minute: this.messagesPerMinute.retrieve(date) ?? 0,
+      messages_per_hour: this.messagesPerHour.retrieve(date) ?? 0,
+      messages_per_day: this.messagesPerDay.retrieve(date) ?? 0
     }
   }
 
-  collectStats(format) {
+  collectStats(format, date = new Date()) {
     const stats = {}
 
-    const serverStats = this.collectServerStats(format)
-    const usersStats = this.collectUsersStats(format)
-    const chatStats = this.collectChatStats(format)
+    const serverStats = this.collectServerStats(format, date)
+    const usersStats = this.collectUsersStats(format, date)
+    const chatStats = this.collectChatStats(format, date)
 
     return Object.assign(stats, serverStats, usersStats, chatStats)
   }
 
-  resetPerMinute() {
-    this.messagesPerMinute = 0
+  resetPerMinute(date) {
+    this.messagesPerMinute.reset(date)
   }
 
-  resetPerHour() {
-    this.messagesPerHour = 0
+  resetPerHour(date) {
+    this.messagesPerHour.reset(date)
   }
 
-  resetPerDay() {
-    this.messagesPerDay = 0
+  resetPerDay(date) {
+    this.messagesPerDay.reset(date)
   }
 
-  resetChatStatsAll() {
-    this.resetPerMinute()
-    this.resetPerHour()
-    this.resetPerDay()
-  }
-
-  boot() {
-    this.startResetLastMinute()
-    this.startResetLastHour()
-    this.startResetLastDay()
-  }
-
-  startResetLastMinute() {
-    this.schedule(() => {
-      this.resetPerMinute()
-    }, StatsService.ONE_MINUTE_IN_MS)
-  }
-
-  startResetLastHour() {
-    this.schedule(() => {
-      this.resetPerHour()
-    }, StatsService.ONE_HOUR_IN_MS)
-  }
-
-  startResetLastDay() {
-    this.schedule(() => {
-      this.resetPerDay()
-    }, StatsService.ONE_DAY_IN_MS)
-  }
-
-  schedule(fun, delay) {
-    return setInterval(fun, delay)
+  resetChatStatsAll(date = new Date) {
+    this.resetPerMinute(date)
+    this.resetPerHour(date)
+    this.resetPerDay(date)
   }
 }
 
