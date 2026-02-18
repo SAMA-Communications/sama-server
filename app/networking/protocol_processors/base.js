@@ -10,7 +10,7 @@ import { BASE_API, APIs, detectAPIType } from "../APIs.js"
 import packetManager from "../packet_manager.js"
 import packetMapper from "../packet_mapper.js"
 
-import activitySender from "../../services/activity_sender.js"
+import activitySender from "../activity_sender.js"
 
 import MappableMessage from "../models/MappableMessage.js"
 

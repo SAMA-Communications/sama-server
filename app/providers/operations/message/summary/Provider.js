@@ -5,13 +5,18 @@ const name = "MessageSummaryOperation"
 
 class MessageSummaryOperationRegisterProvider extends RegisterProvider {
   register(slc) {
+    const config = slc.use("Config")
+
+    const mainLogger = slc.use("Logger")
+    const logger = mainLogger.child("[MessageSummaryOp]")
+
     const helpers = slc.use("Helpers")
     const sessionService = slc.use("SessionService")
     const userService = slc.use("UserService")
     const messageService = slc.use("MessageService")
     const conversationService = slc.use("ConversationService")
 
-    return new MessageSummaryOperation(helpers, sessionService, userService, messageService, conversationService)
+    return new MessageSummaryOperation(config, logger, helpers, sessionService, userService, messageService, conversationService)
   }
 }
 

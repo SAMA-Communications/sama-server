@@ -18,7 +18,7 @@ export const CONSTANTS = {
   SESSION_DEVICE_ID_KEY: "DEVICE_ID",
   HTTP_DEVICE_ID: "SAMA_HTTP_CLIENT_DEVICE_ID",
   HTTP_ADMIN_API_KEY_HEADER: "admin-api-key",
-  CHAT_SUMMARY_FITLERS: {
+  CHAT_SUMMARY_FILTERS: {
     LAST_7_DAYS: "last-7-days",
     LAST_DAY: "last-day",
     UNREADS: "unreads",
