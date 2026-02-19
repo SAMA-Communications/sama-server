@@ -10,10 +10,9 @@ import { CONSTANTS } from "../../../constants/constants.js"
 */
 
 class SessionService {
-  constructor(activeSessions, config, logger, redisConnection) {
+  constructor(activeSessions, config, redisConnection) {
     this.activeSessions = activeSessions
     this.config = config
-    this.logger = logger
     this.redisConnection = redisConnection
   }
 
