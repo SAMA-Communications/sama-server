@@ -1,9 +1,10 @@
 import { ERROR_STATUES } from "../../../../constants/errors.js"
 
 class StatusTypingOperation {
-  constructor(config, sessionService, conversationService) {
+  constructor(config, sessionService, blockListService, conversationService) {
     this.config = config
     this.sessionService = sessionService
+    this.blockListService = blockListService
     this.conversationService = conversationService
   }
 
@@ -55,7 +56,22 @@ class StatusTypingOperation {
       })
     }
 
+    if (conversation.type === "u") {
+      const participantIds = [conversation.owner_id, conversation.opponent_id]
+      await this.#checkBlocked(currentUserId, participantIds)
+    }
+
     return { conversation }
+  }
+
+  async #checkBlocked(currentUserId, participantIds) {
+    const blockedUserIds = await this.blockListService.listMutualBlockedIds(currentUserId, participantIds)
+
+    if (blockedUserIds.length) {
+      throw new Error(ERROR_STATUES.USER_BLOCKED.message, {
+        cause: ERROR_STATUES.USER_BLOCKED,
+      })
+    }
   }
 }
 

@@ -2,7 +2,7 @@ export const CONSTANTS = {
   LOGGER_BINDINGS_NAMES: {
     SERVER_REQUEST_ID: "srId",
     REQUEST_ID: "rId",
-    CLIENT_IP: "cIP",
+    CLIENT_ID: "cId",
     PROTOCOL_TYPE: "pType",
     REQUEST_START_TIME: "rStartTime",
     NO_REQUEST_ID: "no-id",
@@ -18,7 +18,7 @@ export const CONSTANTS = {
   SESSION_DEVICE_ID_KEY: "DEVICE_ID",
   HTTP_DEVICE_ID: "SAMA_HTTP_CLIENT_DEVICE_ID",
   HTTP_ADMIN_API_KEY_HEADER: "admin-api-key",
-  CHAT_SUMMARY_FITLERS: {
+  CHAT_SUMMARY_FILTERS: {
     LAST_7_DAYS: "last-7-days",
     LAST_DAY: "last-day",
     UNREADS: "unreads",
@@ -36,7 +36,7 @@ export const CONSTANTS = {
     DEV: "development",
     PROD: "production",
     LOCAL: "local",
-    TESTING: "testing"
+    TESTING: "testing",
   },
-  ENV_TRUE: "true"
+  ENV_TRUE: "true",
 }

@@ -2,7 +2,7 @@ import { StringDecoder } from "node:string_decoder"
 import { v4 as uuid } from "uuid"
 
 import logger from "../../logger/index.js"
-import { updateStoreContext } from "../../logger/async_store.js"
+import { createStore, updateStoreContext } from "../../logger/async_store.js"
 import { ERROR_STATUES } from "../../constants/errors.js"
 import { CONSTANTS as MAIN_CONSTANTS } from "../../constants/constants.js"
 import { BASE_API, APIs, detectAPIType } from "../APIs.js"
@@ -10,7 +10,7 @@ import { BASE_API, APIs, detectAPIType } from "../APIs.js"
 import packetManager from "../packet_manager.js"
 import packetMapper from "../packet_mapper.js"
 
-import activitySender from "../../services/activity_sender.js"
+import activitySender from "../activity_sender.js"
 
 import MappableMessage from "../models/MappableMessage.js"
 
@@ -24,19 +24,33 @@ class BaseProtocolProcessor {
     this.conversationService = conversationService
   }
 
-  requestCreateStoreContext = () => createStore({ [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.PROTOCOL_TYPE]: "Socket" })
+  static defineProtocolTpe(socket) {
+    return "Socket"
+  }
+
+  requestCreateStoreContext = (socket) =>
+    createStore({
+      [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.PROTOCOL_TYPE]: this.constructor.defineProtocolTpe(socket),
+      [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.CLIENT_ID]: socket?.clientId ?? this.socketAddress(socket),
+      [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.SERVER_REQUEST_ID]: uuid(),
+      [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.REQUEST_START_TIME]: +new Date(),
+    })
 
   socketAddress(socket) {
-    return socket.ip ?? "socket-address"
+    return socket?.ip ?? "socket-address"
   }
 
   onOpen(socket) {
     this.extendSocket(socket)
 
+    logger.trace("[Open] IP: %s CLIENT_ID: %s", this.socketAddress(socket), socket.clientId)
+
     return socket
   }
 
   extendSocket(socket) {
+    socket.clientId = uuid()
+    socket.isAlive = true
     return socket
   }
 
@@ -57,10 +71,6 @@ class BaseProtocolProcessor {
   }
 
   async onPackage(socket, packageData) {
-    updateStoreContext(MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.SERVER_REQUEST_ID, uuid())
-    updateStoreContext(MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.CLIENT_IP, this.socketAddress(socket))
-    updateStoreContext(MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.REQUEST_START_TIME, +new Date())
-
     let stringMessage = packageData
     try {
       stringMessage = this.decodePackage(socket, packageData)
@@ -104,7 +114,7 @@ class BaseProtocolProcessor {
     await this.processDeliverResponse(socket, response.deliverMessages ?? [])
 
     if (response.closeSocket) {
-      socket.end()
+      this.closeSocket(socket)
       return
     }
 
@@ -122,7 +132,7 @@ class BaseProtocolProcessor {
 
         logger.trace("[SENT] %s", backPackage)
 
-        await socket.safeSend(backPackage)
+        await socket?.safeSend(backPackage)
       } catch (error) {
         logger.error(error, "[ClientManager][error]")
       }
@@ -130,13 +140,18 @@ class BaseProtocolProcessor {
   }
 
   async processUpdateLastActivityResponse(socket, response) {
-    let { organizationId, userId } = (this.sessionService.getSession(socket) ?? {})
+    let { organizationId, userId } = this.sessionService.getSession(socket) ?? {}
     organizationId = response.lastActivityStatusResponse.orgId ?? organizationId
     userId = response.lastActivityStatusResponse.userId ?? userId
 
     logger.trace("[UPDATE_LAST_ACTIVITY] %o", response.lastActivityStatusResponse)
 
-    const responses = await activitySender.updateAndBuildUserActivity(socket, organizationId, userId, response.lastActivityStatusResponse.status)
+    const responses = await activitySender.updateAndBuildUserActivity(
+      socket,
+      organizationId,
+      userId,
+      response.lastActivityStatusResponse.status
+    )
     responses.forEach((activityResponse) => response.merge(activityResponse))
 
     return response
@@ -168,7 +183,7 @@ class BaseProtocolProcessor {
         deliverMessage.ignoreSelf
       )
     } catch (error) {
-      logger.error(error, "connection with client socket is lost")
+      logger.error(error, "[PacketManager][error]")
     }
   }
 
@@ -184,7 +199,11 @@ class BaseProtocolProcessor {
     }
   }
 
-  async onClose(socket) {
+  async onClose(socket, code) {
+    logger.trace("[Close] IP: %s CLIENT_ID: %s CODE: %s", this.socketAddress(socket), socket.clientId, code)
+
+    socket.isAlive = false
+
     await this.updateLastUserLastActivityOnClose(socket)
 
     this.removeExtends(socket)
@@ -193,7 +212,7 @@ class BaseProtocolProcessor {
   }
 
   async updateLastUserLastActivityOnClose(socket) {
-    const { organizationId, userId } = (this.sessionService.getSession(socket) ?? {})
+    const { organizationId, userId } = this.sessionService.getSession(socket) ?? {}
 
     logger.trace("[UPDATE_LAST_ACTIVITY][CLOSE] OrgId: %s UserId: %s", organizationId, userId)
 
@@ -206,10 +225,14 @@ class BaseProtocolProcessor {
     await this.processAPIResponse(socket, activitySender.buildOfflineActivityResponse(organizationId, userId), true)
   }
 
+  closeSocket(socket) {
+    socket.close()
+  }
+
   onProcessingError(socket, error, packageData) {
     logger.error(error, "[onPackage] %j", packageData)
 
-    return socket.safeSend(
+    return socket?.safeSend(
       JSON.stringify({
         response: {
           error: {

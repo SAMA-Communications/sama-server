@@ -2,7 +2,7 @@ import Joi from "joi"
 import { ERROR_STATUES, requiredError } from "@sama/constants/errors.js"
 import { CONSTANTS as MAIN_CONSTANTS } from "@sama/constants/constants.js"
 
-const CHAT_SUMMARY_FILTERS_ARRAY = Object.values(MAIN_CONSTANTS.CHAT_SUMMARY_FITLERS)
+const CHAT_SUMMARY_FILTERS_ARRAY = Object.values(MAIN_CONSTANTS.CHAT_SUMMARY_FILTERS)
 const MESSAGE_TONE_ARRAY = Object.values(MAIN_CONSTANTS.MESSAGE_TONE)
 
 export const messagesSchemaValidation = {

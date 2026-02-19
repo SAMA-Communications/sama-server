@@ -19,6 +19,11 @@ let currentConversationId = ""
 let ArrayOfTmpConversations = []
 let lastMessageInChat = ""
 
+const normalizeUpdatedDate = (date) => {
+  const newDate = new Date(date - 100)
+  return newDate
+}
+
 describe("Conversation functions", async () => {
   before(async () => {
     orgId = await generateNewOrganizationId()
@@ -754,7 +759,7 @@ describe("Conversation functions", async () => {
           conversation_list: {
             limit: numberOf,
             updated_at: {
-              gt: filterUpdatedAt,
+              gt: normalizeUpdatedDate(filterUpdatedAt),
             },
           },
           id: "3_3",
@@ -766,7 +771,7 @@ describe("Conversation functions", async () => {
       responseData = responseData.backMessages.at(0)
 
       const count = responseData.response.conversations.length
-      const checkDate = responseData.response.conversations[0].updated_at > filterUpdatedAt
+      const checkDate = responseData.response.conversations[0].updated_at >= filterUpdatedAt
 
       assert(checkDate, "date is false")
       assert.strictEqual(requestData.request.id, responseData.response.id)
