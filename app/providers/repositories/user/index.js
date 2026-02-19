@@ -20,7 +20,7 @@ class UserRepository extends BaseRepository {
   }
 
   async findWithOrgScopeByIds(organizationId, ids) {
-    const users = await this.findAll({ _id: { $in: ids }, organization_id: organizationId }, [], 100)
+    const users = await this.findAll({ organization_id: organizationId, _id: { $in: ids } }, [], 100, { _id: -1 })
 
     return users
   }

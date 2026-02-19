@@ -127,7 +127,7 @@ class MessageCreateOperation {
 
     if (conversation.type === "u") {
       const privateParticipantsIds = [conversation.owner_id, conversation.opponent_id]
-      await this.#checkBlocked(conversation, currentUserId, privateParticipantsIds)
+      await this.#checkBlocked(currentUserId, privateParticipantsIds)
     }
 
     return conversation
@@ -173,10 +173,10 @@ class MessageCreateOperation {
     }
   }
 
-  async #checkBlocked(conversation, currentUserId, participantIds) {
+  async #checkBlocked(currentUserId, participantIds) {
     const blockedUserIds = await this.blockListService.listMutualBlockedIds(currentUserId, participantIds)
 
-    if (conversation.type === "u" && blockedUserIds.length) {
+    if (blockedUserIds.length) {
       throw new Error(ERROR_STATUES.USER_BLOCKED.message, {
         cause: ERROR_STATUES.USER_BLOCKED,
       })

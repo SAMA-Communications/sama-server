@@ -122,10 +122,16 @@ class HttpProtocol extends BaseProtocolProcessor {
     this.uWSocketServer = uWSocketServer
   }
 
-  requestCreateStoreContext = () => createStore({ [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.PROTOCOL_TYPE]: "HTTP" })
+  static defineProtocolTpe(socket) {
+    return "HTTP"
+  }
 
   socketAddress(res) {
-    return Buffer.from(res.getRemoteAddressAsText()).toString()
+    try {
+      return Buffer.from(res.getRemoteAddressAsText()).toString()
+    } finally {
+      return "no-ip"
+    }
   }
 
   async unbindSession(wsKey) {
@@ -222,11 +228,7 @@ class HttpProtocol extends BaseProtocolProcessor {
 
   onHttpRequestHandler(preMiddleware = [], handler) {
     return (res, req) => {
-      asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
-        updateStoreContext(MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.SERVER_REQUEST_ID, uuid())
-        updateStoreContext(MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.CLIENT_IP, this.socketAddress(res))
-        updateStoreContext(MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.REQUEST_START_TIME, +new Date())
-
+      asyncLoggerContextStore.run(this.requestCreateStoreContext(res), () => {
         return this.requestHandler(req, res, preMiddleware, handler)
       })
     }

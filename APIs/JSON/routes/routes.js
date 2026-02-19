@@ -77,10 +77,8 @@ export const routes = {
       .middleware(statsMessagesMiddleWare, ws, json)
       .validate(json.system_message, messagesSchemaValidation.system)
       .sendSystem(ws, json),
-  connect: (ws, json) =>
-    UsersController.middleware(authGuardMiddleware, ws, json).validate(json.connect, usersSchemaValidation.connect).connect(ws, json),
-  user_create: (ws, json) =>
-    UsersController.middleware(authGuardMiddleware, ws, json).validate(json.user_create, usersSchemaValidation.create).create(ws, json),
+  connect: (ws, json) => UsersController.validate(json.connect, usersSchemaValidation.connect).connect(ws, json),
+  user_create: (ws, json) => UsersController.validate(json.user_create, usersSchemaValidation.create).create(ws, json),
   user_edit: (ws, json) =>
     UsersController.middleware(authGuardMiddleware, ws, json)
       .validate(json.user_edit, usersSchemaValidation.edit)
@@ -90,8 +88,7 @@ export const routes = {
    * @deprecated **WARNING**: `user_login` request is deprecated
    * Therefore, we recommend using the new http route `/login` for user authorization.
    */
-  user_login: (ws, json) =>
-    UsersController.middleware(authGuardMiddleware, ws, json).validate(json.user_login, usersSchemaValidation.login).login(ws, json),
+  user_login: (ws, json) => UsersController.validate(json.user_login, usersSchemaValidation.login).login(ws, json),
   /**
    * @deprecated **WARNING**: `user_logout` request is deprecated
    * Therefore, we recommend using the new http route `/logout` to log the user out of the system.
@@ -100,14 +97,9 @@ export const routes = {
     UsersController.middleware(authGuardMiddleware, ws, json).validate(json.user_logout, usersSchemaValidation.logout).logout(ws, json),
   user_delete: (ws, json) =>
     UsersController.middleware(authGuardMiddleware, ws, json).validate(json.user_delete, usersSchemaValidation.delete).delete(ws, json),
-  user_send_otp: (ws, json) =>
-    UsersController.middleware(authGuardMiddleware, ws, json)
-      .validate(json.user_send_otp, usersSchemaValidation.send_otp)
-      .send_otp(ws, json),
+  user_send_otp: (ws, json) => UsersController.validate(json.user_send_otp, usersSchemaValidation.send_otp).send_otp(ws, json),
   user_reset_password: (ws, json) =>
-    UsersController.middleware(authGuardMiddleware, ws, json)
-      .validate(json.user_reset_password, usersSchemaValidation.reset_password)
-      .reset_password(ws, json),
+    UsersController.validate(json.user_reset_password, usersSchemaValidation.reset_password).reset_password(ws, json),
   user_search: (ws, json) =>
     UsersController.middleware(authGuardMiddleware, ws, json).validate(json.user_search, usersSchemaValidation.search).search(ws, json),
   get_users_by_ids: (ws, json) =>

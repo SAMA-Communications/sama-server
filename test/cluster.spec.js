@@ -58,6 +58,7 @@ describe("Cluster Message function", async () => {
     }
     clusterManager.clusterNodesWS[ip.address()] = mockedWS2
 
+    sessionService.addUserDeviceConnection(mockedWS2, orgId, usersIds[1], deviceId)
     await sessionService.storeUserNodeData(mockedWS2, orgId, usersIds[1], deviceId, ip.address(), secondClusterPort)
   })
 

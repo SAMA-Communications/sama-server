@@ -1,11 +1,10 @@
-import otpSender from "../../../../services/otp_sender.js"
-
 import { ERROR_STATUES } from "../../../../constants/errors.js"
 
 class UserSendOTPOperation {
-  constructor(userService, userTokenRepo) {
+  constructor(userService, userTokenRepo, otpSender) {
     this.userService = userService
     this.userTokenRepo = userTokenRepo
+    this.otpSender = otpSender
   }
 
   async perform(ws, data) {
@@ -20,7 +19,7 @@ class UserSendOTPOperation {
 
     const otpToken = await this.userTokenRepo.upsertOTPToken(organization_id, user._id, device_id)
 
-    await otpSender.sendOtpNotification(user.email, otpToken.token)
+    await this.otpSender.sendOtpNotification(user.email, otpToken.token)
   }
 }
 

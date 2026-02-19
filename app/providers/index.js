@@ -106,8 +106,6 @@ import EncryptionListOperationProvider from "./operations/encryption/list/Provid
 import EncryptionRequestKeysOperationProvider from "./operations/encryption/request_keys/Provider.js"
 import EncryptionDeleteOperationProvider from "./operations/encryption/delete/Provider.js"
 
-import OperationLogLogsOperationProvider from "./operations/operation_log/logs/Provider.js"
-
 import ContactCreateOperationProvider from "./operations/contact/create/Provider.js"
 import ContactEditOperationProvider from "./operations/contact/edit/Provider.js"
 import ContactListOperationProvider from "./operations/contact/list/Provider.js"
@@ -245,7 +243,6 @@ const providers = [
   EncryptionRequestKeysOperationProvider,
   EncryptionDeleteOperationProvider,
 
-  OperationLogLogsOperationProvider,
   ContactCreateOperationProvider,
   ContactEditOperationProvider,
   ContactListOperationProvider,

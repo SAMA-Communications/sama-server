@@ -15,10 +15,9 @@ class TcpProtocol extends BaseProtocolProcessor {
 
   static SOCKET_PACKAGES_LISTENER_CALLBACKS = new Map()
 
-  requestCreateStoreContext = (socket) =>
-    createStore({
-      [MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.PROTOCOL_TYPE]: socket ? (socket instanceof tls.TLSSocket ? "TLS" : "TCP") : "TCP",
-    })
+  static defineProtocolTpe(socket) {
+    return socket ? (socket instanceof tls.TLSSocket ? "TLS" : "TCP") : "TCP"
+  }
 
   socketAddress(socket) {
     return `${socket.remoteAddress}`
@@ -30,25 +29,30 @@ class TcpProtocol extends BaseProtocolProcessor {
   socketListenerOnError = function () {}
 
   onOpen(socket, isTls) {
-    logger.trace("[Open] IP: %s", this.socketAddress(socket))
     super.onOpen(socket)
     this.setUpSocketListeners(socket, isTls)
   }
 
   extendSocket(socket) {
+    super.extendSocket(socket)
     socket.safeSend = tcpSafeSend.bind(socket, socket)
+    return socket
   }
 
   removeExtends(socket) {
+    super.removeExtends(socket)
     socket.safeSend = void 0
+    return socket
+  }
+
+  closeSocket(socket) {
+    socket.end()
   }
 
   async onClose(socket) {
-    logger.trace("[Close] IP: %s", this.socketAddress(socket))
+    this.removeSocketListeners(socket)
 
     await super.onClose(socket)
-
-    this.removeSocketListeners(socket)
   }
 
   async processPackage(socket, decodedPackage) {
@@ -173,7 +177,7 @@ class TcpProtocol extends BaseProtocolProcessor {
 
     return new Promise((resolve) => {
       this.tcpSocketServer = net.createServer((socket) => {
-        asyncLoggerContextStore.run(this.requestCreateStoreContext(), () => {
+        asyncLoggerContextStore.run(this.requestCreateStoreContext(socket), () => {
           this.onOpen(socket)
         })
       })

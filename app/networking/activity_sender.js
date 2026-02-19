@@ -1,4 +1,4 @@
-import { APIs } from "../networking/APIs.js"
+import { APIs } from "./APIs.js"
 
 import { CONSTANTS as MAIN_CONSTANTS } from "../constants/constants.js"
 

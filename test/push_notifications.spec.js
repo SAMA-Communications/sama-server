@@ -1,10 +1,12 @@
 import assert from "node:assert"
+import { Buffer } from "node:buffer"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
+import packetManager from "../app/networking/packet_manager.js"
 
-import { generateNewOrganizationId, createUserArray, mockedWS, sendLogin, sendLogout } from "./tools/utils.js"
+import { generateNewOrganizationId, createUserArray, createConversation, mockedWS, sendLogin, sendLogout } from "./tools/utils.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 const pushEventRepo = ServiceLocatorContainer.use("PushEventRepository")
@@ -535,6 +537,68 @@ describe("PushNotification functions", async () => {
         status: 422,
         message: "Recipients not found.",
       })
+    })
+  })
+
+  describe("Create push message", async () => {
+    let conversationId = void 0
+    let responseOnMessage = void 0
+    let pushQueueItem = void 0
+    let messageBody = void 0
+
+    it("create conversation", async () => {
+      conversationId = await createConversation(mockedWS, void 0, void 0, "u", usersIds)
+      assert.ok(conversationId)
+    })
+
+    it("send message", async () => {
+      const requestData = {
+        message: {
+          id: `push_test_11`,
+          body: "hey how is going? 1112",
+          cid: conversationId,
+        },
+      }
+
+      responseOnMessage = await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
+      assert.ok(responseOnMessage.deliverMessages?.length > 0)
+
+      messageBody = requestData.message.body
+    })
+
+    it("process delivers message", async () => {
+      const pushQueueService = ServiceLocatorContainer.use("PushQueueService")
+      const oldMethod = pushQueueService.createPushEvent
+      const newMethod = async (...args) => {
+        pushQueueItem = await oldMethod.apply(pushQueueService, args)
+        return pushQueueItem
+      }
+      pushQueueService.createPushEvent = newMethod
+
+      const deliverMessage = responseOnMessage.deliverMessages.at(0)
+
+      await packetManager.deliverToUserOrUsers(
+        deliverMessage.orgId,
+        deliverMessage.ws,
+        deliverMessage.packet,
+        deliverMessage.pushQueueMessage,
+        deliverMessage.userIds,
+        deliverMessage.notSaveInOfflineStorage,
+        deliverMessage.ignoreSelf
+      )
+
+      assert.ok(pushQueueItem)
+    })
+
+    it("validate push queue items", async () => {
+      assert.equal(`${pushQueueItem.user_id}`, `${usersIds.at(0)}`)
+      assert.equal(pushQueueItem.user_ids.length, 1)
+      assert.equal(`${pushQueueItem.user_ids.at(0)}`, `${usersIds.at(1)}`)
+      assert.ok(pushQueueItem.message)
+
+      const messagePayload = JSON.parse(Buffer.from(pushQueueItem.message, "base64").toString("utf8"))
+      assert.equal(messagePayload.body, messageBody)
+      assert.equal(messagePayload.cid, conversationId)
     })
   })
 

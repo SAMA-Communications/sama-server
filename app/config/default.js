@@ -120,6 +120,13 @@ const CONFIG = {
   chatBot: {
     login: process.env.CHAT_BOT_LOGIN,
   },
+  resend: {
+    apiKey: process.env.RESEND_API_KEY,
+    sender: process.env.RESEND_SENDER
+  },
+  googleAI: {
+    model: process.env.GOOGLE_GENERATIVE_AI_MODEL
+  }
 }
 
 export default CONFIG
