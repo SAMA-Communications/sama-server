@@ -41,7 +41,7 @@ class OTPSender {
     }
 
     const { data, error } = await this.transporter.emails.send(mailOptions)
-    if (error) return logger.error(error, '[error]')
+    if (error) return logger.error(error, "[error]")
     logger.debug("[date]: %j", data)
   }
 }

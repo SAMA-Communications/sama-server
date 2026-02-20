@@ -1,54 +1,91 @@
 import process from "node:process"
 import prettyMs from "pretty-ms"
+import moment from "moment"
 
 export class IncPairDateVal {
   static DATE_TYPES = {
-    MIN: 1,
-    HOUR: 2,
-    DAY: 3
+    MIN: "minutes",
+    HOUR: "hours",
+    DAY: "days",
   }
 
-  constructor(dateTypeKey, val = 0) {
-    this.dateTypeKey = dateTypeKey ?? IncrementableKeyValue.DATE_TYPES.MIN
-    this.val = val
-    this.key = this.keyName(new Date())
+  static DATE_FORMATS = {
+    [IncPairDateVal.DATE_TYPES.MIN]: "YYYY-MM-DD HH:mm",
+    [IncPairDateVal.DATE_TYPES.HOUR]: "YYYY-MM-DD HH",
+    [IncPairDateVal.DATE_TYPES.DAY]: "YYYY-MM-DD",
+  }
+
+  static DATES_DIFF = 2
+
+  dateTypeKey = void 0
+
+  castedValue = 0
+  castedKey = void 0
+
+  currentValue = 0
+  currentKey = void 0
+
+  constructor(dateTypeKey, initValue = 0) {
+    this.dateTypeKey = dateTypeKey
+
+    this.currentValue = initValue
+    this.currentKey = this.keyName(new Date())
   }
 
   inc(inc, date) {
     const checkKey = this.keyName(date)
 
-    if (checkKey === this.key) {
-      return this.val += inc
+    if (checkKey !== this.currentKey) {
+      this.cast(date)
     }
 
-    this.val = inc
-    this.key = checkKey
+    this.currentValue += inc
 
-    return this.val
+    return this.currentValue
   }
 
   retrieve(date) {
-    if (this.keyName(date) === this.key) {
-      return this.val
+    const checkKey = this.keyName(date)
+
+    if (checkKey !== this.currentKey) {
+      this.cast(date)
     }
+
+    if (checkKey !== this.castedKey) {
+      return this.castedValue
+    }
+
+    return void 0
+  }
+
+  cast(date) {
+    if (this.isDateDiffCritical(this.currentKey, date)) {
+      this.castedValue = 0
+    } else {
+      this.castedValue = this.currentValue
+    }
+
+    this.castedKey = this.currentKey
+
+    this.currentValue = 0
+    this.currentKey = this.keyName(date)
+  }
+
+  isDateDiffCritical(dateA, dateB) {
+    const dateDiff = moment(dateA, IncPairDateVal.DATE_FORMATS[this.dateTypeKey]).diff(moment(dateB), this.dateTypeKey)
+    return Math.abs(dateDiff) >= IncPairDateVal.DATES_DIFF
   }
 
   reset(date) {
-    this.val = 0
-    this.key = this.keyName(date)
+    this.castedValue = void 0
+    this.castedKey = void 0
+
+    this.currentValue = 0
+    this.currentKey = this.keyName(date)
   }
 
   keyName(date) {
-    switch (this.dateTypeKey) {
-      case IncPairDateVal.DATE_TYPES.MIN:
-        return `${date.getDate()}:${date.getHours()}:${date.getMinutes()}`
-      case IncPairDateVal.DATE_TYPES.HOUR:
-        return `${date.getDate()}:${date.getHours()}`
-      case IncPairDateVal.DATE_TYPES.DAY:
-        return `${date.getDate()}`
-    }
-
-    return `${date}`
+    return moment(date).format(IncPairDateVal.DATE_FORMATS[this.dateTypeKey])
   }
 }
 
@@ -82,21 +119,21 @@ class StatsService {
     const formattedUptime = format ? prettyMs(uptime * 1000) : uptime
 
     return {
-      uptime: formattedUptime
+      uptime: formattedUptime,
     }
   }
 
   collectUsersStats(format, date) {
     return {
-      online_users: this.sessionService.totalSessions()
+      online_users: this.sessionService.totalSessions(),
     }
   }
 
   collectChatStats(format, date) {
     return {
-      messages_per_minute: this.messagesPerMinute.retrieve(date) ?? 0,
-      messages_per_hour: this.messagesPerHour.retrieve(date) ?? 0,
-      messages_per_day: this.messagesPerDay.retrieve(date) ?? 0
+      messages_per_minute: this.messagesPerMinute.retrieve(date),
+      messages_per_hour: this.messagesPerHour.retrieve(date),
+      messages_per_day: this.messagesPerDay.retrieve(date),
     }
   }
 
@@ -110,22 +147,10 @@ class StatsService {
     return Object.assign(stats, serverStats, usersStats, chatStats)
   }
 
-  resetPerMinute(date) {
+  resetChatStatsAll(date = new Date()) {
     this.messagesPerMinute.reset(date)
-  }
-
-  resetPerHour(date) {
     this.messagesPerHour.reset(date)
-  }
-
-  resetPerDay(date) {
     this.messagesPerDay.reset(date)
-  }
-
-  resetChatStatsAll(date = new Date) {
-    this.resetPerMinute(date)
-    this.resetPerHour(date)
-    this.resetPerDay(date)
   }
 }
 

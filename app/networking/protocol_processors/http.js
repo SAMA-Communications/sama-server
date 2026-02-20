@@ -283,7 +283,7 @@ class HttpProtocol extends BaseProtocolProcessor {
       })
     )
 
-    logger.debug("listening on [WS] port")
+    logger.debug(" listening on [WS] port")
   }
 }
 

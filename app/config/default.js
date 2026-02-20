@@ -122,11 +122,11 @@ const CONFIG = {
   },
   resend: {
     apiKey: process.env.RESEND_API_KEY,
-    sender: process.env.RESEND_SENDER
+    sender: process.env.RESEND_SENDER,
   },
   googleAI: {
-    model: process.env.GOOGLE_GENERATIVE_AI_MODEL
-  }
+    model: process.env.GOOGLE_GENERATIVE_AI_MODEL,
+  },
 }
 
 export default CONFIG
