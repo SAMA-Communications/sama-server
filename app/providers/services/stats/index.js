@@ -19,7 +19,7 @@ export class IncPairDateVal {
 
   dateTypeKey = void 0
 
-  castedValue = 0
+  castedValue = null
   castedKey = void 0
 
   currentValue = 0
@@ -33,9 +33,9 @@ export class IncPairDateVal {
   }
 
   inc(inc, date) {
-    const checkKey = this.keyName(date)
+    const checkDateKey = this.keyName(date)
 
-    if (checkKey !== this.currentKey) {
+    if (checkDateKey !== this.currentKey) {
       this.cast(date)
     }
 
@@ -45,13 +45,13 @@ export class IncPairDateVal {
   }
 
   retrieve(date) {
-    const checkKey = this.keyName(date)
+    const checkDateKey = this.keyName(date)
 
-    if (checkKey !== this.currentKey) {
+    if (checkDateKey !== this.currentKey) {
       this.cast(date)
     }
 
-    if (checkKey !== this.castedKey) {
+    if (checkDateKey !== this.castedKey) {
       return this.castedValue
     }
 
@@ -72,7 +72,11 @@ export class IncPairDateVal {
   }
 
   isDateDiffCritical(dateA, dateB) {
-    const dateDiff = moment(dateA, IncPairDateVal.DATE_FORMATS[this.dateTypeKey]).diff(moment(dateB), this.dateTypeKey)
+    dateA = moment(dateA, IncPairDateVal.DATE_FORMATS[this.dateTypeKey])
+    dateB = moment(dateB)
+
+    const dateDiff = dateA.diff(dateB, this.dateTypeKey)
+
     return Math.abs(dateDiff) >= IncPairDateVal.DATES_DIFF
   }
 
