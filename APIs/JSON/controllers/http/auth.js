@@ -1,8 +1,11 @@
 import BaseHttpController from "./base.js"
 
+import { CONSTANTS as MAIN_CONSTANTS } from "@sama/constants/constants.js"
+
 import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
 import HttpResponse from "@sama/networking/models/HttpResponse.js"
+import LastActivityStatusResponse from "@sama/networking/models/LastActivityStatusResponse.js"
 import Response from "@sama/networking/models/Response.js"
 
 class HttpAuthController extends BaseHttpController {
@@ -49,7 +52,15 @@ class HttpAuthController extends BaseHttpController {
       sameSite: "lax",
     })
 
-    return new Response().setHttpResponse(httpResponse)
+    return new Response()
+      .setHttpResponse(httpResponse)
+      .updateLastActivityStatus(
+        new LastActivityStatusResponse(
+          refreshTokenRecord.organization_id,
+          refreshTokenRecord.user_id,
+          MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE
+        )
+      )
   }
 }
 
