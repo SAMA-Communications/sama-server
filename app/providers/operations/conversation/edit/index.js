@@ -193,16 +193,13 @@ class ConversationEditOperation {
     if (isUpdateConversation) {
       const updatedEvent = await this.#actionEvent(conversation, currentUser, false)
 
-      updatedEvent.participantIds = currentParticipantIds.filter(
-        (id) => !addedParticipantIds.some((addedId) => this.helpers.isEqualsNativeIds(id, addedId))
-      )
-      conversationEvent.push({ ...updatedEvent, ignoreOwnDelivery: true })
+      conversationEvent.push({ ...updatedEvent, exceptUserIds: addedParticipantIds, ignoreSelf: true })
     }
 
     if (isUpdateConversationImage) {
       const updatedEvent = await this.#imageActionEvent(conversation, currentUser)
 
-      conversationEvent.push({ ...updatedEvent, ignoreOwnDelivery: false })
+      conversationEvent.push(updatedEvent)
     }
 
     return conversationEvent
