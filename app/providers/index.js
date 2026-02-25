@@ -28,6 +28,7 @@ import OrganizationRepositoryProvider from "./repositories/organization/Provider
 
 import ClusterNodeServiceProvider from "./services/cluster_node/Provider.js"
 import SessionServiceProvider from "./services/session/Provider.js"
+import StatsServiceProvider from "./services/stats/Provider.js"
 import UserServiceProvider from "./services/user/Provider.js"
 import BlockListServiceProvider from "./services/block_list/Provider.js"
 import StorageServiceProvider from "./services/storage/Provider.js"
@@ -117,6 +118,8 @@ import PushSubscriptionListOperationProvider from "./operations/push_notificatio
 
 // Http Operations Providers
 
+import HttpStatsCollectOperationRegisterProvider from "./operations/http/stats/collect/Provider.js"
+
 import HttpUserAuthOperationProvider from "./operations/http/user/auth/Provider.js"
 import HttpUserLogoutOperationProvider from "./operations/http/user/logout/Provider.js"
 
@@ -162,6 +165,7 @@ const providers = [
 
   ClusterNodeServiceProvider,
   SessionServiceProvider,
+  StatsServiceProvider,
   UserServiceProvider,
   BlockListServiceProvider,
   StorageServiceProvider,
@@ -250,6 +254,8 @@ const providers = [
   PushSubscriptionListOperationProvider,
 
   // Http Operations Providers
+
+  HttpStatsCollectOperationRegisterProvider,
 
   HttpUserAuthOperationProvider,
   HttpUserLogoutOperationProvider,

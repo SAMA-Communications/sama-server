@@ -1,3 +1,3 @@
 export default class BaseMiddleware {
-  handle(ws, message) {}
+  handle(socket, message) {}
 }

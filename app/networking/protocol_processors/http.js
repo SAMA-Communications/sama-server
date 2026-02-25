@@ -6,6 +6,7 @@ import { ERROR_STATUES } from "../../constants/errors.js"
 
 import { parserCookies, serializeCookie } from "../../../APIs/JSON/utils/cookie-tools.js"
 
+import HttpStatsController from "../../../APIs/JSON/controllers/http/stats.js"
 import HttpAuthController from "../../../APIs/JSON/controllers/http/auth.js"
 import HttpMessageController from "../../../APIs/JSON/controllers/http/message.js"
 import HttpActivityController from "../../../APIs/JSON/controllers/http/activity.js"
@@ -58,6 +59,7 @@ const addCorsHeaders = (res, req) => {
 }
 
 const parseJsonBodyMiddleware = async (res, req) => {
+  res.parsedQuery = new URLSearchParams(req.getQuery())
   res.rawBody = Buffer.alloc(0)
   res.parsedBody = {}
 
@@ -237,6 +239,11 @@ class HttpProtocol extends BaseProtocolProcessor {
 
     this.uWSocketServer.get("/health", this.onHttpRequestHandler([], healthCheckHandler))
 
+    this.uWSocketServer.get(
+      "/admin/server-stats",
+      this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpStatsController.collect)
+    )
+
     this.uWSocketServer.post("/login", this.onHttpRequestHandler([], HttpAuthController.login))
 
     this.uWSocketServer.post("/logout", this.onHttpRequestHandler([], HttpAuthController.logout))
@@ -276,7 +283,7 @@ class HttpProtocol extends BaseProtocolProcessor {
       })
     )
 
-    logger.debug("listening on [WS] port")
+    logger.debug(" listening on [WS] port")
   }
 }
 
