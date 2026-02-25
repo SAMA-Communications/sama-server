@@ -190,7 +190,9 @@ class SessionService {
     const nodeEndpoint = buildWsEndpoint(nodeIp, nodePort)
 
     const session = this.getSession(socket)
-    session.extraParams[CONSTANTS.SESSION_NODE_KEY] = nodeEndpoint
+    if (session?.extraParams) {
+      session.extraParams[CONSTANTS.SESSION_NODE_KEY] = nodeEndpoint
+    }
 
     if (this.config.get("app.isStandAloneNode")) return
 

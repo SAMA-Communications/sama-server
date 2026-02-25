@@ -45,19 +45,16 @@ class ConversationsController extends BaseJSONController {
       })
     }
 
-    const { organizationId, currentUserId, conversation, conversationEvents = [] } = updatedConversationResult
+    const { organizationId, conversation, conversationEvents = [] } = updatedConversationResult
 
     conversationEvents.forEach((event) => {
       const deliverMessage = new DeliverMessage(organizationId, event.message)
         .addPushQueueMessage(event.notification)
-        .setUsersDestination(event.participantIds)
+        .setUsersDestination(event.participantIds, event.exceptUserIds)
+        .setConversationDestination(event.cId, event.exceptUserIds)
+        .setIgnoreSelf(!!event.ignoreSelf)
 
       response.addDeliverMessage(deliverMessage)
-
-      const isCurrentUser = event.participantIds.find((pId) => conversationEditOperation.helpers.isEqualsNativeIds(pId, currentUserId))
-      if (isCurrentUser && !event.ignoreOwnDelivery) {
-        response.addBackMessage(event.message)
-      }
     })
 
     return response.addBackMessage({

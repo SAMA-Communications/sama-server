@@ -10,7 +10,7 @@ const name = "StorageDriverClient"
 const storageDriverName = config.get("storage.driver")
 
 const StorageDriverClient =
-  storageDriverName === "minio" ? MinioStorageClient : storageDriverName === "spacer" ? SpacerStorageClient : S3StorageClient
+  storageDriverName === "minio" ? MinioStorageClient : storageDriverName === "spaces" ? SpacerStorageClient : S3StorageClient
 
 class StorageDriverClientRegisterProvider extends RegisterProvider {
   register(slc) {

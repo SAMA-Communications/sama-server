@@ -1,4 +1,4 @@
-import { APIs } from "./APIs.js"
+import { APIs, BASE_API } from "./APIs.js"
 
 import { CONSTANTS as MAIN_CONSTANTS } from "../constants/constants.js"
 
@@ -10,8 +10,8 @@ import Response from "@sama/networking/models/Response.js"
 import LastActivityStatusResponse from "@sama/networking/models/LastActivityStatusResponse.js"
 
 class ActivitySender {
-  detectSocketAPI(ws) {
-    const api = APIs[ws.apiType]
+  detectSocketAPI(socket) {
+    const api = APIs[socket.apiType ?? BASE_API]
     return api
   }
 
@@ -22,7 +22,7 @@ class ActivitySender {
     return response
   }
 
-  async updateAndBuildUserActivity(ws, orgId, userId, status) {
+  async updateAndBuildUserActivity(socket, orgId, userId, status) {
     const activityManagerService = ServiceLocatorContainer.use("ActivityManagerService")
 
     const deliver = await activityManagerService.updateUserActivity(userId, status)
@@ -33,7 +33,7 @@ class ActivitySender {
       return responses
     }
 
-    const api = this.detectSocketAPI(ws)
+    const api = this.detectSocketAPI(socket)
 
     for (const subscriberUserId of deliver.subscribers) {
       const lastActivityMessage = await api.buildLastActivityPackage(orgId, subscriberUserId, deliver.targetUserId, {
