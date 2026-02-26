@@ -99,7 +99,7 @@ class ConversationRepository extends BaseRepository {
       })
     }
 
-    const conversations = await this.findAll(query, null, limit)
+    const conversations = await this.findAll(query, void 0, limit, { _id: -1 })
 
     return conversations
   }

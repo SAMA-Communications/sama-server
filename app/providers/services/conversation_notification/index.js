@@ -8,13 +8,14 @@ import SystemMessagePublicFields from "@sama/DTO/Response/message/system/public_
 import SystemMessageResponse from "@sama/DTO/Response/message/system/response.js"
 
 class ConversationNotificationService {
-  constructor(helpers, messageService) {
+  constructor(config, helpers, messageService) {
+    this.config = config
     this.helpers = helpers
     this.messageService = messageService
   }
 
   isEnabled() {
-    return process.env.CONVERSATION_NOTIFICATIONS_ENABLED === "true"
+    return this.config.get("conversation.isEventsEnabled")
   }
 
   async actionEvent(eventType, conversation, user) {
@@ -51,7 +52,7 @@ class ConversationNotificationService {
       x: { type: eventType, conversation: conversation.visibleParams() },
     }
 
-    const createdMessage = await this.messageService.create(userActionCreator, conversation, [], createMessageParams)
+    const createdMessage = await this.messageService.create(userActionCreator, conversation, createMessageParams)
 
     const userActionCreatorDisplayName = this.helpers.getDisplayName(userActionCreator)
     const pushPayload = {
@@ -76,7 +77,7 @@ class ConversationNotificationService {
       x: { type: eventType, user: userActioned.visibleParams() },
     }
 
-    const createdMessage = await this.messageService.create(userActionCreator, conversation, [], createMessageParams)
+    const createdMessage = await this.messageService.create(userActionCreator, conversation, createMessageParams)
 
     const userActionCreatorDisplayName = this.helpers.getDisplayName(userActionCreator)
     const pushPayload = {

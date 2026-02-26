@@ -5,10 +5,11 @@ const name = "EncryptionRequestKeysOperation"
 
 class EncryptionRequestKeysOperationProvider extends RegisterProvider {
   register(slc) {
+    const sessionService = slc.use("SessionService")
     const userRepo = slc.use("UserRepository")
     const encryptionService = slc.use("EncryptionService")
 
-    return new EncryptionRequestKeysOperation(encryptionService, userRepo)
+    return new EncryptionRequestKeysOperation(sessionService, userRepo, encryptionService)
   }
 }
 

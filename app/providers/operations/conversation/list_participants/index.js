@@ -19,7 +19,7 @@ class ConversationListParticipantsOperation {
       return { users: [], conversations: {} }
     }
 
-    const users = await this.userService.userRepo.findAllByIds(participantIds)
+    const users = await this.userService.userRepo.findWithOrgScopeByIds(organizationId, participantIds)
 
     const usersWithAvatars = await this.userService.addAvatarUrl(users)
 

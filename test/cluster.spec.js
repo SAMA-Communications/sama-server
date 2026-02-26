@@ -1,6 +1,6 @@
 import ip from "ip"
 import uWS from "uWebSockets.js"
-import assert from "assert"
+import assert from "node:assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 import clusterManager from "../app/cluster/cluster_manager.js"
@@ -8,6 +8,8 @@ import { generateNewOrganizationId, createConversation, createUserArray, mockedW
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 import packetManager from "../app/networking/packet_manager.js"
 
+const config = ServiceLocatorContainer.use("Config")
+const logger = ServiceLocatorContainer.use("Logger")
 const sessionService = ServiceLocatorContainer.use("SessionService")
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 const conversationRepo = ServiceLocatorContainer.use("ConversationRepository")
@@ -31,30 +33,33 @@ describe("Cluster Message function", async () => {
 
     currentConversationId = await createConversation(mockedWS, null, null, "g", [usersIds[1], usersIds[0]])
 
-    //emulate user2 connect in other node
+    // emulate user2 connect in other node
     deviceId = sessionService.activeSessions.DEVICES[usersIds[0]][0].deviceId
 
     const SSL_APP_OPTIONS = {
-      key_file_name: process.env.SSL_KEY_FILE_NAME,
-      cert_file_name: process.env.SSL_CERT_FILE_NAME,
+      key_file_name: config.get("ws.options.ssl.key"),
+      cert_file_name: config.get("ws.options.ssl.cert"),
     }
     const CLUSTER_SOCKET = uWS.SSLApp(SSL_APP_OPTIONS)
     CLUSTER_SOCKET.listen(0, (listenSocket) => {
       if (listenSocket) {
         const clusterPort = uWS.us_socket_local_port(listenSocket)
-        console.log(`CLUSTER listening on port ${clusterPort}`)
+        logger.trace("CLUSTER listening on port %s", clusterPort)
         secondClusterPort = clusterPort
       } else {
         throw "CLUSTER_SOCKET.listen error"
       }
     })
 
-    clusterManager.clusterNodesWS[ip.address()] = {
+    const mockedWS2 = {
       send: (data) => {
         secondSocketResponse = data
       },
     }
-    await sessionService.storeUserNodeData(ip.address(), secondClusterPort, orgId, usersIds[1], deviceId)
+    clusterManager.clusterNodesWS[ip.address()] = mockedWS2
+
+    sessionService.addUserDeviceConnection(mockedWS2, orgId, usersIds[1], deviceId)
+    await sessionService.storeUserNodeData(mockedWS2, orgId, usersIds[1], deviceId, ip.address(), secondClusterPort)
   })
 
   describe("Send Message to other node", async () => {
@@ -71,12 +76,14 @@ describe("Cluster Message function", async () => {
       const deliverMessage = controllerResponse.deliverMessages.at(0)
 
       assert.notEqual(deliverMessage, undefined)
+      assert.equal(`${deliverMessage.cId}`, `${currentConversationId}`)
 
       await packetManager.deliverToUserOrUsers(
+        orgId,
         deliverMessage.ws || mockedWS,
         JSON.stringify(deliverMessage.packet),
         null,
-        deliverMessage.userIds,
+        usersIds,
         deliverMessage.notSaveInOfflineStorage
       )
 

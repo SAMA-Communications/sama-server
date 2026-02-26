@@ -1,16 +1,9 @@
-import assert from "assert"
+import assert from "node:assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
 import { ObjectId } from "@sama/lib/db.js"
-import {
-  generateNewOrganizationId,
-  createConversation,
-  createUserArray,
-  mockedWS,
-  sendLogin,
-  sendLogout,
-} from "./tools/utils.js"
+import { generateNewOrganizationId, createConversation, createUserArray, mockedWS, sendLogin, sendLogout } from "./tools/utils.js"
 
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
@@ -276,10 +269,7 @@ describe("Message function", async () => {
       }
 
       assert.deepEqual(deliverMessage.packet.system_message, expectedSystemMessage)
-      assert.deepEqual(
-        deliverMessage.userIds.map((id) => `${id}`),
-        [usersIds[1], usersIds[0]].map((id) => `${id}`)
-      )
+      assert.deepEqual(`${deliverMessage.cId}`, `${currentConversationId}`)
       assert.strictEqual(deliverMessage.notSaveInOfflineStorage, true)
     })
 
@@ -600,9 +590,8 @@ describe("Message function", async () => {
         }
 
         if (i === 3) {
-          messageId1 = (
-            await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
-          ).backMessages.at(0).ask.server_mid
+          messageId1 = (await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))).backMessages.at(0).ask
+            .server_mid
         } else {
           await packetJsonProcessor.processMessageOrError(mockedWS, JSON.stringify(requestData))
         }
@@ -1156,7 +1145,7 @@ describe("Message function", async () => {
       assert.notEqual(responseData.response.success, undefined)
       assert.equal(responseData.response.error, undefined)
 
-      assert.deepEqual(deliveredMessage.userIds, usersIds.slice(0, 2).reverse())
+      assert.deepEqual(`${deliveredMessage.cId}`, `${currentConversationId}`)
       assert.deepEqual(deliveredMessage.packet.message_reactions_update, {
         mid: messageId1.toString(),
         cid: userRepo.castObjectId(currentConversationId),
@@ -1328,55 +1317,43 @@ describe("Message function", async () => {
 
     describe("--> getLastReadMessageByUserForCid", () => {
       it("should work for u1", async () => {
-        const responseData = await messageStatusRepo.findLastReadMessageByUserForCid(
-          [new ObjectId(currentConversationId)],
-          usersIds[0]
-        )
+        const responseData = await messageStatusRepo.findLastReadMessageByUserForCid([new ObjectId(currentConversationId)], usersIds[0])
         assert.strictEqual(responseData[currentConversationId], undefined)
       })
 
       it("should work for u2", async () => {
-        const responseData = await messageStatusRepo.findLastReadMessageByUserForCid(
-          [new ObjectId(currentConversationId)],
-          usersIds[1]
-        )
+        const responseData = await messageStatusRepo.findLastReadMessageByUserForCid([new ObjectId(currentConversationId)], usersIds[1])
 
         assert.strictEqual(responseData[currentConversationId]?.toString(), messagesIds[2].toString())
       })
 
       it("should work for u3", async () => {
-        const responseData = await messageStatusRepo.findLastReadMessageByUserForCid(
-          [new ObjectId(currentConversationId)],
-          usersIds[2]
-        )
+        const responseData = await messageStatusRepo.findLastReadMessageByUserForCid([new ObjectId(currentConversationId)], usersIds[2])
         assert.strictEqual(responseData[currentConversationId], undefined)
       })
     })
 
     describe("--> getCountOfUnredMessagesByCid", () => {
       it("should work for sender user (u1)", async () => {
-        const responseData = await messageService.aggregateCountOfUnreadMessagesByCid(
-          [new ObjectId(currentConversationId)],
-          { native_id: usersIds[0] }
-        )
+        const responseData = await messageService.aggregateCountOfUnreadMessagesByCid([new ObjectId(currentConversationId)], {
+          native_id: usersIds[0],
+        })
 
         assert.strictEqual(responseData[currentConversationId], undefined)
       })
 
       it("should work for u2 (read 3/6 messages)", async () => {
-        const responseData = await messageService.aggregateCountOfUnreadMessagesByCid(
-          [new ObjectId(currentConversationId)],
-          { native_id: usersIds[1] }
-        )
+        const responseData = await messageService.aggregateCountOfUnreadMessagesByCid([new ObjectId(currentConversationId)], {
+          native_id: usersIds[1],
+        })
 
         assert.strictEqual(responseData[currentConversationId], 3)
       })
 
       it("should work for u3 (read 0/6 messages)", async () => {
-        const responseData = await messageService.aggregateCountOfUnreadMessagesByCid(
-          [new ObjectId(currentConversationId)],
-          { native_id: usersIds[2] }
-        )
+        const responseData = await messageService.aggregateCountOfUnreadMessagesByCid([new ObjectId(currentConversationId)], {
+          native_id: usersIds[2],
+        })
 
         assert.strictEqual(responseData[currentConversationId], 6)
       })
@@ -1399,9 +1376,7 @@ describe("Message function", async () => {
 
     describe("--> getLastMessageForConversation", () => {
       it("should work", async () => {
-        const responseData = await messageService.aggregateLastMessageForConversation([
-          new ObjectId(currentConversationId),
-        ])
+        const responseData = await messageService.aggregateLastMessageForConversation([new ObjectId(currentConversationId)])
         assert.strictEqual(responseData[currentConversationId]._id?.toString(), messagesIds[5].toString())
       })
     })

@@ -50,7 +50,7 @@ class StorageService {
   async #storeFileUrl(fileObjectId, url) {
     const fileKey = this.#generateKey(fileObjectId)
     await this.redisConnection.client.sAdd(fileKey, url)
-    await this.redisConnection.client.expire(fileKey, 3600)
+    await this.redisConnection.client.expire(fileKey, this.storageDriverClient.expireDownloadUrl)
   }
 }
 

@@ -1,13 +1,20 @@
 import { Resend } from "resend"
 
 import { ERROR_STATUES } from "../constants/errors.js"
+import config from "../config/index.js"
+import mainLogger from "../logger/index.js"
+
+const logger = mainLogger.child("[OTPSender]")
 
 class OTPSender {
   constructor() {
     try {
-      this.transporter = new Resend(process.env.RESEND_API_KEY)
+      const apiKey = config.get("resend.apiKey")
+      if (apiKey) {
+        this.transporter = new Resend(apiKey)
+      }
     } catch (err) {
-      console.log("[OTPSender.error]", err)
+      logger.error(err, "[init][error]")
     }
   }
 
@@ -18,8 +25,10 @@ class OTPSender {
       })
     }
 
+    const sender = config.get("resend.sender")
+
     const mailOptions = {
-      from: process.env.RESEND_SENDER,
+      from: sender,
       to: toEmail,
       subject: "Your One-Time Password (OTP) for Password Reset",
       html: `
@@ -32,9 +41,9 @@ class OTPSender {
     }
 
     const { data, error } = await this.transporter.emails.send(mailOptions)
-    if (error) return console.error("[OTPSender.error]", { error })
-    console.log("[OTPSender]", { data })
+    if (error) return logger.error(error, "[error]")
+    logger.debug("[date]: %j", data)
   }
 }
 
-export default new OTPSender()
+export default OTPSender

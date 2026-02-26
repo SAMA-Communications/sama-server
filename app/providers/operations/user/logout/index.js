@@ -8,7 +8,7 @@ class UserLogoutOperation {
   }
 
   async perform(ws) {
-    const userId = this.sessionService.getSessionUserId(ws)
+    const { userId, organizationId } = this.sessionService.getSession(ws)
 
     if (!userId) {
       throw new Error(ERROR_STATUES.UNAUTHORIZED.message, {
@@ -24,7 +24,7 @@ class UserLogoutOperation {
 
     await this.userTokenRepo.deleteByUserId(userId, deviceId)
 
-    return userId
+    return { organizationId, userId }
   }
 }
 

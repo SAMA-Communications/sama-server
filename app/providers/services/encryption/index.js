@@ -11,9 +11,7 @@ class EncryptionService {
 
   async removeFirstOneTimeKey(devicesByUser) {
     const devicesIdenityKeys = []
-    Object.values(devicesByUser).forEach((devices) =>
-      devices.forEach((device) => devicesIdenityKeys.push(device.identity_key))
-    )
+    Object.values(devicesByUser).forEach((devices) => devices.forEach((device) => devicesIdenityKeys.push(device.identity_key)))
 
     const devices = await this.encryptionRepo.findAll({ identity_key: { $in: devicesIdenityKeys } })
 

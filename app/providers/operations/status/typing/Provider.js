@@ -5,11 +5,17 @@ const name = "StatusTypingOperation"
 
 class StatusTypingOperationRegisterProvider extends RegisterProvider {
   register(slc) {
+    const config = slc.use("Config")
     const sessionService = slc.use("SessionService")
+    const blockListService = slc.use("BlockListService")
     const conversationService = slc.use("ConversationService")
 
-    return new StatusTypingOperation(sessionService, conversationService)
+    return new StatusTypingOperation(config, sessionService, blockListService, conversationService)
   }
 }
 
-export default new StatusTypingOperationRegisterProvider({ name, implementationName: StatusTypingOperation.name })
+export default new StatusTypingOperationRegisterProvider({
+  name,
+  implementationName: StatusTypingOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})

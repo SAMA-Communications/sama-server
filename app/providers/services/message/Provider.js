@@ -5,6 +5,7 @@ const name = "MessageService"
 
 class MessageServiceRegisterProvider extends RegisterProvider {
   register(slc) {
+    const config = slc.use("Config")
     const helpers = slc.use("Helpers")
     const userRepo = slc.use("UserRepository")
     const messageRepo = slc.use("MessageRepository")
@@ -14,6 +15,7 @@ class MessageServiceRegisterProvider extends RegisterProvider {
     const encryptedMessageStatusRepo = slc.use("EncryptedMessageStatusRepository")
 
     return new MessageService(
+      config,
       helpers,
       userRepo,
       messageRepo,

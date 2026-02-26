@@ -1,4 +1,4 @@
-import { APIs } from "../networking/APIs.js"
+import { APIs, BASE_API } from "./APIs.js"
 
 import { CONSTANTS as MAIN_CONSTANTS } from "../constants/constants.js"
 
@@ -10,19 +10,19 @@ import Response from "@sama/networking/models/Response.js"
 import LastActivityStatusResponse from "@sama/networking/models/LastActivityStatusResponse.js"
 
 class ActivitySender {
-  detectSocketAPI(ws) {
-    const api = APIs[ws.apiType]
+  detectSocketAPI(socket) {
+    const api = APIs[socket.apiType ?? BASE_API]
     return api
   }
 
-  buildOfflineActivityResponse(userId) {
+  buildOfflineActivityResponse(orgId, userId) {
     const response = new Response().updateLastActivityStatus(
-      new LastActivityStatusResponse(userId, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE)
+      new LastActivityStatusResponse(orgId, userId, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE)
     )
     return response
   }
 
-  async updateAndBuildUserActivity(ws, userId, status) {
+  async updateAndBuildUserActivity(socket, orgId, userId, status) {
     const activityManagerService = ServiceLocatorContainer.use("ActivityManagerService")
 
     const deliver = await activityManagerService.updateUserActivity(userId, status)
@@ -33,16 +33,16 @@ class ActivitySender {
       return responses
     }
 
-    const api = this.detectSocketAPI(ws)
+    const api = this.detectSocketAPI(socket)
 
     for (const subscriberUserId of deliver.subscribers) {
-      const lastActivityMessage = await api.buildLastActivityPackage(subscriberUserId, deliver.targetUserId, {
+      const lastActivityMessage = await api.buildLastActivityPackage(orgId, subscriberUserId, deliver.targetUserId, {
         timestamp: deliver.activityStatus.timestamp,
         status: deliver.activityStatus.status,
       })
 
       const response = new Response().addDeliverMessage(
-        new DeliverMessage([subscriberUserId], lastActivityMessage, true)
+        new DeliverMessage(orgId, lastActivityMessage, true).setUsersDestination([subscriberUserId])
       )
 
       responses.push(response)

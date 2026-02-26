@@ -2,22 +2,23 @@ import assert from "assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
-import { createUserArray, mockedWS, sendLogin, sendLogout } from "./utils.js"
+import { generateNewOrganizationId, createUserArray, mockedWS, sendLogin, sendLogout } from "./tools/utils.js"
 
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")
 const encryptionRepo = ServiceLocatorContainer.use("EncryptionRepository")
 
+let orgId = void 0
 let currentUserToken = ""
 let usersIds = []
 let userDeviceId = null
 
 describe("Encryption function", async () => {
   before(async () => {
-    usersIds = await createUserArray(3)
-
-    currentUserToken = (await sendLogin(mockedWS, "user_1", "device_1")).response.user._id
+    orgId = await generateNewOrganizationId()
+    usersIds = await createUserArray(orgId, 3)
+    currentUserToken = (await sendLogin(mockedWS, orgId, "user_1", "device_1")).response.user._id
   })
 
   describe("Device Registration", async () => {
@@ -145,7 +146,7 @@ describe("Encryption function", async () => {
     })
 
     it("should work, by id", async () => {
-      currentUserToken = (await sendLogin(mockedWS, "user_2")).response.user.token
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_2")).response.user.token
 
       const requestData = {
         request_keys: {
@@ -160,8 +161,7 @@ describe("Encryption function", async () => {
 
       assert.equal(responseData.signed_key, "test_key-1")
       assert.equal(responseData.identity_key, "test_key")
-      assert.equal(responseData.one_time_pre_keys.length, 1)
-      assert.equal(responseData.one_time_pre_keys, "test_key")
+      assert.equal(responseData.one_time_pre_key, "test_key")
     })
 
     it("should work, by id again", async () => {
@@ -178,8 +178,7 @@ describe("Encryption function", async () => {
 
       assert.equal(responseData.signed_key, "test_key-1")
       assert.equal(responseData.identity_key, "test_key")
-      assert.equal(responseData.one_time_pre_keys.length, 1)
-      assert.equal(responseData.one_time_pre_keys, "test_key1")
+      assert.equal(responseData.one_time_pre_key, null)
     })
   })
 
@@ -200,7 +199,7 @@ describe("Encryption function", async () => {
 
     it("should fail, no record by device_id", async () => {
       await sendLogout(mockedWS, currentUserToken)
-      currentUserToken = (await sendLogin(mockedWS, "user_1")).response.user.token
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_1")).response.user.token
 
       const requestData = {
         device_delete: {
@@ -217,7 +216,7 @@ describe("Encryption function", async () => {
 
     it("should fail, forbidden", async () => {
       await sendLogout(mockedWS, currentUserToken)
-      currentUserToken = (await sendLogin(mockedWS, "user_2")).response.user.token
+      currentUserToken = (await sendLogin(mockedWS, orgId, "user_2")).response.user.token
 
       const requestData = {
         device_delete: {

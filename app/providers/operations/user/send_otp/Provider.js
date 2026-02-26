@@ -7,8 +7,9 @@ class UserSendOTPOperationRegisterProvider extends RegisterProvider {
   register(slc) {
     const userService = slc.use("UserService")
     const userTokenRepo = slc.use("UserTokenRepository")
+    const otpSender = slc.use("OptSender")
 
-    return new UserSendOTPOperation(userService, userTokenRepo)
+    return new UserSendOTPOperation(userService, userTokenRepo, otpSender)
   }
 }
 

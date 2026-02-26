@@ -7,10 +7,11 @@ import CreatePushEventOptions from "./models/CreatePushEventOptions.js"
 export default class PushQueueService extends BasePushQueueService {
   #queue = null
 
-  constructor(queueName, redisUrl, pushEventRepo, pushSubscriptionsRepo) {
+  constructor(config, pushEventRepo, pushSubscriptionsRepo) {
     super()
 
-    this.#queue = new Queue(queueName, redisUrl)
+    this.config = config
+    this.#queue = new Queue(config.get("push.queueName"), config.get("redis.main.url"))
 
     this.pushEventRepo = pushEventRepo
     this.pushSubscriptionsRepo = pushSubscriptionsRepo
@@ -29,11 +30,9 @@ export default class PushQueueService extends BasePushQueueService {
   }
 
   async createChatAlert(createChatAlertEventOptions) {
-    const createPushEventOptions = new CreatePushEventOptions(
-      createChatAlertEventOptions.senderID,
-      createChatAlertEventOptions.payload,
-      { user_ids: createChatAlertEventOptions.offlineUsersIDs }
-    )
+    const createPushEventOptions = new CreatePushEventOptions(createChatAlertEventOptions.senderID, createChatAlertEventOptions.payload, {
+      user_ids: createChatAlertEventOptions.offlineUsersIDs,
+    })
 
     const pushEvent = await this.createPushEvent(createPushEventOptions)
 

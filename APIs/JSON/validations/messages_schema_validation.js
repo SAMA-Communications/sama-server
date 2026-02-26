@@ -2,7 +2,7 @@ import Joi from "joi"
 import { ERROR_STATUES, requiredError } from "@sama/constants/errors.js"
 import { CONSTANTS as MAIN_CONSTANTS } from "@sama/constants/constants.js"
 
-const CHAT_SUMMARY_FILTERS_ARRAY = Object.values(MAIN_CONSTANTS.CHAT_SUMMARY_FITLERS)
+const CHAT_SUMMARY_FILTERS_ARRAY = Object.values(MAIN_CONSTANTS.CHAT_SUMMARY_FILTERS)
 const MESSAGE_TONE_ARRAY = Object.values(MAIN_CONSTANTS.MESSAGE_TONE)
 
 export const messagesSchemaValidation = {
@@ -41,7 +41,7 @@ export const messagesSchemaValidation = {
             file_size: Joi.number().max(104857601),
             file_width: Joi.number().max(10000),
             file_height: Joi.number().max(10000),
-          })
+          }).unknown()
         )
         .min(1)
         .error(

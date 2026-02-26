@@ -15,4 +15,5 @@ class ActivityUserRetrieveOperationRegisterProvider extends RegisterProvider {
 export default new ActivityUserRetrieveOperationRegisterProvider({
   name,
   implementationName: ActivityUserRetrieveOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

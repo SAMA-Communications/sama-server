@@ -4,6 +4,7 @@ import BaseMapperProvider from "./utils/mappers/base/Provider.js"
 import UserMapperProvider from "./utils/mappers/user/Provider.js"
 import ConversationMapperProvider from "./utils/mappers/conversation/Provider.js"
 import MessageMapperProvider from "./utils/mappers/message/Provider.js"
+import StorageDriverClientProvider from "./services/storage/clients/Provider.js"
 
 import ClusterNodeRepositoryProvider from "./repositories/cluster_node/Provider.js"
 import UserRepoProvider from "./repositories/user/Provider.js"
@@ -27,6 +28,7 @@ import OrganizationRepositoryProvider from "./repositories/organization/Provider
 
 import ClusterNodeServiceProvider from "./services/cluster_node/Provider.js"
 import SessionServiceProvider from "./services/session/Provider.js"
+import StatsServiceProvider from "./services/stats/Provider.js"
 import UserServiceProvider from "./services/user/Provider.js"
 import BlockListServiceProvider from "./services/block_list/Provider.js"
 import StorageServiceProvider from "./services/storage/Provider.js"
@@ -67,6 +69,7 @@ import FileDownloadOperationProvider from "./operations/file/download/Provider.j
 import ActivityUserRetrieveOperationProvider from "./operations/activity/retrieve/Provider.js"
 import ActivityUserSubscribeOperationProvider from "./operations/activity/subscribe/Provider.js"
 import ActivityUserUnsubscribeOperationProvider from "./operations/activity/unsubscribe/Provider.js"
+import ActivityMarkActiveInactiveOperationProvider from "./operations/activity/mark_active-inactive/Provider.js"
 import OnlineListOperationProvider from "./operations/activity/online_list/Provider.js"
 
 import ConversationCreateOperationProvider from "./operations/conversation/create/Provider.js"
@@ -103,8 +106,6 @@ import EncryptionListOperationProvider from "./operations/encryption/list/Provid
 import EncryptionRequestKeysOperationProvider from "./operations/encryption/request_keys/Provider.js"
 import EncryptionDeleteOperationProvider from "./operations/encryption/delete/Provider.js"
 
-import OperationLogLogsOperationProvider from "./operations/operation_log/logs/Provider.js"
-
 import ContactCreateOperationProvider from "./operations/contact/create/Provider.js"
 import ContactEditOperationProvider from "./operations/contact/edit/Provider.js"
 import ContactListOperationProvider from "./operations/contact/list/Provider.js"
@@ -116,6 +117,8 @@ import PushSubscriptionDeleteOperationProvider from "./operations/push_notificat
 import PushSubscriptionListOperationProvider from "./operations/push_notifications/list_subscriptions/Provider.js"
 
 // Http Operations Providers
+
+import HttpStatsCollectOperationRegisterProvider from "./operations/http/stats/collect/Provider.js"
 
 import HttpUserAuthOperationProvider from "./operations/http/user/auth/Provider.js"
 import HttpUserLogoutOperationProvider from "./operations/http/user/logout/Provider.js"
@@ -138,6 +141,7 @@ const providers = [
   UserMapperProvider,
   ConversationMapperProvider,
   MessageMapperProvider,
+  StorageDriverClientProvider,
 
   ClusterNodeRepositoryProvider,
   UserRepoProvider,
@@ -161,6 +165,7 @@ const providers = [
 
   ClusterNodeServiceProvider,
   SessionServiceProvider,
+  StatsServiceProvider,
   UserServiceProvider,
   BlockListServiceProvider,
   StorageServiceProvider,
@@ -201,6 +206,7 @@ const providers = [
   ActivityUserRetrieveOperationProvider,
   ActivityUserSubscribeOperationProvider,
   ActivityUserUnsubscribeOperationProvider,
+  ActivityMarkActiveInactiveOperationProvider,
   OnlineListOperationProvider,
 
   ConversationCreateOperationProvider,
@@ -237,7 +243,6 @@ const providers = [
   EncryptionRequestKeysOperationProvider,
   EncryptionDeleteOperationProvider,
 
-  OperationLogLogsOperationProvider,
   ContactCreateOperationProvider,
   ContactEditOperationProvider,
   ContactListOperationProvider,
@@ -249,6 +254,8 @@ const providers = [
   PushSubscriptionListOperationProvider,
 
   // Http Operations Providers
+
+  HttpStatsCollectOperationRegisterProvider,
 
   HttpUserAuthOperationProvider,
   HttpUserLogoutOperationProvider,

@@ -25,13 +25,15 @@ class MessageReactionRepository extends BaseRepository {
   }
 
   async upsert(params) {
-    const createParams = await this.prepareParams(params)
+    const { created_at, updated_at, ...findParams } = await this.prepareParams(params)
 
-    const existed = await this.findOne(createParams)
+    const existed = await this.findOne(findParams)
 
     if (existed) {
       return false
     }
+
+    const createParams = Object.assign(findParams, { created_at, updated_at })
 
     await this.add(createParams)
 

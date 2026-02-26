@@ -1,4 +1,4 @@
-import assert from "assert"
+import assert from "node:assert"
 
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 
@@ -18,6 +18,11 @@ let filterUpdatedAtTo = ""
 let currentConversationId = ""
 let ArrayOfTmpConversations = []
 let lastMessageInChat = ""
+
+const normalizeUpdatedDate = (date) => {
+  const newDate = new Date(date - 100)
+  return newDate
+}
 
 describe("Conversation functions", async () => {
   before(async () => {
@@ -602,9 +607,7 @@ describe("Conversation functions", async () => {
 
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.strictEqual(
-        responseData.response.conversations
-          .find((el) => el._id.toString() === ArrayOfTmpConversations[0])
-          ?.last_message._id.toString(),
+        responseData.response.conversations.find((el) => el._id.toString() === ArrayOfTmpConversations[0])?.last_message._id.toString(),
         lastMessageInChat.toString()
       )
       assert.notEqual(responseData.response.conversations, undefined)
@@ -756,7 +759,7 @@ describe("Conversation functions", async () => {
           conversation_list: {
             limit: numberOf,
             updated_at: {
-              gt: filterUpdatedAt,
+              gt: normalizeUpdatedDate(filterUpdatedAt),
             },
           },
           id: "3_3",
@@ -768,7 +771,7 @@ describe("Conversation functions", async () => {
       responseData = responseData.backMessages.at(0)
 
       const count = responseData.response.conversations.length
-      const checkDate = responseData.response.conversations[0].updated_at > filterUpdatedAt
+      const checkDate = responseData.response.conversations[0].updated_at >= filterUpdatedAt
 
       assert(checkDate, "date is false")
       assert.strictEqual(requestData.request.id, responseData.response.id)

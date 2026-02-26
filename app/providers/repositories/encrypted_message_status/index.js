@@ -37,10 +37,7 @@ class EncryptedMessageStatusRepository extends BaseRepository {
 
     await this.deleteMany({ mid: { $in: midsToRemove } })
 
-    await this.updateMany(
-      { mid: { $in: midsToDelivery.filter((mid) => !midsToRemove.includes(mid)) } },
-      { $unset: { [identity_key]: "" } }
-    )
+    await this.updateMany({ mid: { $in: midsToDelivery.filter((mid) => !midsToRemove.includes(mid)) } }, { $unset: { [identity_key]: "" } })
 
     return { midsToDelivery, midsToRemove }
   }

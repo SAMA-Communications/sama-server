@@ -11,17 +11,12 @@ class ConversationCreateOperationRegisterProvider extends RegisterProvider {
     const conversationService = slc.use("ConversationService")
     const conversationNotificationService = slc.use("ConversationNotificationService")
 
-    return new ConversationCreateOperation(
-      helpers,
-      sessionService,
-      userService,
-      conversationService,
-      conversationNotificationService
-    )
+    return new ConversationCreateOperation(helpers, sessionService, userService, conversationService, conversationNotificationService)
   }
 }
 
 export default new ConversationCreateOperationRegisterProvider({
   name,
   implementationName: ConversationCreateOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

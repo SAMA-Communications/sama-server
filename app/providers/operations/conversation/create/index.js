@@ -53,7 +53,7 @@ class ConversationCreateOperation {
       normalizedParticipants = participantIds
     }
 
-    const result = { conversation }
+    const result = { organizationId, conversation }
 
     if (this.conversationNotificationService.isEnabled()) {
       const conversationEvent = await this.#createActionEvent(conversation, currentUserId)
@@ -122,9 +122,7 @@ class ConversationCreateOperation {
   }
 
   async #createGroupConversation(user, conversationParams, participantIds) {
-    const isOwnerInParticipants = participantIds.find((pId) =>
-      this.helpers.isEqualsNativeIds(pId, conversationParams.owner_id)
-    )
+    const isOwnerInParticipants = participantIds.find((pId) => this.helpers.isEqualsNativeIds(pId, conversationParams.owner_id))
     if (!isOwnerInParticipants) {
       participantIds.push(conversationParams.owner_id)
     }
@@ -141,9 +139,7 @@ class ConversationCreateOperation {
   }
 
   async #createChannelConversation(user, conversationParams, participantIds) {
-    const isOwnerInParticipants = participantIds.find((pId) =>
-      this.helpers.isEqualsNativeIds(pId, conversationParams.owner_id)
-    )
+    const isOwnerInParticipants = participantIds.find((pId) => this.helpers.isEqualsNativeIds(pId, conversationParams.owner_id))
     if (!isOwnerInParticipants) {
       participantIds.push(conversationParams.owner_id)
     }
