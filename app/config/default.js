@@ -65,8 +65,8 @@ const CONFIG = {
       secret: process.env.MINIO_SECRET_KEY,
       endpoint: process.env.MINIO_ENDPOINT || null,
       bucket: process.env.MINIO_BUCKET_NAME,
-      port: (process.env.MINIO_PORT = 9010),
-      useSSL: process.env.MINIO_PORT === CONSTANTS.ENV_TRUE,
+      port: process.env.MINIO_PORT ?? 9010,
+      useSSL: process.env.MINIO_USE_SSL === CONSTANTS.ENV_TRUE,
     },
     s3: {
       key: process.env.S3_ACCESS_KEY,
