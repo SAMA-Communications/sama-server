@@ -28,6 +28,7 @@ const CONFIG = {
     },
   },
   tcp: {
+    isEnabled: !!process.env.APP_TCP_PORT,
     options: {
       tls: {
         key: process.env.TLS_KEY_FILE_NAME,

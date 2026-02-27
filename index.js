@@ -190,7 +190,9 @@ await wsProtocolImp.listen(uWSOptions)
 const httpProtocolImp = new HttpProtocol(sessionService, conversationService, wsProtocolImp.uWSocketServer)
 await httpProtocolImp.listen({})
 
-const tcpProtocolImp = new TcpProtocol(sessionService, conversationService)
-await tcpProtocolImp.listen(tcpOptions)
+if (config.get("tcp.isEnabled")) {
+  const tcpProtocolImp = new TcpProtocol(sessionService, conversationService)
+  await tcpProtocolImp.listen(tcpOptions)
+}
 
 // https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph
