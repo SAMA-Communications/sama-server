@@ -12,4 +12,8 @@ class FileCreateOperationRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new FileCreateOperationRegisterProvider({ name, implementationName: FileCreateOperation.name })
+export default new FileCreateOperationRegisterProvider({
+  name,
+  implementationName: FileCreateOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})

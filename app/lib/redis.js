@@ -1,9 +1,29 @@
 import { createClient } from "redis"
 
+import config from "../config/index.js"
+import mainLogger from "../logger/index.js"
+
+const logger = mainLogger.child("[Redis]")
+
 class RedisManager {
   constructor() {
     this.client = createClient({
-      url: process.env.REDIS_URL,
+      url: config.get("redis.main.url"),
+      pingInterval: 3_000,
+      socket: {
+        reconnectStrategy: (retries) => {
+          logger.warn("[reconnect] %s", retries)
+          return 300
+        },
+      },
+    })
+
+    this.client.on("error", (err) => {
+      logger.error(err, "[connection][error]")
+    })
+
+    this.client.on("end", () => {
+      logger.warn("[connection][end]")
     })
   }
 

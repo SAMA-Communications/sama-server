@@ -15,4 +15,5 @@ class HttpMessageReadOperationRegisterProvider extends RegisterProvider {
 export default new HttpMessageReadOperationRegisterProvider({
   name,
   implementationName: HttpMessageReadOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

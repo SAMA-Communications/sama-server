@@ -16,11 +16,7 @@ class MessageRepository extends BaseRepository {
   }
 
   async findAllOpponentsMessagesFromConversation(cid, readerUserId, { mids, lastReadMessageId }) {
-    const idQuery = lastReadMessageId
-      ? { $gt: this.castObjectId(lastReadMessageId) }
-      : mids
-        ? { $in: this.castObjectIds(mids) }
-        : null
+    const idQuery = lastReadMessageId ? { $gt: this.castObjectId(lastReadMessageId) } : mids ? { $in: this.castObjectIds(mids) } : null
 
     const query = {
       cid: this.castObjectId(cid),
@@ -31,7 +27,7 @@ class MessageRepository extends BaseRepository {
       query._id = idQuery
     }
 
-    const messages = await this.findAll(query)
+    const messages = await this.findAll(query, void 0, void 0, { _id: -1 })
 
     return messages
   }
@@ -65,6 +61,20 @@ class MessageRepository extends BaseRepository {
     return result
   }
 
+  async listByMids(mids, options, limit) {
+    let query = { _id: { $in: mids } }
+
+    if (options.updatedAtFrom) {
+      query.updated_at = this.mergeOperators(query.updated_at, { $gt: options.updatedAtFrom })
+    }
+    if (options.updatedAtBefore) {
+      query.updated_at = this.mergeOperators(query.updated_at, { $lt: options.updatedAtBefore })
+    }
+
+    const messages = await this.findAll(query, null, limit, { _id: -1 })
+    return messages
+  }
+
   async findLastUserMessageForConversation(cid, userId) {
     cid = this.castObjectId(cid)
     userId = this.castObjectId(userId)
@@ -86,7 +96,7 @@ class MessageRepository extends BaseRepository {
   async list(conversationId, userId, options, limit = 100) {
     const cid = this.castObjectId(conversationId)
     const query = { cid, deleted_for: { $nin: [this.castUserId(userId)] } }
-    let sort = null
+    let sort = { _id: -1 }
 
     if (options.ids) {
       query._id = this.mergeOperators(query.updated_at, { $in: this.castObjectIds(options.ids) })
@@ -124,10 +134,7 @@ class MessageRepository extends BaseRepository {
       count: { $sum: 1 },
     }
 
-    const aggregatedResult = await this.aggregate([
-      { $match: arrayParams.length ? { $or: arrayParams } : {} },
-      { $group },
-    ])
+    const aggregatedResult = await this.aggregate([{ $match: arrayParams.length ? { $or: arrayParams } : {} }, { $group }])
 
     const result = {}
 
@@ -147,6 +154,10 @@ class MessageRepository extends BaseRepository {
     userId = this.castUserId(userId)
 
     await this.updateMany({ _id: { $in: messageIds } }, { $addToSet: { deleted_for: userId } })
+  }
+
+  async deleteMessageByMids(mids) {
+    await this.deleteMany({ _id: { $in: mids } })
   }
 }
 

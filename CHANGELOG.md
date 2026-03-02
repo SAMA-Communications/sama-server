@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.36.0
+
+### Features
+
+- add `config` util/service
+- add `logger` util/service
+- add `STANDALONE_NODE` mode (one node)
+- add stats logic/api (`STANDALONE_NODE` mode only now)
+
+### Improvements
+
+- Refactoring
+- Prevent app crash on `PROD` env (`process` listen `uncaughtException`/`unhandledRejection`)
+
 ## 0.35.0
 
 ### Features
@@ -17,8 +31,6 @@
 ### Docker
 
 - Improved logic for building the Docker container
-
-# Changelog
 
 ## 0.34.0
 

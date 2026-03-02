@@ -5,12 +5,18 @@ const name = "MessageReadOperation"
 
 class MessageReadOperationRegisterProvider extends RegisterProvider {
   register(slc) {
+    const config = slc.use("Config")
     const sessionService = slc.use("SessionService")
+    const userService = slc.use("UserService")
     const messageService = slc.use("MessageService")
     const conversationService = slc.use("ConversationService")
 
-    return new MessageReadOperation(sessionService, messageService, conversationService)
+    return new MessageReadOperation(config, sessionService, userService, messageService, conversationService)
   }
 }
 
-export default new MessageReadOperationRegisterProvider({ name, implementationName: MessageReadOperation.name })
+export default new MessageReadOperationRegisterProvider({
+  name,
+  implementationName: MessageReadOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})

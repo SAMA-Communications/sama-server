@@ -1,9 +1,9 @@
 import { ERROR_STATUES } from "../../../../constants/errors.js"
-import { CONSTANTS as MAIN_CONSTANTS } from "../../../../constants/constants.js"
 import MessagePublicFields from "@sama/DTO/Response/message/create/public_fields.js"
 
 class MessageListOperation {
-  constructor(helpers, sessionService, userService, messageService, conversationService) {
+  constructor(config, helpers, sessionService, userService, messageService, conversationService) {
+    this.config = config
     this.helpers = helpers
     this.sessionService = sessionService
     this.userService = userService
@@ -17,23 +17,23 @@ class MessageListOperation {
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
     const currentUser = await this.userService.userRepo.findById(currentUserId)
 
-    await this.#hasAccess(organizationId, cId, currentUserId)
+    const { conversation } = await this.#hasAccess(organizationId, cId, currentUserId)
+    const isEncrypted = !!conversation.is_encrypted
 
     const normalizedLimit = this.#normalizeLimitParam(limit)
+
+    const deviceId = this.sessionService.getDeviceId(ws, currentUser._id)
 
     const { messages, messagesStatuses, messagesReactions } = await this.messageService.messagesList(
       cId,
       currentUser,
       { ids, updatedAt: updated_at },
-      normalizedLimit
+      normalizedLimit,
+      isEncrypted,
+      deviceId
     )
 
-    const messagesWithVirtualFields = await this.#assignMessageVirtualFields(
-      messages,
-      messagesStatuses,
-      messagesReactions,
-      currentUserId
-    )
+    const messagesWithVirtualFields = await this.#assignMessageVirtualFields(messages, messagesStatuses, messagesReactions, currentUserId)
 
     return messagesWithVirtualFields.map((message) => new MessagePublicFields(message))
   }
@@ -56,6 +56,8 @@ class MessageListOperation {
         cause: ERROR_STATUES.FORBIDDEN,
       })
     }
+
+    return { conversation }
   }
 
   async #assignMessageVirtualFields(messages, messagesStatuses, messagesReactions, currentUserId) {
@@ -73,11 +75,13 @@ class MessageListOperation {
   }
 
   #normalizeLimitParam(limit) {
-    if (limit > MAIN_CONSTANTS.MESSAGE_LIMIT_MAX) {
-      return MAIN_CONSTANTS.MESSAGE_LIMIT_MAX
+    const preloadCount = this.config.get("conversation.messages.preloadCount")
+
+    if (limit > preloadCount) {
+      return preloadCount
     }
 
-    return limit || MAIN_CONSTANTS.MESSAGE_LIMIT_MAX
+    return limit || preloadCount
   }
 }
 

@@ -2,7 +2,7 @@ import Joi from "joi"
 import { ERROR_STATUES, requiredError } from "@sama/constants/errors.js"
 import { CONSTANTS as MAIN_CONSTANTS } from "@sama/constants/constants.js"
 
-const CHAT_SUMMARY_FILTERS_ARRAY = Object.values(MAIN_CONSTANTS.CHAT_SUMMARY_FITLERS)
+const CHAT_SUMMARY_FILTERS_ARRAY = Object.values(MAIN_CONSTANTS.CHAT_SUMMARY_FILTERS)
 const MESSAGE_TONE_ARRAY = Object.values(MAIN_CONSTANTS.MESSAGE_TONE)
 
 export const messagesSchemaValidation = {
@@ -41,7 +41,7 @@ export const messagesSchemaValidation = {
             file_size: Joi.number().max(104857601),
             file_width: Joi.number().max(10000),
             file_height: Joi.number().max(10000),
-          })
+          }).unknown()
         )
         .min(1)
         .error(
@@ -52,6 +52,7 @@ export const messagesSchemaValidation = {
       replied_message_id: Joi.string(),
       forwarded_message_id: Joi.string(),
       deleted_for: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string(), Joi.number()).required()),
+      encrypted_message_type: Joi.number().allow(1, 0),
     })
     .or("body", "attachments"),
   edit: Joi.object({
@@ -114,6 +115,16 @@ export const messagesSchemaValidation = {
         })
       ),
     ids: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string())),
+  }).required(),
+  decryption_failed: Joi.object({
+    cid: Joi.string()
+      .required()
+      .error(
+        new Error(ERROR_STATUES.CID_REQUIRED.message, {
+          cause: ERROR_STATUES.CID_REQUIRED,
+        })
+      ),
+    ids: Joi.array().items(Joi.alternatives().try(Joi.object(), Joi.string())).min(1).required(),
   }).required(),
   delete: Joi.object({
     cid: Joi.string()

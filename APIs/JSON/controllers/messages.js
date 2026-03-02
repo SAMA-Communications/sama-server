@@ -7,6 +7,7 @@ import SystemMessageResponse from "@sama/DTO/Response/message/system/response.js
 import EditMessageResponse from "@sama/DTO/Response/message/edit/response.js"
 import MessageReactionsUpdateResponse from "@sama/DTO/Response/message/reactions_update/response.js"
 import ReadMessagesResponse from "@sama/DTO/Response/message/read/response.js"
+import DecryptionFailedMessagesResponse from "@sama/DTO/Response/message/decryption_failed/response.js"
 import DeleteMessagesResponse from "@sama/DTO/Response/message/delete/response.js"
 
 import DeliverMessage from "@sama/networking/models/DeliverMessage.js"
@@ -19,14 +20,16 @@ class MessagesController extends BaseJSONController {
     const response = new Response()
 
     const messageCreateOperation = ServiceLocatorContainer.use("MessageCreateOperation")
-    const { messageId, message, deliverMessages, participantIds, modifiedFields, botMessage } =
+    const { organizationId, messageId, message, deliverMessages, cId, participantIds, modifiedFields, botMessage } =
       await messageCreateOperation.perform(ws, messageParams)
 
     deliverMessages.forEach((event) => {
-      const deliverMessage = new DeliverMessage(
-        event.participantIds || participantIds,
-        new MessageResponse(event.message)
-      ).addPushQueueMessage(event.notification)
+      const deliverMessage = new DeliverMessage(organizationId, new MessageResponse(event.message)).addPushQueueMessage(event.notification)
+
+      const participantsDestination = event.participantIds ?? participantIds
+      deliverMessage.setUsersDestination(participantsDestination)
+      deliverMessage.setConversationDestination(cId)
+
       response.addDeliverMessage(deliverMessage)
     })
 
@@ -39,29 +42,35 @@ class MessagesController extends BaseJSONController {
     const { system_message: systemMessageParams } = data
 
     const messageSendSystemOperation = ServiceLocatorContainer.use("MessageSendSystemOperation")
-    const { recipientsIds, systemMessage } = await messageSendSystemOperation.perform(ws, systemMessageParams)
+    const { organizationId, cId, recipientsIds, systemMessage } = await messageSendSystemOperation.perform(ws, systemMessageParams)
 
-    return new Response()
-      .addBackMessage({ ask: { mid: systemMessage._id, t: systemMessage.t } })
-      .addDeliverMessage(new DeliverMessage(recipientsIds, new SystemMessageResponse(systemMessage), true))
+    const deliverMessage = new DeliverMessage(organizationId, new SystemMessageResponse(systemMessage), true)
+      .setConversationDestination(cId)
+      .setUsersDestination(recipientsIds)
+
+    return new Response().addBackMessage({ ask: { mid: systemMessage._id, t: systemMessage.t } }).addDeliverMessage(deliverMessage)
   }
 
   async edit(ws, data) {
     const { id: requestId, message_edit: messageParams } = data
 
     const messageEditOperation = ServiceLocatorContainer.use("MessageEditOperation")
-    const { editedMessage, participantIds } = await messageEditOperation.perform(ws, messageParams)
+    const { organizationId, cId, participantsIds, editedMessage } = await messageEditOperation.perform(ws, messageParams)
 
     return new Response()
       .addBackMessage({ response: { id: requestId, success: true } })
-      .addDeliverMessage(new DeliverMessage(participantIds, new EditMessageResponse(editedMessage), true))
+      .addDeliverMessage(
+        new DeliverMessage(organizationId, new EditMessageResponse(editedMessage), true)
+          .setConversationDestination(cId)
+          .setUsersDestination(participantsIds)
+      )
   }
 
   async reactions_update(ws, data) {
     const { id: requestId, message_reactions_update: messageReactionsUpdatePayload } = data
 
     const messageReactionsUpdateOperation = ServiceLocatorContainer.use("MessageReactionsUpdateOperation")
-    const { isUpdated, messageReactionsUpdate, participantIds } = await messageReactionsUpdateOperation.perform(
+    const { organizationId, cId, participantsIds, isUpdated, messageReactionsUpdate } = await messageReactionsUpdateOperation.perform(
       ws,
       messageReactionsUpdatePayload
     )
@@ -70,7 +79,9 @@ class MessagesController extends BaseJSONController {
 
     if (isUpdated) {
       response.addDeliverMessage(
-        new DeliverMessage(participantIds, new MessageReactionsUpdateResponse(messageReactionsUpdate), true)
+        new DeliverMessage(organizationId, new MessageReactionsUpdateResponse(messageReactionsUpdate), true)
+          .setConversationDestination(cId)
+          .setUsersDestination(participantsIds)
       )
     }
 
@@ -104,14 +115,32 @@ class MessagesController extends BaseJSONController {
     const { id: requestId, message_read: messagesReadOptions } = data
 
     const messageReadOperation = ServiceLocatorContainer.use("MessageReadOperation")
-    const { readMessagesGroups } = await messageReadOperation.perform(ws, messagesReadOptions)
+    const { organizationId, readMessagesGroups } = await messageReadOperation.perform(ws, messagesReadOptions)
 
     const response = new Response()
 
     for (const readMessagesGroup of readMessagesGroups) {
       const { userId, readMessages } = readMessagesGroup
-      response.addDeliverMessage(new DeliverMessage([userId], new ReadMessagesResponse(readMessages)))
+      response.addDeliverMessage(new DeliverMessage(organizationId, new ReadMessagesResponse(readMessages)).setUsersDestination([userId]))
     }
+
+    return response.addBackMessage({
+      response: {
+        id: requestId,
+        success: true,
+      },
+    })
+  }
+
+  async decryption_failed(ws, data) {
+    const { id: requestId, message_decryption_failed: messagesDecryptionFailedOptions } = data
+
+    const messageDecryptionFailedOperation = ServiceLocatorContainer.use("MessageDecryptionFailedOperation")
+    const { receiverUserId, statuses } = await messageDecryptionFailedOperation.perform(ws, messagesDecryptionFailedOptions)
+
+    const response = new Response()
+
+    response.addDeliverMessage(new DeliverMessage([receiverUserId], new DecryptionFailedMessagesResponse(statuses)))
 
     return response.addBackMessage({
       response: {
@@ -125,12 +154,16 @@ class MessagesController extends BaseJSONController {
     const { id: requestId, message_delete: messageDeleteParams } = data
 
     const messageDeleteOperation = ServiceLocatorContainer.use("MessageDeleteOperation")
-    const { deletedMessages, participantIds } = await messageDeleteOperation.perform(ws, messageDeleteParams)
+    const { organizationId, cId, participantsIds, deletedMessages } = await messageDeleteOperation.perform(ws, messageDeleteParams)
 
     const response = new Response()
 
     if (deletedMessages) {
-      response.addDeliverMessage(new DeliverMessage(participantIds, new DeleteMessagesResponse(deletedMessages), true))
+      response.addDeliverMessage(
+        new DeliverMessage(organizationId, new DeleteMessagesResponse(deletedMessages), true)
+          .setConversationDestination(cId)
+          .setUsersDestination(participantsIds)
+      )
     }
 
     return response.addBackMessage({

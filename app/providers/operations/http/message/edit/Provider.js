@@ -15,4 +15,5 @@ class HttpMessageEditOperationRegisterProvider extends RegisterProvider {
 export default new HttpMessageEditOperationRegisterProvider({
   name,
   implementationName: HttpMessageEditOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

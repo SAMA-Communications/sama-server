@@ -1,0 +1,55 @@
+import { APIs, BASE_API } from "./APIs.js"
+
+import { CONSTANTS as MAIN_CONSTANTS } from "../constants/constants.js"
+
+import ServiceLocatorContainer from "../common/ServiceLocatorContainer.js"
+
+import DeliverMessage from "@sama/networking/models/DeliverMessage.js"
+import Response from "@sama/networking/models/Response.js"
+
+import LastActivityStatusResponse from "@sama/networking/models/LastActivityStatusResponse.js"
+
+class ActivitySender {
+  detectSocketAPI(socket) {
+    const api = APIs[socket.apiType ?? BASE_API]
+    return api
+  }
+
+  buildOfflineActivityResponse(orgId, userId) {
+    const response = new Response().updateLastActivityStatus(
+      new LastActivityStatusResponse(orgId, userId, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE)
+    )
+    return response
+  }
+
+  async updateAndBuildUserActivity(socket, orgId, userId, status) {
+    const activityManagerService = ServiceLocatorContainer.use("ActivityManagerService")
+
+    const deliver = await activityManagerService.updateUserActivity(userId, status)
+
+    const responses = []
+
+    if (!deliver) {
+      return responses
+    }
+
+    const api = this.detectSocketAPI(socket)
+
+    for (const subscriberUserId of deliver.subscribers) {
+      const lastActivityMessage = await api.buildLastActivityPackage(orgId, subscriberUserId, deliver.targetUserId, {
+        timestamp: deliver.activityStatus.timestamp,
+        status: deliver.activityStatus.status,
+      })
+
+      const response = new Response().addDeliverMessage(
+        new DeliverMessage(orgId, lastActivityMessage, true).setUsersDestination([subscriberUserId])
+      )
+
+      responses.push(response)
+    }
+
+    return responses
+  }
+}
+
+export default new ActivitySender()

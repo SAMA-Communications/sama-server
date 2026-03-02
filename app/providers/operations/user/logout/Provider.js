@@ -7,9 +7,14 @@ class UserLogoutOperationRegisterProvider extends RegisterProvider {
   register(slc) {
     const sessionService = slc.use("SessionService")
     const userTokenRepo = slc.use("UserTokenRepository")
+    const encryptionRepo = slc.use("EncryptionRepository")
 
-    return new UserLogoutOperation(sessionService, userTokenRepo)
+    return new UserLogoutOperation(sessionService, userTokenRepo, encryptionRepo)
   }
 }
 
-export default new UserLogoutOperationRegisterProvider({ name, implementationName: UserLogoutOperation.name })
+export default new UserLogoutOperationRegisterProvider({
+  name,
+  implementationName: UserLogoutOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})

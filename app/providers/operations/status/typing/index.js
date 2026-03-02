@@ -1,8 +1,10 @@
 import { ERROR_STATUES } from "../../../../constants/errors.js"
 
 class StatusTypingOperation {
-  constructor(sessionService, conversationService) {
+  constructor(config, sessionService, blockListService, conversationService) {
+    this.config = config
     this.sessionService = sessionService
+    this.blockListService = blockListService
     this.conversationService = conversationService
   }
 
@@ -10,7 +12,7 @@ class StatusTypingOperation {
     const { cid: conversationId, status } = statusTypingParams
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
 
-    const { conversation, participantIds } = await this.#hasAccess(organizationId, conversationId, currentUserId)
+    const { conversation } = await this.#hasAccess(organizationId, conversationId, currentUserId)
 
     const currentTs = parseInt(Math.round(Date.now() / 1000))
 
@@ -24,11 +26,11 @@ class StatusTypingOperation {
       },
     }
 
-    return { status: typingStatus, participantIds }
+    return { organizationId, cId: conversation._id, status: typingStatus }
   }
 
   async #hasAccess(organizationId, conversationId, currentUserId) {
-    const { conversation, asParticipant, participantIds } = await this.conversationService.hasAccessToConversation(
+    const { conversation, asParticipant } = await this.conversationService.hasAccessToConversation(
       organizationId,
       conversationId,
       currentUserId
@@ -40,13 +42,36 @@ class StatusTypingOperation {
       })
     }
 
+    if (!this.config.get("conversation.disableChannelsLogic")) {
+      if (conversation.type === "c") {
+        throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+          cause: ERROR_STATUES.FORBIDDEN,
+        })
+      }
+    }
+
     if (!asParticipant) {
       throw new Error(ERROR_STATUES.FORBIDDEN.message, {
         cause: ERROR_STATUES.FORBIDDEN,
       })
     }
 
-    return { conversation, participantIds }
+    if (conversation.type === "u") {
+      const participantIds = [conversation.owner_id, conversation.opponent_id]
+      await this.#checkBlocked(currentUserId, participantIds)
+    }
+
+    return { conversation }
+  }
+
+  async #checkBlocked(currentUserId, participantIds) {
+    const blockedUserIds = await this.blockListService.listMutualBlockedIds(currentUserId, participantIds)
+
+    if (blockedUserIds.length) {
+      throw new Error(ERROR_STATUES.USER_BLOCKED.message, {
+        cause: ERROR_STATUES.USER_BLOCKED,
+      })
+    }
   }
 }
 

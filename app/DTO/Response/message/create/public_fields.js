@@ -12,6 +12,7 @@ class MessagePublicFields {
     this.body = messageModel.body
     this.attachments = messageModel.attachments
     this.x = messageModel.x
+    this.encrypted_message_type = messageModel.encrypted_message_type
     this.replied_message_id = messageModel.replied_message_id
     this.forwarded_message_id = messageModel.forwarded_message_id
 

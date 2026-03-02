@@ -26,7 +26,7 @@ class UsersController extends BaseJSONController {
     return new Response()
       .addBackMessage({ response: { id: requestId, success: true } })
       .updateLastActivityStatus(
-        new LastActivityStatusResponse(user.native_id, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE)
+        new LastActivityStatusResponse(user.organization_id, user.native_id, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE)
       )
   }
 
@@ -39,7 +39,7 @@ class UsersController extends BaseJSONController {
     return new Response()
       .addBackMessage({ response: { id: requestId, user: user.visibleParams(), token: token.token } })
       .updateLastActivityStatus(
-        new LastActivityStatusResponse(user.native_id, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE)
+        new LastActivityStatusResponse(user.organization_id, user.native_id, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE)
       )
   }
 
@@ -56,11 +56,29 @@ class UsersController extends BaseJSONController {
     const { id: requestId } = data
 
     const userLogoutOperation = ServiceLocatorContainer.use("UserLogoutOperation")
-    const userId = await userLogoutOperation.perform(ws)
+    const { organizationId, userId } = await userLogoutOperation.perform(ws)
 
     return new Response()
       .addBackMessage({ response: { id: requestId, success: true } })
-      .updateLastActivityStatus(new LastActivityStatusResponse(userId, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE))
+      .updateLastActivityStatus(new LastActivityStatusResponse(organizationId, userId, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE))
+  }
+
+  async send_otp(ws, data) {
+    const { id: requestId, user_send_otp: userParams } = data
+
+    const UserSendOTPOperation = ServiceLocatorContainer.use("UserSendOTPOperation")
+    await UserSendOTPOperation.perform(ws, userParams)
+
+    return new Response().addBackMessage({ response: { id: requestId, success: true } })
+  }
+
+  async reset_password(ws, data) {
+    const { id: requestId, user_reset_password: resetParams } = data
+
+    const UserResetPasswordOperation = ServiceLocatorContainer.use("UserResetPasswordOperation")
+    await UserResetPasswordOperation.perform(ws, resetParams)
+
+    return new Response().addBackMessage({ response: { id: requestId, success: true } })
   }
 
   async send_otp(ws, data) {

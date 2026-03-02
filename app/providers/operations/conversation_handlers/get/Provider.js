@@ -16,4 +16,5 @@ class ConversationHandlerGetOperationRegisterProvider extends RegisterProvider {
 export default new ConversationHandlerGetOperationRegisterProvider({
   name,
   implementationName: ConversationHandlerGetOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

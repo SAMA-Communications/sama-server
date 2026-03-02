@@ -5,7 +5,9 @@ import { ERROR_STATUES } from "../../../../constants/errors.js"
 import { CONSTANTS as MAIN_CONSTANTS } from "../../../../constants/constants.js"
 
 class MessageSummaryOperation {
-  constructor(helpers, sessionService, userService, messageService, conversationService) {
+  constructor(config, logger, helpers, sessionService, userService, messageService, conversationService) {
+    this.config = config
+    this.logger = logger
     this.helpers = helpers
     this.sessionService = sessionService
     this.userService = userService
@@ -22,21 +24,19 @@ class MessageSummaryOperation {
     let filteredMessages = []
 
     switch (filter) {
-      case MAIN_CONSTANTS.CHAT_SUMMARY_FITLERS.LAST_7_DAYS: {
+      case MAIN_CONSTANTS.CHAT_SUMMARY_FILTERS.LAST_7_DAYS: {
         const since = new Date(Date.now() - MAIN_CONSTANTS.WEEK_IN_MS)
         filteredMessages =
-          (await this.messageService.messagesList(cid, { native_id: currentUserId }, { updatedAt: { gt: since } }))
-            ?.messages ?? []
+          (await this.messageService.messagesList(cid, { native_id: currentUserId }, { updatedAt: { gt: since } }))?.messages ?? []
         break
       }
-      case MAIN_CONSTANTS.CHAT_SUMMARY_FITLERS.LAST_DAY: {
+      case MAIN_CONSTANTS.CHAT_SUMMARY_FILTERS.LAST_DAY: {
         const since = new Date(Date.now() - MAIN_CONSTANTS.DAY_IN_MS)
         filteredMessages =
-          (await this.messageService.messagesList(cid, { native_id: currentUserId }, { updatedAt: { gt: since } }))
-            ?.messages ?? []
+          (await this.messageService.messagesList(cid, { native_id: currentUserId }, { updatedAt: { gt: since } }))?.messages ?? []
         break
       }
-      case MAIN_CONSTANTS.CHAT_SUMMARY_FITLERS.UNREADS:
+      case MAIN_CONSTANTS.CHAT_SUMMARY_FILTERS.UNREADS:
         filteredMessages = (await this.messageService.getUnreadMessages(cid, currentUserId)) ?? []
         break
       default:
@@ -61,12 +61,12 @@ class MessageSummaryOperation {
 
     try {
       const result = await generateText({
-        model: google(process.env.GOOGLE_GENERATIVE_AI_MODEL),
+        model: google(this.config.get("googleAI.model")),
         prompt: (MAIN_CONSTANTS.SUMMARY_AI_PROMPT + messagesString).trim(),
       })
       return { message: result.text }
     } catch (err) {
-      console.error("[ai.agent.error]:", err)
+      this.logger.error(err, "[error]")
       throw new Error(ERROR_STATUES.AI_AGENT_ERROR.message, {
         cause: ERROR_STATUES.AI_AGENT_ERROR,
       })

@@ -1,14 +1,18 @@
 import BaseHttpController from "./base.js"
 
+import { CONSTANTS as MAIN_CONSTANTS } from "@sama/constants/constants.js"
+
 import ServiceLocatorContainer from "@sama/common/ServiceLocatorContainer.js"
 
 import HttpResponse from "@sama/networking/models/HttpResponse.js"
+import LastActivityStatusResponse from "@sama/networking/models/LastActivityStatusResponse.js"
 import Response from "@sama/networking/models/Response.js"
 
 class HttpAuthController extends BaseHttpController {
   async login(res, req) {
     const payload = res.parsedBody
 
+    const config = ServiceLocatorContainer.use("Config")
     const httpAuthOperation = ServiceLocatorContainer.use("HttpUserAuthOperation")
 
     const { user, newAccessToken, accessTokenExpiredAt, newRefreshToken } = await httpAuthOperation.perform(
@@ -27,7 +31,7 @@ class HttpAuthController extends BaseHttpController {
         expired_at: accessTokenExpiredAt,
       }
     ).addCookie("refresh_token", newRefreshToken.token, {
-      maxAge: +process.env.JWT_REFRESH_TOKEN_EXPIRES_IN,
+      maxAge: +config.get("jwt.refresh.expiresIn"),
       httpOnly: true,
       secure: true,
       sameSite: "lax",
@@ -39,24 +43,24 @@ class HttpAuthController extends BaseHttpController {
   async logout(res, req) {
     const httpLogoutOperation = ServiceLocatorContainer.use("HttpUserLogoutOperation")
 
-    const refreshTokenRecord = await httpLogoutOperation.perform(
-      res.fakeWsSessionKey,
-      res.parsedHeaders,
-      res.parsedSignedCookies
-    )
+    const refreshTokenRecord = await httpLogoutOperation.perform(res.fakeWsSessionKey, res.parsedHeaders, res.parsedSignedCookies)
 
-    const httpResponse = new HttpResponse(200, {}, { success: true }).addCookie(
-      "refresh_token",
-      refreshTokenRecord.token,
-      {
-        maxAge: 0,
-        httpOnly: true,
-        secure: true,
-        sameSite: "lax",
-      }
-    )
+    const httpResponse = new HttpResponse(200, {}, { success: true }).addCookie("refresh_token", refreshTokenRecord.token, {
+      maxAge: 0,
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+    })
 
-    return new Response().setHttpResponse(httpResponse)
+    return new Response()
+      .setHttpResponse(httpResponse)
+      .updateLastActivityStatus(
+        new LastActivityStatusResponse(
+          refreshTokenRecord.organization_id,
+          refreshTokenRecord.user_id,
+          MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE
+        )
+      )
   }
 }
 

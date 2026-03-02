@@ -13,20 +13,14 @@ class UserRepository extends BaseRepository {
     return user
   }
 
-  async findByIds(organizationId, userIds) {
-    const users = await this.findAll({ _id: { $in: userIds }, organization_id: organizationId }, null, 100)
-
-    return users
-  }
-  
   async findByEmail(organizationId, email) {
     const user = await this.findOne({ organization_id: organizationId, email })
 
     return user
   }
 
-  async findWithOrScopeByIds(organizationId, ids) {
-    const users = await this.findAll({ _id: { $in: ids }, organization_id: organizationId }, [], 100)
+  async findWithOrgScopeByIds(organizationId, ids) {
+    const users = await this.findAll({ organization_id: organizationId, _id: { $in: ids } }, [], 100, { _id: -1 })
 
     return users
   }
@@ -60,11 +54,7 @@ class UserRepository extends BaseRepository {
     const query = {
       _id: { $nin: ignoreIds },
       organization_id: organizationId,
-      $or: [
-        { login: { $regex: regexPattern } },
-        { first_name: { $regex: regexPattern } },
-        { last_name: { $regex: regexPattern } },
-      ],
+      $or: [{ login: { $regex: regexPattern } }, { first_name: { $regex: regexPattern } }, { last_name: { $regex: regexPattern } }],
     }
 
     if (timeFromUpdate) {

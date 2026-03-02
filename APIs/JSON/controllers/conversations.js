@@ -10,7 +10,7 @@ class ConversationsController extends BaseJSONController {
     const { id: requestId, conversation_create: conversationParams } = data
 
     const conversationCreateOperation = ServiceLocatorContainer.use("ConversationCreateOperation")
-    const { conversation, event } = await conversationCreateOperation.perform(ws, conversationParams)
+    const { organizationId, conversation, event } = await conversationCreateOperation.perform(ws, conversationParams)
 
     const response = new Response().addBackMessage({
       response: {
@@ -20,7 +20,7 @@ class ConversationsController extends BaseJSONController {
     })
 
     if (event) {
-      const deliverMessage = new DeliverMessage(event.participantIds, event.message)
+      const deliverMessage = new DeliverMessage(organizationId, event.message).setUsersDestination(event.participantIds)
       conversation.type !== "u" && deliverMessage.addPushQueueMessage(event.notification)
       response.addDeliverMessage(deliverMessage)
     }
@@ -45,20 +45,16 @@ class ConversationsController extends BaseJSONController {
       })
     }
 
-    const { currentUserId, conversation, conversationEvents = [] } = updatedConversationResult
+    const { organizationId, conversation, conversationEvents = [] } = updatedConversationResult
 
     conversationEvents.forEach((event) => {
-      const deliverMessage = new DeliverMessage(event.participantIds, event.message).addPushQueueMessage(
-        event.notification
-      )
-      response.addDeliverMessage(deliverMessage)
+      const deliverMessage = new DeliverMessage(organizationId, event.message)
+        .addPushQueueMessage(event.notification)
+        .setUsersDestination(event.participantIds, event.exceptUserIds)
+        .setConversationDestination(event.cId, event.exceptUserIds)
+        .setIgnoreSelf(!!event.ignoreSelf)
 
-      const isCurrentUser = event.participantIds.find((pId) =>
-        conversationEditOperation.helpers.isEqualsNativeIds(pId, currentUserId)
-      )
-      if (isCurrentUser && !event.ignoreOwnDelivery) {
-        response.addBackMessage(event.message)
-      }
+      response.addDeliverMessage(deliverMessage)
     })
 
     return response.addBackMessage({
@@ -94,17 +90,17 @@ class ConversationsController extends BaseJSONController {
     const conversationDeleteOperation = ServiceLocatorContainer.use("ConversationDeleteOperation")
     const deletedConversationResult = await conversationDeleteOperation.perform(ws, conversationId)
 
-    const { currentUserId, conversationEvents = [] } = deletedConversationResult
+    const { organizationId, currentUserId, conversationEvents = [] } = deletedConversationResult
 
     conversationEvents.forEach((event) => {
-      const deliverMessage = new DeliverMessage(event.participantIds, event.message).addPushQueueMessage(
-        event.notification
-      )
+      const deliverMessage = new DeliverMessage(organizationId, event.message)
+        .addPushQueueMessage(event.notification)
+        .setUsersDestination(event.participantIds)
+        .setConversationDestination(event.cId)
+
       response.addDeliverMessage(deliverMessage)
 
-      const isCurrentUser = event.participantIds.find((pId) =>
-        conversationDeleteOperation.helpers.isEqualsNativeIds(pId, currentUserId)
-      )
+      const isCurrentUser = event.participantIds.find((pId) => conversationDeleteOperation.helpers.isEqualsNativeIds(pId, currentUserId))
       if (isCurrentUser) {
         response.addBackMessage(event.message)
       }

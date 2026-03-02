@@ -5,9 +5,14 @@ const name = "MessageToneOperation"
 
 class MessageToneOperationRegisterProvider extends RegisterProvider {
   register(slc) {
+    const config = slc.use("Config")
+
+    const mainLogger = slc.use("Logger")
+    const logger = mainLogger.child("[MessageTonOp]")
+
     const messageService = slc.use("MessageService")
 
-    return new MessageToneOperation(messageService)
+    return new MessageToneOperation(config, logger, messageService)
   }
 }
 

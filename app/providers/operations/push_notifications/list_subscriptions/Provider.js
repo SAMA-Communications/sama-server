@@ -15,4 +15,5 @@ class PushSubscriptionListOperationRegisterProvider extends RegisterProvider {
 export default new PushSubscriptionListOperationRegisterProvider({
   name,
   implementationName: PushSubscriptionListOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
 })

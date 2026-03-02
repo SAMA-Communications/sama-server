@@ -13,4 +13,8 @@ class BlockListBlockOperationRegisterProvider extends RegisterProvider {
   }
 }
 
-export default new BlockListBlockOperationRegisterProvider({ name, implementationName: BlockListBlockOperation.name })
+export default new BlockListBlockOperationRegisterProvider({
+  name,
+  implementationName: BlockListBlockOperation.name,
+  scope: RegisterProvider.SCOPE.TRANSIENT,
+})

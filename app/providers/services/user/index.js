@@ -14,11 +14,11 @@ class UserService {
   }
 
   async findUsersByIds(organizationId, userIds) {
-    const users = await this.userRepo.findByIds(organizationId, userIds)
+    const users = await this.userRepo.findWithOrgScopeByIds(organizationId, userIds)
 
     return users
   }
-  
+
   async findByEmail(organizationId, email) {
     const user = await this.userRepo.findByEmail(organizationId, email)
 
