@@ -1,6 +1,6 @@
-import { CONSTANTS as MAIN_CONSTANTS } from "../../../constants/constants.js"
+import { CONSTANTS as MAIN_CONSTANTS } from "../../../../constants/constants.js"
 
-class ActivityManagerService {
+class ActivityManagerStandaloneService {
   constructor(ACTIVITY, userService) {
     this.ACTIVITY = ACTIVITY
     this.userService = userService
@@ -83,4 +83,4 @@ class ActivityManagerService {
   }
 }
 
-export default ActivityManagerService
+export default ActivityManagerStandaloneService

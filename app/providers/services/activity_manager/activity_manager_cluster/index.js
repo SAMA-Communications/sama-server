@@ -1,4 +1,4 @@
-import { CONSTANTS as MAIN_CONSTANTS } from "../../../constants/constants.js"
+import { CONSTANTS as MAIN_CONSTANTS } from "../../../../constants/constants.js"
 
 /*
   Structs:
@@ -9,7 +9,7 @@ import { CONSTANTS as MAIN_CONSTANTS } from "../../../constants/constants.js"
 const SUBSCRIBED_TO_KEY = "sama:subscribed_to"
 const SUBSCRIBERS_KEY = "sama:subscribers"
 
-class ActivityClusterManagerService {
+class ActivityManagerClusterService {
   constructor(redisConnection, userService) {
     this.redisConnection = redisConnection
     this.userService = userService
@@ -114,4 +114,4 @@ class ActivityClusterManagerService {
   }
 }
 
-export default ActivityClusterManagerService
+export default ActivityManagerClusterService

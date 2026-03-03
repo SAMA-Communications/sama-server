@@ -33,8 +33,9 @@ import UserServiceProvider from "./services/user/Provider.js"
 import BlockListServiceProvider from "./services/block_list/Provider.js"
 import StorageServiceProvider from "./services/storage/Provider.js"
 import OperationsLogServiceProvider from "./services/operation_logs/Provider.js"
+import ActivityManagerStandaloneServiceProvider from "./services/activity_manager/activity_manager_standalone/Provider.js"
+import ActivityManagerClusterServiceProvider from "./services/activity_manager/activity_manager_cluster/Provider.js"
 import ActivityManagerServiceProvider from "./services/activity_manager/Provider.js"
-import ActivityClusterManagerServiceProvider from "./services/activity_cluster_manager/Provider.js"
 import ConversationServiceProvider from "./services/conversation/Provider.js"
 import ConversationHandlerServiceProvider from "./services/conversation_handler/Provider.js"
 import EncryptionServiceProvider from "./services/encryption/Provider.js"
@@ -171,8 +172,9 @@ const providers = [
   BlockListServiceProvider,
   StorageServiceProvider,
   OperationsLogServiceProvider,
-  // ActivityManagerServiceProvider,
-  ActivityClusterManagerServiceProvider,
+  ActivityManagerStandaloneServiceProvider,
+  ActivityManagerClusterServiceProvider,
+  ActivityManagerServiceProvider,
   ConversationServiceProvider,
   ConversationHandlerServiceProvider,
   MessageServiceProvider,
