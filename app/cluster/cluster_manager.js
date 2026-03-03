@@ -141,7 +141,7 @@ class ClusterManager {
         }
 
         const clusterPort = uWS.us_socket_local_port(listenSocket)
-        logger.debug("[WS] listening on port %s", clusterPort)
+        logger.debug("[ClusterManager][WS] listening on port %s", clusterPort)
 
         return resolve(clusterPort)
       })
