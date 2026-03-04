@@ -1,1 +1,3 @@
-export const getIpFromWsUrl = (wsUrl) => wsUrl.split(":")[1].slice(2)
+import { URL } from "node:url"
+
+export const getIpFromWsUrl = wsUrl => new URL(wsUrl).hostname

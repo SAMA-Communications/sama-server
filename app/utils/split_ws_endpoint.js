@@ -1,5 +1,7 @@
-export const splitWsEndpoint = (url) => {
-  const regex = /^(.*?):\/\/(.*?)(?::([0-9]+))?(\/.*?)?$/
-  const [, protocol, ip, port, path] = url.match(regex)
-  return [protocol, ip, port, path]
+import { URL } from "node:url"
+
+export const splitWsEndpoint = url => {
+  const parsedUrl = new URL(url)
+
+  return [parsedUrl.protocol, parsedUrl.hostname, parsedUrl.port, parsedUrl.pathname]
 }

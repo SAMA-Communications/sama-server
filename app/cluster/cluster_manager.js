@@ -5,92 +5,151 @@ import { StringDecoder } from "node:string_decoder"
 import config from "../config/index.js"
 import mainLogger from "../logger/index.js"
 
+import ServiceLocatorContainer from "../common/ServiceLocatorContainer.js"
+
 import packetManager from "../networking/packet_manager.js"
 
 import { buildWsEndpoint } from "../utils/build_ws_endpoint.js"
-import { getIpFromWsUrl } from "../utils/get_ip_from_ws_url.js"
 
 const logger = mainLogger.child("[ClusterManager]")
+const loggerSender = logger.child("[Sender]")
+const loggerReceiver = logger.child("[Receiver]")
 
 const decoder = new StringDecoder("utf8")
 
 class ClusterManager {
-  #clusterNodesWS = {}
+  #nodesSyncInterval = void 0
 
-  #localSocket = null
+  #localSocket = void 0
+  clusterNodesConnections = {}
 
-  get clusterNodesWS() {
-    return this.#clusterNodesWS
+  async startSyncingClusterNodes() {
+    if (this.#nodesSyncInterval) {
+      return
+    }
+
+    this.#nodesSyncInterval = setInterval(() => this.#syncCluster(), config.get("ws.cluster.nodeExpiresIn") - 3_000)
+
+    this.#syncCluster()
+  }
+
+  async stopSyncingClusterNodes() {
+    clearInterval(this.#nodesSyncInterval)
+    this.#nodesSyncInterval = void 0
+  }
+
+  async #syncCluster() {
+    const sessionService = ServiceLocatorContainer.use("SessionService")
+
+    await this.#storeCurrentNode(sessionService.sessionsTotal)
+
+    await this.#retrieveExistingClusterNodes()
+  }
+
+  async #storeCurrentNode(usersCount) {
+    const clusterNodeService = ServiceLocatorContainer.use("ClusterNodeService")
+
+    const addressParams = {
+      ip_address: config.get("app.ip"),
+      hostname: config.get("app.hostName"),
+      port: config.get("ws.cluster.port"),
+    }
+
+    const optionalParams = {
+      users_count: usersCount,
+    }
+
+    await clusterNodeService.create(addressParams, optionalParams)
+  }
+
+  async #retrieveExistingClusterNodes() {
+    const clusterNodeService = ServiceLocatorContainer.use("ClusterNodeService")
+    const nodeList = await clusterNodeService.retrieveAll()
+
+    loggerSender.debug("[nodes] %j %s", nodeList, nodeList.length)
+
+    const destroyedNodes = []
+
+    for (const nodeInfo of nodeList) {
+      const nodeEndpoint = buildWsEndpoint(nodeInfo.ip_address, nodeInfo.port)
+      const isCurrentNode = config.get("ws.cluster.endpoint") === nodeEndpoint
+      if (isCurrentNode) {
+        continue
+      }
+
+      try {
+        await this.retrieveConnectionWithNode(nodeEndpoint)
+      } catch (error) {
+        loggerSender.error(error, "[connect node][failed] %s", nodeEndpoint)
+        destroyedNodes.push(nodeEndpoint)
+      }
+    }
+
+    for (const nodeEndpoint of destroyedNodes) {
+      await this.cleanDestroyedNodeData(nodeEndpoint)
+    }
   }
 
   #shareCurrentNodeInfo(ws) {
     ws.send(
       JSON.stringify({
         node_info: {
+          endpoint: config.get("ws.cluster.endpoint"),
           ip: config.get("app.ip"),
+          host: config.get("app.hostName"),
+          port: config.get("ws.cluster.port")
         },
       })
     )
   }
 
-  async senderClusterDeliverPacket(nodeUrl, deliverPacket) {
-    const ip = getIpFromWsUrl(nodeUrl)
-    const port = nodeUrl.split(":").at(2)
-
-    let recipientClusterNodeWS = this.clusterNodesWS[getIpFromWsUrl(nodeUrl)]
-
-    if (!recipientClusterNodeWS) {
-      recipientClusterNodeWS = await this.createSocketWithNode(ip, port)
+  async retrieveConnectionWithNode(nodeEndpoint) {
+    const existingWS = this.clusterNodesConnections[nodeEndpoint]
+    if (existingWS) {
+      return existingWS
     }
 
-    const clusterPacket = { deliverPacket }
-    recipientClusterNodeWS.send(JSON.stringify(clusterPacket))
+    loggerSender.debug("[connect node] %s", nodeEndpoint)
+
+    return await this.createConnectionWithNode(nodeEndpoint)
   }
 
-  async createSocketWithNode(ip, port) {
+  async createConnectionWithNode(nodeEndpoint) {
+    const nodeSederLogger = loggerSender.child(`[${nodeEndpoint}]`)
+
     return new Promise((resolve, reject) => {
-      const existingWS = this.clusterNodesWS[ip]
-      if (existingWS) {
-        resolve(existingWS)
-        return
-      }
+      const ws = new WebSocket(nodeEndpoint)
 
-      const url = buildWsEndpoint(ip, port)
-      if (!url) {
-        reject(`[ClusterManager][createSocketWithNode] can't create To Node Socket w/o url`)
-        return
-      }
-
-      const ws = new WebSocket(url)
+      ws.nodeEndpoint = nodeEndpoint
 
       ws.on("error", async (event) => {
-        logger.error(event, "[createSocketWithNode] ws on Error")
-        reject("[ClusterManager][createSocketWithNode] ws on error")
+        nodeSederLogger.error(event, "[error]")
+        reject(new Error(`[connection][error] ${nodeEndpoint}`))
       })
 
       ws.on("open", async () => {
-        logger.debug("[createSocketWithNode] ws on Open url %s", ws.url)
+        nodeSederLogger.debug("[Open] %s", ws.nodeEndpoint)
         this.#shareCurrentNodeInfo(ws)
       })
 
       ws.on("message", async (data) => {
         const json = JSON.parse(decoder.write(Buffer.from(data)))
 
-        logger.trace("ws on Message %j", json)
+        nodeSederLogger.trace("[packet] %j", json)
 
         if (json.node_info) {
           const nodeInfo = json.node_info
-          this.clusterNodesWS[nodeInfo.ip] = ws
+          this.clusterNodesConnections[nodeInfo.endpoint] = ws
+
+          nodeSederLogger.debug("[node handshake finished] %s", nodeInfo.endpoint)
           resolve(ws)
           return
         }
-
-        await packetManager.deliverClusterMessageToUser(json.deliverPacket)
       })
 
       ws.on("close", async () => {
-        logger.debug("[createSocketWithNode] ws on Close %s", ws.url)
-        delete this.clusterNodesWS[getIpFromWsUrl(ws.url)]
+        nodeSederLogger.debug("[Close] %s", ws.nodeEndpoint)
+        await this.cleanDestroyedNodeData(ws.nodeEndpoint)
       })
     })
   }
@@ -103,49 +162,68 @@ class ClusterManager {
         ...wsOptions,
 
         open: (ws) => {
-          logger.debug("[WS] on Open IP: %s", Buffer.from(ws.getRemoteAddressAsText()).toString())
-        },
-
-        close: async (ws, code, message) => {
-          logger.debug("[WS] on Close")
-          for (const nodeIp in this.clusterNodesWS) {
-            if (this.clusterNodesWS[nodeIp] !== ws) {
-              continue
-            }
-
-            delete this.clusterNodesWS[nodeIp]
-            return
-          }
+          loggerReceiver.debug("[Open] IP: %s", Buffer.from(ws.getRemoteAddressAsText()).toString())
         },
 
         message: async (ws, message, isBinary) => {
           const json = JSON.parse(decoder.write(Buffer.from(message)))
 
-          logger.trace("[WS] on Message %j", json)
+          loggerReceiver.trace("[packet] %j", json)
 
           if (json.node_info) {
             const nodeInfo = json.node_info
-            this.clusterNodesWS[nodeInfo.ip] = ws
-            this.#shareCurrentNodeInfo(ws)
+            ws.nodeEndpoint = nodeInfo.endpoint
+            this.clusterNodesConnections[nodeInfo.endpoint] = ws
 
+            loggerReceiver.debug("[node handshake finished] %s", nodeInfo.endpoint)
+            this.#shareCurrentNodeInfo(ws)
             return
           }
 
-          await packetManager.deliverClusterMessageToUser(json.deliverPacket)
+          if (json.deliverPacket) {
+            await packetManager.deliverClusterMessageToUser(json.deliverPacket)
+          }
+        },
+
+        close: async (ws, code, message) => {
+          logger.debug("[Close] %s Code: %s", ws.nodeEndpoint, code)
+          await this.cleanDestroyedNodeData(ws.nodeEndpoint)
         },
       })
 
       this.#localSocket.listen(0, listenOptions, (listenSocket) => {
         if (!listenSocket) {
-          throw new Error(`[ClusterManager][WS] socket.listen error: can't allocate port`)
+          throw new Error(`[ClusterManager] error: can't allocate port`)
         }
 
         const clusterPort = uWS.us_socket_local_port(listenSocket)
-        logger.debug("[ClusterManager][WS] listening on port %s", clusterPort)
+        loggerReceiver.debug(" listening on port %s", clusterPort)
 
         return resolve(clusterPort)
       })
     })
+  }
+
+  async senderClusterDeliverPacket(nodeUrl, deliverPacket) {
+    let recipientClusterNodeWS = this.clusterNodesConnections[nodeUrl]
+
+    if (!recipientClusterNodeWS) {
+      recipientClusterNodeWS = await this.retrieveConnectionWithNode(ip, port)
+    }
+
+    const clusterPacket = { deliverPacket }
+    recipientClusterNodeWS.send(JSON.stringify(clusterPacket))
+  }
+
+  async cleanDestroyedNodeData(nodeEndpoint) {
+    logger.debug("[clean node] %s", nodeEndpoint)
+
+    delete this.clusterNodesConnections[nodeEndpoint]
+
+    const sessionService = ServiceLocatorContainer.use("SessionService")
+
+    await sessionService.clearNodeUsersSession(nodeEndpoint)
+      .catch(error => logger.error(error, "[clean node]"))
   }
 }
 

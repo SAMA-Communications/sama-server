@@ -11,7 +11,6 @@ import RegisterProvider from "./app/common/RegisterProvider.js"
 import providers from "./app/providers/index.js"
 
 import clusterManager from "./app/cluster/cluster_manager.js"
-import clusterSyncer from "./app/cluster/cluster_syncer.js"
 
 import WsProtocol from "./app/networking/protocol_processors/ws.js"
 import TcpProtocol from "./app/networking/protocol_processors/tcp.js"
@@ -177,7 +176,7 @@ await ServiceLocatorContainer.createAllSingletonInstances()
 if (!config.get("app.isStandAloneNode")) {
   // Start Cluster Sync
   logger.debug("[Start sync]")
-  await clusterSyncer.startSyncingClusterNodes()
+  await clusterManager.startSyncingClusterNodes()
 }
 
 // Start public protocols

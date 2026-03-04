@@ -6,7 +6,17 @@ class ClusterNodeService {
   async retrieveAll() {
     const clusterNodes = await this.clusterNodeRepo.findAll({})
 
-    return clusterNodes
+    return this.normalizeClusterNodes(clusterNodes)
+  }
+
+  normalizeClusterNodes(clusterNodes) {
+    const clusterNodeObj = clusterNodes.reduce((acc, clusterNode) => {
+      const key = `${clusterNode.ip_address}:${clusterNode.port}`
+      acc[key] = clusterNode
+      return acc
+    }, {})
+
+    return Object.values(clusterNodeObj)
   }
 
   async create(addressParams, optionalParams) {
