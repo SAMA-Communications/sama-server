@@ -176,7 +176,7 @@ await ServiceLocatorContainer.createAllSingletonInstances()
 if (!config.get("app.isStandAloneNode")) {
   // Start Cluster Sync
   logger.debug("[Start sync]")
-  await clusterManager.startSyncingClusterNodes()
+  await clusterManager.startSyncingClusterNodes(true)
 }
 
 // Start public protocols

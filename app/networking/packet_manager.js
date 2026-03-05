@@ -57,7 +57,7 @@ class PacketManager {
     }
   }
 
-  #deliverToUserDevices(socket, nodeConnections, userId, packet, ignoreSelf) {
+  #deliverToUserDevices(socket, orgId, nodeConnections, userId, packet, ignoreSelf) {
     const sessionService = ServiceLocatorContainer.use("SessionService")
     const senderUserSession = sessionService.getSession(socket)
     const senderDeviceId = senderUserSession ? sessionService.getDeviceId(socket, senderUserSession.userId) : null
@@ -66,7 +66,7 @@ class PacketManager {
 
     const senderInfo = {
       apiType: socket?.apiType,
-      session: senderUserSession,
+      session: senderUserSession ?? { organizationId: orgId, userId },
       deviceId: senderDeviceId,
       node: currentNodeUrl,
     }
@@ -138,7 +138,7 @@ class PacketManager {
         offlineUsersByPackets.push(userId)
       }
 
-      this.#deliverToUserDevices(socket, userNodeData, userId, packet, ignoreSelf)
+      this.#deliverToUserDevices(socket, orgId, userNodeData, userId, packet, ignoreSelf)
     }
 
     if (pushQueueMessage && offlineUsersByPackets.length) {

@@ -19,7 +19,7 @@ class ActivityManagerClusterService {
   async subscribeTarget(observerId) {
     const targetId = await this.redisConnection.client.hGet(SUBSCRIBED_TO_KEY, `${observerId}`)
 
-    return targetId ? +targetId : void 0
+    return targetId ? targetId : void 0
   }
 
   async addSubscribeTarget(observerId, targetId) {
@@ -38,7 +38,7 @@ class ActivityManagerClusterService {
   async subscribers(targetId) {
     const observersIds = await this.redisConnection.client.hGet(SUBSCRIBERS_KEY, `${targetId}`)
 
-    return observersIds ? observersIds.split(',').map(observerId => +observerId) : []
+    return observersIds ? observersIds.split(',') : []
   }
 
   async addSubscriber(targetId, observerId) {

@@ -103,6 +103,8 @@ class SessionService {
 
     if (!leftUserDevices?.length) {
       await this.deleteUserDevices(organizationId, userId)
+
+      return true
     }
   }
 
@@ -151,8 +153,11 @@ class SessionService {
   }
 
   async removeUserData(organizationId, userId, deviceId) {
-    await this.removeUserDevice(organizationId, userId, deviceId)
+    const isWasLastUserSession = await this.removeUserDevice(organizationId, userId, deviceId)
+
     await this.deleteUserExtraParams(userId, deviceId)
+
+    return isWasLastUserSession
   }
 
   async deleteUserData(organizationId, userId) {
@@ -217,13 +222,18 @@ class SessionService {
   async clearNodeUsersSession(nodeUrl) {
     if (this.config.get("app.isStandAloneNode")) return
 
+    const lastUserSessions = []
+
     const userConnections = await this.listNodeUserDevices(void 0, void 0, nodeUrl)
 
-    for (const { organizationId, userId, deviceId } of userConnections) {
-      await this.removeUserData(organizationId, userId, deviceId)
+    for (const userData of userConnections) {
+      const isLastUserSession = await this.removeUserData(userData.organizationId, userData.userId, userData.deviceId)
+      if (isLastUserSession) lastUserSessions.push(userData)
     }
 
     await this.deleteNodeConnections(void 0, void 0, nodeUrl)
+
+    return lastUserSessions
   }
 
   setSessionUserId(socket, organizationId, userId, extraParams) {
@@ -323,32 +333,36 @@ class SessionService {
     const organizationId = this.getSession(socket)?.organizationId
 
     const leftActiveConnections = this.getUserDevices(userId).filter(({ deviceId: activeDeviceId }) => activeDeviceId !== deviceId)
+    let isLastConnection = !leftActiveConnections?.length
 
     if (leftActiveConnections?.length) {
       this.activeSessions.DEVICES[userId] = leftActiveConnections
     } else {
       delete this.activeSessions.DEVICES[userId]
     }
+
     this.activeSessions.SESSIONS.delete(socket)
 
     if (!deviceId) {
-      return
+      return isLastConnection
     }
 
-    if (this.config.get("app.isStandAloneNode")) return
+    if (this.config.get("app.isStandAloneNode")) return isLastConnection
+
+    isLastConnection = await this.removeUserDevice(organizationId, userId, deviceId)
+    await this.deleteUserExtraParams(userId, deviceId)
 
     const extraParams = await this.retrieveUserExtraParams(userId, deviceId)
 
-    await this.removeUserDevice(organizationId, userId, deviceId)
-    await this.deleteUserExtraParams(userId, deviceId)
-
     const nodeEndpoint = extraParams?.[CONSTANTS.SESSION_NODE_KEY]
     if (!nodeEndpoint) {
-      return
+      return isLastConnection
     }
 
     const [, nodeId, nodePort] = splitWsEndpoint(nodeEndpoint)
     await this.removeUserDeviceFromNode(nodeId, nodePort, organizationId, userId, deviceId)
+
+    return isLastConnection
   }
 
   async onlineUsersList(organizationId, offset = 0, limit = 10) {

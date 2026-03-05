@@ -1,6 +1,3 @@
-import os from "node:os"
-
-import { v4 as uuid } from "uuid"
 import { CONSTANTS as MAIN_CONSTANTS } from "../../constants/constants.js"
 import { ERROR_STATUES } from "../../constants/errors.js"
 
