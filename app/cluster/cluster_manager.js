@@ -212,8 +212,8 @@ class ClusterManager extends BaseProtocolProcessor {
     })
   }
 
-  async senderClusterDeliverPacket(nodeUrl, deliverPacket) {
-    let recipientClusterNodeConnection = this.clusterNodesConnections[nodeUrl]
+  async senderClusterDeliverPacket(nodeEndpoint, deliverPacket) {
+    let recipientClusterNodeConnection = this.clusterNodesConnections[nodeEndpoint]
 
     if (!recipientClusterNodeConnection) {
       recipientClusterNodeConnection = await this.retrieveConnectionWithNode(ip, port)

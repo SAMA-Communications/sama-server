@@ -62,13 +62,13 @@ class PacketManager {
     const senderUserSession = sessionService.getSession(socket)
     const senderDeviceId = senderUserSession ? sessionService.getDeviceId(socket, senderUserSession.userId) : null
 
-    const currentNodeUrl = config.get("ws.cluster.endpoint")
+    const currentNodeEndpoint = config.get("ws.cluster.endpoint")
 
     const senderInfo = {
       apiType: socket?.apiType,
       session: senderUserSession ?? { organizationId: orgId, userId },
       deviceId: senderDeviceId,
-      node: currentNodeUrl,
+      node: currentNodeEndpoint,
     }
 
     if (config.get("app.isStandAloneNode")) {
@@ -81,13 +81,13 @@ class PacketManager {
       })
     } else {
       Object.entries(nodeConnections).forEach(async ([nodeDeviceId, extraParams]) => {
-        const nodeUrl = extraParams[MAIN_CONSTANTS.SESSION_NODE_KEY]
+        const nodeEndpoint = extraParams[MAIN_CONSTANTS.SESSION_NODE_KEY]
 
-        if (!nodeUrl) {
+        if (!nodeEndpoint) {
           return
         }
 
-        if (currentNodeUrl === nodeUrl) {
+        if (currentNodeEndpoint === nodeEndpoint) {
           if (senderDeviceId === nodeDeviceId && ignoreSelf) {
             return
           }
@@ -99,9 +99,9 @@ class PacketManager {
 
         try {
           const clusterPacket = { userId, packet, senderInfo }
-          await clusterManager.senderClusterDeliverPacket(nodeUrl, clusterPacket)
+          await clusterManager.senderClusterDeliverPacket(nodeEndpoint, clusterPacket)
         } catch (error) {
-          await sessionService.clearNodeUsersSession(nodeUrl)
+          await sessionService.clearNodeUsersSession(nodeEndpoint)
           logger.error(error, "[deliverToUserDevices] createSocketWithNode error")
         }
       })
