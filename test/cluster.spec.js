@@ -5,6 +5,7 @@ import assert from "node:assert"
 import ServiceLocatorContainer from "../app/common/ServiceLocatorContainer.js"
 import clusterManager from "../app/cluster/cluster_manager.js"
 import { generateNewOrganizationId, createConversation, createUserArray, mockedWS, sendLogin } from "./tools/utils.js"
+import { buildWsEndpoint } from "../app/utils/build_ws_endpoint.js"
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 import packetManager from "../app/networking/packet_manager.js"
 
@@ -56,10 +57,17 @@ describe("Cluster Message function", async () => {
         secondSocketResponse = data
       },
     }
-    clusterManager.clusterNodesWS[ip.address()] = mockedWS2
+    const newEndpoint = buildWsEndpoint(ip.address(), secondClusterPort)
+    clusterManager.clusterNodesConnections[newEndpoint] = mockedWS2
 
     sessionService.addUserDeviceConnection(mockedWS2, orgId, usersIds[1], deviceId)
-    await sessionService.storeUserNodeData(mockedWS2, orgId, usersIds[1], deviceId, ip.address(), secondClusterPort)
+
+    const prevEndpoint = sessionService.config.get("ws.cluster.endpoint")
+    sessionService.config.set("ws.cluster.endpoint", newEndpoint)
+
+    await sessionService.storeUserNodeData(mockedWS2, orgId, usersIds[1], deviceId)
+
+    sessionService.config.set("ws.cluster.endpoint", prevEndpoint)
   })
 
   describe("Send Message to other node", async () => {
@@ -80,7 +88,7 @@ describe("Cluster Message function", async () => {
 
       await packetManager.deliverToUserOrUsers(
         orgId,
-        deliverMessage.ws || mockedWS,
+        deliverMessage.socket || mockedWS,
         JSON.stringify(deliverMessage.packet),
         null,
         usersIds,

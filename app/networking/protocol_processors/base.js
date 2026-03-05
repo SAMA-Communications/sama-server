@@ -162,7 +162,7 @@ class BaseProtocolProcessor {
     for (const deliverPackage of deliverPackages) {
       logger.trace("[DELIVER] %o", deliverPackage)
 
-      deliverPackage.ws ??= socket
+      deliverPackage.socket ??= socket
 
       if (deliverPackage.userIds?.length) {
         await this.processDeliverUserMessage(deliverPackage)
@@ -176,7 +176,7 @@ class BaseProtocolProcessor {
     try {
       await packetManager.deliverToUserOrUsers(
         deliverMessage.orgId,
-        deliverMessage.ws,
+        deliverMessage.socket,
         deliverMessage.packet,
         deliverMessage.pushQueueMessage,
         participantIds ?? deliverMessage.userIds,

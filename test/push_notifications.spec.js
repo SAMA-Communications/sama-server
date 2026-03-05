@@ -579,7 +579,7 @@ describe("PushNotification functions", async () => {
 
       await packetManager.deliverToUserOrUsers(
         deliverMessage.orgId,
-        deliverMessage.ws,
+        deliverMessage.socket,
         deliverMessage.packet,
         deliverMessage.pushQueueMessage,
         deliverMessage.userIds,

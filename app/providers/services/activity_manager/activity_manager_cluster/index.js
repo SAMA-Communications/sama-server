@@ -15,30 +15,38 @@ class ActivityManagerClusterService {
     this.userService = userService
   }
 
+  serializeUserId(userId) {
+    return `${userId}`
+  }
+
+  deserializeUserId(userId) {
+    return userId && `${userId}`
+  }
+
   // observer - targets relations
   async subscribeTarget(observerId) {
-    const targetId = await this.redisConnection.client.hGet(SUBSCRIBED_TO_KEY, `${observerId}`)
+    const targetId = await this.redisConnection.client.hGet(SUBSCRIBED_TO_KEY, this.serializeUserId(observerId))
 
-    return targetId ? targetId : void 0
+    return targetId ? this.deserializeUserId(targetId) : void 0
   }
 
   async addSubscribeTarget(observerId, targetId) {
-    await this.redisConnection.client.hSet(SUBSCRIBED_TO_KEY, `${observerId}`, `${targetId}`)
+    await this.redisConnection.client.hSet(SUBSCRIBED_TO_KEY, this.serializeUserId(observerId), this.serializeUserId(targetId))
   }
 
   async deleteSubscribeTarget(observerId, targetId) {
-    await this.redisConnection.client.hDel(SUBSCRIBED_TO_KEY, `${observerId}`)
+    await this.redisConnection.client.hDel(SUBSCRIBED_TO_KEY, this.serializeUserId(observerId))
   }
 
   async clearAllSubscriptionTargets(observerId) {
-    await this.redisConnection.client.hDel(SUBSCRIBED_TO_KEY, `${observerId}`)
+    await this.redisConnection.client.hDel(SUBSCRIBED_TO_KEY, this.serializeUserId(observerId))
   }
 
   // target - observer relations
   async subscribers(targetId) {
-    const observersIds = await this.redisConnection.client.hGet(SUBSCRIBERS_KEY, `${targetId}`)
+    const observersIds = await this.redisConnection.client.hGet(SUBSCRIBERS_KEY, this.serializeUserId(targetId))
 
-    return observersIds ? observersIds.split(',') : []
+    return observersIds ? observersIds.split(',').map(userId => this.deserializeUserId(userId)) : []
   }
 
   async addSubscriber(targetId, observerId) {
@@ -46,11 +54,11 @@ class ActivityManagerClusterService {
 
     const observersIds = new Set(observersIdsArr)
 
-    observersIds.add(observerId)
+    observersIds.add(this.deserializeUserId(observerId))
 
     const newObserversIds = Array.from(observersIds).join(',')
 
-    await this.redisConnection.client.hSet(SUBSCRIBERS_KEY, `${targetId}`, newObserversIds)
+    await this.redisConnection.client.hSet(SUBSCRIBERS_KEY, this.serializeUserId(targetId), newObserversIds)
   }
 
   async deleteSubscriber(targetId, observerId) {
@@ -58,7 +66,7 @@ class ActivityManagerClusterService {
 
     const observersIds = new Set(observersIdsArr)
 
-    observersIds.delete(observerId)
+    observersIds.delete(this.deserializeUserId(observerId))
 
     if (!observersIds.size) {
       await this.clearSubscribed(targetId)
@@ -67,11 +75,11 @@ class ActivityManagerClusterService {
 
     const newObserversIds = Array.from(observersIds).join(',')
 
-    await this.redisConnection.client.hSet(SUBSCRIBERS_KEY, `${targetId}`, newObserversIds)
+    await this.redisConnection.client.hSet(SUBSCRIBERS_KEY, this.serializeUserId(targetId), newObserversIds)
   }
 
   async clearSubscribed(targetId) {
-    await this.redisConnection.client.hDel(SUBSCRIBERS_KEY, `${targetId}`)
+    await this.redisConnection.client.hDel(SUBSCRIBERS_KEY, this.serializeUserId(targetId))
   }
 
   async subscribeObserverToTarget(observerId, targetId) {

@@ -25,7 +25,7 @@ class ActivityManagerStandaloneService {
 
   // target - observer relations
   subscribers(targetId) {
-    return this.ACTIVITY.SUBSCRIBERS[targetId] || {}
+    return Object.keys(this.ACTIVITY.SUBSCRIBERS[targetId] || {})
   }
 
   addSubscriber(targetId, observerId) {
@@ -69,7 +69,7 @@ class ActivityManagerStandaloneService {
       this.unsubscribeObserver(userId)
     }
 
-    const activitySubscribers = Object.keys(this.subscribers(userId))
+    const activitySubscribers = this.subscribers(userId)
 
     if (!activitySubscribers.length) {
       return
