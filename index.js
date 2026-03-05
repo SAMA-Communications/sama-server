@@ -66,12 +66,6 @@ if (config.get("tcp.options.isTls")) {
   })
 }
 
-if (!config.get("app.isStandAloneNode")) {
-  const clusterPort = await clusterManager.createLocalSocket(uWSOptions)
-  config.set("ws.cluster.port", clusterPort)
-}
-config.set("ws.cluster.endpoint", buildWsEndpoint(config.get("app.ip"), config.get("ws.cluster.port")))
-
 logger.debug("[Config] %s", JSON.stringify(config.toObject(), null, 5))
 
 // perform a database connection when the server starts
@@ -164,8 +158,6 @@ for (const api of Object.values(APIs)) {
   }
 }
 
-logger.debug("[Config][Merged] %s", JSON.stringify(config.toObject(), null, 5))
-
 // Boot providers
 logger.debug("[Boot]")
 await ServiceLocatorContainer.boot()
@@ -174,10 +166,17 @@ logger.debug("[Create singleton]")
 await ServiceLocatorContainer.createAllSingletonInstances()
 
 if (!config.get("app.isStandAloneNode")) {
+  const clusterPort = await clusterManager.createLocalSocket(uWSOptions)
+
+  config.set("ws.cluster.port", clusterPort)
+  config.set("ws.cluster.endpoint", buildWsEndpoint(config.get("app.ip"), config.get("ws.cluster.port")))
+
   // Start Cluster Sync
   logger.debug("[Start sync]")
   await clusterManager.startSyncingClusterNodes(true)
 }
+
+logger.debug("[Config][Merged] %s", JSON.stringify(config.toObject(), null, 5))
 
 // Start public protocols
 const sessionService = ServiceLocatorContainer.use("SessionService")
