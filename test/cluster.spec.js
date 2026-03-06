@@ -86,13 +86,24 @@ describe("Cluster Message function", async () => {
       assert.notEqual(deliverMessage, undefined)
       assert.equal(`${deliverMessage.cId}`, `${currentConversationId}`)
 
+      const sourceOptions = {
+        organizationId: orgId,
+        socket: deliverMessage.socket || mockedWS,
+      }
+
+      const destinationUserIds = usersIds
+
+      const payloadOptions = {
+        packet: JSON.stringify(deliverMessage.packet),
+        notSaveInOfflineStorage: deliverMessage.notSaveInOfflineStorage,
+        ignoreSelf: false,
+        pushQueueMessage: void 0
+      }
+
       await packetManager.deliverToUserOrUsers(
-        orgId,
-        deliverMessage.socket || mockedWS,
-        JSON.stringify(deliverMessage.packet),
-        null,
-        usersIds,
-        deliverMessage.notSaveInOfflineStorage
+        sourceOptions,
+        destinationUserIds,
+        payloadOptions
       )
 
       const response = JSON.parse(secondSocketResponse).deliverPacket

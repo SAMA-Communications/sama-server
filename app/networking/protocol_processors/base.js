@@ -174,14 +174,24 @@ class BaseProtocolProcessor {
 
   async processDeliverUserMessage(deliverMessage, participantIds) {
     try {
+      const sourceOptions = {
+        organizationId: deliverMessage.orgId,
+        socket: deliverMessage.socket,
+      }
+
+      const destinationUserIds = participantIds ?? deliverMessage.userIds
+
+      const payloadOptions = {
+        packet: deliverMessage.packet,
+        notSaveInOfflineStorage: deliverMessage.notSaveInOfflineStorage,
+        ignoreSelf: deliverMessage.ignoreSelf,
+        pushQueueMessage: deliverMessage.pushQueueMessage
+      }
+
       await packetManager.deliverToUserOrUsers(
-        deliverMessage.orgId,
-        deliverMessage.socket,
-        deliverMessage.packet,
-        deliverMessage.pushQueueMessage,
-        participantIds ?? deliverMessage.userIds,
-        deliverMessage.notSaveInOfflineStorage,
-        deliverMessage.ignoreSelf
+        sourceOptions,
+        destinationUserIds,
+        payloadOptions
       )
     } catch (error) {
       logger.error(error, "[PacketManager][error]")

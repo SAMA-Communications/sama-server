@@ -181,10 +181,11 @@ class ClusterManager extends BaseProtocolProcessor {
           if (clusterPacket.node_info) {
             const nodeInfo = clusterPacket.node_info
             ws.nodeEndpoint = nodeInfo.endpoint
-            this.clusterNodesConnections[nodeInfo.endpoint] = ws
 
-            loggerReceiver.debug("[node handshake finished] %s", nodeInfo.endpoint)
+            loggerReceiver.debug("[node handshake pong] %s", nodeInfo.endpoint)
             this.#shareCurrentNodeInfo(ws)
+
+            await this.retrieveConnectionWithNode(nodeInfo.endpoint)
             return
           }
 
@@ -220,6 +221,7 @@ class ClusterManager extends BaseProtocolProcessor {
     }
 
     const clusterPacket = { deliverPacket }
+    loggerSender.trace("[%s][deliver cluster] %j", nodeEndpoint, clusterPacket)
     recipientClusterNodeConnection.send(JSON.stringify(clusterPacket))
   }
 
