@@ -36,9 +36,11 @@ class ClusterManager extends BaseProtocolProcessor {
       await this.cleanDestroyedNodeData(config.get("ws.cluster.endpoint"))
     }
 
-    this.#nodesSyncInterval = setInterval(() => this.#syncCluster(), config.get("ws.cluster.nodeExpiresIn") - 2_000)
+    this.#nodesSyncInterval = setInterval(() => this.#syncCluster(), config.get("ws.cluster.nodeExpiresIn"))
 
-    this.#syncCluster(isColdStart)
+    if (isColdStart) {
+      await this.#syncCluster()
+    }
   }
 
   async stopSyncingClusterNodes() {
@@ -49,7 +51,7 @@ class ClusterManager extends BaseProtocolProcessor {
   async #syncCluster() {
     const sessionService = ServiceLocatorContainer.use("SessionService")
 
-    await this.#storeCurrentNode(sessionService.sessionsTotal)
+    await this.#storeCurrentNode(sessionService.totalSessions())
 
     await this.#retrieveExistingClusterNodes()
   }
@@ -67,19 +69,23 @@ class ClusterManager extends BaseProtocolProcessor {
       users_count: usersCount,
     }
 
-    await clusterNodeService.create(addressParams, optionalParams)
+    await clusterNodeService.upsert(addressParams, optionalParams)
   }
 
   async #retrieveExistingClusterNodes() {
     const clusterNodeService = ServiceLocatorContainer.use("ClusterNodeService")
-    const nodeList = await clusterNodeService.retrieveAll()
 
-    loggerSender.debug("[nodes] %j %s", nodeList, nodeList.length)
+    const nodeList = await clusterNodeService.retrieveActive()
+    const activeNodeEndpoints = nodeList.map((node) => buildWsEndpoint(node.ip_address, node.port))
+    loggerSender.debug("[active] %j %s", nodeList, nodeList.length)
 
+    const storedNodeEndpoints = await clusterNodeService.retrieveStored()
+    loggerSender.debug("[stored] %j %s", storedNodeEndpoints, storedNodeEndpoints.length)
+
+    const nodeEndpoints = activeNodeEndpoints.concat(storedNodeEndpoints)
     const destroyedNodes = []
 
-    for (const nodeInfo of nodeList) {
-      const nodeEndpoint = buildWsEndpoint(nodeInfo.ip_address, nodeInfo.port)
+    for (const nodeEndpoint of nodeEndpoints) {
       const isCurrentNode = config.get("ws.cluster.endpoint") === nodeEndpoint
       if (isCurrentNode) {
         continue
@@ -105,7 +111,7 @@ class ClusterManager extends BaseProtocolProcessor {
           endpoint: config.get("ws.cluster.endpoint"),
           ip: config.get("app.ip"),
           host: config.get("app.hostName"),
-          port: config.get("ws.cluster.port")
+          port: config.get("ws.cluster.port"),
         },
       })
     )
@@ -232,14 +238,15 @@ class ClusterManager extends BaseProtocolProcessor {
 
     const sessionService = ServiceLocatorContainer.use("SessionService")
 
-    const lastUserSessions = await sessionService.clearNodeUsersSession(nodeEndpoint)
-      .catch(error => logger.error(error, "[clean node]"))
+    const lastUserSessions = await sessionService.clearNodeUsersSession(nodeEndpoint).catch((error) => logger.error(error, "[clean node]"))
 
     if (!lastUserSessions) {
       return
     }
 
-    const offlineUserResponses = lastUserSessions.map(userSession => activitySender.buildOfflineActivityResponse(userSession.organizationId, userSession.userId))
+    const offlineUserResponses = lastUserSessions.map((userSession) =>
+      activitySender.buildOfflineActivityResponse(userSession.organizationId, userSession.userId)
+    )
 
     for (const offlineUserResponse of offlineUserResponses) {
       await this.processAPIResponse(void 0, offlineUserResponse)

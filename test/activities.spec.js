@@ -151,7 +151,10 @@ describe("User activities", async () => {
     assert.strictEqual(responseData.response.success, true)
     assert.equal(await activityManagerService.subscribeTarget(usersIds[0]), undefined)
     assert.notEqual(await activityManagerService.subscribers(usersIds[1]), undefined)
-    assert.equal((await activityManagerService.subscribers(usersIds[1])).find(uId => uId === `${usersIds[0]}`), undefined)
+    assert.equal(
+      (await activityManagerService.subscribers(usersIds[1])).find((uId) => uId === `${usersIds[0]}`),
+      undefined
+    )
   })
 
   it("should work getUserStatus", async () => {

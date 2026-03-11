@@ -588,14 +588,10 @@ describe("PushNotification functions", async () => {
         packet: deliverMessage.packet,
         notSaveInOfflineStorage: deliverMessage.notSaveInOfflineStorage,
         ignoreSelf: deliverMessage.ignoreSelf,
-        pushQueueMessage: deliverMessage.pushQueueMessage
+        pushQueueMessage: deliverMessage.pushQueueMessage,
       }
 
-      await packetManager.deliverToUserOrUsers(
-        sourceOptions,
-        destinationUserIds,
-        payloadOptions
-      )
+      await packetManager.deliverToUserOrUsers(sourceOptions, destinationUserIds, payloadOptions)
 
       assert.ok(pushQueueItem)
     })

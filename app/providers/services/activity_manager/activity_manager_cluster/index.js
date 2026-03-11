@@ -46,7 +46,7 @@ class ActivityManagerClusterService {
   async subscribers(targetId) {
     const observersIds = await this.redisConnection.client.hGet(SUBSCRIBERS_KEY, this.serializeUserId(targetId))
 
-    return observersIds ? observersIds.split(',').map(userId => this.deserializeUserId(userId)) : []
+    return observersIds ? observersIds.split(",").map((userId) => this.deserializeUserId(userId)) : []
   }
 
   async addSubscriber(targetId, observerId) {
@@ -56,7 +56,7 @@ class ActivityManagerClusterService {
 
     observersIds.add(this.deserializeUserId(observerId))
 
-    const newObserversIds = Array.from(observersIds).join(',')
+    const newObserversIds = Array.from(observersIds).join(",")
 
     await this.redisConnection.client.hSet(SUBSCRIBERS_KEY, this.serializeUserId(targetId), newObserversIds)
   }
@@ -73,7 +73,7 @@ class ActivityManagerClusterService {
       return
     }
 
-    const newObserversIds = Array.from(observersIds).join(',')
+    const newObserversIds = Array.from(observersIds).join(",")
 
     await this.redisConnection.client.hSet(SUBSCRIBERS_KEY, this.serializeUserId(targetId), newObserversIds)
   }

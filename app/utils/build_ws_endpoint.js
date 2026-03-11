@@ -1,4 +1,4 @@
-import { URL } from 'node:url'
+import { URL } from "node:url"
 
 import config from "@sama/config/index.js"
 

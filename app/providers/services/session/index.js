@@ -2,8 +2,8 @@ import { CONSTANTS } from "../../../constants/constants.js"
 
 /*
   Structs:
-  SET - sama-node:{node-endpoint} -> {organizationId}:{userId}:{deviceId}
-  SET - sama-user:{organizationId}:{userId} -> {deviceId}
+  SET - sama-node-users:{node-endpoint} -> {organizationId}:{userId}:{deviceId}
+  SET - sama-user-devices:{organizationId}:{userId} -> {deviceId}
   HASH - sama-user-data:{userId}:{deviceId} -> extra params
 */
 
@@ -44,7 +44,7 @@ class SessionService {
   }
 
   #nodesSetCacheKey(nodeEndpoint) {
-    return `sama-node:${nodeEndpoint}`
+    return `${CONSTANTS.REDIS_PREFIXES.NODE_USERS}:${nodeEndpoint}`
   }
 
   async addUserDeviceToNode(nodeEndpoint, organizationId, userId, deviceId) {
@@ -80,11 +80,11 @@ class SessionService {
   }
 
   #usersSetCacheKey(organizationId, userId) {
-    return `sama-user:${organizationId}:${userId}`
+    return `${CONSTANTS.REDIS_PREFIXES.USER_DEVICES}:${organizationId}:${userId}`
   }
 
   #usersHashCacheKey(userId, deviceId) {
-    return `sama-user-data:${userId}:${deviceId}`
+    return `${CONSTANTS.REDIS_PREFIXES.USER_DATA}:${userId}:${deviceId}`
   }
 
   async addUserDevice(organizationId, userId, deviceId) {
@@ -131,7 +131,7 @@ class SessionService {
       .flat()
       .map((val) => `${val}`)
 
-    await this.redisConnection.client.hSet(userHashKey, ...keyValuePairs)
+    await this.redisConnection.client.hSet(userHashKey, keyValuePairs)
   }
 
   async retrieveUserExtraParams(userId, deviceId) {
@@ -346,9 +346,8 @@ class SessionService {
     if (this.config.get("app.isStandAloneNode")) return isLastConnection
 
     isLastConnection = await this.removeUserDevice(organizationId, userId, deviceId)
-    await this.deleteUserExtraParams(userId, deviceId)
-
     const extraParams = await this.retrieveUserExtraParams(userId, deviceId)
+    await this.deleteUserExtraParams(userId, deviceId)
 
     const nodeEndpoint = extraParams?.[CONSTANTS.SESSION_NODE_KEY]
     if (!nodeEndpoint) {

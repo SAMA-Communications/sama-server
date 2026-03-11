@@ -43,7 +43,11 @@ class HttpAuthController extends BaseHttpController {
   async logout(res, req) {
     const httpLogoutOperation = ServiceLocatorContainer.use("HttpUserLogoutOperation")
 
-    const { refreshTokenRecord, isWasLastUserSession } = await httpLogoutOperation.perform(res.fakeWsSessionKey, res.parsedHeaders, res.parsedSignedCookies)
+    const { refreshTokenRecord, isWasLastUserSession } = await httpLogoutOperation.perform(
+      res.fakeWsSessionKey,
+      res.parsedHeaders,
+      res.parsedSignedCookies
+    )
 
     const httpResponse = new HttpResponse(200, {}, { success: true }).addCookie("refresh_token", refreshTokenRecord.token, {
       maxAge: 0,

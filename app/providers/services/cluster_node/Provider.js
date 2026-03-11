@@ -5,9 +5,10 @@ const name = "ClusterNodeService"
 
 class ClusterNodeServiceRegisterProvider extends RegisterProvider {
   register(slc) {
-    const clusterNodeRepo = slc.use("ClusterNodeRepository")
+    const config = slc.use("Config")
+    const redisClient = slc.use("RedisClient")
 
-    return new ClusterNodeService(clusterNodeRepo)
+    return new ClusterNodeService(config, redisClient)
   }
 }
 

@@ -39,4 +39,10 @@ export const CONSTANTS = {
     TESTING: "testing",
   },
   ENV_TRUE: "true",
+  REDIS_PREFIXES: {
+    NODE_DATA: "sama-node-data",
+    NODE_USERS: "sama-node-users",
+    USER_DEVICES: "sama-user-devices",
+    USER_DATA: "sama-user-data",
+  },
 }

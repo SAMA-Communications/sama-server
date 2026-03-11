@@ -97,14 +97,10 @@ describe("Cluster Message function", async () => {
         packet: JSON.stringify(deliverMessage.packet),
         notSaveInOfflineStorage: deliverMessage.notSaveInOfflineStorage,
         ignoreSelf: false,
-        pushQueueMessage: void 0
+        pushQueueMessage: void 0,
       }
 
-      await packetManager.deliverToUserOrUsers(
-        sourceOptions,
-        destinationUserIds,
-        payloadOptions
-      )
+      await packetManager.deliverToUserOrUsers(sourceOptions, destinationUserIds, payloadOptions)
 
       const response = JSON.parse(secondSocketResponse).deliverPacket
       response.packet = JSON.parse(response.packet)

@@ -71,7 +71,7 @@ class PacketManager {
 
     if (sourceOptions.socket) {
       senderInfo.apiType = sourceOptions.socket?.apiType
-      senderInfo.session = sessionService.getSession(sourceOptions.socket) ?? senderInfo.session 
+      senderInfo.session = sessionService.getSession(sourceOptions.socket) ?? senderInfo.session
       senderInfo.deviceId = sessionService.getDeviceId(sourceOptions.socket, senderInfo.session.userId)
     }
 
@@ -99,14 +99,14 @@ class PacketManager {
       this.reduceUserNodeConnections(senderInfo.node, userId, userConnections, currentNodesUserIds, otherNodes)
     }
 
-    Object.keys(currentNodesUserIds).forEach(async userId => {
+    Object.keys(currentNodesUserIds).forEach(async (userId) => {
       const exceptDeviceId = payloadOptions.ignoreSelf ? senderInfo.deviceId : void 0
 
       await this.deliverToUserOnThisNode(userId, exceptDeviceId, payloadOptions.packet, senderInfo)
     })
 
     Object.entries(otherNodes).forEach(([nodeEndpoint, userIds]) => {
-      Object.keys(userIds).forEach(async userId => {
+      Object.keys(userIds).forEach(async (userId) => {
         try {
           const clusterPacket = { userId, packet: payloadOptions.packet, senderInfo }
           await clusterManager.senderClusterDeliverPacket(nodeEndpoint, clusterPacket)
@@ -130,7 +130,7 @@ class PacketManager {
         continue
       }
 
-      if (connectionEndpoint === targetNodeEndpoint) {
+      if (connectionEndpoint === targetNodeEndpoint || config.get("app.isStandAloneNode")) {
         currentNodesAcc[userId] = connectionEndpoint
         continue
       }
