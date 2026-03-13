@@ -25,7 +25,9 @@ class ClusterManager extends BaseProtocolProcessor {
   #nodesSyncInterval = void 0
 
   #localSocket = void 0
-  clusterNodesConnections = {}
+
+  clusterNodesConnections = new Map()
+  closeNodesConnections = new Set()
 
   async startSyncingClusterNodes(isColdStart) {
     if (this.#nodesSyncInterval) {
@@ -73,29 +75,48 @@ class ClusterManager extends BaseProtocolProcessor {
   }
 
   async #retrieveExistingClusterNodes() {
+    const destroyedNodes = new Set()
+
     const clusterNodeService = ServiceLocatorContainer.use("ClusterNodeService")
 
-    const nodeList = await clusterNodeService.retrieveActive()
-    const activeNodeEndpoints = nodeList.map((node) => buildWsEndpoint(node.ip_address, node.port))
-    loggerSender.debug("[active] %j %s", nodeList, nodeList.length)
+    const activeNodes = await clusterNodeService.retrieveActive()
+    loggerSender.debug("[active] %j %s", activeNodes, activeNodes.size)
 
-    const storedNodeEndpoints = await clusterNodeService.retrieveStored()
-    loggerSender.debug("[stored] %j %s", storedNodeEndpoints, storedNodeEndpoints.length)
+    const storedNodes = await clusterNodeService.retrieveStored()
+    loggerSender.debug("[stored] %j %s", storedNodes, storedNodes.size)
 
-    const nodeEndpoints = activeNodeEndpoints.concat(storedNodeEndpoints)
-    const destroyedNodes = []
+    // check node-users stored and no active
+    storedNodes.forEach((storedNode) => {
+      if (!activeNodes.has(storedNode)) {
+        destroyedNodes.add(storedNode)
+      }
+    })
 
-    for (const nodeEndpoint of nodeEndpoints) {
+    // check ws closed and not active
+    this.closeNodesConnections.forEach((closeEndpoint) => {
+      if (!activeNodes.has(closeEndpoint)) {
+        destroyedNodes.add(closeEndpoint)
+      }
+    })
+
+    // check current connects but not active (probable ws close did not call)
+    for (const clusterNode of this.clusterNodesConnections.keys()) {
+      if (!activeNodes.has(clusterNode)) {
+        destroyedNodes.add(clusterNode)
+      }
+    }
+
+    for (const nodeEndpoint of activeNodes) {
       const isCurrentNode = config.get("ws.cluster.endpoint") === nodeEndpoint
       if (isCurrentNode) {
         continue
       }
 
       try {
-        await this.retrieveConnectionWithNode(nodeEndpoint)
+        await this.createOrRetrieveConnectionWithNode(nodeEndpoint)
       } catch (error) {
         loggerSender.error(error, "[connect node][failed] %s", nodeEndpoint)
-        destroyedNodes.push(nodeEndpoint)
+        destroyedNodes.add(nodeEndpoint)
       }
     }
 
@@ -117,15 +138,20 @@ class ClusterManager extends BaseProtocolProcessor {
     )
   }
 
-  async retrieveConnectionWithNode(nodeEndpoint) {
-    const existingWS = this.clusterNodesConnections[nodeEndpoint]
+  async createOrRetrieveConnectionWithNode(nodeEndpoint) {
+    const existingWS = this.clusterNodesConnections.get(nodeEndpoint)
     if (existingWS) {
       return existingWS
     }
 
     loggerSender.debug("[connect node] %s", nodeEndpoint)
 
-    return await this.createConnectionWithNode(nodeEndpoint)
+    const ws = await this.createConnectionWithNode(nodeEndpoint)
+
+    this.clusterNodesConnections.set(nodeEndpoint, ws)
+    this.closeNodesConnections.delete(nodeEndpoint)
+
+    return ws
   }
 
   async createConnectionWithNode(nodeEndpoint) {
@@ -153,8 +179,6 @@ class ClusterManager extends BaseProtocolProcessor {
 
         if (clusterPacket.node_info) {
           const nodeInfo = clusterPacket.node_info
-          this.clusterNodesConnections[nodeInfo.endpoint] = ws
-
           nodeSederLogger.debug("[node handshake finished] %s", nodeInfo.endpoint)
           resolve(ws)
           return
@@ -163,7 +187,7 @@ class ClusterManager extends BaseProtocolProcessor {
 
       ws.on("close", async () => {
         nodeSederLogger.debug("[Close] %s", ws.nodeEndpoint)
-        await this.cleanDestroyedNodeData(ws.nodeEndpoint)
+        this.onCloseNode(ws.nodeEndpoint)
       })
     })
   }
@@ -191,7 +215,7 @@ class ClusterManager extends BaseProtocolProcessor {
             loggerReceiver.debug("[node handshake pong] %s", nodeInfo.endpoint)
             this.#shareCurrentNodeInfo(ws)
 
-            await this.retrieveConnectionWithNode(nodeInfo.endpoint)
+            await this.createOrRetrieveConnectionWithNode(nodeInfo.endpoint)
             return
           }
 
@@ -202,7 +226,7 @@ class ClusterManager extends BaseProtocolProcessor {
 
         close: async (ws, code, message) => {
           logger.debug("[Close] %s Code: %s", ws.nodeEndpoint, code)
-          await this.cleanDestroyedNodeData(ws.nodeEndpoint)
+          this.onCloseNode(ws.nodeEndpoint)
         },
       })
 
@@ -220,10 +244,10 @@ class ClusterManager extends BaseProtocolProcessor {
   }
 
   async senderClusterDeliverPacket(nodeEndpoint, deliverPacket) {
-    let recipientClusterNodeConnection = this.clusterNodesConnections[nodeEndpoint]
+    let recipientClusterNodeConnection = this.clusterNodesConnections.get(nodeEndpoint)
 
     if (!recipientClusterNodeConnection) {
-      recipientClusterNodeConnection = await this.retrieveConnectionWithNode(ip, port)
+      recipientClusterNodeConnection = await this.createOrRetrieveConnectionWithNode(ip, port)
     }
 
     const clusterPacket = { deliverPacket }
@@ -231,10 +255,16 @@ class ClusterManager extends BaseProtocolProcessor {
     recipientClusterNodeConnection.send(JSON.stringify(clusterPacket))
   }
 
+  onCloseNode(nodeEndpoint) {
+    this.closeNodesConnections.add(nodeEndpoint)
+    this.clusterNodesConnections.delete(nodeEndpoint)
+  }
+
   async cleanDestroyedNodeData(nodeEndpoint) {
     logger.debug("[clean node] %s", nodeEndpoint)
 
-    delete this.clusterNodesConnections[nodeEndpoint]
+    this.clusterNodesConnections.delete(nodeEndpoint)
+    this.closeNodesConnections.delete(nodeEndpoint)
 
     const sessionService = ServiceLocatorContainer.use("SessionService")
 

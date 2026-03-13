@@ -111,7 +111,6 @@ class PacketManager {
           const clusterPacket = { userId, packet: payloadOptions.packet, senderInfo }
           await clusterManager.senderClusterDeliverPacket(nodeEndpoint, clusterPacket)
         } catch (error) {
-          await sessionService.clearNodeUsersSession(nodeEndpoint)
           logger.error(error, "[deliver to other node]")
         }
       })

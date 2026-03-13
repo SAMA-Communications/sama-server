@@ -1,4 +1,5 @@
 import { CONSTANTS as MAIN_CONSTANTS } from "../../../constants/constants.js"
+import { buildWsEndpoint } from "../../../utils/build_ws_endpoint.js"
 
 class ClusterNodeService {
   constructor(config, redisClient) {
@@ -20,13 +21,19 @@ class ClusterNodeService {
       nodesInfo.push(nodeInfo)
     }
 
-    return nodesInfo
+    const nodeEndpoints = nodesInfo.map((node) => buildWsEndpoint(node.ip_address, node.port))
+
+    const activeNodeEndpoints = new Set(nodeEndpoints)
+
+    return activeNodeEndpoints
   }
 
   async retrieveStored() {
     const nodeKeys = await this.redisClient.findKeysByPattern(`${MAIN_CONSTANTS.REDIS_PREFIXES.NODE_USERS}:*`)
 
-    return nodeKeys.map((nodeKey) => nodeKey.replace(`${MAIN_CONSTANTS.REDIS_PREFIXES.NODE_USERS}:`, ""))
+    const nodeEndpoints = nodeKeys.map((nodeKey) => nodeKey.replace(`${MAIN_CONSTANTS.REDIS_PREFIXES.NODE_USERS}:`, ""))
+
+    return new Set(nodeEndpoints)
   }
 
   async upsert(addressParams, optionalParams) {
