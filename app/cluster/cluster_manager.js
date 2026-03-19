@@ -21,6 +21,9 @@ const loggerReceiver = logger.child("[Receiver]")
 
 const decoder = new StringDecoder("utf8")
 
+const DUPLICATE_CLOSE_WS_CODE = 1004
+const DUPLICATE_CLOSE_WS_REASON = "Duplicate"
+
 class ReconnectManager {
   nodeEndpoint = void 0
   startFn = void 0
@@ -182,10 +185,55 @@ class ClusterManager extends BaseProtocolProcessor {
 
     const ws = await this.createConnectionWithNode(nodeEndpoint)
 
-    this.clusterNodesConnections.set(nodeEndpoint, ws)
     this.cancelNodeReconnecting(nodeEndpoint)
 
+    if (this.clusterNodesConnections.get(nodeEndpoint)) {
+      ws.close(DUPLICATE_CLOSE_WS_CODE, DUPLICATE_CLOSE_WS_REASON)
+      return this.clusterNodesConnections.get(nodeEndpoint)
+    }
+
+    this.clusterNodesConnections.set(nodeEndpoint, ws)
+
     return ws
+  }
+
+  async createConnectionWithNode(nodeEndpoint) {
+    const nodeSederLogger = loggerSender.child(`[${nodeEndpoint}]`)
+
+    return new Promise((resolve, reject) => {
+      const ws = new WebSocket(nodeEndpoint)
+
+      ws.nodeEndpoint = nodeEndpoint
+
+      ws.on("error", async (event) => {
+        nodeSederLogger.error(event, "[error]")
+        reject(new Error(`Error on ${nodeEndpoint}`))
+      })
+
+      ws.on("open", async () => {
+        nodeSederLogger.debug("[Open] %s", ws.nodeEndpoint)
+        this.#shareCurrentNodeInfo(ws)
+      })
+
+      ws.on("message", async (data) => {
+        const clusterPacket = JSON.parse(decoder.write(Buffer.from(data)))
+
+        nodeSederLogger.trace("[packet] %j", clusterPacket)
+
+        if (clusterPacket.node_info) {
+          const nodeInfo = clusterPacket.node_info
+          nodeSederLogger.debug("[node handshake finished] %s", nodeInfo.endpoint)
+          resolve(ws)
+          return
+        }
+      })
+
+      ws.on("close", (code, reason) => {
+        reason = reason.toString("utf-8")
+        nodeSederLogger.debug("[Close] %s Code: %s Reason: %s", ws.nodeEndpoint, code, reason)
+        this.onCloseNode(ws.nodeEndpoint, +code, reason)
+      })
+    })
   }
 
   async startNodeReconnecting(nodeEndpoint, skipIfHashActiveReconnection) {
@@ -223,44 +271,6 @@ class ClusterManager extends BaseProtocolProcessor {
     this.closeNodesConnections.delete(nodeEndpoint)
   }
 
-  async createConnectionWithNode(nodeEndpoint) {
-    const nodeSederLogger = loggerSender.child(`[${nodeEndpoint}]`)
-
-    return new Promise((resolve, reject) => {
-      const ws = new WebSocket(nodeEndpoint)
-
-      ws.nodeEndpoint = nodeEndpoint
-
-      ws.on("error", async (event) => {
-        nodeSederLogger.error(event, "[error]")
-        reject(new Error(`Error on ${nodeEndpoint}`))
-      })
-
-      ws.on("open", async () => {
-        nodeSederLogger.debug("[Open] %s", ws.nodeEndpoint)
-        this.#shareCurrentNodeInfo(ws)
-      })
-
-      ws.on("message", async (data) => {
-        const clusterPacket = JSON.parse(decoder.write(Buffer.from(data)))
-
-        nodeSederLogger.trace("[packet] %j", clusterPacket)
-
-        if (clusterPacket.node_info) {
-          const nodeInfo = clusterPacket.node_info
-          nodeSederLogger.debug("[node handshake finished] %s", nodeInfo.endpoint)
-          resolve(ws)
-          return
-        }
-      })
-
-      ws.on("close", async () => {
-        nodeSederLogger.debug("[Close] %s", ws.nodeEndpoint)
-        this.onCloseNode(ws.nodeEndpoint)
-      })
-    })
-  }
-
   async createLocalSocket({ isSSL, appOptions, wsOptions, listenOptions }) {
     return new Promise((resolve) => {
       this.#localSocket = isSSL ? uWS.SSLApp(appOptions) : uWS.App(appOptions)
@@ -293,9 +303,10 @@ class ClusterManager extends BaseProtocolProcessor {
           }
         },
 
-        close: async (ws, code, message) => {
-          logger.debug("[Close] %s Code: %s", ws.nodeEndpoint, code)
-          this.onCloseNode(ws.nodeEndpoint)
+        close: (ws, code, reason) => {
+          reason = decoder.write(Buffer.from(reason))
+          logger.debug("[Close] %s Code: %s Reason: %s", ws.nodeEndpoint, code, reason)
+          this.onCloseNode(ws.nodeEndpoint, +code, reason)
         },
       })
 
@@ -324,7 +335,11 @@ class ClusterManager extends BaseProtocolProcessor {
     recipientClusterNodeConnection.send(JSON.stringify(clusterPacket))
   }
 
-  onCloseNode(nodeEndpoint) {
+  onCloseNode(nodeEndpoint, closeCode, reason) {
+    if (closeCode === DUPLICATE_CLOSE_WS_CODE && reason === DUPLICATE_CLOSE_WS_REASON) {
+      return
+    }
+
     this.clusterNodesConnections.delete(nodeEndpoint)
     this.startNodeReconnecting(nodeEndpoint, true)
   }
