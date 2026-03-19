@@ -6,6 +6,7 @@ const promiseQueueWithJittering = (executablePromise, tryCount, delay) => {
   let isCanceled = false
 
   const cancel = () => isCanceled = true
+  const checkIsCanceled = () => isCanceled
 
   const start = async () => {
     if (isCanceled) {
@@ -36,7 +37,7 @@ const promiseQueueWithJittering = (executablePromise, tryCount, delay) => {
           throw new CancelQueueError("Canceled")
         }
 
-        const successResult = await executablePromise()
+        const successResult = await executablePromise(checkIsCanceled)
 
         if (isCanceled) {
           throw new CancelQueueError("Canceled")
@@ -45,14 +46,19 @@ const promiseQueueWithJittering = (executablePromise, tryCount, delay) => {
         return successResult
       } catch (error) {
         lastError = error
+        if (error instanceof CancelQueueError) {
+          break
+        }
       }
+    }
+
+    if (lastError) {
+      throw lastError
     }
 
     if (isCanceled) {
       throw new CancelQueueError("Canceled")
     }
-  
-    throw lastError
   }
 
   return { start, cancel }
