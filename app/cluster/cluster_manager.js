@@ -184,7 +184,7 @@ class ClusterManager extends BaseProtocolProcessor {
     }
 
     if (throwIfActiveReconnect && this.reconnectingNodesConnections.has(nodeEndpoint)) {
-      return new Error("Node reconnecting")
+      throw new Error("Node reconnecting")
     }
 
     loggerSender.debug("[connect node] %s", nodeEndpoint)
@@ -346,7 +346,7 @@ class ClusterManager extends BaseProtocolProcessor {
     }
 
     const clusterPacket = { deliverPacket }
-    loggerSender.trace("[%s][deliver cluster] %j", nodeEndpoint, clusterPacket)
+    loggerSender.trace("[%s][send] %j", nodeEndpoint, clusterPacket)
     recipientClusterNodeConnection.send(JSON.stringify(clusterPacket))
   }
 

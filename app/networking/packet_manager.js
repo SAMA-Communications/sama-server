@@ -109,9 +109,10 @@ class PacketManager {
       Object.keys(userIds).forEach(async (userId) => {
         try {
           const clusterPacket = { userId, packet: payloadOptions.packet, senderInfo }
+          logger.trace("[Cluster][%s][deliver] %j", nodeEndpoint, clusterPacket)
           await clusterManager.senderClusterDeliverPacket(nodeEndpoint, clusterPacket)
         } catch (error) {
-          logger.error(error, "[deliver to other node]")
+          logger.error(error, "[%s][deliver to other node]", nodeEndpoint)
         }
       })
     })
