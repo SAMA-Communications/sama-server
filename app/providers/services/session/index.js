@@ -102,15 +102,19 @@ class SessionService {
 
   async listUserDevice(organizationId, userId) {
     if (this.config.get("app.isStandAloneNode")) {
-      return this.getUserDevices(userId)
-        .map((connection) => connection?.deviceId)
-        .filter((deviceId) => deviceId !== CONSTANTS.HTTP_DEVICE_ID)
+      return this.listUserDeviceLocal(userId)
     }
 
     const userKey = this.#usersSetCacheKey(organizationId, userId)
 
     const deviceIds = await this.redisConnection.client.sMembers(userKey)
     return deviceIds ?? []
+  }
+
+  listUserDeviceLocal(userId) {
+    return this.getUserDevices(userId)
+      .map((connection) => connection?.deviceId)
+      .filter((deviceId) => deviceId !== CONSTANTS.HTTP_DEVICE_ID)
   }
 
   async deleteUserDevices(organizationId, userId) {
@@ -393,7 +397,7 @@ class SessionService {
         (session) =>
           session?.organizationId === organizationId &&
           session?.extraParams[CONSTANTS.SESSION_DEVICE_ID_KEY] !== CONSTANTS.HTTP_DEVICE_ID &&
-          session?.userId
+          session?.userId && this.listUserDeviceLocal(session?.userId)?.length
       )
       .map((session) => session.userId)
       .sort((userIdA, userIdB) => userIdA - userIdB)
