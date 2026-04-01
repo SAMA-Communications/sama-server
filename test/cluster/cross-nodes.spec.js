@@ -1,10 +1,11 @@
+import assert from "node:assert"
 import { spawn } from "node:child_process"
 import { Transform } from "node:stream"
 import process from "node:process"
+import { setTimeout as setTimeoutPromise } from "node:timers/promises"
 
 import { v4 } from "uuid"
 import { SAMAClient } from "@sama-communications/sdk"
-import assert from "node:assert"
 
 console.log(process.env.RUN_NODE_1_CMD, process.env.RUN_NODE_2_CMD)
 
@@ -82,8 +83,8 @@ const configNodeB = {
 const samaClientA = new SAMAClient(configNodeA)
 const samaClientB = new SAMAClient(configNodeB)
 
-let userANativeId = void 0
-let userBNativeId = void 0
+let userANativeId = '69cbe9757fc0a44161188215'
+let userBNativeId = '69cbe9a27fc0a44161188218'
 
 describe("Connect", () => {
   it("connect client A", async () => {
@@ -92,10 +93,22 @@ describe("Connect", () => {
     userANativeId = user.native_id
   })
 
-  it("connect client B", async () => {
-    await samaClientB.connect()
-    const user = await samaClientB.socketLogin({ user: { login: 'banshiAnton2', password: '12345678' }, deviceId: v4() })
-    userBNativeId = user.native_id
+  it ("subscribe user B last activity", async () => {
+    const activity = await samaClientA.subscribeToUserActivity(userBNativeId)
+    assert.ok(activity[userBNativeId] > 0)
+  })
+
+  it("connect client B and check last activity", (done) => {
+    samaClientB.connect().then(() => samaClientB.socketLogin({ user: { login: 'banshiAnton2', password: '12345678' }, deviceId: v4() }))
+    samaClientA.onUserActivityListener = (activity) => {
+      assert.equal(activity[userBNativeId], 0)
+      done()
+    }
+  })
+
+  it("subscribe user A last activity", async () => {
+    const activity = await samaClientB.subscribeToUserActivity(userANativeId)
+    assert.ok(activity[userANativeId] === 0)
   })
 })
 
@@ -147,12 +160,13 @@ describe("Base messaging", () => {
       it("simple message", (done) => {
         const mId = v4()
         const body = `Cluster Test Hello m: ${mId}`
-        samaClientA.messageCreate({ cid: process.env.TEST_U_CONV_ID, body: body, mid: mId })
+        samaClientA.messageCreate({ cid: process.env.TEST_U_CONV_ID, body: body, mid: mId, x: { two: '2' } })
   
         samaClientB.onMessageEvent = (message) => {
           assert.equal(message.body, body)
           assert.equal(message.cid, process.env.TEST_U_CONV_ID)
           assert.equal(message.from, userANativeId)
+          assert.equal(message.x['two'], '2')
 
           messageId = message._id
 
@@ -189,12 +203,13 @@ describe("Base messaging", () => {
       it("simple message", (done) => {
         const mId = v4()
         const body = `Cluster Test Hello m: ${mId}`
-        samaClientB.messageCreate({ cid: process.env.TEST_U_CONV_ID, body: body, mid: mId })
+        samaClientB.messageCreate({ cid: process.env.TEST_U_CONV_ID, body: body, mid: mId, x: { two: '22' } })
   
         samaClientA.onMessageEvent = (message) => {
           assert.equal(message.body, body)
           assert.equal(message.cid, process.env.TEST_U_CONV_ID)
           assert.equal(message.from, userBNativeId)
+          assert.equal(message.x['two'], '22')
 
           messageId = message._id
 
@@ -214,6 +229,110 @@ describe("Base messaging", () => {
         }
       })
     })
+  })
+
+  describe("Group", () => {
+    describe("A -> B", () => {
+      let messageId = void 0
+
+      it("typing", (done) => {
+        samaClientA.sendTypingStatus({ cid: process.env.TEST_G_CONV_ID, status: 'start' })
+  
+        samaClientB.onUserTypingListener = (typing) => {
+          assert.equal(typing.cid, process.env.TEST_G_CONV_ID)
+          assert.equal(typing.from, userANativeId)
+          done()
+        }
+      })
+  
+      it("simple message", (done) => {
+        const mId = v4()
+        const body = `Cluster Test Hello m: ${mId}`
+        samaClientA.messageCreate({ cid: process.env.TEST_G_CONV_ID, body: body, mid: mId, x: { one: '1' } })
+  
+        samaClientB.onMessageEvent = (message) => {
+          assert.equal(message.body, body)
+          assert.equal(message.cid, process.env.TEST_G_CONV_ID)
+          assert.equal(message.from, userANativeId)
+          assert.equal(message.x['one'], '1')
+
+          messageId = message._id
+
+          done()
+        }
+      })
+
+      it("read status", (done) => {
+        samaClientB.markConversationAsRead({ cid: process.env.TEST_G_CONV_ID, mids: [messageId] })
+  
+        samaClientA.onMessageStatusListener = (status) => {
+          assert.equal(status.ids.at(0), messageId)
+          assert.equal(status.cid, process.env.TEST_G_CONV_ID)
+          assert.equal(status.from, userBNativeId)
+
+          done()
+        }
+      })
+    })
+
+    describe("B -> A", () => {
+      let messageId = void 0
+
+      it("typing", (done) => {
+        samaClientB.sendTypingStatus({ cid: process.env.TEST_G_CONV_ID, status: 'start' })
+  
+        samaClientA.onUserTypingListener = (typing) => {
+          assert.equal(typing.cid, process.env.TEST_G_CONV_ID)
+          assert.equal(typing.from, userBNativeId)
+          done()
+        }
+      })
+  
+      it("simple message", (done) => {
+        const mId = v4()
+        const body = `Cluster Test Hello m: ${mId}`
+        samaClientB.messageCreate({ cid: process.env.TEST_G_CONV_ID, body: body, mid: mId, x: { one: '11' } })
+  
+        samaClientA.onMessageEvent = (message) => {
+          assert.equal(message.body, body)
+          assert.equal(message.cid, process.env.TEST_G_CONV_ID)
+          assert.equal(message.from, userBNativeId)
+          assert.equal(message.x['one'], '11')
+
+          messageId = message._id
+
+          done()
+        }
+      })
+
+      it("read status", (done) => {
+        samaClientA.markConversationAsRead({ cid: process.env.TEST_G_CONV_ID, mids: [messageId] })
+  
+        samaClientB.onMessageStatusListener = (status) => {
+          assert.equal(status.ids.at(0), messageId)
+          assert.equal(status.cid, process.env.TEST_G_CONV_ID)
+          assert.equal(status.from, userANativeId)
+
+          done()
+        }
+      })
+    })
+  })
+})
+
+describe("Activity on disconnect", () => {
+  it("user A logout", (done) => {
+    samaClientA.disconnect()
+
+    samaClientB.onUserActivityListener = (activity) => {
+      assert.ok(activity[userANativeId] > 0)
+      done()
+    }
+  })
+
+  it("disconnect B", async () => {
+    samaClientB.disconnect()
+    await setTimeoutPromise(200)
   })
 })
 
