@@ -50,11 +50,12 @@
     "ws": "^8.12.0"
   },
   "devDependencies": {
+    "@sama-communications/sdk": "file:./test/cluster/sama-communications-sdk-0.16.1.tgz",
     "c8": "^10.1.3",
+    "kill-port": "^2.0.1",
     "mocha": "^10.0.0",
     "nodemon": "2.0.19",
-    "prettier": "3.2.5",
-    "@sama-communications/sdk": "file:./test/cluster/sama-communications-sdk-0.16.1.tgz"
+    "prettier": "3.2.5"
   },
   "engines": {
     "node": "22.x"

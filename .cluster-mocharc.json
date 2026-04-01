@@ -4,7 +4,7 @@
   "color": true,
   "allow-uncaught": true,
   "reporter": "list",
-  "node-option": ["import=dotenv/config"],
+  "require": ["dotenv/config", "./test/cluster/utils.js", "./test/cluster/fixtures.js"],
   "exit": true,
   "spec": ["./test/cluster/same-node.spec.js", "./test/cluster/cross-node.spec.js", "./test/cluster/cross-node-multi-devices.spec.js"],
   "exclude": "test/**/*.spec.js",

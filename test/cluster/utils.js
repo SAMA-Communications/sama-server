@@ -64,3 +64,6 @@ export const startOrAccessNodeA = async (tag = 'NODE_A', createPipeStream) => {
 export const startOrAccessNodeB = async (tag = 'NODE_B', createPipeStream) => {
   return nodeB ? nodeB : await spawnNode(RUN_NODE_2_CMD, tag, createPipeStream).then(node => nodeB = node)
 }
+
+export const killNodeA = () => nodeA?.kill()
+export const killNodeB = () => nodeB?.kill()

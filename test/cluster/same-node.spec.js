@@ -280,10 +280,4 @@ describe("Same-node behavior", () => {
       await setTimeoutPromise(200)
     })
   })
-  
-  const onExit = () => {
-    nodeA?.kill()
-  }
-  
-  // after(onExit)
 })

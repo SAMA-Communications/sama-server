@@ -294,11 +294,4 @@ describe("Cross-node behavior", () => {
       await setTimeoutPromise(200)
     })
   })
-  
-  const onExit = () => {
-    nodeA.kill()
-    nodeB.kill()
-  }
-  
-  // after(onExit)
 })

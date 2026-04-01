@@ -39,7 +39,7 @@ let nodeB = void 0
 
 describe("Cross-node behavior", () => {
   before(async () => {
-    console.log('[Before][cross-node]')
+    console.log('[Before][cross-node-multi-devices]')
   
     nodeA = await startOrAccessNodeA()
     nodeB = await startOrAccessNodeB()
@@ -535,11 +535,4 @@ describe("Cross-node behavior", () => {
       })
     })
   })
-  
-  const onExit = () => {
-    nodeA.kill()
-    nodeB.kill()
-  }
-  
-  after(onExit)
 })
