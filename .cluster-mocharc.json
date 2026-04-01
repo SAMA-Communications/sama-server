@@ -1,0 +1,12 @@
+{
+  "recursive": true,
+  "sort": false,
+  "color": true,
+  "allow-uncaught": true,
+  "reporter": "list",
+  "node-option": ["import=dotenv/config"],
+  "exit": true,
+  "spec": ["./test/cluster/same-node.spec.js", "./test/cluster/cross-node.spec.js", "./test/cluster/cross-node-multi-devices.spec.js"],
+  "exclude": "test/**/*.spec.js",
+  "timeout": 120000
+}
