@@ -193,4 +193,6 @@ if (config.get("tcp.isEnabled")) {
   await tcpProtocolImp.listen(tcpOptions)
 }
 
+logger.debug("[Ready] cluster-ws: %s", config.get("ws.cluster.endpoint"))
+
 // https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph

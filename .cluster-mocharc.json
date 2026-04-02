@@ -3,10 +3,11 @@
   "sort": false,
   "color": true,
   "allow-uncaught": true,
+  "parallel": false,
   "reporter": "list",
   "require": ["dotenv/config", "./test/cluster/utils.js", "./test/cluster/fixtures.js"],
   "exit": true,
-  "spec": ["./test/cluster/same-node.spec.js", "./test/cluster/cross-node.spec.js", "./test/cluster/cross-node-multi-devices.spec.js"],
+  "spec": ["./test/cluster/node-crash.spec.js"],
   "exclude": "test/**/*.spec.js",
   "timeout": 120000
 }

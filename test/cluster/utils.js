@@ -22,18 +22,53 @@ let nodeB = void 0
 
 console.log(RUN_NODE_1_CMD, RUN_NODE_2_CMD)
 
-const createTransformStream = (tag, nodeSubprocess) => new (class extends Transform {
+// ws endpoint reg: /wss?:\/\/wss?:\/\/.+\//
+
+const createPipeStream = (tag, nodeSubprocess) => new (class extends Transform {
   _transform(chunk, encoding, cb) {
+    chunk = chunk.toString()
     const withPrefixChunk = `|-${tag}-|${chunk}`
     cb(void 0, withPrefixChunk)
 
-    if (chunk.includes('[TCP] listening on port')) {
-      nodeSubprocess.emit('node_ready', nodeSubprocess)
+    let regResult = chunk.match(/\[Ready\] cluster-ws: (wss?:\/\/.+\/)/)
+    if (regResult) {
+      const nodeClusterWsEndpoint = regResult.at(1)
+      nodeSubprocess.emit('node_ready', nodeClusterWsEndpoint)
+    }
+
+    regResult = chunk.match(/\[node handshake finished\] (wss?:\/\/.+\/)/)
+    if (regResult) {
+      const nodeClusterWsEndpoint = regResult.at(1)
+      nodeSubprocess.emit(`node_connected[${nodeClusterWsEndpoint}]`, nodeClusterWsEndpoint)
+    }
+
+    regResult = chunk.match(/\[clean node\] (wss?:\/\/.+\/)/)
+    if (regResult) {
+      const nodeClusterWsEndpoint = regResult.at(1)
+      nodeSubprocess.emit(`node_clean[${nodeClusterWsEndpoint}]`, nodeClusterWsEndpoint)
+    }
+
+    regResult = chunk.match(/\[Close\]\[(wss?:\/\/.+\/)\] IsWasOpened/)
+    if (regResult) {
+      const nodeClusterWsEndpoint = regResult.at(1)
+      nodeSubprocess.emit(`node_close[${nodeClusterWsEndpoint}]`, nodeClusterWsEndpoint)
+    }
+
+    regResult = chunk.match(/\[Reconnecting\]\[(wss?:\/\/.+\/)\]\[start\]/)
+    if (regResult) {
+      const nodeClusterWsEndpoint = regResult.at(1)
+      nodeSubprocess.emit(`node_reconnect_start[${nodeClusterWsEndpoint}]`, nodeClusterWsEndpoint)
+    }
+
+    regResult = chunk.match(/\[Reconnecting\]\[(wss?:\/\/.+\/)\]\[finish\]/)
+    if (regResult) {
+      const nodeClusterWsEndpoint = regResult.at(1)
+      nodeSubprocess.emit(`node_reconnect_finish[${nodeClusterWsEndpoint}]`, nodeClusterWsEndpoint)
     }
   }
 })
 
-export const spawnNode = async (cmd, tag, createPipeStream = createTransformStream) => {
+export const spawnNode = async (cmd, tag) => {
   const nodeSubprocess = spawn(cmd, [], {
     shell: true,
     stdio: ['ignore', 'pipe', 'pipe']
@@ -42,8 +77,9 @@ export const spawnNode = async (cmd, tag, createPipeStream = createTransformStre
   const nodeSubprocessReadyPromise = new Promise((resolve, reject) => {
     const rejectTimerId = setTimeout(() => reject(new Error('Timeout')), 5_000)
   
-    nodeSubprocess.once('node_ready', (nodeSubprocess) => {
-      console.log('[Node][Ready]', tag, nodeSubprocess.pid)
+    nodeSubprocess.once('node_ready', (nodeClusterWsEndpoint) => {
+      nodeSubprocess.clusterEndpoint = nodeClusterWsEndpoint
+      console.log('[Node][Ready]', tag, nodeSubprocess.pid, nodeSubprocess.clusterEndpoint)
       resolve(nodeSubprocess)
       clearTimeout(rejectTimerId)
     })
@@ -57,12 +93,12 @@ export const spawnNode = async (cmd, tag, createPipeStream = createTransformStre
   return nodeSubprocess
 }
 
-export const startOrAccessNodeA = async (tag = 'NODE_A', createPipeStream) => {
-  return nodeA ? nodeA : await spawnNode(RUN_NODE_1_CMD, tag, createPipeStream).then(node => nodeA = node)
+export const startOrAccessNodeA = async (tag = 'NODE_A', force) => {
+  return (nodeA && !force) ? nodeA : await spawnNode(RUN_NODE_1_CMD, tag).then(node => nodeA = node)
 }
 
-export const startOrAccessNodeB = async (tag = 'NODE_B', createPipeStream) => {
-  return nodeB ? nodeB : await spawnNode(RUN_NODE_2_CMD, tag, createPipeStream).then(node => nodeB = node)
+export const startOrAccessNodeB = async (tag = 'NODE_B', force) => {
+  return (nodeB && !force) ? nodeB : await spawnNode(RUN_NODE_2_CMD, tag).then(node => nodeB = node)
 }
 
 export const killNodeA = () => nodeA?.kill()
