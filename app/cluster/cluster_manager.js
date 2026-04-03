@@ -310,6 +310,7 @@ class ClusterManager extends BaseProtocolProcessor {
             this.#shareCurrentNodeInfo(ws)
 
             await this.createOrRetrieveConnectionWithNode(nodeInfo.endpoint, true)
+              .catch(error => loggerReceiver.error(error, "[create connection on receiver]"))
             return
           }
 

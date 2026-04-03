@@ -150,7 +150,7 @@ describe("Crash Node behavior:", () => {
 
     describe("Run new NodeB and reconnect U_B", () => {
       it("start new NodeB", async () => {
-        nodeB = await startOrAccessNodeB(void 0, true, true)
+        nodeB = await startOrAccessNodeB(true)
 
         const nodeReadyPromise = new Promise((resolve, reject) => {
           nodeB.once('node_ready', (nodeClusterWsEndpoint) => {
@@ -208,6 +208,95 @@ describe("Crash Node behavior:", () => {
             done()
           }
         })
+      })
+    })
+  })
+
+  describe("NodeA(U_A) - NodeB(U_B) - NodeA restarting", () => {
+    it("NodeA crash", async () => {
+      const closePromise = new Promise((resolve, reject) => {
+        nodeB.once(`node_close[${nodeA.clusterEndpoint}]`, () => {
+          console.log('[node][close]', nodeA.clusterEndpoint)
+          resolve()
+        })
+      })
+
+      const startReconnectPromise = new Promise((resolve, reject) => {
+        nodeB.once(`node_reconnect_start[${nodeA.clusterEndpoint}]`, () => {
+          console.log('[node][reconnect][start]', nodeA.clusterEndpoint)
+          resolve()
+        })
+      })
+
+      nodeA.kill()
+  
+      await Promise.all([closePromise, startReconnectPromise])
+    })
+
+    it ("check last activity", async () => {
+      const activity = await samaClientB.subscribeToUserActivity(userANativeId)
+      assert.ok(activity[userANativeId] === 0)
+    })
+
+    it("restart NodeA", async () => {
+      const nodeAClusterEndpoint = nodeA.clusterEndpoint
+
+      const finishReconnectPromise = new Promise((resolve, reject) => {
+        nodeB.once(`node_reconnect_finish[${nodeAClusterEndpoint}]`, () => {
+          console.log('[node][reconnect][finish]', nodeAClusterEndpoint)
+          resolve()
+        })
+      })
+
+      const { port } = new URL(nodeAClusterEndpoint)
+      const nodeEnv = { 'APP_CLUSTER_PORT': `${port}` }
+
+      nodeA = await startOrAccessNodeA(false, nodeEnv)
+
+      await finishReconnectPromise
+    })
+
+    it("connect U_A to NodeA", (done) => {
+      samaClientA
+        .connect()
+        .then(() => samaClientA.socketLogin({ token: userAToken }))
+        .then(({ token }) => userAToken = token)
+
+      samaClientB.onUserActivityListener = (activity) => {
+        assert.equal(activity[userANativeId], 0)
+        done()
+      }
+    })
+
+    describe("it can send message to each other:", () => {
+      it("A -> B", (done) => {
+        const mId = v4()
+        const body = `Cluster Test Hello m: ${mId}`
+        samaClientA.messageCreate({ cid: TEST_G_CONV_ID, body: body, mid: mId, x: { two: '2' } })
+  
+        samaClientB.onMessageEvent = (message) => {
+          assert.equal(message.body, body)
+          assert.equal(message.cid, TEST_G_CONV_ID)
+          assert.equal(message.from, userANativeId)
+          assert.equal(message.x['two'], '2')
+  
+          done()
+        }
+      })
+
+      it("B -> A", (done) => {
+        const mId = v4()
+        const body = `Cluster Test Hello m: ${mId}`
+        samaClientB.messageCreate({ cid: TEST_G_CONV_ID, body: body, mid: mId, x: { two: '22' } })
+  
+        samaClientA.onMessageEvent = (message) => {
+          assert.equal(message.body, body)
+          assert.equal(message.cid, TEST_G_CONV_ID)
+          assert.equal(message.from, userBNativeId)
+          assert.equal(message.x['two'], '22')
+  
+          done()
+        }
       })
     })
   })

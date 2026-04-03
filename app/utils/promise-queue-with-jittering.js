@@ -39,10 +39,6 @@ const promiseQueueWithJittering = (executablePromise, tryCount, delay) => {
 
         const successResult = await executablePromise(checkIsCanceled)
 
-        if (isCanceled) {
-          throw new CancelQueueError("Canceled")
-        }
-
         return successResult
       } catch (error) {
         lastError = error

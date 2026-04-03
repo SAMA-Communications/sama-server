@@ -68,9 +68,10 @@ const createPipeStream = (tag, nodeSubprocess) => new (class extends Transform {
   }
 })
 
-export const spawnNode = async (cmd, tag, notWaitReady) => {
+export const spawnNode = async (cmd, env, tag, notWaitReady) => {
   const nodeSubprocess = spawn(cmd, [], {
     shell: true,
+    env: env ? { ...process.env, ...env } : void 0,
     stdio: ['ignore', 'pipe', 'pipe']
   })
 
@@ -93,12 +94,12 @@ export const spawnNode = async (cmd, tag, notWaitReady) => {
   return nodeSubprocess
 }
 
-export const startOrAccessNodeA = async (tag = 'NODE_A', force, notWaitReady) => {
-  return (nodeA && !force) ? nodeA : await spawnNode(RUN_NODE_1_CMD, tag, notWaitReady).then(node => nodeA = node)
+export const startOrAccessNodeA = async (notWaitReady, env) => {
+  return (nodeA && !nodeA.killed) ? nodeA : await spawnNode(RUN_NODE_1_CMD, env, 'NODE_A', notWaitReady).then(node => nodeA = node)
 }
 
-export const startOrAccessNodeB = async (tag = 'NODE_B', force, notWaitReady) => {
-  return (nodeB && !force) ? nodeB : await spawnNode(RUN_NODE_2_CMD, tag, notWaitReady).then(node => nodeB = node)
+export const startOrAccessNodeB = async (notWaitReady, env) => {
+  return (nodeB && !nodeB.killed) ? nodeB : await spawnNode(RUN_NODE_2_CMD, env, 'NODE_B', notWaitReady).then(node => nodeB = node)
 }
 
 export const killNodeA = () => nodeA?.kill()
