@@ -31,8 +31,14 @@ const configNodeB = {
 }
 
 const samaClientA_Device1 = new SAMAClient(configNodeA)
+samaClientA_Device1.deviceId = v4()
 const samaClientB_Device1 = new SAMAClient(configNodeB)
+samaClientB_Device1.deviceId = v4()
 const samaClientB_Device2 = new SAMAClient(configNodeB)
+samaClientB_Device2.deviceId = v4()
+
+let userAToken = void 0
+let userBToken = void 0
 
 let nodeA = void 0
 let nodeB = void 0
@@ -51,7 +57,8 @@ describe("Cross-node behavior", () => {
     describe("Connect", () => {
       it("connect U_A_D1", async () => {
         await samaClientA_Device1.connect()
-        await samaClientA_Device1.socketLogin({ user: { login: 'banshiAnton1', password: '12345678' }, deviceId: v4() })
+        const { token } = await samaClientA_Device1.socketLogin({ user: { login: 'banshiAnton1', password: '12345678' } })
+        userAToken = token
       })
     
       it ("subscribe user B last activity", async () => {
@@ -60,7 +67,12 @@ describe("Cross-node behavior", () => {
       })
     
       it("connect U_B_D1 and check last activity", (done) => {
-        samaClientB_Device1.connect().then(() => samaClientB_Device1.socketLogin({ user: { login: 'banshiAnton2', password: '12345678' }, deviceId: v4() }))
+        samaClientB_Device1
+          .connect()
+          .then(() => samaClientB_Device1.socketLogin({
+            user: { login: 'banshiAnton2', password: '12345678' },
+          })).then(({ token }) => userBToken = token)
+
         samaClientA_Device1.onUserActivityListener = (activity) => {
           assert.equal(activity[userBNativeId], 0)
           done()
@@ -68,7 +80,7 @@ describe("Cross-node behavior", () => {
       })
 
       it("connect U_B_D2 and check last activity", (done) => {
-        samaClientB_Device2.connect().then(() => samaClientB_Device2.socketLogin({ user: { login: 'banshiAnton2', password: '12345678' }, deviceId: v4() }))
+        samaClientB_Device2.connect().then(() => samaClientB_Device2.socketLogin({ user: { login: 'banshiAnton2', password: '12345678' } }))
         samaClientA_Device1.onUserActivityListener = (activity) => {
           assert.equal(activity[userBNativeId], 0)
           done()

@@ -68,13 +68,13 @@ const createPipeStream = (tag, nodeSubprocess) => new (class extends Transform {
   }
 })
 
-export const spawnNode = async (cmd, tag) => {
+export const spawnNode = async (cmd, tag, notWaitReady) => {
   const nodeSubprocess = spawn(cmd, [], {
     shell: true,
     stdio: ['ignore', 'pipe', 'pipe']
   })
-  
-  const nodeSubprocessReadyPromise = new Promise((resolve, reject) => {
+
+  const nodeSubprocessReadyPromise = notWaitReady ? true : new Promise((resolve, reject) => {
     const rejectTimerId = setTimeout(() => reject(new Error('Timeout')), 5_000)
   
     nodeSubprocess.once('node_ready', (nodeClusterWsEndpoint) => {
@@ -93,12 +93,12 @@ export const spawnNode = async (cmd, tag) => {
   return nodeSubprocess
 }
 
-export const startOrAccessNodeA = async (tag = 'NODE_A', force) => {
-  return (nodeA && !force) ? nodeA : await spawnNode(RUN_NODE_1_CMD, tag).then(node => nodeA = node)
+export const startOrAccessNodeA = async (tag = 'NODE_A', force, notWaitReady) => {
+  return (nodeA && !force) ? nodeA : await spawnNode(RUN_NODE_1_CMD, tag, notWaitReady).then(node => nodeA = node)
 }
 
-export const startOrAccessNodeB = async (tag = 'NODE_B', force) => {
-  return (nodeB && !force) ? nodeB : await spawnNode(RUN_NODE_2_CMD, tag).then(node => nodeB = node)
+export const startOrAccessNodeB = async (tag = 'NODE_B', force, notWaitReady) => {
+  return (nodeB && !force) ? nodeB : await spawnNode(RUN_NODE_2_CMD, tag, notWaitReady).then(node => nodeB = node)
 }
 
 export const killNodeA = () => nodeA?.kill()

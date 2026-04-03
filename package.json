@@ -50,7 +50,7 @@
     "ws": "^8.12.0"
   },
   "devDependencies": {
-    "@sama-communications/sdk": "file:./test/cluster/sama-communications-sdk-0.16.1.tgz",
+    "@sama-communications/sdk": "file:./test/cluster/sama-communications-sdk-0.16.2.tgz",
     "c8": "^10.1.3",
     "kill-port": "^2.0.1",
     "mocha": "^10.0.0",

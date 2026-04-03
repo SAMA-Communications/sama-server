@@ -21,7 +21,12 @@ const configNodeA = {
 }
 
 const samaClientA = new SAMAClient(configNodeA)
+samaClientA.deviceId = v4()
 const samaClientB = new SAMAClient(configNodeA)
+samaClientB.deviceId = v4()
+
+let userAToken = void 0
+let userBToken = void 0
 
 let nodeA = void 0
 
@@ -35,7 +40,8 @@ describe("Same-node behavior", () => {
   describe("Connect", () => {
     it("connect client A", async () => {
       await samaClientA.connect()
-      await samaClientA.socketLogin({ user: { login: 'banshiAnton1', password: '12345678' }, deviceId: v4() })
+      const { token } = await samaClientA.socketLogin({ user: { login: 'banshiAnton1', password: '12345678' } })
+      userAToken = token
     })
   
     it ("subscribe user B last activity", async () => {
@@ -44,7 +50,12 @@ describe("Same-node behavior", () => {
     })
   
     it("connect client B and check last activity", (done) => {
-      samaClientB.connect().then(() => samaClientB.socketLogin({ user: { login: 'banshiAnton2', password: '12345678' }, deviceId: v4() }))
+      samaClientB
+        .connect()
+        .then(() => samaClientB.socketLogin({
+          user: { login: 'banshiAnton2', password: '12345678' },
+        })).then(({ token }) => userBToken = token)
+
       samaClientA.onUserActivityListener = (activity) => {
         assert.equal(activity[userBNativeId], 0)
         done()
