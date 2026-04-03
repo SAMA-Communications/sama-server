@@ -20,8 +20,6 @@ export const userBNativeId = '69cbe9a27fc0a44161188218'
 let nodeA = void 0
 let nodeB = void 0
 
-console.log(RUN_NODE_1_CMD, RUN_NODE_2_CMD)
-
 // ws endpoint reg: /wss?:\/\/wss?:\/\/.+\//
 
 const createPipeStream = (tag, nodeSubprocess) => new (class extends Transform {

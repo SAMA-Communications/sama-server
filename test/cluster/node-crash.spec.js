@@ -34,6 +34,8 @@ const samaClientA = new SAMAClient(configNodeA)
 samaClientA.deviceId = v4()
 const samaClientB = new SAMAClient(configNodeB)
 samaClientB.deviceId = v4()
+const samaClientB_Device2 = new SAMAClient(configNodeA)
+samaClientB_Device2.deviceId = v4()
 
 let userAToken = void 0
 let userBToken = void 0
@@ -171,7 +173,9 @@ describe("Crash Node behavior:", () => {
       })
 
       it("connect client B and check last activity", (done) => {
-        samaClientB.connect().then(() => samaClientB.socketLogin({ token: userBToken }))
+        samaClientB.connect()
+          .then(() => samaClientB.socketLogin({ token: userBToken }))
+          .then(({ token }) => userBToken = token)
         samaClientA.onUserActivityListener = (activity) => {
           assert.equal(activity[userBNativeId], 0)
           done()
@@ -295,6 +299,95 @@ describe("Crash Node behavior:", () => {
           assert.equal(message.from, userBNativeId)
           assert.equal(message.x['two'], '22')
   
+          done()
+        }
+      })
+    })
+  })
+
+  describe("NodeA(U_A,U_B_D2) - NodeB(U_B_D1) - NodeB Crush check last activity behavior:", () => {
+    describe("Connect User B Device 2", () => {
+      it("subscribe last activity U_B", async () => {
+        const activity = await samaClientA.subscribeToUserActivity(userBNativeId)
+        assert.ok(activity[userBNativeId] === 0)
+      })
+  
+      it("connect U_B_D2 to NodeA", (done) => {
+        samaClientB_Device2
+          .connect()
+          .then(() => samaClientB_Device2.socketLogin({ user: { login: 'banshiAnton2', password: '12345678' } }))
+  
+        samaClientA.onUserActivityListener = (activity) => {
+          assert.equal(activity[userBNativeId], 0)
+          done()
+        }
+      })
+    })
+
+    describe("kill NodeB check last activity behavior", () => {
+      it ("kill NodeB wait no last activity", async () => {
+        const closePromise = new Promise((resolve, reject) => {
+          nodeA.once(`node_close[${nodeB.clusterEndpoint}]`, () => {
+            console.log('[node][close]', nodeB.clusterEndpoint)
+            resolve()
+          })
+        })
+  
+        const startReconnectPromise = new Promise((resolve, reject) => {
+          nodeA.once(`node_reconnect_start[${nodeB.clusterEndpoint}]`, () => {
+            console.log('[node][reconnect][start]', nodeB.clusterEndpoint)
+            resolve()
+          })
+        })
+  
+        const cleanNodeBPromise = new Promise((resolve, reject) => {
+          nodeA.once(`node_clean[${nodeB.clusterEndpoint}]`, () => {
+            console.log('[node][clean]', nodeB.clusterEndpoint)
+            resolve()
+          })
+        })
+  
+        const userBNoOfflinePromise = new Promise((resolve, reject) => {
+          cleanNodeBPromise.then(() => setTimeoutPromise(1_000)).then(() => resolve())
+
+          samaClientA.onUserActivityListener = async (activity) => {
+            if (activity[userBNativeId] > 0) {
+              reject(new Error("Should not be called"))
+            }
+          }
+        })
+  
+        nodeB.kill()
+  
+        await Promise.all([closePromise, startReconnectPromise, cleanNodeBPromise, userBNoOfflinePromise])
+      })
+
+      it("check user B activity", async () => {
+        const activity = await samaClientA.subscribeToUserActivity(userBNativeId)
+        assert.ok(activity[userBNativeId] === 0)
+      })
+
+      it("close last U_B connection on NodeA", (done) => {
+        samaClientB_Device2.disconnect()
+
+        samaClientA.onUserActivityListener = (activity) => {
+          assert.ok(activity[userBNativeId] > 0)
+          done()
+        }
+      })
+    })
+
+    describe("Start new NodeB", () => {
+      it("start", async () => {
+        nodeB = await startOrAccessNodeB()
+
+        await setTimeoutPromise(500)
+      })
+
+      it("connect U_B", (done) => {
+        samaClientB.connect().then(() => samaClientB.socketLogin({ token: userBToken }))
+        samaClientA.onUserActivityListener = (activity) => {
+          assert.equal(activity[userBNativeId], 0)
           done()
         }
       })

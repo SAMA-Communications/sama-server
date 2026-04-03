@@ -13,6 +13,7 @@
     "start": "node --experimental-loader ./sama-loader.mjs --import dotenv/config index.js",
     "start:dev": "nodemon --experimental-loader ./sama-loader.mjs --import dotenv/config index.js",
     "test": "mocha",
+    "test:cluster": "mocha --config ./.cluster-mocharc.json",
     "test:cover": "c8 npm run test"
   },
   "repository": {
