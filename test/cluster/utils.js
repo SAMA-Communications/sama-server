@@ -19,8 +19,8 @@ export const userPassword = "12345678"
 export const dummyDataTestConfig = {
   organizationId: void 0,
   users: {
-    user1: { nativeId: void 0, login: void 0, password: userPassword },
-    user2: { nativeId: void 0, login: void 0, password: userPassword },
+    userA: { nativeId: void 0, login: void 0, password: userPassword },
+    userB: { nativeId: void 0, login: void 0, password: userPassword },
   },
   conversations: {
     private: { nativeId: void 0 },
@@ -146,35 +146,35 @@ export const createDummyData = async (endpointWs, endpointHttp) => {
 
   await samaSdk.connect()
 
-  dummyDataTestConfig.users.user1.login = `TestUser-${faker.internet.username()}`
-  const user1 = await samaSdk.userCreate({
-    login: dummyDataTestConfig.users.user1.login,
+  dummyDataTestConfig.users.userA.login = `TestUser-${faker.internet.username()}`
+  const userA = await samaSdk.userCreate({
+    login: dummyDataTestConfig.users.userA.login,
     email: faker.internet.email(),
     password: userPassword,
   })
-  dummyDataTestConfig.users.user1.nativeId = user1.native_id
+  dummyDataTestConfig.users.userA.nativeId = userA.native_id
 
-  dummyDataTestConfig.users.user2.login = `TestUser-${faker.internet.username()}`
-  const user2 = await samaSdk.userCreate({
-    login: dummyDataTestConfig.users.user2.login,
+  dummyDataTestConfig.users.userB.login = `TestUser-${faker.internet.username()}`
+  const userB = await samaSdk.userCreate({
+    login: dummyDataTestConfig.users.userB.login,
     email: faker.internet.email(),
     password: userPassword,
   })
-  dummyDataTestConfig.users.user2.nativeId = user2.native_id
+  dummyDataTestConfig.users.userB.nativeId = userB.native_id
 
-  await samaSdk.socketLogin({ user: { login: dummyDataTestConfig.users.user1.login, password: userPassword } })
+  await samaSdk.socketLogin({ user: { login: dummyDataTestConfig.users.userA.login, password: userPassword } })
 
   const privateConversation = await samaSdk.conversationCreate({
     name: `Private-${faker.music.songName()}`,
     type: "u",
-    participants: [user1.native_id, user2.native_id],
+    participants: [userA.native_id, userB.native_id],
   })
   dummyDataTestConfig.conversations.private.nativeId = privateConversation._id
 
   const groupConversation = await samaSdk.conversationCreate({
     name: `Group-${faker.music.songName()}`,
     type: "g",
-    participants: [user1.native_id, user2.native_id],
+    participants: [userA.native_id, userB.native_id],
   })
   dummyDataTestConfig.conversations.group.nativeId = groupConversation._id
 

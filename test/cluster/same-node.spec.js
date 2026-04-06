@@ -40,63 +40,63 @@ describe("Same-node behavior", () => {
   })
 
   describe("Connect", () => {
-    it("connect client A", async () => {
+    it("connect client userA", async () => {
       await samaClientA.connect()
-      const { token } = await samaClientA.socketLogin({ user: { login: dummyDataTestConfig.users.user1.login, password: userPassword } })
+      const { token } = await samaClientA.socketLogin({ user: { login: dummyDataTestConfig.users.userA.login, password: userPassword } })
       userAToken = token
     })
 
-    it("subscribe user B last activity", async () => {
-      const activity = await samaClientA.subscribeToUserActivity(dummyDataTestConfig.users.user2.nativeId)
-      assert.ok(activity[dummyDataTestConfig.users.user2.nativeId] > 0)
+    it("subscribe userB last activity", async () => {
+      const activity = await samaClientA.subscribeToUserActivity(dummyDataTestConfig.users.userB.nativeId)
+      assert.ok(activity[dummyDataTestConfig.users.userB.nativeId] > 0)
     })
 
-    it("connect client B and check last activity", (done) => {
+    it("connect client userB and check last activity", (done) => {
       samaClientB
         .connect()
         .then(() =>
           samaClientB.socketLogin({
-            user: { login: dummyDataTestConfig.users.user2.login, password: userPassword },
+            user: { login: dummyDataTestConfig.users.userB.login, password: userPassword },
           })
         )
         .then(({ token }) => (userBToken = token))
 
       samaClientA.onUserActivityListener = (activity) => {
-        assert.equal(activity[dummyDataTestConfig.users.user2.nativeId], 0)
+        assert.equal(activity[dummyDataTestConfig.users.userB.nativeId], 0)
         done()
       }
     })
 
-    it("subscribe user A last activity", async () => {
-      const activity = await samaClientB.subscribeToUserActivity(dummyDataTestConfig.users.user1.nativeId)
-      assert.ok(activity[dummyDataTestConfig.users.user1.nativeId] === 0)
+    it("subscribe userA last activity", async () => {
+      const activity = await samaClientB.subscribeToUserActivity(dummyDataTestConfig.users.userA.nativeId)
+      assert.ok(activity[dummyDataTestConfig.users.userA.nativeId] === 0)
     })
   })
 
   describe("Base messaging", () => {
     describe("System", () => {
-      describe("A -> B", () => {
+      describe("userA -> userB", () => {
         it("event", (done) => {
           const mId = v4()
-          samaClientA.messageSystem({ mid: mId, uids: [dummyDataTestConfig.users.user2.nativeId], x: { one: "1" } })
+          samaClientA.messageSystem({ mid: mId, uids: [dummyDataTestConfig.users.userB.nativeId], x: { one: "1" } })
 
           samaClientB.onSystemMessageEvent = (message) => {
             assert.equal(message._id, mId)
-            assert.equal(message.from, dummyDataTestConfig.users.user1.nativeId)
+            assert.equal(message.from, dummyDataTestConfig.users.userA.nativeId)
 
             done()
           }
         })
       })
 
-      describe("B -> A", () => {
+      describe("userB -> userA", () => {
         it("event", (done) => {
           const mId = v4()
-          samaClientB.messageSystem({ mid: mId, uids: [dummyDataTestConfig.users.user1.nativeId], x: { two: "2" } })
+          samaClientB.messageSystem({ mid: mId, uids: [dummyDataTestConfig.users.userA.nativeId], x: { two: "2" } })
 
           samaClientA.onSystemMessageEvent = (message) => {
             assert.equal(message._id, mId)
-            assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+            assert.equal(message.from, dummyDataTestConfig.users.userB.nativeId)
 
             done()
           }
@@ -105,7 +105,7 @@ describe("Same-node behavior", () => {
     })
 
     describe("Private", () => {
-      describe("A -> B", () => {
+      describe("userA -> userB", () => {
         let messageId = void 0
 
         it("typing", (done) => {
@@ -113,12 +113,12 @@ describe("Same-node behavior", () => {
 
           samaClientB.onUserTypingListener = (typing) => {
             assert.equal(typing.cid, dummyDataTestConfig.conversations.private.nativeId)
-            assert.equal(typing.from, dummyDataTestConfig.users.user1.nativeId)
+            assert.equal(typing.from, dummyDataTestConfig.users.userA.nativeId)
             done()
           }
         })
 
-        it("simple message", (done) => {
+        it("message", (done) => {
           const mId = v4()
           const body = `Cluster Test Hello m: ${mId}`
           samaClientA.messageCreate({ cid: dummyDataTestConfig.conversations.private.nativeId, body: body, mid: mId, x: { two: "2" } })
@@ -126,7 +126,7 @@ describe("Same-node behavior", () => {
           samaClientB.onMessageEvent = (message) => {
             assert.equal(message.body, body)
             assert.equal(message.cid, dummyDataTestConfig.conversations.private.nativeId)
-            assert.equal(message.from, dummyDataTestConfig.users.user1.nativeId)
+            assert.equal(message.from, dummyDataTestConfig.users.userA.nativeId)
             assert.equal(message.x["two"], "2")
 
             messageId = message._id
@@ -141,14 +141,14 @@ describe("Same-node behavior", () => {
           samaClientA.onMessageStatusListener = (status) => {
             assert.equal(status.ids.at(0), messageId)
             assert.equal(status.cid, dummyDataTestConfig.conversations.private.nativeId)
-            assert.equal(status.from, dummyDataTestConfig.users.user2.nativeId)
+            assert.equal(status.from, dummyDataTestConfig.users.userB.nativeId)
 
             done()
           }
         })
       })
 
-      describe("B -> A", () => {
+      describe("userB -> userA", () => {
         let messageId = void 0
 
         it("typing", (done) => {
@@ -156,12 +156,12 @@ describe("Same-node behavior", () => {
 
           samaClientA.onUserTypingListener = (typing) => {
             assert.equal(typing.cid, dummyDataTestConfig.conversations.private.nativeId)
-            assert.equal(typing.from, dummyDataTestConfig.users.user2.nativeId)
+            assert.equal(typing.from, dummyDataTestConfig.users.userB.nativeId)
             done()
           }
         })
 
-        it("simple message", (done) => {
+        it("message", (done) => {
           const mId = v4()
           const body = `Cluster Test Hello m: ${mId}`
           samaClientB.messageCreate({ cid: dummyDataTestConfig.conversations.private.nativeId, body: body, mid: mId, x: { two: "22" } })
@@ -169,7 +169,7 @@ describe("Same-node behavior", () => {
           samaClientA.onMessageEvent = (message) => {
             assert.equal(message.body, body)
             assert.equal(message.cid, dummyDataTestConfig.conversations.private.nativeId)
-            assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+            assert.equal(message.from, dummyDataTestConfig.users.userB.nativeId)
             assert.equal(message.x["two"], "22")
 
             messageId = message._id
@@ -184,7 +184,7 @@ describe("Same-node behavior", () => {
           samaClientB.onMessageStatusListener = (status) => {
             assert.equal(status.ids.at(0), messageId)
             assert.equal(status.cid, dummyDataTestConfig.conversations.private.nativeId)
-            assert.equal(status.from, dummyDataTestConfig.users.user1.nativeId)
+            assert.equal(status.from, dummyDataTestConfig.users.userA.nativeId)
 
             done()
           }
@@ -193,7 +193,7 @@ describe("Same-node behavior", () => {
     })
 
     describe("Group", () => {
-      describe("A -> B", () => {
+      describe("userA -> userB", () => {
         let messageId = void 0
 
         it("typing", (done) => {
@@ -201,12 +201,12 @@ describe("Same-node behavior", () => {
 
           samaClientB.onUserTypingListener = (typing) => {
             assert.equal(typing.cid, dummyDataTestConfig.conversations.group.nativeId)
-            assert.equal(typing.from, dummyDataTestConfig.users.user1.nativeId)
+            assert.equal(typing.from, dummyDataTestConfig.users.userA.nativeId)
             done()
           }
         })
 
-        it("simple message", (done) => {
+        it("message", (done) => {
           const mId = v4()
           const body = `Cluster Test Hello m: ${mId}`
           samaClientA.messageCreate({ cid: dummyDataTestConfig.conversations.group.nativeId, body: body, mid: mId, x: { one: "1" } })
@@ -214,7 +214,7 @@ describe("Same-node behavior", () => {
           samaClientB.onMessageEvent = (message) => {
             assert.equal(message.body, body)
             assert.equal(message.cid, dummyDataTestConfig.conversations.group.nativeId)
-            assert.equal(message.from, dummyDataTestConfig.users.user1.nativeId)
+            assert.equal(message.from, dummyDataTestConfig.users.userA.nativeId)
             assert.equal(message.x["one"], "1")
 
             messageId = message._id
@@ -229,14 +229,14 @@ describe("Same-node behavior", () => {
           samaClientA.onMessageStatusListener = (status) => {
             assert.equal(status.ids.at(0), messageId)
             assert.equal(status.cid, dummyDataTestConfig.conversations.group.nativeId)
-            assert.equal(status.from, dummyDataTestConfig.users.user2.nativeId)
+            assert.equal(status.from, dummyDataTestConfig.users.userB.nativeId)
 
             done()
           }
         })
       })
 
-      describe("B -> A", () => {
+      describe("userB -> userA", () => {
         let messageId = void 0
 
         it("typing", (done) => {
@@ -244,12 +244,12 @@ describe("Same-node behavior", () => {
 
           samaClientA.onUserTypingListener = (typing) => {
             assert.equal(typing.cid, dummyDataTestConfig.conversations.group.nativeId)
-            assert.equal(typing.from, dummyDataTestConfig.users.user2.nativeId)
+            assert.equal(typing.from, dummyDataTestConfig.users.userB.nativeId)
             done()
           }
         })
 
-        it("simple message", (done) => {
+        it("message", (done) => {
           const mId = v4()
           const body = `Cluster Test Hello m: ${mId}`
           samaClientB.messageCreate({ cid: dummyDataTestConfig.conversations.group.nativeId, body: body, mid: mId, x: { one: "11" } })
@@ -257,7 +257,7 @@ describe("Same-node behavior", () => {
           samaClientA.onMessageEvent = (message) => {
             assert.equal(message.body, body)
             assert.equal(message.cid, dummyDataTestConfig.conversations.group.nativeId)
-            assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+            assert.equal(message.from, dummyDataTestConfig.users.userB.nativeId)
             assert.equal(message.x["one"], "11")
 
             messageId = message._id
@@ -272,7 +272,7 @@ describe("Same-node behavior", () => {
           samaClientB.onMessageStatusListener = (status) => {
             assert.equal(status.ids.at(0), messageId)
             assert.equal(status.cid, dummyDataTestConfig.conversations.group.nativeId)
-            assert.equal(status.from, dummyDataTestConfig.users.user1.nativeId)
+            assert.equal(status.from, dummyDataTestConfig.users.userA.nativeId)
 
             done()
           }
@@ -282,16 +282,16 @@ describe("Same-node behavior", () => {
   })
 
   describe("Activity on disconnect", () => {
-    it("user A logout", (done) => {
+    it("userA logout", (done) => {
       samaClientA.disconnect()
 
       samaClientB.onUserActivityListener = (activity) => {
-        assert.ok(activity[dummyDataTestConfig.users.user1.nativeId] > 0)
+        assert.ok(activity[dummyDataTestConfig.users.userA.nativeId] > 0)
         done()
       }
     })
 
-    it("disconnect B", async () => {
+    it("disconnect client with userB", async () => {
       samaClientB.disconnect()
       await setTimeoutPromise(200)
     })

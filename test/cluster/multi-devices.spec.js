@@ -61,67 +61,67 @@ describe("Cross-node behavior", () => {
     await setTimeoutPromise(500)
   })
 
-  describe("Node-A (U_A_D1) - Node-B (U_B_D1,U_B_D2)", () => {
+  describe("Node-A(userA_Device1) - Node-B(userB_Device1,userB_Device2)", () => {
     describe("Connect", () => {
-      it("connect U_A_D1", async () => {
+      it("connect userA_Device1", async () => {
         await samaClientA_Device1.connect()
         const { token } = await samaClientA_Device1.socketLogin({
-          user: { login: dummyDataTestConfig.users.user1.login, password: userPassword },
+          user: { login: dummyDataTestConfig.users.userA.login, password: userPassword },
         })
         userAToken = token
       })
 
-      it("subscribe user B last activity", async () => {
-        const activity = await samaClientA_Device1.subscribeToUserActivity(dummyDataTestConfig.users.user2.nativeId)
-        assert.ok(activity[dummyDataTestConfig.users.user2.nativeId] > 0)
+      it("subscribe userB last activity", async () => {
+        const activity = await samaClientA_Device1.subscribeToUserActivity(dummyDataTestConfig.users.userB.nativeId)
+        assert.ok(activity[dummyDataTestConfig.users.userB.nativeId] > 0)
       })
 
-      it("connect U_B_D1 and check last activity", (done) => {
+      it("connect userB_Device1 and check last activity", (done) => {
         samaClientB_Device1
           .connect()
           .then(() =>
             samaClientB_Device1.socketLogin({
-              user: { login: dummyDataTestConfig.users.user2.login, password: userPassword },
+              user: { login: dummyDataTestConfig.users.userB.login, password: userPassword },
             })
           )
           .then(({ token }) => (userBToken = token))
 
         samaClientA_Device1.onUserActivityListener = (activity) => {
-          assert.equal(activity[dummyDataTestConfig.users.user2.nativeId], 0)
+          assert.equal(activity[dummyDataTestConfig.users.userB.nativeId], 0)
           done()
         }
       })
 
-      it("connect U_B_D2 and check last activity", (done) => {
+      it("connect userB_Device2 and check last activity", (done) => {
         samaClientB_Device2
           .connect()
-          .then(() => samaClientB_Device2.socketLogin({ user: { login: dummyDataTestConfig.users.user2.login, password: userPassword } }))
+          .then(() => samaClientB_Device2.socketLogin({ user: { login: dummyDataTestConfig.users.userB.login, password: userPassword } }))
         samaClientA_Device1.onUserActivityListener = (activity) => {
-          assert.equal(activity[dummyDataTestConfig.users.user2.nativeId], 0)
+          assert.equal(activity[dummyDataTestConfig.users.userB.nativeId], 0)
           done()
         }
       })
 
-      it("subscribe user A last activity", async () => {
-        let activity = await samaClientB_Device1.subscribeToUserActivity(dummyDataTestConfig.users.user1.nativeId)
-        assert.ok(activity[dummyDataTestConfig.users.user1.nativeId] === 0)
+      it("subscribe userA last activity", async () => {
+        let activity = await samaClientB_Device1.subscribeToUserActivity(dummyDataTestConfig.users.userA.nativeId)
+        assert.ok(activity[dummyDataTestConfig.users.userA.nativeId] === 0)
 
-        activity = await samaClientB_Device2.subscribeToUserActivity(dummyDataTestConfig.users.user1.nativeId)
-        assert.ok(activity[dummyDataTestConfig.users.user1.nativeId] === 0)
+        activity = await samaClientB_Device2.subscribeToUserActivity(dummyDataTestConfig.users.userA.nativeId)
+        assert.ok(activity[dummyDataTestConfig.users.userA.nativeId] === 0)
       })
     })
 
     describe("Base messaging", () => {
       describe("System", () => {
-        describe("U_A_D1 -> U_B_D1,U_B_D2", async () => {
+        describe("userA_Device1 -> userB_Device1,userB_Device2", async () => {
           it("event", async () => {
             const mId = v4()
-            samaClientA_Device1.messageSystem({ mid: mId, uids: [dummyDataTestConfig.users.user2.nativeId], x: { one: "1" } })
+            samaClientA_Device1.messageSystem({ mid: mId, uids: [dummyDataTestConfig.users.userB.nativeId], x: { one: "1" } })
 
             const uA_D1_promise = new Promise((resolve, reject) => {
               samaClientB_Device1.onSystemMessageEvent = (message) => {
                 assert.equal(message._id, mId)
-                assert.equal(message.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userA.nativeId)
 
                 resolve()
               }
@@ -130,7 +130,7 @@ describe("Cross-node behavior", () => {
             const uA_D2_promise = new Promise((resolve, reject) => {
               samaClientB_Device2.onSystemMessageEvent = (message) => {
                 assert.equal(message._id, mId)
-                assert.equal(message.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userA.nativeId)
 
                 resolve()
               }
@@ -140,31 +140,31 @@ describe("Cross-node behavior", () => {
           })
         })
 
-        describe("U_B_D1 sender", () => {
-          it("event to U_A_D1", (done) => {
+        describe("userB_Device1 sender", () => {
+          it("event to userA_Device1", (done) => {
             const mId = v4()
-            samaClientB_Device1.messageSystem({ mid: mId, uids: [dummyDataTestConfig.users.user1.nativeId], x: { two: "2" } })
+            samaClientB_Device1.messageSystem({ mid: mId, uids: [dummyDataTestConfig.users.userA.nativeId], x: { two: "2" } })
 
             samaClientA_Device1.onSystemMessageEvent = (message) => {
               assert.equal(message._id, mId)
-              assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+              assert.equal(message.from, dummyDataTestConfig.users.userB.nativeId)
 
               done()
             }
           })
 
-          it("event to U_A_D1,U_B_D2", async () => {
+          it("event to userA_Device1,userB_Device2", async () => {
             const mId = v4()
             samaClientB_Device1.messageSystem({
               mid: mId,
-              uids: [dummyDataTestConfig.users.user1.nativeId, dummyDataTestConfig.users.user2.nativeId],
+              uids: [dummyDataTestConfig.users.userA.nativeId, dummyDataTestConfig.users.userB.nativeId],
               x: { two: "22" },
             })
 
             const uA_D1_promise = new Promise((resolve, reject) => {
               samaClientA_Device1.onSystemMessageEvent = (message) => {
                 assert.equal(message._id, mId)
-                assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userB.nativeId)
 
                 resolve()
               }
@@ -173,7 +173,7 @@ describe("Cross-node behavior", () => {
             const uB_D2_promise = new Promise((resolve, reject) => {
               samaClientB_Device2.onSystemMessageEvent = (message) => {
                 assert.equal(message._id, mId)
-                assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userB.nativeId)
 
                 resolve()
               }
@@ -183,7 +183,7 @@ describe("Cross-node behavior", () => {
           })
         })
 
-        describe("U_B_D2 sender", () => {
+        describe("userB_Device2 sender", () => {
           it("event to conversation", async () => {
             const mId = v4()
             samaClientB_Device2.messageSystem({ mid: mId, cid: dummyDataTestConfig.conversations.private.nativeId, x: { four: "44" } })
@@ -191,7 +191,7 @@ describe("Cross-node behavior", () => {
             const uA_D1_promise = new Promise((resolve, reject) => {
               samaClientA_Device1.onSystemMessageEvent = (message) => {
                 assert.equal(message._id, mId)
-                assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userB.nativeId)
 
                 resolve()
               }
@@ -200,7 +200,7 @@ describe("Cross-node behavior", () => {
             const uB_D1_promise = new Promise((resolve, reject) => {
               samaClientB_Device1.onSystemMessageEvent = (message) => {
                 assert.equal(message._id, mId)
-                assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userB.nativeId)
 
                 resolve()
               }
@@ -212,7 +212,7 @@ describe("Cross-node behavior", () => {
       })
 
       describe("Private", () => {
-        describe("U_A_D1 -> U_B_D1,U_B_D2", () => {
+        describe("userA_Device1 -> userB_Device1,userB_Device2", () => {
           let messageId = void 0
 
           it("typing", async () => {
@@ -221,7 +221,7 @@ describe("Cross-node behavior", () => {
             const uB_D1_promise = new Promise((resolve, reject) => {
               samaClientB_Device1.onUserTypingListener = (typing) => {
                 assert.equal(typing.cid, dummyDataTestConfig.conversations.private.nativeId)
-                assert.equal(typing.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(typing.from, dummyDataTestConfig.users.userA.nativeId)
                 resolve()
               }
             })
@@ -229,7 +229,7 @@ describe("Cross-node behavior", () => {
             const uB_D2_promise = new Promise((resolve, reject) => {
               samaClientB_Device2.onUserTypingListener = (typing) => {
                 assert.equal(typing.cid, dummyDataTestConfig.conversations.private.nativeId)
-                assert.equal(typing.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(typing.from, dummyDataTestConfig.users.userA.nativeId)
                 resolve()
               }
             })
@@ -237,7 +237,7 @@ describe("Cross-node behavior", () => {
             await Promise.all([uB_D1_promise, uB_D2_promise])
           })
 
-          it("simple message", async () => {
+          it("message", async () => {
             const mId = v4()
             const body = `Cluster Test Hello m: ${mId}`
             samaClientA_Device1.messageCreate({
@@ -251,7 +251,7 @@ describe("Cross-node behavior", () => {
               samaClientB_Device1.onMessageEvent = (message) => {
                 assert.equal(message.body, body)
                 assert.equal(message.cid, dummyDataTestConfig.conversations.private.nativeId)
-                assert.equal(message.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userA.nativeId)
                 assert.equal(message.x["two"], "2")
 
                 messageId = message._id
@@ -264,7 +264,7 @@ describe("Cross-node behavior", () => {
               samaClientB_Device2.onMessageEvent = (message) => {
                 assert.equal(message.body, body)
                 assert.equal(message.cid, dummyDataTestConfig.conversations.private.nativeId)
-                assert.equal(message.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userA.nativeId)
                 assert.equal(message.x["two"], "2")
 
                 messageId = message._id
@@ -282,14 +282,14 @@ describe("Cross-node behavior", () => {
             samaClientA_Device1.onMessageStatusListener = (status) => {
               assert.equal(status.ids.at(0), messageId)
               assert.equal(status.cid, dummyDataTestConfig.conversations.private.nativeId)
-              assert.equal(status.from, dummyDataTestConfig.users.user2.nativeId)
+              assert.equal(status.from, dummyDataTestConfig.users.userB.nativeId)
 
               done()
             }
           })
         })
 
-        describe("U_B_D1 -> U_A_D1,U_B_D2", () => {
+        describe("userB_Device1 -> userA_Device1,userB_Device2", () => {
           let messageId = void 0
 
           it("typing", async () => {
@@ -298,7 +298,7 @@ describe("Cross-node behavior", () => {
             const uA_D1_promise = new Promise((resolve, reject) => {
               samaClientA_Device1.onUserTypingListener = (typing) => {
                 assert.equal(typing.cid, dummyDataTestConfig.conversations.private.nativeId)
-                assert.equal(typing.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(typing.from, dummyDataTestConfig.users.userB.nativeId)
                 resolve()
               }
             })
@@ -306,7 +306,7 @@ describe("Cross-node behavior", () => {
             const uB_D2_promise = new Promise((resolve, reject) => {
               samaClientB_Device2.onUserTypingListener = (typing) => {
                 assert.equal(typing.cid, dummyDataTestConfig.conversations.private.nativeId)
-                assert.equal(typing.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(typing.from, dummyDataTestConfig.users.userB.nativeId)
                 resolve()
               }
             })
@@ -314,7 +314,7 @@ describe("Cross-node behavior", () => {
             await Promise.all([uA_D1_promise, uB_D2_promise])
           })
 
-          it("simple message", async () => {
+          it("message", async () => {
             const mId = v4()
             const body = `Cluster Test Hello m: ${mId}`
             samaClientB_Device1.messageCreate({
@@ -328,7 +328,7 @@ describe("Cross-node behavior", () => {
               samaClientA_Device1.onMessageEvent = (message) => {
                 assert.equal(message.body, body)
                 assert.equal(message.cid, dummyDataTestConfig.conversations.private.nativeId)
-                assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userB.nativeId)
                 assert.equal(message.x["two"], "22")
 
                 messageId = message._id
@@ -341,7 +341,7 @@ describe("Cross-node behavior", () => {
               samaClientB_Device2.onMessageEvent = (message) => {
                 assert.equal(message.body, body)
                 assert.equal(message.cid, dummyDataTestConfig.conversations.private.nativeId)
-                assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userB.nativeId)
                 assert.equal(message.x["two"], "22")
 
                 messageId = message._id
@@ -360,7 +360,7 @@ describe("Cross-node behavior", () => {
               samaClientB_Device1.onMessageStatusListener = (status) => {
                 assert.equal(status.ids.at(0), messageId)
                 assert.equal(status.cid, dummyDataTestConfig.conversations.private.nativeId)
-                assert.equal(status.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(status.from, dummyDataTestConfig.users.userA.nativeId)
 
                 resolve()
               }
@@ -370,7 +370,7 @@ describe("Cross-node behavior", () => {
               samaClientB_Device2.onMessageStatusListener = (status) => {
                 assert.equal(status.ids.at(0), messageId)
                 assert.equal(status.cid, dummyDataTestConfig.conversations.private.nativeId)
-                assert.equal(status.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(status.from, dummyDataTestConfig.users.userA.nativeId)
 
                 resolve()
               }
@@ -382,7 +382,7 @@ describe("Cross-node behavior", () => {
       })
 
       describe("Group", () => {
-        describe("U_A_D1 -> U_B_D1,U_B_D2", () => {
+        describe("userA_Device1 -> userB_Device1,userB_Device2", () => {
           let messageId = void 0
 
           it("typing", async () => {
@@ -391,7 +391,7 @@ describe("Cross-node behavior", () => {
             const uB_D1_promise = new Promise((resolve, reject) => {
               samaClientB_Device1.onUserTypingListener = (typing) => {
                 assert.equal(typing.cid, dummyDataTestConfig.conversations.group.nativeId)
-                assert.equal(typing.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(typing.from, dummyDataTestConfig.users.userA.nativeId)
                 resolve()
               }
             })
@@ -399,7 +399,7 @@ describe("Cross-node behavior", () => {
             const uB_D2_promise = new Promise((resolve, reject) => {
               samaClientB_Device2.onUserTypingListener = (typing) => {
                 assert.equal(typing.cid, dummyDataTestConfig.conversations.group.nativeId)
-                assert.equal(typing.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(typing.from, dummyDataTestConfig.users.userA.nativeId)
                 resolve()
               }
             })
@@ -407,7 +407,7 @@ describe("Cross-node behavior", () => {
             await Promise.all([uB_D1_promise, uB_D2_promise])
           })
 
-          it("simple message", async () => {
+          it("message", async () => {
             const mId = v4()
             const body = `Cluster Test Hello m: ${mId}`
             samaClientA_Device1.messageCreate({
@@ -421,7 +421,7 @@ describe("Cross-node behavior", () => {
               samaClientB_Device1.onMessageEvent = (message) => {
                 assert.equal(message.body, body)
                 assert.equal(message.cid, dummyDataTestConfig.conversations.group.nativeId)
-                assert.equal(message.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userA.nativeId)
                 assert.equal(message.x["two"], "2")
 
                 messageId = message._id
@@ -434,7 +434,7 @@ describe("Cross-node behavior", () => {
               samaClientB_Device2.onMessageEvent = (message) => {
                 assert.equal(message.body, body)
                 assert.equal(message.cid, dummyDataTestConfig.conversations.group.nativeId)
-                assert.equal(message.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userA.nativeId)
                 assert.equal(message.x["two"], "2")
 
                 messageId = message._id
@@ -452,14 +452,14 @@ describe("Cross-node behavior", () => {
             samaClientA_Device1.onMessageStatusListener = (status) => {
               assert.equal(status.ids.at(0), messageId)
               assert.equal(status.cid, dummyDataTestConfig.conversations.group.nativeId)
-              assert.equal(status.from, dummyDataTestConfig.users.user2.nativeId)
+              assert.equal(status.from, dummyDataTestConfig.users.userB.nativeId)
 
               done()
             }
           })
         })
 
-        describe("U_B_D1 -> U_A_D1,U_B_D2", () => {
+        describe("userB_Device1 -> userA_Device1,userB_Device2", () => {
           let messageId = void 0
 
           it("typing", async () => {
@@ -468,7 +468,7 @@ describe("Cross-node behavior", () => {
             const uA_D1_promise = new Promise((resolve, reject) => {
               samaClientA_Device1.onUserTypingListener = (typing) => {
                 assert.equal(typing.cid, dummyDataTestConfig.conversations.group.nativeId)
-                assert.equal(typing.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(typing.from, dummyDataTestConfig.users.userB.nativeId)
                 resolve()
               }
             })
@@ -476,7 +476,7 @@ describe("Cross-node behavior", () => {
             const uB_D2_promise = new Promise((resolve, reject) => {
               samaClientB_Device2.onUserTypingListener = (typing) => {
                 assert.equal(typing.cid, dummyDataTestConfig.conversations.group.nativeId)
-                assert.equal(typing.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(typing.from, dummyDataTestConfig.users.userB.nativeId)
                 resolve()
               }
             })
@@ -484,7 +484,7 @@ describe("Cross-node behavior", () => {
             await Promise.all([uA_D1_promise, uB_D2_promise])
           })
 
-          it("simple message", async () => {
+          it("message", async () => {
             const mId = v4()
             const body = `Cluster Test Hello m: ${mId}`
             samaClientB_Device1.messageCreate({
@@ -498,7 +498,7 @@ describe("Cross-node behavior", () => {
               samaClientA_Device1.onMessageEvent = (message) => {
                 assert.equal(message.body, body)
                 assert.equal(message.cid, dummyDataTestConfig.conversations.group.nativeId)
-                assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userB.nativeId)
                 assert.equal(message.x["two"], "22")
 
                 messageId = message._id
@@ -511,7 +511,7 @@ describe("Cross-node behavior", () => {
               samaClientB_Device2.onMessageEvent = (message) => {
                 assert.equal(message.body, body)
                 assert.equal(message.cid, dummyDataTestConfig.conversations.group.nativeId)
-                assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userB.nativeId)
                 assert.equal(message.x["two"], "22")
 
                 messageId = message._id
@@ -530,7 +530,7 @@ describe("Cross-node behavior", () => {
               samaClientB_Device1.onMessageStatusListener = (status) => {
                 assert.equal(status.ids.at(0), messageId)
                 assert.equal(status.cid, dummyDataTestConfig.conversations.group.nativeId)
-                assert.equal(status.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(status.from, dummyDataTestConfig.users.userA.nativeId)
 
                 resolve()
               }
@@ -540,7 +540,7 @@ describe("Cross-node behavior", () => {
               samaClientB_Device2.onMessageStatusListener = (status) => {
                 assert.equal(status.ids.at(0), messageId)
                 assert.equal(status.cid, dummyDataTestConfig.conversations.group.nativeId)
-                assert.equal(status.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(status.from, dummyDataTestConfig.users.userA.nativeId)
 
                 resolve()
               }
@@ -553,14 +553,14 @@ describe("Cross-node behavior", () => {
     })
 
     describe("Activity on disconnect", () => {
-      it("U_B_D1 logout (not last activity)", async () => {
+      it("userB_Device1 logout (not last activity)", async () => {
         samaClientB_Device1.disconnect()
 
         const promise = new Promise((resolve, reject) => {
           setTimeout(() => resolve(), 500)
 
           samaClientA_Device1.onUserActivityListener = (activity) => {
-            if (activity[dummyDataTestConfig.users.user2.nativeId] > 0) {
+            if (activity[dummyDataTestConfig.users.userB.nativeId] > 0) {
               reject(new Error("Should not be called"))
             }
           }
@@ -569,11 +569,11 @@ describe("Cross-node behavior", () => {
         await promise
       })
 
-      it("U_B_D1 logout (last activity)", (done) => {
+      it("userB_Device1 logout (last activity)", (done) => {
         samaClientB_Device2.disconnect()
 
         samaClientA_Device1.onUserActivityListener = (activity) => {
-          assert.ok(activity[dummyDataTestConfig.users.user2.nativeId] > 0)
+          assert.ok(activity[dummyDataTestConfig.users.userB.nativeId] > 0)
           done()
         }
       })
@@ -585,67 +585,67 @@ describe("Cross-node behavior", () => {
     })
   })
 
-  describe("Node-A (U_A_D1, U_B_D2) - Node-B (U_B_D1)", () => {
+  describe("Node-A (userA_Device1, userB_Device2) - Node-B (userB_Device1)", () => {
     describe("Connect", () => {
-      it("connect U_A_D1", async () => {
+      it("connect userA_Device1", async () => {
         await samaClientA_Device1.connect()
         const { token } = await samaClientA_Device1.socketLogin({
-          user: { login: dummyDataTestConfig.users.user1.login, password: userPassword },
+          user: { login: dummyDataTestConfig.users.userA.login, password: userPassword },
         })
         userAToken = token
       })
 
       it("subscribe user B last activity", async () => {
-        const activity = await samaClientA_Device1.subscribeToUserActivity(dummyDataTestConfig.users.user2.nativeId)
-        assert.ok(activity[dummyDataTestConfig.users.user2.nativeId] > 0)
+        const activity = await samaClientA_Device1.subscribeToUserActivity(dummyDataTestConfig.users.userB.nativeId)
+        assert.ok(activity[dummyDataTestConfig.users.userB.nativeId] > 0)
       })
 
-      it("connect U_B_D1 and check last activity", (done) => {
+      it("connect userB_Device1 and check last activity", (done) => {
         samaClientB_Device1
           .connect()
           .then(() =>
             samaClientB_Device1.socketLogin({
-              user: { login: dummyDataTestConfig.users.user2.login, password: userPassword },
+              user: { login: dummyDataTestConfig.users.userB.login, password: userPassword },
             })
           )
           .then(({ token }) => (userBToken = token))
 
         samaClientA_Device1.onUserActivityListener = (activity) => {
-          assert.equal(activity[dummyDataTestConfig.users.user2.nativeId], 0)
+          assert.equal(activity[dummyDataTestConfig.users.userB.nativeId], 0)
           done()
         }
       })
 
-      it("connect U_B_D2 and check last activity", (done) => {
+      it("connect userB_Device2 and check last activity", (done) => {
         samaClientB_Device2
           .connect(NODE_1_WS_ENDPOINT, NODE_1_HTTP_ENDPOINT)
-          .then(() => samaClientB_Device2.socketLogin({ user: { login: dummyDataTestConfig.users.user2.login, password: userPassword } }))
+          .then(() => samaClientB_Device2.socketLogin({ user: { login: dummyDataTestConfig.users.userB.login, password: userPassword } }))
         samaClientA_Device1.onUserActivityListener = (activity) => {
-          assert.equal(activity[dummyDataTestConfig.users.user2.nativeId], 0)
+          assert.equal(activity[dummyDataTestConfig.users.userB.nativeId], 0)
           done()
         }
       })
 
       it("subscribe user A last activity", async () => {
-        let activity = await samaClientB_Device1.subscribeToUserActivity(dummyDataTestConfig.users.user1.nativeId)
-        assert.ok(activity[dummyDataTestConfig.users.user1.nativeId] === 0)
+        let activity = await samaClientB_Device1.subscribeToUserActivity(dummyDataTestConfig.users.userA.nativeId)
+        assert.ok(activity[dummyDataTestConfig.users.userA.nativeId] === 0)
 
-        activity = await samaClientB_Device2.subscribeToUserActivity(dummyDataTestConfig.users.user1.nativeId)
-        assert.ok(activity[dummyDataTestConfig.users.user1.nativeId] === 0)
+        activity = await samaClientB_Device2.subscribeToUserActivity(dummyDataTestConfig.users.userA.nativeId)
+        assert.ok(activity[dummyDataTestConfig.users.userA.nativeId] === 0)
       })
     })
 
     describe("Base messaging", () => {
       describe("System", () => {
-        describe("U_A_D1 -> U_B_D1,U_B_D2", async () => {
+        describe("userA_Device1 -> userB_Device1,userB_Device2", async () => {
           it("event", async () => {
             const mId = v4()
-            samaClientA_Device1.messageSystem({ mid: mId, uids: [dummyDataTestConfig.users.user2.nativeId], x: { one: "1" } })
+            samaClientA_Device1.messageSystem({ mid: mId, uids: [dummyDataTestConfig.users.userB.nativeId], x: { one: "1" } })
 
             const uA_D1_promise = new Promise((resolve, reject) => {
               samaClientB_Device1.onSystemMessageEvent = (message) => {
                 assert.equal(message._id, mId)
-                assert.equal(message.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userA.nativeId)
 
                 resolve()
               }
@@ -654,7 +654,7 @@ describe("Cross-node behavior", () => {
             const uA_D2_promise = new Promise((resolve, reject) => {
               samaClientB_Device2.onSystemMessageEvent = (message) => {
                 assert.equal(message._id, mId)
-                assert.equal(message.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userA.nativeId)
 
                 resolve()
               }
@@ -664,31 +664,31 @@ describe("Cross-node behavior", () => {
           })
         })
 
-        describe("U_B_D1 sender", () => {
-          it("event to U_A_D1", (done) => {
+        describe("userB_Device1 sender", () => {
+          it("event to userA_Device1", (done) => {
             const mId = v4()
-            samaClientB_Device1.messageSystem({ mid: mId, uids: [dummyDataTestConfig.users.user1.nativeId], x: { two: "2" } })
+            samaClientB_Device1.messageSystem({ mid: mId, uids: [dummyDataTestConfig.users.userA.nativeId], x: { two: "2" } })
 
             samaClientA_Device1.onSystemMessageEvent = (message) => {
               assert.equal(message._id, mId)
-              assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+              assert.equal(message.from, dummyDataTestConfig.users.userB.nativeId)
 
               done()
             }
           })
 
-          it("event to U_A_D1,U_B_D2", async () => {
+          it("event to userA_Device1,userB_Device2", async () => {
             const mId = v4()
             samaClientB_Device1.messageSystem({
               mid: mId,
-              uids: [dummyDataTestConfig.users.user1.nativeId, dummyDataTestConfig.users.user2.nativeId],
+              uids: [dummyDataTestConfig.users.userA.nativeId, dummyDataTestConfig.users.userB.nativeId],
               x: { two: "22" },
             })
 
             const uA_D1_promise = new Promise((resolve, reject) => {
               samaClientA_Device1.onSystemMessageEvent = (message) => {
                 assert.equal(message._id, mId)
-                assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userB.nativeId)
 
                 resolve()
               }
@@ -697,7 +697,7 @@ describe("Cross-node behavior", () => {
             const uB_D2_promise = new Promise((resolve, reject) => {
               samaClientB_Device2.onSystemMessageEvent = (message) => {
                 assert.equal(message._id, mId)
-                assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userB.nativeId)
 
                 resolve()
               }
@@ -707,7 +707,7 @@ describe("Cross-node behavior", () => {
           })
         })
 
-        describe("U_B_D2 sender", () => {
+        describe("userB_Device2 sender", () => {
           it("event to conversation", async () => {
             const mId = v4()
             samaClientB_Device2.messageSystem({ mid: mId, cid: dummyDataTestConfig.conversations.private.nativeId, x: { four: "44" } })
@@ -715,7 +715,7 @@ describe("Cross-node behavior", () => {
             const uA_D1_promise = new Promise((resolve, reject) => {
               samaClientA_Device1.onSystemMessageEvent = (message) => {
                 assert.equal(message._id, mId)
-                assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userB.nativeId)
 
                 resolve()
               }
@@ -724,7 +724,7 @@ describe("Cross-node behavior", () => {
             const uB_D1_promise = new Promise((resolve, reject) => {
               samaClientB_Device1.onSystemMessageEvent = (message) => {
                 assert.equal(message._id, mId)
-                assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userB.nativeId)
 
                 resolve()
               }
@@ -736,7 +736,7 @@ describe("Cross-node behavior", () => {
       })
 
       describe("Private", () => {
-        describe("U_A_D1 -> U_B_D1,U_B_D2", () => {
+        describe("userA_Device1 -> userB_Device1,userB_Device2", () => {
           let messageId = void 0
 
           it("typing", async () => {
@@ -745,7 +745,7 @@ describe("Cross-node behavior", () => {
             const uB_D1_promise = new Promise((resolve, reject) => {
               samaClientB_Device1.onUserTypingListener = (typing) => {
                 assert.equal(typing.cid, dummyDataTestConfig.conversations.private.nativeId)
-                assert.equal(typing.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(typing.from, dummyDataTestConfig.users.userA.nativeId)
                 resolve()
               }
             })
@@ -753,7 +753,7 @@ describe("Cross-node behavior", () => {
             const uB_D2_promise = new Promise((resolve, reject) => {
               samaClientB_Device2.onUserTypingListener = (typing) => {
                 assert.equal(typing.cid, dummyDataTestConfig.conversations.private.nativeId)
-                assert.equal(typing.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(typing.from, dummyDataTestConfig.users.userA.nativeId)
                 resolve()
               }
             })
@@ -761,7 +761,7 @@ describe("Cross-node behavior", () => {
             await Promise.all([uB_D1_promise, uB_D2_promise])
           })
 
-          it("simple message", async () => {
+          it("message", async () => {
             const mId = v4()
             const body = `Cluster Test Hello m: ${mId}`
             samaClientA_Device1.messageCreate({
@@ -775,7 +775,7 @@ describe("Cross-node behavior", () => {
               samaClientB_Device1.onMessageEvent = (message) => {
                 assert.equal(message.body, body)
                 assert.equal(message.cid, dummyDataTestConfig.conversations.private.nativeId)
-                assert.equal(message.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userA.nativeId)
                 assert.equal(message.x["two"], "2")
 
                 messageId = message._id
@@ -788,7 +788,7 @@ describe("Cross-node behavior", () => {
               samaClientB_Device2.onMessageEvent = (message) => {
                 assert.equal(message.body, body)
                 assert.equal(message.cid, dummyDataTestConfig.conversations.private.nativeId)
-                assert.equal(message.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userA.nativeId)
                 assert.equal(message.x["two"], "2")
 
                 messageId = message._id
@@ -806,14 +806,14 @@ describe("Cross-node behavior", () => {
             samaClientA_Device1.onMessageStatusListener = (status) => {
               assert.equal(status.ids.at(0), messageId)
               assert.equal(status.cid, dummyDataTestConfig.conversations.private.nativeId)
-              assert.equal(status.from, dummyDataTestConfig.users.user2.nativeId)
+              assert.equal(status.from, dummyDataTestConfig.users.userB.nativeId)
 
               done()
             }
           })
         })
 
-        describe("U_B_D1 -> U_A_D1,U_B_D2", () => {
+        describe("userB_Device1 -> userA_Device1,userB_Device2", () => {
           let messageId = void 0
 
           it("typing", async () => {
@@ -822,7 +822,7 @@ describe("Cross-node behavior", () => {
             const uA_D1_promise = new Promise((resolve, reject) => {
               samaClientA_Device1.onUserTypingListener = (typing) => {
                 assert.equal(typing.cid, dummyDataTestConfig.conversations.private.nativeId)
-                assert.equal(typing.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(typing.from, dummyDataTestConfig.users.userB.nativeId)
                 resolve()
               }
             })
@@ -830,7 +830,7 @@ describe("Cross-node behavior", () => {
             const uB_D2_promise = new Promise((resolve, reject) => {
               samaClientB_Device2.onUserTypingListener = (typing) => {
                 assert.equal(typing.cid, dummyDataTestConfig.conversations.private.nativeId)
-                assert.equal(typing.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(typing.from, dummyDataTestConfig.users.userB.nativeId)
                 resolve()
               }
             })
@@ -838,7 +838,7 @@ describe("Cross-node behavior", () => {
             await Promise.all([uA_D1_promise, uB_D2_promise])
           })
 
-          it("simple message", async () => {
+          it("message", async () => {
             const mId = v4()
             const body = `Cluster Test Hello m: ${mId}`
             samaClientB_Device1.messageCreate({
@@ -852,7 +852,7 @@ describe("Cross-node behavior", () => {
               samaClientA_Device1.onMessageEvent = (message) => {
                 assert.equal(message.body, body)
                 assert.equal(message.cid, dummyDataTestConfig.conversations.private.nativeId)
-                assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userB.nativeId)
                 assert.equal(message.x["two"], "22")
 
                 messageId = message._id
@@ -865,7 +865,7 @@ describe("Cross-node behavior", () => {
               samaClientB_Device2.onMessageEvent = (message) => {
                 assert.equal(message.body, body)
                 assert.equal(message.cid, dummyDataTestConfig.conversations.private.nativeId)
-                assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userB.nativeId)
                 assert.equal(message.x["two"], "22")
 
                 messageId = message._id
@@ -884,7 +884,7 @@ describe("Cross-node behavior", () => {
               samaClientB_Device1.onMessageStatusListener = (status) => {
                 assert.equal(status.ids.at(0), messageId)
                 assert.equal(status.cid, dummyDataTestConfig.conversations.private.nativeId)
-                assert.equal(status.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(status.from, dummyDataTestConfig.users.userA.nativeId)
 
                 resolve()
               }
@@ -894,7 +894,7 @@ describe("Cross-node behavior", () => {
               samaClientB_Device2.onMessageStatusListener = (status) => {
                 assert.equal(status.ids.at(0), messageId)
                 assert.equal(status.cid, dummyDataTestConfig.conversations.private.nativeId)
-                assert.equal(status.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(status.from, dummyDataTestConfig.users.userA.nativeId)
 
                 resolve()
               }
@@ -906,7 +906,7 @@ describe("Cross-node behavior", () => {
       })
 
       describe("Group", () => {
-        describe("U_A_D1 -> U_B_D1,U_B_D2", () => {
+        describe("userA_Device1 -> userB_Device1,userB_Device2", () => {
           let messageId = void 0
 
           it("typing", async () => {
@@ -915,7 +915,7 @@ describe("Cross-node behavior", () => {
             const uB_D1_promise = new Promise((resolve, reject) => {
               samaClientB_Device1.onUserTypingListener = (typing) => {
                 assert.equal(typing.cid, dummyDataTestConfig.conversations.group.nativeId)
-                assert.equal(typing.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(typing.from, dummyDataTestConfig.users.userA.nativeId)
                 resolve()
               }
             })
@@ -923,7 +923,7 @@ describe("Cross-node behavior", () => {
             const uB_D2_promise = new Promise((resolve, reject) => {
               samaClientB_Device2.onUserTypingListener = (typing) => {
                 assert.equal(typing.cid, dummyDataTestConfig.conversations.group.nativeId)
-                assert.equal(typing.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(typing.from, dummyDataTestConfig.users.userA.nativeId)
                 resolve()
               }
             })
@@ -931,7 +931,7 @@ describe("Cross-node behavior", () => {
             await Promise.all([uB_D1_promise, uB_D2_promise])
           })
 
-          it("simple message", async () => {
+          it("message", async () => {
             const mId = v4()
             const body = `Cluster Test Hello m: ${mId}`
             samaClientA_Device1.messageCreate({
@@ -945,7 +945,7 @@ describe("Cross-node behavior", () => {
               samaClientB_Device1.onMessageEvent = (message) => {
                 assert.equal(message.body, body)
                 assert.equal(message.cid, dummyDataTestConfig.conversations.group.nativeId)
-                assert.equal(message.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userA.nativeId)
                 assert.equal(message.x["two"], "2")
 
                 messageId = message._id
@@ -958,7 +958,7 @@ describe("Cross-node behavior", () => {
               samaClientB_Device2.onMessageEvent = (message) => {
                 assert.equal(message.body, body)
                 assert.equal(message.cid, dummyDataTestConfig.conversations.group.nativeId)
-                assert.equal(message.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userA.nativeId)
                 assert.equal(message.x["two"], "2")
 
                 messageId = message._id
@@ -976,14 +976,14 @@ describe("Cross-node behavior", () => {
             samaClientA_Device1.onMessageStatusListener = (status) => {
               assert.equal(status.ids.at(0), messageId)
               assert.equal(status.cid, dummyDataTestConfig.conversations.group.nativeId)
-              assert.equal(status.from, dummyDataTestConfig.users.user2.nativeId)
+              assert.equal(status.from, dummyDataTestConfig.users.userB.nativeId)
 
               done()
             }
           })
         })
 
-        describe("U_B_D1 -> U_A_D1,U_B_D2", () => {
+        describe("userB_Device1 -> userA_Device1,userB_Device2", () => {
           let messageId = void 0
 
           it("typing", async () => {
@@ -992,7 +992,7 @@ describe("Cross-node behavior", () => {
             const uA_D1_promise = new Promise((resolve, reject) => {
               samaClientA_Device1.onUserTypingListener = (typing) => {
                 assert.equal(typing.cid, dummyDataTestConfig.conversations.group.nativeId)
-                assert.equal(typing.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(typing.from, dummyDataTestConfig.users.userB.nativeId)
                 resolve()
               }
             })
@@ -1000,7 +1000,7 @@ describe("Cross-node behavior", () => {
             const uB_D2_promise = new Promise((resolve, reject) => {
               samaClientB_Device2.onUserTypingListener = (typing) => {
                 assert.equal(typing.cid, dummyDataTestConfig.conversations.group.nativeId)
-                assert.equal(typing.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(typing.from, dummyDataTestConfig.users.userB.nativeId)
                 resolve()
               }
             })
@@ -1008,7 +1008,7 @@ describe("Cross-node behavior", () => {
             await Promise.all([uA_D1_promise, uB_D2_promise])
           })
 
-          it("simple message", async () => {
+          it("message", async () => {
             const mId = v4()
             const body = `Cluster Test Hello m: ${mId}`
             samaClientB_Device1.messageCreate({
@@ -1022,7 +1022,7 @@ describe("Cross-node behavior", () => {
               samaClientA_Device1.onMessageEvent = (message) => {
                 assert.equal(message.body, body)
                 assert.equal(message.cid, dummyDataTestConfig.conversations.group.nativeId)
-                assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userB.nativeId)
                 assert.equal(message.x["two"], "22")
 
                 messageId = message._id
@@ -1035,7 +1035,7 @@ describe("Cross-node behavior", () => {
               samaClientB_Device2.onMessageEvent = (message) => {
                 assert.equal(message.body, body)
                 assert.equal(message.cid, dummyDataTestConfig.conversations.group.nativeId)
-                assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+                assert.equal(message.from, dummyDataTestConfig.users.userB.nativeId)
                 assert.equal(message.x["two"], "22")
 
                 messageId = message._id
@@ -1054,7 +1054,7 @@ describe("Cross-node behavior", () => {
               samaClientB_Device1.onMessageStatusListener = (status) => {
                 assert.equal(status.ids.at(0), messageId)
                 assert.equal(status.cid, dummyDataTestConfig.conversations.group.nativeId)
-                assert.equal(status.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(status.from, dummyDataTestConfig.users.userA.nativeId)
 
                 resolve()
               }
@@ -1064,7 +1064,7 @@ describe("Cross-node behavior", () => {
               samaClientB_Device2.onMessageStatusListener = (status) => {
                 assert.equal(status.ids.at(0), messageId)
                 assert.equal(status.cid, dummyDataTestConfig.conversations.group.nativeId)
-                assert.equal(status.from, dummyDataTestConfig.users.user1.nativeId)
+                assert.equal(status.from, dummyDataTestConfig.users.userA.nativeId)
 
                 resolve()
               }
@@ -1077,14 +1077,14 @@ describe("Cross-node behavior", () => {
     })
 
     describe("Activity on disconnect", () => {
-      it("U_B_D1 logout (not last activity)", async () => {
+      it("userB_Device1 logout (not last activity)", async () => {
         samaClientB_Device1.disconnect()
 
         const promise = new Promise((resolve, reject) => {
           setTimeout(() => resolve(), 500)
 
           samaClientA_Device1.onUserActivityListener = (activity) => {
-            if (activity[dummyDataTestConfig.users.user2.nativeId] > 0) {
+            if (activity[dummyDataTestConfig.users.userB.nativeId] > 0) {
               reject(new Error("Should not be called"))
             }
           }
@@ -1093,16 +1093,16 @@ describe("Cross-node behavior", () => {
         await promise
       })
 
-      it("U_B_D1 logout (last activity)", (done) => {
+      it("userB_Device1 logout (last activity)", (done) => {
         samaClientB_Device2.disconnect()
 
         samaClientA_Device1.onUserActivityListener = (activity) => {
-          assert.ok(activity[dummyDataTestConfig.users.user2.nativeId] > 0)
+          assert.ok(activity[dummyDataTestConfig.users.userB.nativeId] > 0)
           done()
         }
       })
 
-      it("disconnect A", async () => {
+      it("disconnect userA", async () => {
         samaClientA_Device1.disconnect()
         await setTimeoutPromise(200)
       })
