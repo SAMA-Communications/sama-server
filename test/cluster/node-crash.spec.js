@@ -5,11 +5,14 @@ import { v4 } from "uuid"
 import { SAMAClient } from "@sama-communications/sdk"
 
 import {
-  startOrAccessNodeA, startOrAccessNodeB,
-  TEST_ORG_ID, TEST_U_CONV_ID, TEST_G_CONV_ID,
-  NODE_1_WS_ENDPOINT, NODE_1_HTTP_ENDPOINT,
-  NODE_2_WS_ENDPOINT, NODE_2_HTTP_ENDPOINT,
-  userANativeId, userBNativeId
+  startOrAccessNodeA,
+  startOrAccessNodeB,
+  NODE_1_WS_ENDPOINT,
+  NODE_1_HTTP_ENDPOINT,
+  NODE_2_WS_ENDPOINT,
+  NODE_2_HTTP_ENDPOINT,
+  dummyDataTestConfig,
+  userPassword,
 } from "./utils.js"
 
 const configNodeA = {
@@ -17,7 +20,6 @@ const configNodeA = {
     ws: NODE_1_WS_ENDPOINT,
     http: NODE_1_HTTP_ENDPOINT,
   },
-  organization_id: TEST_ORG_ID,
   disableAutoReconnect: true,
 }
 
@@ -26,16 +28,12 @@ const configNodeB = {
     ws: NODE_2_WS_ENDPOINT,
     http: NODE_2_HTTP_ENDPOINT,
   },
-  organization_id: TEST_ORG_ID,
   disableAutoReconnect: true,
 }
 
-const samaClientA = new SAMAClient(configNodeA)
-samaClientA.deviceId = v4()
-const samaClientB = new SAMAClient(configNodeB)
-samaClientB.deviceId = v4()
-const samaClientB_Device2 = new SAMAClient(configNodeA)
-samaClientB_Device2.deviceId = v4()
+let samaClientA = void 0
+let samaClientB = void 0
+let samaClientB_Device2 = void 0
 
 let userAToken = void 0
 let userBToken = void 0
@@ -45,8 +43,18 @@ let nodeB = void 0
 
 describe("Crash Node behavior:", () => {
   before(async () => {
-    console.log('[Before][node-crash]')
-  
+    console.log("[Before][node-crash]")
+
+    configNodeA.organization_id = dummyDataTestConfig.organizationId
+    configNodeB.organization_id = dummyDataTestConfig.organizationId
+
+    samaClientA = new SAMAClient(configNodeA)
+    samaClientA.deviceId = v4()
+    samaClientB = new SAMAClient(configNodeB)
+    samaClientB.deviceId = v4()
+    samaClientB_Device2 = new SAMAClient(configNodeA)
+    samaClientB_Device2.deviceId = v4()
+
     nodeA = await startOrAccessNodeA()
     nodeB = await startOrAccessNodeB()
 
@@ -56,24 +64,27 @@ describe("Crash Node behavior:", () => {
   describe("NodeA(U_A) - NodeB(U_B) - NodeB crash (wait fro clean):", () => {
     it("connect client A", async () => {
       await samaClientA.connect()
-      const { token } = await samaClientA.socketLogin({ user: { login: 'banshiAnton1', password: '12345678' } })
+      const { token } = await samaClientA.socketLogin({ user: { login: dummyDataTestConfig.users.user1.login, password: userPassword } })
       userAToken = token
     })
-  
-    it ("subscribe user B last activity", async () => {
-      const activity = await samaClientA.subscribeToUserActivity(userBNativeId)
-      assert.ok(activity[userBNativeId] > 0)
+
+    it("subscribe user B last activity", async () => {
+      const activity = await samaClientA.subscribeToUserActivity(dummyDataTestConfig.users.user2.nativeId)
+      assert.ok(activity[dummyDataTestConfig.users.user2.nativeId] > 0)
     })
-  
+
     it("connect client B and check last activity", (done) => {
       samaClientB
         .connect()
-        .then(() => samaClientB.socketLogin({
-          user: { login: 'banshiAnton2', password: '12345678' },
-        })).then(({ token }) => userBToken = token)
+        .then(() =>
+          samaClientB.socketLogin({
+            user: { login: dummyDataTestConfig.users.user2.login, password: userPassword },
+          })
+        )
+        .then(({ token }) => (userBToken = token))
 
       samaClientA.onUserActivityListener = (activity) => {
-        assert.equal(activity[userBNativeId], 0)
+        assert.equal(activity[dummyDataTestConfig.users.user2.nativeId], 0)
         done()
       }
     })
@@ -82,29 +93,29 @@ describe("Crash Node behavior:", () => {
       it("A -> B", (done) => {
         const mId = v4()
         const body = `Cluster Test Hello m: ${mId}`
-        samaClientA.messageCreate({ cid: TEST_G_CONV_ID, body: body, mid: mId, x: { two: '2' } })
-  
+        samaClientA.messageCreate({ cid: dummyDataTestConfig.conversations.group.nativeId, body: body, mid: mId, x: { two: "2" } })
+
         samaClientB.onMessageEvent = (message) => {
           assert.equal(message.body, body)
-          assert.equal(message.cid, TEST_G_CONV_ID)
-          assert.equal(message.from, userANativeId)
-          assert.equal(message.x['two'], '2')
-  
+          assert.equal(message.cid, dummyDataTestConfig.conversations.group.nativeId)
+          assert.equal(message.from, dummyDataTestConfig.users.user1.nativeId)
+          assert.equal(message.x["two"], "2")
+
           done()
         }
       })
-  
+
       it("messaging B -> A", (done) => {
         const mId = v4()
         const body = `Cluster Test Hello m: ${mId}`
-        samaClientB.messageCreate({ cid: TEST_G_CONV_ID, body: body, mid: mId, x: { two: '22' } })
-  
+        samaClientB.messageCreate({ cid: dummyDataTestConfig.conversations.group.nativeId, body: body, mid: mId, x: { two: "22" } })
+
         samaClientA.onMessageEvent = (message) => {
           assert.equal(message.body, body)
-          assert.equal(message.cid, TEST_G_CONV_ID)
-          assert.equal(message.from, userBNativeId)
-          assert.equal(message.x['two'], '22')
-  
+          assert.equal(message.cid, dummyDataTestConfig.conversations.group.nativeId)
+          assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+          assert.equal(message.x["two"], "22")
+
           done()
         }
       })
@@ -114,38 +125,38 @@ describe("Crash Node behavior:", () => {
       it("kill NodeB events with U_B last activity from NodeA", async () => {
         const closePromise = new Promise((resolve, reject) => {
           nodeA.once(`node_close[${nodeB.clusterEndpoint}]`, () => {
-            console.log('[node][close]', nodeB.clusterEndpoint)
+            console.log("[node][close]", nodeB.clusterEndpoint)
             resolve()
           })
         })
-  
+
         const startReconnectPromise = new Promise((resolve, reject) => {
           nodeA.once(`node_reconnect_start[${nodeB.clusterEndpoint}]`, () => {
-            console.log('[node][reconnect][start]', nodeB.clusterEndpoint)
+            console.log("[node][reconnect][start]", nodeB.clusterEndpoint)
             resolve()
           })
         })
-  
+
         const cleanNodeBPromise = new Promise((resolve, reject) => {
           nodeA.once(`node_clean[${nodeB.clusterEndpoint}]`, () => {
-            console.log('[node][clean]', nodeB.clusterEndpoint)
+            console.log("[node][clean]", nodeB.clusterEndpoint)
             resolve()
           })
         })
-  
+
         const userBOfflinePromise = new Promise((resolve, reject) => {
           samaClientA.onUserActivityListener = async (activity) => {
-            assert.ok(activity[userBNativeId] > 0)
-  
-            activity = await samaClientA.subscribeToUserActivity(userBNativeId)
-            assert.ok(activity[userBNativeId] > 0)
-  
+            assert.ok(activity[dummyDataTestConfig.users.user2.nativeId] > 0)
+
+            activity = await samaClientA.subscribeToUserActivity(dummyDataTestConfig.users.user2.nativeId)
+            assert.ok(activity[dummyDataTestConfig.users.user2.nativeId] > 0)
+
             resolve()
           }
         })
-  
+
         nodeB.kill()
-  
+
         await Promise.all([closePromise, startReconnectPromise, cleanNodeBPromise, userBOfflinePromise])
       })
     })
@@ -155,16 +166,16 @@ describe("Crash Node behavior:", () => {
         nodeB = await startOrAccessNodeB(true)
 
         const nodeReadyPromise = new Promise((resolve, reject) => {
-          nodeB.once('node_ready', (nodeClusterWsEndpoint) => {
+          nodeB.once("node_ready", (nodeClusterWsEndpoint) => {
             nodeB.clusterEndpoint = nodeClusterWsEndpoint
-            console.log('[node][ready]', nodeB.pid, nodeB.clusterEndpoint)
+            console.log("[node][ready]", nodeB.pid, nodeB.clusterEndpoint)
             resolve()
           })
         })
 
         const nodeHandShackedPromise = new Promise((resolve, reject) => {
           nodeB.once(`node_connected[${nodeA.clusterEndpoint}]`, (nodeClusterWsEndpoint) => {
-            console.log('[node][connected]', nodeClusterWsEndpoint)
+            console.log("[node][connected]", nodeClusterWsEndpoint)
             resolve()
           })
         })
@@ -173,11 +184,12 @@ describe("Crash Node behavior:", () => {
       })
 
       it("connect client B and check last activity", (done) => {
-        samaClientB.connect()
+        samaClientB
+          .connect()
           .then(() => samaClientB.socketLogin({ token: userBToken }))
-          .then(({ token }) => userBToken = token)
+          .then(({ token }) => (userBToken = token))
         samaClientA.onUserActivityListener = (activity) => {
-          assert.equal(activity[userBNativeId], 0)
+          assert.equal(activity[dummyDataTestConfig.users.user2.nativeId], 0)
           done()
         }
       })
@@ -186,29 +198,29 @@ describe("Crash Node behavior:", () => {
         it("A -> B", (done) => {
           const mId = v4()
           const body = `Cluster Test Hello m: ${mId}`
-          samaClientA.messageCreate({ cid: TEST_G_CONV_ID, body: body, mid: mId, x: { two: '2' } })
-    
+          samaClientA.messageCreate({ cid: dummyDataTestConfig.conversations.group.nativeId, body: body, mid: mId, x: { two: "2" } })
+
           samaClientB.onMessageEvent = (message) => {
             assert.equal(message.body, body)
-            assert.equal(message.cid, TEST_G_CONV_ID)
-            assert.equal(message.from, userANativeId)
-            assert.equal(message.x['two'], '2')
-    
+            assert.equal(message.cid, dummyDataTestConfig.conversations.group.nativeId)
+            assert.equal(message.from, dummyDataTestConfig.users.user1.nativeId)
+            assert.equal(message.x["two"], "2")
+
             done()
           }
         })
-  
+
         it("B -> A", (done) => {
           const mId = v4()
           const body = `Cluster Test Hello m: ${mId}`
-          samaClientB.messageCreate({ cid: TEST_G_CONV_ID, body: body, mid: mId, x: { two: '22' } })
-    
+          samaClientB.messageCreate({ cid: dummyDataTestConfig.conversations.group.nativeId, body: body, mid: mId, x: { two: "22" } })
+
           samaClientA.onMessageEvent = (message) => {
             assert.equal(message.body, body)
-            assert.equal(message.cid, TEST_G_CONV_ID)
-            assert.equal(message.from, userBNativeId)
-            assert.equal(message.x['two'], '22')
-    
+            assert.equal(message.cid, dummyDataTestConfig.conversations.group.nativeId)
+            assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+            assert.equal(message.x["two"], "22")
+
             done()
           }
         })
@@ -220,26 +232,26 @@ describe("Crash Node behavior:", () => {
     it("NodeA crash", async () => {
       const closePromise = new Promise((resolve, reject) => {
         nodeB.once(`node_close[${nodeA.clusterEndpoint}]`, () => {
-          console.log('[node][close]', nodeA.clusterEndpoint)
+          console.log("[node][close]", nodeA.clusterEndpoint)
           resolve()
         })
       })
 
       const startReconnectPromise = new Promise((resolve, reject) => {
         nodeB.once(`node_reconnect_start[${nodeA.clusterEndpoint}]`, () => {
-          console.log('[node][reconnect][start]', nodeA.clusterEndpoint)
+          console.log("[node][reconnect][start]", nodeA.clusterEndpoint)
           resolve()
         })
       })
 
       nodeA.kill()
-  
+
       await Promise.all([closePromise, startReconnectPromise])
     })
 
-    it ("check last activity", async () => {
-      const activity = await samaClientB.subscribeToUserActivity(userANativeId)
-      assert.ok(activity[userANativeId] === 0)
+    it("check last activity", async () => {
+      const activity = await samaClientB.subscribeToUserActivity(dummyDataTestConfig.users.user1.nativeId)
+      assert.ok(activity[dummyDataTestConfig.users.user1.nativeId] === 0)
     })
 
     it("restart NodeA", async () => {
@@ -247,13 +259,13 @@ describe("Crash Node behavior:", () => {
 
       const finishReconnectPromise = new Promise((resolve, reject) => {
         nodeB.once(`node_reconnect_finish[${nodeAClusterEndpoint}]`, () => {
-          console.log('[node][reconnect][finish]', nodeAClusterEndpoint)
+          console.log("[node][reconnect][finish]", nodeAClusterEndpoint)
           resolve()
         })
       })
 
       const { port } = new URL(nodeAClusterEndpoint)
-      const nodeEnv = { 'APP_CLUSTER_PORT': `${port}` }
+      const nodeEnv = { APP_CLUSTER_PORT: `${port}` }
 
       nodeA = await startOrAccessNodeA(false, nodeEnv)
 
@@ -264,10 +276,10 @@ describe("Crash Node behavior:", () => {
       samaClientA
         .connect()
         .then(() => samaClientA.socketLogin({ token: userAToken }))
-        .then(({ token }) => userAToken = token)
+        .then(({ token }) => (userAToken = token))
 
       samaClientB.onUserActivityListener = (activity) => {
-        assert.equal(activity[userANativeId], 0)
+        assert.equal(activity[dummyDataTestConfig.users.user1.nativeId], 0)
         done()
       }
     })
@@ -276,14 +288,14 @@ describe("Crash Node behavior:", () => {
       it("A -> B", (done) => {
         const mId = v4()
         const body = `Cluster Test Hello m: ${mId}`
-        samaClientA.messageCreate({ cid: TEST_G_CONV_ID, body: body, mid: mId, x: { two: '2' } })
-  
+        samaClientA.messageCreate({ cid: dummyDataTestConfig.conversations.group.nativeId, body: body, mid: mId, x: { two: "2" } })
+
         samaClientB.onMessageEvent = (message) => {
           assert.equal(message.body, body)
-          assert.equal(message.cid, TEST_G_CONV_ID)
-          assert.equal(message.from, userANativeId)
-          assert.equal(message.x['two'], '2')
-  
+          assert.equal(message.cid, dummyDataTestConfig.conversations.group.nativeId)
+          assert.equal(message.from, dummyDataTestConfig.users.user1.nativeId)
+          assert.equal(message.x["two"], "2")
+
           done()
         }
       })
@@ -291,14 +303,14 @@ describe("Crash Node behavior:", () => {
       it("B -> A", (done) => {
         const mId = v4()
         const body = `Cluster Test Hello m: ${mId}`
-        samaClientB.messageCreate({ cid: TEST_G_CONV_ID, body: body, mid: mId, x: { two: '22' } })
-  
+        samaClientB.messageCreate({ cid: dummyDataTestConfig.conversations.group.nativeId, body: body, mid: mId, x: { two: "22" } })
+
         samaClientA.onMessageEvent = (message) => {
           assert.equal(message.body, body)
-          assert.equal(message.cid, TEST_G_CONV_ID)
-          assert.equal(message.from, userBNativeId)
-          assert.equal(message.x['two'], '22')
-  
+          assert.equal(message.cid, dummyDataTestConfig.conversations.group.nativeId)
+          assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+          assert.equal(message.x["two"], "22")
+
           done()
         }
       })
@@ -308,70 +320,70 @@ describe("Crash Node behavior:", () => {
   describe("NodeA(U_A,U_B_D2) - NodeB(U_B_D1) - NodeB Crush check last activity behavior:", () => {
     describe("Connect User B Device 2", () => {
       it("subscribe last activity U_B", async () => {
-        const activity = await samaClientA.subscribeToUserActivity(userBNativeId)
-        assert.ok(activity[userBNativeId] === 0)
+        const activity = await samaClientA.subscribeToUserActivity(dummyDataTestConfig.users.user2.nativeId)
+        assert.ok(activity[dummyDataTestConfig.users.user2.nativeId] === 0)
       })
-  
+
       it("connect U_B_D2 to NodeA", (done) => {
         samaClientB_Device2
           .connect()
-          .then(() => samaClientB_Device2.socketLogin({ user: { login: 'banshiAnton2', password: '12345678' } }))
-  
+          .then(() => samaClientB_Device2.socketLogin({ user: { login: dummyDataTestConfig.users.user2.login, password: userPassword } }))
+
         samaClientA.onUserActivityListener = (activity) => {
-          assert.equal(activity[userBNativeId], 0)
+          assert.equal(activity[dummyDataTestConfig.users.user2.nativeId], 0)
           done()
         }
       })
     })
 
     describe("kill NodeB check last activity behavior", () => {
-      it ("kill NodeB wait no last activity", async () => {
+      it("kill NodeB wait no last activity", async () => {
         const closePromise = new Promise((resolve, reject) => {
           nodeA.once(`node_close[${nodeB.clusterEndpoint}]`, () => {
-            console.log('[node][close]', nodeB.clusterEndpoint)
+            console.log("[node][close]", nodeB.clusterEndpoint)
             resolve()
           })
         })
-  
+
         const startReconnectPromise = new Promise((resolve, reject) => {
           nodeA.once(`node_reconnect_start[${nodeB.clusterEndpoint}]`, () => {
-            console.log('[node][reconnect][start]', nodeB.clusterEndpoint)
+            console.log("[node][reconnect][start]", nodeB.clusterEndpoint)
             resolve()
           })
         })
-  
+
         const cleanNodeBPromise = new Promise((resolve, reject) => {
           nodeA.once(`node_clean[${nodeB.clusterEndpoint}]`, () => {
-            console.log('[node][clean]', nodeB.clusterEndpoint)
+            console.log("[node][clean]", nodeB.clusterEndpoint)
             resolve()
           })
         })
-  
+
         const userBNoOfflinePromise = new Promise((resolve, reject) => {
           cleanNodeBPromise.then(() => setTimeoutPromise(1_000)).then(() => resolve())
 
           samaClientA.onUserActivityListener = async (activity) => {
-            if (activity[userBNativeId] > 0) {
+            if (activity[dummyDataTestConfig.users.user2.nativeId] > 0) {
               reject(new Error("Should not be called"))
             }
           }
         })
-  
+
         nodeB.kill()
-  
+
         await Promise.all([closePromise, startReconnectPromise, cleanNodeBPromise, userBNoOfflinePromise])
       })
 
       it("check user B activity", async () => {
-        const activity = await samaClientA.subscribeToUserActivity(userBNativeId)
-        assert.ok(activity[userBNativeId] === 0)
+        const activity = await samaClientA.subscribeToUserActivity(dummyDataTestConfig.users.user2.nativeId)
+        assert.ok(activity[dummyDataTestConfig.users.user2.nativeId] === 0)
       })
 
       it("close last U_B connection on NodeA", (done) => {
         samaClientB_Device2.disconnect()
 
         samaClientA.onUserActivityListener = (activity) => {
-          assert.ok(activity[userBNativeId] > 0)
+          assert.ok(activity[dummyDataTestConfig.users.user2.nativeId] > 0)
           done()
         }
       })
@@ -387,7 +399,7 @@ describe("Crash Node behavior:", () => {
       it("connect U_B", (done) => {
         samaClientB.connect().then(() => samaClientB.socketLogin({ token: userBToken }))
         samaClientA.onUserActivityListener = (activity) => {
-          assert.equal(activity[userBNativeId], 0)
+          assert.equal(activity[dummyDataTestConfig.users.user2.nativeId], 0)
           done()
         }
       })
@@ -398,14 +410,14 @@ describe("Crash Node behavior:", () => {
     it("crash NodeA", async () => {
       const closePromise = new Promise((resolve, reject) => {
         nodeB.once(`node_close[${nodeA.clusterEndpoint}]`, () => {
-          console.log('[node][close]', nodeA.clusterEndpoint)
+          console.log("[node][close]", nodeA.clusterEndpoint)
           resolve()
         })
       })
 
       const startReconnectPromise = new Promise((resolve, reject) => {
         nodeB.once(`node_reconnect_start[${nodeA.clusterEndpoint}]`, () => {
-          console.log('[node][reconnect][start]', nodeA.clusterEndpoint)
+          console.log("[node][reconnect][start]", nodeA.clusterEndpoint)
           resolve()
         })
       })
@@ -415,15 +427,15 @@ describe("Crash Node behavior:", () => {
       await Promise.all([closePromise, startReconnectPromise])
     })
 
-    it ("subscribe last activity U_B -> U_A", async () => {
-      const activity = await samaClientB.subscribeToUserActivity(userANativeId)
-      assert.ok(activity[userANativeId] === 0)
+    it("subscribe last activity U_B -> U_A", async () => {
+      const activity = await samaClientB.subscribeToUserActivity(dummyDataTestConfig.users.user1.nativeId)
+      assert.ok(activity[dummyDataTestConfig.users.user1.nativeId] === 0)
     })
 
     it("connect U_A to NodeB", (done) => {
       samaClientA.connect(NODE_2_WS_ENDPOINT, NODE_2_HTTP_ENDPOINT).then(() => samaClientA.socketLogin({ token: userAToken }))
       samaClientB.onUserActivityListener = (activity) => {
-        assert.equal(activity[userANativeId], 0)
+        assert.equal(activity[dummyDataTestConfig.users.user1.nativeId], 0)
         done()
       }
     })
@@ -432,14 +444,14 @@ describe("Crash Node behavior:", () => {
       it("A -> B", (done) => {
         const mId = v4()
         const body = `Cluster Test Hello m: ${mId}`
-        samaClientA.messageCreate({ cid: TEST_G_CONV_ID, body: body, mid: mId, x: { two: '2' } })
-  
+        samaClientA.messageCreate({ cid: dummyDataTestConfig.conversations.group.nativeId, body: body, mid: mId, x: { two: "2" } })
+
         samaClientB.onMessageEvent = (message) => {
           assert.equal(message.body, body)
-          assert.equal(message.cid, TEST_G_CONV_ID)
-          assert.equal(message.from, userANativeId)
-          assert.equal(message.x['two'], '2')
-  
+          assert.equal(message.cid, dummyDataTestConfig.conversations.group.nativeId)
+          assert.equal(message.from, dummyDataTestConfig.users.user1.nativeId)
+          assert.equal(message.x["two"], "2")
+
           done()
         }
       })
@@ -447,14 +459,14 @@ describe("Crash Node behavior:", () => {
       it("B -> A", (done) => {
         const mId = v4()
         const body = `Cluster Test Hello m: ${mId}`
-        samaClientB.messageCreate({ cid: TEST_G_CONV_ID, body: body, mid: mId, x: { two: '22' } })
-  
+        samaClientB.messageCreate({ cid: dummyDataTestConfig.conversations.group.nativeId, body: body, mid: mId, x: { two: "22" } })
+
         samaClientA.onMessageEvent = (message) => {
           assert.equal(message.body, body)
-          assert.equal(message.cid, TEST_G_CONV_ID)
-          assert.equal(message.from, userBNativeId)
-          assert.equal(message.x['two'], '22')
-  
+          assert.equal(message.cid, dummyDataTestConfig.conversations.group.nativeId)
+          assert.equal(message.from, dummyDataTestConfig.users.user2.nativeId)
+          assert.equal(message.x["two"], "22")
+
           done()
         }
       })

@@ -240,7 +240,7 @@ class ClusterManager extends BaseProtocolProcessor {
         nodeSederLogger.debug("[Close][%s] IsWasOpened: %s Code: %s Reason: %s", ws.nodeEndpoint, ws.isWasOpened, code, reason)
 
         if (!ws.isWasOpened) {
-          return 
+          return
         }
 
         this.onCloseNode(ws.nodeEndpoint, +code, reason)
@@ -309,8 +309,9 @@ class ClusterManager extends BaseProtocolProcessor {
             loggerReceiver.debug("[node handshake pong] %s", nodeInfo.endpoint)
             this.#shareCurrentNodeInfo(ws)
 
-            await this.createOrRetrieveConnectionWithNode(nodeInfo.endpoint, true)
-              .catch(error => loggerReceiver.error(error, "[create connection on receiver]"))
+            await this.createOrRetrieveConnectionWithNode(nodeInfo.endpoint, true).catch((error) =>
+              loggerReceiver.error(error, "[create connection on receiver]")
+            )
             return
           }
 

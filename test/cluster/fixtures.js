@@ -1,9 +1,18 @@
 import killPort from "kill-port"
-import { killNodeA, killNodeB } from "./utils.js"
+import {
+  NODE_1_HTTP_ENDPOINT,
+  NODE_1_WS_ENDPOINT,
+  startOrAccessNodeA,
+  createDummyData,
+  dummyDataTestConfig,
+  killNodeA,
+  killNodeB,
+} from "./utils.js"
 
-const killPortWrap = (port, method) => killPort(port, method)
-  .then(() => console.log('[Port]', port, 'killed'))
-  .catch(error => console.log('[Port]', port, error.message)) 
+const killPortWrap = (port, method) =>
+  killPort(port, method)
+    .then(() => console.log("[Port]", port, "killed"))
+    .catch((error) => console.log("[Port]", port, error.message))
 
 const killPorts = async () => {
   await killPortWrap(9001)
@@ -15,8 +24,13 @@ const killPorts = async () => {
 
 export async function mochaGlobalSetup() {
   console.log("[Global][Start]")
-  
+
   await killPorts()
+
+  await startOrAccessNodeA()
+  await createDummyData(NODE_1_WS_ENDPOINT, NODE_1_HTTP_ENDPOINT)
+
+  console.log("[Dummy Date Config]", dummyDataTestConfig)
 }
 
 export async function mochaGlobalTeardown() {
