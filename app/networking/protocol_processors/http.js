@@ -49,7 +49,7 @@ const parseBaseParamsMiddleware = async (res, req) => {
 }
 
 const addCorsHeaders = (res, req) => {
-  res.writeHeader("Access-Control-Allow-Origin", config.get("http.corsOrigin") ?? "*")
+  res.writeHeader("Access-Control-Allow-Origin", config.get("http.corsOrigin") ?? res.parsedHeaders["origin"] ?? "*")
   res.writeHeader("Access-Control-Allow-Credentials", "true")
   res.writeHeader("Access-Control-Allow-Methods", "POST, PUT, DELETE")
   res.writeHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, API-Key")
