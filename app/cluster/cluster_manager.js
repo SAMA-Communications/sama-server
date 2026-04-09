@@ -16,6 +16,7 @@ import packetManager from "../networking/packet_manager.js"
 import { promiseQueueWithJittering, CancelQueueError } from "../utils/promise-queue-with-jittering.js"
 
 const logger = mainLogger.child("[ClusterManager]")
+const loggerSync = logger.child("[Sync]")
 const loggerSender = logger.child("[Sender]")
 const loggerReceiver = logger.child("[Receiver]")
 
@@ -111,13 +112,17 @@ class ClusterManager extends BaseProtocolProcessor {
   async #connectToExistingClusterNodes() {
     const destroyedNodes = new Set()
 
+    loggerSender.debug("[Start]")
+    loggerSync.debug("[connections] %j %s", Array.from(this.clusterNodesConnections.keys()), this.clusterNodesConnections.size)
+    loggerSync.debug("[reconnecting] %j %s", Array.from(this.reconnectingNodesConnections.keys()), this.reconnectingNodesConnections.size)
+
     const clusterNodeService = ServiceLocatorContainer.use("ClusterNodeService")
 
     const activeNodes = await clusterNodeService.retrieveActive()
-    loggerSender.debug("[active] %j %s", Array.from(activeNodes), activeNodes.size)
+    loggerSync.debug("[active] %j %s", Array.from(activeNodes), activeNodes.size)
 
     const storedNodes = await clusterNodeService.retrieveStored()
-    loggerSender.debug("[stored] %j %s", Array.from(storedNodes), storedNodes.size)
+    loggerSync.debug("[stored] %j %s", Array.from(storedNodes), storedNodes.size)
 
     // check node-users stored and no active
     storedNodes.forEach((storedNode) => {
@@ -152,9 +157,10 @@ class ClusterManager extends BaseProtocolProcessor {
       }
 
       try {
+        loggerSync.debug("[try connect node] %s", nodeEndpoint)
         await this.createOrRetrieveConnectionWithNode(nodeEndpoint, true)
       } catch (error) {
-        loggerSender.error(error, "[connect node][failed] %s", nodeEndpoint)
+        loggerSync.error(error, "[connect node][failed] %s", nodeEndpoint)
         this.startNodeReconnecting(nodeEndpoint, false)
       }
     }
@@ -192,6 +198,8 @@ class ClusterManager extends BaseProtocolProcessor {
     const ws = await this.createConnectionWithNode(nodeEndpoint)
 
     this.cancelNodeReconnecting(nodeEndpoint)
+
+    loggerSender.debug("[connect node][success] %s", nodeEndpoint)
 
     if (this.clusterNodesConnections.get(nodeEndpoint)) {
       ws.close(DUPLICATE_CLOSE_WS_CODE, DUPLICATE_CLOSE_WS_REASON)
@@ -322,7 +330,7 @@ class ClusterManager extends BaseProtocolProcessor {
 
         close: (ws, code, reason) => {
           reason = decoder.write(Buffer.from(reason))
-          logger.debug("[Close][%s] Code: %s Reason: %s", ws.nodeEndpoint, code, reason)
+          loggerReceiver.debug("[Close][%s] Code: %s Reason: %s", ws.nodeEndpoint, code, reason)
           this.onCloseNode(ws.nodeEndpoint, +code, reason)
         },
       })
