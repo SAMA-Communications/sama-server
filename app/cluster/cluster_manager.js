@@ -157,7 +157,7 @@ class ClusterManager extends BaseProtocolProcessor {
       }
 
       try {
-        loggerSync.debug("[try connect node] %s", nodeEndpoint)
+        loggerSync.debug("[establish connect with node] %s", nodeEndpoint)
         await this.createOrRetrieveConnectionWithNode(nodeEndpoint, true)
         loggerSync.debug("[connected] %s", nodeEndpoint)
       } catch (error) {
