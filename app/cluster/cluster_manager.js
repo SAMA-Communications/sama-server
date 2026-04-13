@@ -366,14 +366,20 @@ class ClusterManager extends BaseProtocolProcessor {
       return
     }
 
-    this.clusterNodesConnections.delete(nodeEndpoint)
+    this.deleteClusterConnection(nodeEndpoint)
     this.startNodeReconnecting(nodeEndpoint, true)
+  }
+
+  deleteClusterConnection(nodeEndpoint) {
+    const connections = this.clusterNodesConnections.get(nodeEndpoint)
+    this.clusterNodesConnections.delete(nodeEndpoint)
+    connections?.close?.()
   }
 
   async cleanDestroyedNodeData(nodeEndpoint) {
     logger.debug("[clean node] %s", nodeEndpoint)
 
-    this.clusterNodesConnections.delete(nodeEndpoint)
+    this.deleteClusterConnection(nodeEndpoint)
     this.cancelNodeReconnecting(nodeEndpoint)
 
     const sessionService = ServiceLocatorContainer.use("SessionService")
