@@ -174,6 +174,8 @@ if (!config.get("app.isStandAloneNode")) {
   // Start Cluster Sync
   logger.debug("[Start sync]")
   await clusterManager.startSyncingClusterNodes(true)
+} else {
+  config.set("ws.cluster.endpoint", buildWsEndpoint(config.get("app.ip"), config.get("ws.cluster.port")))
 }
 
 logger.debug("[Config][Merged] %s", JSON.stringify(config.toObject(), null, 5))

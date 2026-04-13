@@ -3,7 +3,6 @@ import ip from "ip"
 
 import CONFIG_VALUES from "./default.js"
 import Config from "./config.js"
-import { buildWsEndpoint } from "../utils/build_ws_endpoint.js"
 
 const config = new Config(CONFIG_VALUES)
 
@@ -18,7 +17,6 @@ config.set("tcp.options.isTls", !!isTls)
 
 if (config.get("app.isStandAloneNode")) {
   config.set("ws.cluster.port", 1000)
-  config.set("ws.cluster.endpoint", buildWsEndpoint(config.get("app.ip"), config.get("ws.cluster.port")))
 }
 
 export default config
