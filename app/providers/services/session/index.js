@@ -206,8 +206,11 @@ class SessionService {
     const userDeviceIds = await this.listUserDevice(organizationId, userId)
 
     if (userDeviceIds.includes(deviceId)) {
+      const extraParams = await this.retrieveUserExtraParams(userId, deviceId)
+      const oldNodeEndpointKey = extraParams?.[CONSTANTS.SESSION_NODE_KEY] || nodeEndpoint
+
       await this.removeUserData(organizationId, userId, deviceId)
-      await this.removeUserDeviceFromNode(nodeEndpoint, organizationId, userId, deviceId)
+      await this.removeUserDeviceFromNode(oldNodeEndpointKey, organizationId, userId, deviceId)
     }
 
     await this.addUserDevice(organizationId, userId, deviceId)
