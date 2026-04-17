@@ -218,7 +218,7 @@ process.stdin.on('data', (data) => {
   
       console.log('[PingWS]', userId, '[devices]', sessionService.listUserDeviceLocal(userId))
   
-      const connections = sessionService.listUserDeviceLocal(userId)
+      const connections = sessionService.getUserDevices(userId)
 
       for (const connection of connections) {
         console.log('[PingWS][start]', connection?.socket)
@@ -236,7 +236,7 @@ process.stdin.on('data', (data) => {
   
       console.log('[SendWS]', userId, sendData, '[devices]', sessionService.listUserDeviceLocal(userId))
   
-      const connections = sessionService.listUserDeviceLocal(userId)
+      const connections = sessionService.getUserDevices(userId)
 
       for (const connection of connections) {
         console.log('[SendWS][start]', connection?.socket)
