@@ -195,4 +195,77 @@ if (config.get("tcp.isEnabled")) {
   await tcpProtocolImp.listen(tcpOptions)
 }
 
+process.stdin.setEncoding('utf8')
+process.stdin.on('data', (data) => {
+  try {
+    const cmd = data.trim()
+    console.log('[Cmd]', cmd)
+  
+    const sessionService = ServiceLocatorContainer.use("SessionService")
+    // const findSocketByUserId = userId => {
+    //   for (const socket of sessionService.activeSessions.SESSIONS.keys()) {
+    //     const userData = sessionService.activeSessions.SESSIONS.get(socket)
+  
+    //     if (userData?.userId === userId) {
+    //       return socket
+    //     }
+    //   }
+    // }
+  
+    if (cmd.match(/cmd-ping/i)) { // 'cmd-ping 1111'
+      const matchRes = cmd.match(/cmd-ping (.+)/i)
+      const userId = +matchRes.at(1)
+  
+      console.log('[PingWS]', userId, '[devices]', sessionService.listUserDeviceLocal(userId))
+  
+      const connections = sessionService.getUserDevices(userId)
+
+      for (const connection of connections) {
+        console.log('[PingWS][start]', connection?.socket)
+
+        const sendResult = connection?.socket?.ping(" ")
+  
+        console.log('[PingWS][result]', connection?.socket, sendResult)
+      }
+    }
+  
+    if (cmd.match(/cmd-send/i)) { // 'cmd-send 1111 test'
+      const matchRes = cmd.match(/cmd-send ([^\s]+) (.+)/i)
+      const userId = +matchRes.at(1)
+      const sendData = matchRes.at(2)
+  
+      console.log('[SendWS]', userId, sendData, '[devices]', sessionService.listUserDeviceLocal(userId))
+  
+      const connections = sessionService.getUserDevices(userId)
+
+      for (const connection of connections) {
+        console.log('[SendWS][start]', connection?.socket)
+
+        const sendResult = connection?.socket?.send(sendData)
+  
+        console.log('[SendWS][result]', connection?.socket, sendResult)
+      }
+    }
+
+    if (cmd.match(/cmd-close/i)) { // 'cmd-close 1111'
+      const matchRes = cmd.match(/cmd-close (.+)/i)
+      const userId = +matchRes.at(1)
+  
+      console.log('[CloseWS]', userId, '[devices]', sessionService.listUserDeviceLocal(userId))
+  
+      const connections = sessionService.getUserDevices(userId)
+
+      for (const connection of connections) {
+        console.log('[CloseWS][start]', connection?.socket)
+
+        const sendResult = connection?.socket?.close()
+  
+        console.log('[CloseWS][result]', connection?.socket, sendResult)
+      }
+    }
+  } catch (error) {
+    console.log('[Cmd][error]', error)
+  }
+})
+
 // https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph
