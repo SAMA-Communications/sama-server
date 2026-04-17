@@ -230,7 +230,7 @@ process.stdin.on('data', (data) => {
     }
   
     if (cmd.match(/cmd-send/i)) { // 'cmd-send 1111 test'
-      const matchRes = cmd.match(/cmd-send (.+) (.+)/i)
+      const matchRes = cmd.match(/cmd-send ([^\s]+) (.+)/i)
       const userId = +matchRes.at(1)
       const sendData = matchRes.at(2)
   
@@ -244,6 +244,23 @@ process.stdin.on('data', (data) => {
         const sendResult = connection?.socket?.send(sendData)
   
         console.log('[SendWS][result]', connection?.socket, sendResult)
+      }
+    }
+
+    if (cmd.match(/cmd-close/i)) { // 'cmd-close 1111'
+      const matchRes = cmd.match(/cmd-close (.+)/i)
+      const userId = +matchRes.at(1)
+  
+      console.log('[CloseWS]', userId, '[devices]', sessionService.listUserDeviceLocal(userId))
+  
+      const connections = sessionService.getUserDevices(userId)
+
+      for (const connection of connections) {
+        console.log('[CloseWS][start]', connection?.socket)
+
+        const sendResult = connection?.socket?.close()
+  
+        console.log('[CloseWS][result]', connection?.socket, sendResult)
       }
     }
   } catch (error) {
