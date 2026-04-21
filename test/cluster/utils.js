@@ -129,53 +129,85 @@ export const createOrganizationId = async (endpoint, name) => {
   return organizationId
 }
 
-export const createDummyData = async (endpointWs, endpointHttp) => {
-  dummyDataTestConfig.organizationId = await createOrganizationId(endpointHttp)
-
+export const initSdkWithUser = async (
+  organizationId, needLogin,
+  loginPrefix, deviceIdPrefix = 'dv',
+  endpointWs, endpointHttp
+) => {
   const sdkConfig = {
     endpoint: {
       ws: endpointWs,
       http: endpointHttp,
     },
-    organization_id: dummyDataTestConfig.organizationId,
+    organization_id: organizationId,
     disableAutoReconnect: true,
   }
 
   const samaSdk = new SAMAClient(sdkConfig)
-  samaSdk.deviceId = v4()
+  samaSdk.deviceId = `${deviceIdPrefix}-${v4()}`
 
   await samaSdk.connect()
 
-  dummyDataTestConfig.users.userA.login = `TestUser-${faker.internet.username()}`
-  const userA = await samaSdk.userCreate({
-    login: dummyDataTestConfig.users.userA.login,
+  const user = await createUser(samaSdk, loginPrefix)
+
+  if (needLogin) {
+    await samaSdk.socketLogin({ user: { login: user.login, password: userPassword } })
+  }
+
+  return { samaSdk, user }
+}
+
+export const createUser = async (samaSdk, loginPrefix = 'TestUser') => {
+  const login = `${loginPrefix}-${faker.internet.username()}`
+
+  const user = await samaSdk.userCreate({
+    login: login,
     email: faker.internet.email(),
     password: userPassword,
   })
+
+  return user
+}
+
+export const createPrivateConversation = async (samaSdk, userAId, userBId) => {
+  const privateConversation = await samaSdk.conversationCreate({
+    name: `Private-${faker.music.songName()}-${faker.string.alphanumeric(8)}`,
+    type: "u",
+    participants: [userAId, userBId],
+  })
+
+  return privateConversation
+}
+
+export const createGroupConversation = async (samaSdk, userIds) => {
+  const groupConversation = await samaSdk.conversationCreate({
+    name: `Group-${faker.music.songName()}-${faker.string.alphanumeric(8)}`,
+    type: "g",
+    participants: userIds,
+  })
+
+  return groupConversation
+}
+
+export const createDummyData = async (endpointWs, endpointHttp) => {
+  dummyDataTestConfig.organizationId = await createOrganizationId(endpointHttp)
+
+  const { samaSdk, user: userA } = await initSdkWithUser(
+    dummyDataTestConfig.organizationId, true,
+    void 0, void 0,
+    endpointWs, endpointHttp,
+  )
+  dummyDataTestConfig.users.userA.login = userA.login
   dummyDataTestConfig.users.userA.nativeId = userA.native_id
 
-  dummyDataTestConfig.users.userB.login = `TestUser-${faker.internet.username()}`
-  const userB = await samaSdk.userCreate({
-    login: dummyDataTestConfig.users.userB.login,
-    email: faker.internet.email(),
-    password: userPassword,
-  })
+  const userB = await createUser(samaSdk)
+  dummyDataTestConfig.users.userB.login = userB.login
   dummyDataTestConfig.users.userB.nativeId = userB.native_id
 
-  await samaSdk.socketLogin({ user: { login: dummyDataTestConfig.users.userA.login, password: userPassword } })
-
-  const privateConversation = await samaSdk.conversationCreate({
-    name: `Private-${faker.music.songName()}`,
-    type: "u",
-    participants: [userA.native_id, userB.native_id],
-  })
+  const privateConversation = await createPrivateConversation(samaSdk, userA.native_id, userB.native_id)
   dummyDataTestConfig.conversations.private.nativeId = privateConversation._id
 
-  const groupConversation = await samaSdk.conversationCreate({
-    name: `Group-${faker.music.songName()}`,
-    type: "g",
-    participants: [userA.native_id, userB.native_id],
-  })
+  const groupConversation = await createGroupConversation(samaSdk, [userA.native_id, userB.native_id])
   dummyDataTestConfig.conversations.group.nativeId = groupConversation._id
 
   samaSdk.disconnect()

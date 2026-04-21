@@ -1,0 +1,17 @@
+{
+  "recursive": true,
+  "sort": false,
+  "color": true,
+  "allow-uncaught": true,
+  "parallel": false,
+  "reporter": "list",
+  "require": [
+    "dotenv/config"
+  ],
+  "exit": true,
+  "spec": [
+    "./test/cluster/client-clustering.spec.js"
+  ],
+  "exclude": "test/**/*.spec.js",
+  "timeout": 120000
+}
