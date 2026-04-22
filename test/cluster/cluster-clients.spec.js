@@ -118,6 +118,17 @@ const sendPrivateMessagesWithMarkAble = async (senderSdk, senderUser) => {
   }
 }
 
+const retrieveAllLastActivity = async (senderUser) => {
+  const senderSdk = userSdkPairs.get(senderUser)
+  const userIds = Array.from(userSdkPairs.keys()).map(user => user.native_id)
+
+  const lastActivity = await senderSdk.getUserActivity(userIds)
+
+  for (const [userId, seconds] of Object.entries(lastActivity)) {
+    assert.ok(seconds === 0)
+  }
+}
+
 describe("Multiple Clients", () => {
   describe("Init", () => {
     it("sdk array", async () => {
@@ -166,6 +177,26 @@ describe("Multiple Clients", () => {
     })
   })
 
+  describe("check last activity", () => {
+    const resetSdkListeners = () => {
+      for (const sdk of userSdkPairs.values()) {
+        sdk.onMessageEvent = void 0
+      }
+    }
+
+    beforeEach(resetSdkListeners)
+
+    clientSdkDeviceIds.forEach((deviceId, i) => {
+      it(`${deviceId} check`, async () => {
+        const senderUser = clientIdUserPairs.get(deviceId)
+        await retrieveAllLastActivity(senderUser)
+        await setTimeoutPromise(50)
+      })
+    })
+
+    afterEach(resetSdkListeners)
+  })
+
   describe("Send messages", () => {
     const resetSdkListeners = () => {
       for (const sdk of userSdkPairs.values()) {
@@ -201,6 +232,26 @@ describe("Multiple Clients", () => {
         const senderUser = clientIdUserPairs.get(deviceId)
         const senderSdk = userSdkPairs.get(senderUser)
         await sendPrivateMessagesWithMarkAble(senderSdk, senderUser)
+        await setTimeoutPromise(50)
+      })
+    })
+
+    afterEach(resetSdkListeners)
+  })
+
+  describe("check last activity", () => {
+    const resetSdkListeners = () => {
+      for (const sdk of userSdkPairs.values()) {
+        sdk.onMessageEvent = void 0
+      }
+    }
+
+    beforeEach(resetSdkListeners)
+
+    clientSdkDeviceIds.forEach((deviceId, i) => {
+      it(`${deviceId} check`, async () => {
+        const senderUser = clientIdUserPairs.get(deviceId)
+        await retrieveAllLastActivity(senderUser)
         await setTimeoutPromise(50)
       })
     })
