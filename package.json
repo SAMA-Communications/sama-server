@@ -14,6 +14,7 @@
     "start:dev": "nodemon --experimental-loader ./sama-loader.mjs --import dotenv/config index.js",
     "test": "mocha",
     "test:cluster": "mocha --config ./.cluster-mocharc.json",
+    "test:cluster:clients": "mocha --config ./.cluster-clients-mocharc.json",
     "test:cover": "c8 npm run test"
   },
   "repository": {

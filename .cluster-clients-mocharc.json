@@ -10,7 +10,7 @@
   ],
   "exit": true,
   "spec": [
-    "./test/cluster/client-clustering.spec.js"
+    "./test/cluster/cluster-clients.spec.js"
   ],
   "exclude": "test/**/*.spec.js",
   "timeout": 120000
