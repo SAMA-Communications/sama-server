@@ -129,11 +129,7 @@ export const createOrganizationId = async (endpoint, name) => {
   return organizationId
 }
 
-export const initSdkWithUser = async (
-  organizationId, needLogin,
-  loginPrefix, deviceIdPrefix = 'dv',
-  endpointWs, endpointHttp
-) => {
+export const initSdkWithUser = async (organizationId, needLogin, loginPrefix, deviceIdPrefix = "dv", endpointWs, endpointHttp) => {
   const sdkConfig = {
     endpoint: {
       ws: endpointWs,
@@ -157,7 +153,7 @@ export const initSdkWithUser = async (
   return { samaSdk, user }
 }
 
-export const createUser = async (samaSdk, loginPrefix = 'TestUser') => {
+export const createUser = async (samaSdk, loginPrefix = "TestUser") => {
   const login = `${loginPrefix}-${faker.internet.username()}`
 
   const user = await samaSdk.userCreate({
@@ -192,11 +188,7 @@ export const createGroupConversation = async (samaSdk, userIds) => {
 export const createDummyData = async (endpointWs, endpointHttp) => {
   dummyDataTestConfig.organizationId = await createOrganizationId(endpointHttp)
 
-  const { samaSdk, user: userA } = await initSdkWithUser(
-    dummyDataTestConfig.organizationId, true,
-    void 0, void 0,
-    endpointWs, endpointHttp,
-  )
+  const { samaSdk, user: userA } = await initSdkWithUser(dummyDataTestConfig.organizationId, true, void 0, void 0, endpointWs, endpointHttp)
   dummyDataTestConfig.users.userA.login = userA.login
   dummyDataTestConfig.users.userA.nativeId = userA.native_id
 

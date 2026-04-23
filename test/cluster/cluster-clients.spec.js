@@ -3,11 +3,7 @@ import { setTimeout as setTimeoutPromise } from "node:timers/promises"
 
 import { v4 } from "uuid"
 
-import {
-  initSdkWithUser,
-  createGroupConversation,
-  createPrivateConversation,
-} from "./utils.js"
+import { initSdkWithUser, createGroupConversation, createPrivateConversation } from "./utils.js"
 
 const orgId = process.env.TEST_CLIENT_ORG_ID
 const wsEndpoint = process.env.TEST_CLIENT_WS_ENDPOINT
@@ -33,22 +29,22 @@ const sendGroupMessageWithMarkAble = async (senderSdk, convId) => {
 
   const waitPromise = new Promise((resolve, reject) => {
     senderSdk.onMessageEvent = (message) => {
-      if ((message.cid === convId) && (message.body === mBodyResponse)) {
+      if (message.cid === convId && message.body === mBodyResponse) {
         responseMessagesUserIds.add(message.from)
       }
 
-      if (responseMessagesUserIds.size === (clientsCount - 1)) {
+      if (responseMessagesUserIds.size === clientsCount - 1) {
         senderSdk.onMessageEvent = void 0
         resolve()
       }
     }
   })
 
-  const recipientsSdks = Array.from(userSdkPairs.values()).filter(sdk => sdk !== senderSdk)
+  const recipientsSdks = Array.from(userSdkPairs.values()).filter((sdk) => sdk !== senderSdk)
 
   for (const sdk of recipientsSdks) {
     sdk.onMessageEvent = (message) => {
-      if ((message.cid === convId) && (message.body === mBody)) {
+      if (message.cid === convId && message.body === mBody) {
         sdk.messageCreate({
           cid: convId,
           body: mBodyResponse,
@@ -68,7 +64,7 @@ const sendGroupMessageWithMarkAble = async (senderSdk, convId) => {
 }
 
 const sendPrivateMessagesWithMarkAble = async (senderSdk, senderUser) => {
-  const recipients = Array.from(userSdkPairs.keys()).filter(user => user !== senderUser)
+  const recipients = Array.from(userSdkPairs.keys()).filter((user) => user !== senderUser)
 
   for (const recipientUser of recipients) {
     const recipientSdk = userSdkPairs.get(recipientUser)
@@ -83,22 +79,14 @@ const sendPrivateMessagesWithMarkAble = async (senderSdk, senderUser) => {
 
     const waitPromise = new Promise((resolve) => {
       senderSdk.onMessageEvent = (message) => {
-        if (
-          (message.cid === privateConversation._id) &&
-          (message.body === mBodyResponse) &&
-          (message.from === recipientUser.native_id)
-        ) {
+        if (message.cid === privateConversation._id && message.body === mBodyResponse && message.from === recipientUser.native_id) {
           resolve()
         }
       }
     })
 
     recipientSdk.onMessageEvent = (message) => {
-      if (
-        (message.cid === privateConversation._id) &&
-        (message.body === mBody) &&
-        (message.from === senderUser.native_id)
-      ) {
+      if (message.cid === privateConversation._id && message.body === mBody && message.from === senderUser.native_id) {
         recipientSdk.messageCreate({
           cid: privateConversation._id,
           body: mBodyResponse,
@@ -106,7 +94,6 @@ const sendPrivateMessagesWithMarkAble = async (senderSdk, senderUser) => {
         })
       }
     }
-
 
     await senderSdk.messageCreate({
       cid: privateConversation._id,
@@ -120,7 +107,7 @@ const sendPrivateMessagesWithMarkAble = async (senderSdk, senderUser) => {
 
 const retrieveAllLastActivity = async (senderUser) => {
   const senderSdk = userSdkPairs.get(senderUser)
-  const userIds = Array.from(userSdkPairs.keys()).map(user => user.native_id)
+  const userIds = Array.from(userSdkPairs.keys()).map((user) => user.native_id)
 
   const lastActivity = await senderSdk.getUserActivity(userIds)
 
@@ -135,10 +122,7 @@ describe("Multiple Clients", () => {
       for (let i = 0; i < clientsCount; ++i) {
         const deviceId = clientSdkDeviceIds.at(i)
 
-        const { samaSdk, user } = await initSdkWithUser(
-          orgId, true, `TestUser-${i}`, deviceId,
-          wsEndpoint, httpEndpoint
-        )
+        const { samaSdk, user } = await initSdkWithUser(orgId, true, `TestUser-${i}`, deviceId, wsEndpoint, httpEndpoint)
 
         assert.ok(samaSdk)
         assert.ok(user)
@@ -150,7 +134,7 @@ describe("Multiple Clients", () => {
 
     it("create group conversation", async () => {
       const users = Array.from(userSdkPairs.keys())
-      const userIds = users.map(user => user.native_id)
+      const userIds = users.map((user) => user.native_id)
       const ownerSdk = userSdkPairs.get(users.at(0))
       const groupConversation = await createGroupConversation(ownerSdk, userIds)
 
@@ -163,7 +147,7 @@ describe("Multiple Clients", () => {
       for (const user of userSdkPairs.keys()) {
         const userAId = user.native_id
         const samaSdk = userSdkPairs.get(user)
-        const otherUsers = Array.from(userSdkPairs.keys()).filter(user => user.native_id !== userAId)
+        const otherUsers = Array.from(userSdkPairs.keys()).filter((user) => user.native_id !== userAId)
 
         for (const user of otherUsers) {
           const userBId = user.native_id

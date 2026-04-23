@@ -105,15 +105,15 @@ const CONFIG = {
   repl: {
     http: {
       port: +(process.env.APP_REPL_HTTP_PORT ?? 5010),
-      accessKey: process.env.APP_REPL_HTTP_ACCESS_KEY
+      accessKey: process.env.APP_REPL_HTTP_ACCESS_KEY,
     },
     socket: {
-      handler: process.env.APP_REPL_SOCKET_HANDLER
+      handler: process.env.APP_REPL_SOCKET_HANDLER,
     },
     file: {
       in: process.env.APP_REPL_FILE_IN,
-      out: process.env.APP_REPL_FILE_OUT
-    }
+      out: process.env.APP_REPL_FILE_OUT,
+    },
   },
   conversation: {
     disableChannelsLogic: process.env.CONVERSATION_DISABLE_CHANNELS_LOGIC === CONSTANTS.ENV_TRUE,

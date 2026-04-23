@@ -8,6 +8,7 @@ import http from "node:http"
 
 import { CONSTANTS } from "../constants/constants.js"
 
+// example: curl --no-progress-meter -sSNT. -H "api-key: ****" localhost:5010
 
 const httpReplService = async (replOptions, httpOptions) => {
   const { ctx } = replOptions
@@ -15,13 +16,13 @@ const httpReplService = async (replOptions, httpOptions) => {
 
   const server = http.createServer((req, res) => {
     if (req.headers[CONSTANTS.HTTP_REPL_ACCESS_KEY_HEADER] !== accessKey) {
-      return res.end("Invalid api-key")
+      return res.end("Invalid access-key")
     }
 
-    res.setHeader('content-type', 'multipart/octet-stream')
-  
+    res.setHeader("content-type", "multipart/octet-stream")
+
     const replService = repl.start({
-      prompt: 'curl repl> ',
+      prompt: "curl repl> ",
       input: req,
       output: res,
       terminal: false,
@@ -33,31 +34,34 @@ const httpReplService = async (replOptions, httpOptions) => {
 
     replService.context = context
 
-    req.on("error", error => replService.close())
+    req.on("error", (error) => replService.close())
     req.on("end", () => replService.close())
 
-    res.on("error", error => replService.close())
+    res.on("error", (error) => replService.close())
     res.on("end", () => replService.close())
 
     replService.on("close", () => !res.closed && res.end("REPL closed"))
-    replService.on("error", error => {
+    replService.on("error", (error) => {
       replService.close()
       !res.closed && res.end("REPL closed")
       !req.closed && req.destroy()
     })
   })
-  
+
   return new Promise((resolve, reject) => {
     server.listen(port, () => resolve(port))
   })
 }
 
+// example write: cat > ./pipe-repl.in
+// example read: tail -f ./pipe-repl.out
+
 const fileReplService = async (replOptions, fileOptions) => {
   const { ctx } = replOptions
   const { fileIn, fileOut } = fileOptions
 
-  await fsPromises.rm(fileIn, { force: true }).catch(error => {})
-  await fsPromises.rm(fileOut, { force: true }).catch(error => {})
+  await fsPromises.rm(fileIn, { force: true }).catch((error) => {})
+  await fsPromises.rm(fileOut, { force: true }).catch((error) => {})
 
   await new Promise((resolve, reject) => {
     exec(`mkfifo ${fileIn}`, (error, out, outErr) => {
@@ -65,14 +69,14 @@ const fileReplService = async (replOptions, fileOptions) => {
         return reject(error)
       }
       resolve()
-    }) 
+    })
   })
 
-  const cmdInputPipe = fs.createReadStream(fileIn, { encoding: 'utf8' })
-  const cmdOutPipe = fs.createWriteStream(fileOut, { encoding: 'utf8' })
+  const cmdInputPipe = fs.createReadStream(fileIn, { encoding: "utf8" })
+  const cmdOutPipe = fs.createWriteStream(fileOut, { encoding: "utf8" })
 
   const replService = repl.start({
-    prompt: 'file repl> ',
+    prompt: "file repl> ",
     input: cmdInputPipe,
     output: cmdOutPipe,
     terminal: false,
@@ -84,7 +88,7 @@ const fileReplService = async (replOptions, fileOptions) => {
 
   replService.context = context
 
-  replService.on("error", error => {
+  replService.on("error", (error) => {
     replService.close()
     cmdInputPipe.close()
   })
@@ -95,30 +99,30 @@ const fileReplService = async (replOptions, fileOptions) => {
   })
 }
 
+// example: nc -U ./net-repl.socket
+
 const netReplService = async (replOptions, fileOptions) => {
   const { ctx } = replOptions
   const { socketHandler } = fileOptions
 
-  await fsPromises.rm(socketHandler, { force: true }).catch(error => {})
+  await fsPromises.rm(socketHandler, { force: true }).catch((error) => {})
 
   const server = net.createServer((socket) => {
-    console.log('[Socket]', ctx)
-
     const replService = repl.start({
-      prompt: 'socket repl> ',
+      prompt: "socket repl> ",
       input: socket,
       output: socket,
       terminal: false,
       useColors: true,
       useGlobal: false,
     })
-  
+
     const context = vm.createContext({ ...ctx })
 
     replService.context = context
 
     socket.on("end", () => replService.close())
-    socket.on("error", error => replService.close())
+    socket.on("error", (error) => replService.close())
     replService.on("close", () => !socket.closed && socket.end("REPL closed"))
   })
 

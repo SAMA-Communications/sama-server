@@ -1,5 +1,9 @@
 import { setTimeout } from "node:timers/promises"
 
+import mainLogger from "../logger/index.js"
+
+const reconnectLogger = mainLogger.child("[Reconnect]")
+
 class CancelQueueError extends Error {}
 
 const promiseQueueWithJittering = (executablePromise, tryCount, delay) => {
@@ -21,11 +25,11 @@ const promiseQueueWithJittering = (executablePromise, tryCount, delay) => {
 
     let lastError = void 0
 
-    console.log("[tryDelays]", tryDelays, isCanceled)
+    reconnectLogger.debug("[tryDelays] %j %s", tryDelays, isCanceled)
 
     for (const tryDelay of tryDelays) {
       try {
-        console.log("[try]", tryDelay, isCanceled)
+        reconnectLogger.debug("[try] %s %s", tryDelay, isCanceled)
 
         if (isCanceled) {
           throw new CancelQueueError("Canceled")
