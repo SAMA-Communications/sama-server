@@ -19,6 +19,7 @@ import HttpProtocol from "./app/networking/protocol_processors/http.js"
 import { connectToDBPromise } from "./app/lib/db.js"
 import RedisClient from "./app/lib/redis.js"
 import OTPSender from "./app/lib/otp_sender.js"
+import { startReplServices } from "./app/lib/repl-tools.js"
 
 import { APIs } from "./app/networking/APIs.js"
 
@@ -194,6 +195,13 @@ if (config.get("tcp.isEnabled")) {
   const tcpProtocolImp = new TcpProtocol(sessionService, conversationService)
   await tcpProtocolImp.listen(tcpOptions)
 }
+
+await startReplServices(
+  { ctx: { slc: ServiceLocatorContainer } },
+  { accessKey: config.get("repl.http.accessKey"), port: config.get("repl.http.port") },
+  { socketHandler: config.get("repl.socket.handler") },
+  { fileIn: config.get("repl.file.in"), fileOut: config.get("repl.file.out") }
+)
 
 logger.debug("[Ready] cluster-ws: %s", config.get("ws.cluster.endpoint"))
 
