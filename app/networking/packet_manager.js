@@ -11,17 +11,13 @@ import { CONSTANTS as MAIN_CONSTANTS } from "../constants/constants.js"
 const logger = maiLogger.child("[PacketManager]")
 
 class PacketManager {
-  async deliverToUserOnThisNode(userId, packet, deviceId, senderInfo) {
+  async deliverToUserOnThisNode(userId, exceptDeviceId, packet, senderInfo) {
     const sessionService = ServiceLocatorContainer.use("SessionService")
-    let activeDevices = sessionService
+    const activeDevices = sessionService
       .getUserDevices(userId)
       .filter((activeDevice) => activeDevice?.deviceId !== MAIN_CONSTANTS.HTTP_DEVICE_ID)
-
-    if (deviceId) {
-      activeDevices = activeDevices.filter((recipient) => recipient?.deviceId === deviceId)
-    }
-
-    activeDevices = activeDevices.filter((recipient) => !!recipient?.socket)
+      .filter((activeDevice) => !!activeDevice?.socket)
+      .filter((activeDevice) => activeDevice?.deviceId !== exceptDeviceId)
 
     for (const recipient of activeDevices) {
       try {
@@ -57,100 +53,100 @@ class PacketManager {
     }
   }
 
-  #deliverToUserDevices(socket, nodeConnections, userId, packet, ignoreSelf) {
-    const sessionService = ServiceLocatorContainer.use("SessionService")
-    const senderUserSession = sessionService.getSession(socket)
-    const senderDeviceId = senderUserSession ? sessionService.getDeviceId(socket, senderUserSession.userId) : null
-
-    const currentNodeUrl = config.get("ws.cluster.endpoint")
-
-    const senderInfo = {
-      apiType: socket?.apiType,
-      session: senderUserSession,
-      deviceId: senderDeviceId,
-      node: currentNodeUrl,
-    }
-
-    if (config.get("app.isStandAloneNode")) {
-      Object.keys(nodeConnections).forEach(async (nodeDeviceId) => {
-        if (senderDeviceId === nodeDeviceId && ignoreSelf) {
-          return // carbon message
-        }
-
-        await this.deliverToUserOnThisNode(userId, packet, nodeDeviceId, senderInfo)
-      })
-    } else {
-      Object.entries(nodeConnections).forEach(async ([nodeDeviceId, extraParams]) => {
-        const nodeUrl = extraParams[MAIN_CONSTANTS.SESSION_NODE_KEY]
-
-        if (!nodeUrl) {
-          return
-        }
-
-        if (currentNodeUrl === nodeUrl) {
-          if (senderDeviceId === nodeDeviceId && ignoreSelf) {
-            return
-          }
-
-          await this.deliverToUserOnThisNode(userId, packet, nodeDeviceId, senderInfo) // carbon message
-
-          return
-        }
-
-        try {
-          const clusterPacket = { userId, packet, senderInfo }
-          await clusterManager.senderClusterDeliverPacket(nodeUrl, clusterPacket)
-        } catch (error) {
-          await sessionService.clearNodeUsersSession(nodeUrl)
-          logger.error(error, "[deliverToUserDevices] createSocketWithNode error")
-        }
-      })
-    }
-  }
-
-  async deliverToUserOrUsers(orgId, socket, packet, pushQueueMessage, usersIds, notSaveInOfflineStorage, ignoreSelf) {
+  // async deliverToUserOrUsers(orgId, socket, packet, pushQueueMessage, usersIds, notSaveInOfflineStorage, ignoreSelf)
+  async deliverToUserOrUsers(sourceOptions, destinationUserIds, payloadOptions) {
     const sessionService = ServiceLocatorContainer.use("SessionService")
     const opLogsService = ServiceLocatorContainer.use("OperationLogsService")
     const pushQueueService = ServiceLocatorContainer.use("PushQueueService")
 
-    if (!usersIds?.length) {
+    if (!destinationUserIds?.length) {
       return
     }
 
-    const offlineUsersByPackets = []
+    const senderInfo = {
+      organizationId: sourceOptions.organizationId,
+      session: { organizationId: sourceOptions.organizationId },
+      node: config.get("ws.cluster.endpoint"),
+    }
 
-    for (const userId of usersIds) {
-      const userNodeData = await sessionService.listUserData(orgId, userId)
-      const isNoConnections = !userNodeData || !Object.keys(userNodeData).length
+    if (sourceOptions.socket) {
+      senderInfo.apiType = sourceOptions.socket?.apiType
+      senderInfo.session = sessionService.getSession(sourceOptions.socket) ?? senderInfo.session
+      senderInfo.deviceId = sessionService.getDeviceId(sourceOptions.socket, senderInfo.session.userId)
+    }
 
-      if (isNoConnections) {
-        if (!notSaveInOfflineStorage) {
-          opLogsService.savePacket(userId, packet)
-        }
+    const offlineUsersIds = []
+    let currentNodesUserIds = {}
+    let otherNodes = {}
 
-        offlineUsersByPackets.push(userId)
+    for (const userId of destinationUserIds) {
+      const userConnections = await sessionService.listUserData(sourceOptions.organizationId, userId)
+      const isOffline = !Object.keys(userConnections ?? {}).length
+      const isInactive = Object.values(userConnections).some((extraParams) => sessionService.isUserInactive(null, extraParams))
+
+      if (isOffline && !payloadOptions.notSaveInOfflineStorage) {
+        opLogsService.savePacket(userId, payloadOptions.packet)
+      }
+
+      if (isOffline || isInactive) {
+        offlineUsersIds.push(userId)
+      }
+
+      if (isOffline) {
         continue
       }
 
-      const isInactive = Object.values(userNodeData).some((extraParams) => sessionService.isUserInactive(null, extraParams))
-
-      if (isInactive) {
-        offlineUsersByPackets.push(userId)
-      }
-
-      this.#deliverToUserDevices(socket, userNodeData, userId, packet, ignoreSelf)
+      this.reduceUserNodeConnections(senderInfo.node, userId, userConnections, currentNodesUserIds, otherNodes)
     }
 
-    if (pushQueueMessage && offlineUsersByPackets.length) {
-      pushQueueMessage.setRecipientIds(offlineUsersByPackets)
-      await pushQueueService.createPush(pushQueueMessage)
+    Object.keys(currentNodesUserIds).forEach(async (userId) => {
+      const exceptDeviceId = payloadOptions.ignoreSelf ? senderInfo.deviceId : void 0
+
+      await this.deliverToUserOnThisNode(userId, exceptDeviceId, payloadOptions.packet, senderInfo)
+    })
+
+    Object.entries(otherNodes).forEach(([nodeEndpoint, userIds]) => {
+      Object.keys(userIds).forEach(async (userId) => {
+        try {
+          const clusterPacket = { userId, packet: payloadOptions.packet, senderInfo }
+          logger.trace("[Cluster][%s][deliver] %j", nodeEndpoint, clusterPacket)
+          await clusterManager.senderClusterDeliverPacket(nodeEndpoint, clusterPacket)
+        } catch (error) {
+          logger.error(error, "[%s][deliver to other node]", nodeEndpoint)
+        }
+      })
+    })
+
+    if (payloadOptions.pushQueueMessage && offlineUsersIds.length) {
+      payloadOptions.pushQueueMessage.setRecipientIds(offlineUsersIds)
+      await pushQueueService.createPush(payloadOptions.pushQueueMessage)
+    }
+  }
+
+  reduceUserNodeConnections(targetNodeEndpoint, userId, nodeConnections, currentNodesAcc, otherNodesAcc) {
+    for (const connectionsParams of Object.values(nodeConnections)) {
+      const connectionEndpoint = connectionsParams?.[MAIN_CONSTANTS.SESSION_NODE_KEY]
+      if (!connectionEndpoint) {
+        continue
+      }
+
+      if (connectionEndpoint === targetNodeEndpoint || config.get("app.isStandAloneNode")) {
+        currentNodesAcc[userId] = connectionEndpoint
+        continue
+      }
+
+      if (!otherNodesAcc[connectionEndpoint]) {
+        otherNodesAcc[connectionEndpoint] = {}
+      }
+
+      otherNodesAcc[connectionEndpoint][userId] = connectionEndpoint
     }
   }
 
   async deliverClusterMessageToUser(deliverPacket) {
     try {
       const { userId, packet, senderInfo } = deliverPacket
-      await this.deliverToUserOnThisNode(userId, packet, null, senderInfo)
+      await this.deliverToUserOnThisNode(userId, void 0, packet, senderInfo)
     } catch (error) {
       logger.error(error, "[deliverClusterMessageToUser]")
     }

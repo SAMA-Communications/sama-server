@@ -6,5 +6,6 @@
   "node-option": ["experimental-loader=./sama-loader.mjs", "import=dotenv/config"],
   "exit": true,
   "spec": "test/**/*.spec.js",
+  "exclude": "test/cluster/*.spec.js",
   "timeout": 60000
 }

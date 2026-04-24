@@ -1,6 +1,6 @@
-import { CONSTANTS as MAIN_CONSTANTS } from "../../../constants/constants.js"
+import { CONSTANTS as MAIN_CONSTANTS } from "../../../../constants/constants.js"
 
-class ActivityManagerService {
+class ActivityManagerStandaloneService {
   constructor(ACTIVITY, userService) {
     this.ACTIVITY = ACTIVITY
     this.userService = userService
@@ -25,7 +25,7 @@ class ActivityManagerService {
 
   // target - observer relations
   subscribers(targetId) {
-    return this.ACTIVITY.SUBSCRIBERS[targetId] || {}
+    return Object.keys(this.ACTIVITY.SUBSCRIBERS[targetId] || {})
   }
 
   addSubscriber(targetId, observerId) {
@@ -69,7 +69,7 @@ class ActivityManagerService {
       this.unsubscribeObserver(userId)
     }
 
-    const activitySubscribers = Object.keys(this.subscribers(userId))
+    const activitySubscribers = this.subscribers(userId)
 
     if (!activitySubscribers.length) {
       return
@@ -83,4 +83,4 @@ class ActivityManagerService {
   }
 }
 
-export default ActivityManagerService
+export default ActivityManagerStandaloneService

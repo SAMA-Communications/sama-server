@@ -9,14 +9,14 @@ const config = new Config(CONFIG_VALUES)
 config.set("app.hostName", os.hostname(), true)
 config.set("app.ip", ip.address())
 
-if (config.get("app.isStandAloneNode")) {
-  config.set("ws.cluster.port", 1000)
-}
-
 const isSecureWs = config.get("ws.options.ssl.key") && config.get("ws.options.ssl.cert")
 config.set("ws.options.isSecure", !!isSecureWs)
 
 const isTls = config.get("tcp.options.tls.key") && config.get("tcp.options.tls.cert")
 config.set("tcp.options.isTls", !!isTls)
+
+if (config.get("app.isStandAloneNode")) {
+  config.set("ws.cluster.port", 1000)
+}
 
 export default config

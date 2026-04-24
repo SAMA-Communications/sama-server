@@ -2,7 +2,7 @@ import { StringDecoder } from "node:string_decoder"
 import { v4 as uuid } from "uuid"
 
 import logger from "../../logger/index.js"
-import { createStore, updateStoreContext } from "../../logger/async_store.js"
+import { createStore } from "../../logger/async_store.js"
 import { ERROR_STATUES } from "../../constants/errors.js"
 import { CONSTANTS as MAIN_CONSTANTS } from "../../constants/constants.js"
 import { BASE_API, APIs, detectAPIType } from "../APIs.js"
@@ -16,7 +16,7 @@ import MappableMessage from "../models/MappableMessage.js"
 
 const decoder = new StringDecoder("utf8")
 
-const mapBackMessageFunc = async (ws, packet) => packetMapper.mapPacket(null, ws.apiType, packet, {}, {})
+const mapBackMessageFunc = async (socket, packet) => packetMapper.mapPacket(null, socket.apiType, packet, {}, {})
 
 class BaseProtocolProcessor {
   constructor(sessionService, conversationService) {
@@ -140,7 +140,7 @@ class BaseProtocolProcessor {
   }
 
   async processUpdateLastActivityResponse(socket, response) {
-    let { organizationId, userId } = this.sessionService.getSession(socket) ?? {}
+    let { organizationId, userId } = this.sessionService?.getSession(socket) ?? {}
     organizationId = response.lastActivityStatusResponse.orgId ?? organizationId
     userId = response.lastActivityStatusResponse.userId ?? userId
 
@@ -152,6 +152,7 @@ class BaseProtocolProcessor {
       userId,
       response.lastActivityStatusResponse.status
     )
+
     responses.forEach((activityResponse) => response.merge(activityResponse))
 
     return response
@@ -161,7 +162,7 @@ class BaseProtocolProcessor {
     for (const deliverPackage of deliverPackages) {
       logger.trace("[DELIVER] %o", deliverPackage)
 
-      deliverPackage.ws ??= socket
+      deliverPackage.socket ??= socket
 
       if (deliverPackage.userIds?.length) {
         await this.processDeliverUserMessage(deliverPackage)
@@ -173,15 +174,21 @@ class BaseProtocolProcessor {
 
   async processDeliverUserMessage(deliverMessage, participantIds) {
     try {
-      await packetManager.deliverToUserOrUsers(
-        deliverMessage.orgId,
-        deliverMessage.ws,
-        deliverMessage.packet,
-        deliverMessage.pushQueueMessage,
-        participantIds ?? deliverMessage.userIds,
-        deliverMessage.notSaveInOfflineStorage,
-        deliverMessage.ignoreSelf
-      )
+      const sourceOptions = {
+        organizationId: deliverMessage.orgId,
+        socket: deliverMessage.socket,
+      }
+
+      const destinationUserIds = participantIds ?? deliverMessage.userIds
+
+      const payloadOptions = {
+        packet: deliverMessage.packet,
+        notSaveInOfflineStorage: deliverMessage.notSaveInOfflineStorage,
+        ignoreSelf: deliverMessage.ignoreSelf,
+        pushQueueMessage: deliverMessage.pushQueueMessage,
+      }
+
+      await packetManager.deliverToUserOrUsers(sourceOptions, destinationUserIds, payloadOptions)
     } catch (error) {
       logger.error(error, "[PacketManager][error]")
     }
@@ -220,7 +227,11 @@ class BaseProtocolProcessor {
       return
     }
 
-    await this.sessionService.removeUserSession(socket, userId)
+    const isWasLastUserSession = await this.sessionService.removeUserSession(socket, userId)
+
+    if (!isWasLastUserSession) {
+      return
+    }
 
     await this.processAPIResponse(socket, activitySender.buildOfflineActivityResponse(organizationId, userId), true)
   }

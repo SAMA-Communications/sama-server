@@ -1,6 +1,3 @@
-import os from "node:os"
-
-import { v4 as uuid } from "uuid"
 import { CONSTANTS as MAIN_CONSTANTS } from "../../constants/constants.js"
 import { ERROR_STATUES } from "../../constants/errors.js"
 
@@ -52,7 +49,7 @@ const parseBaseParamsMiddleware = async (res, req) => {
 }
 
 const addCorsHeaders = (res, req) => {
-  res.writeHeader("Access-Control-Allow-Origin", config.get("http.corsOrigin") ?? "*")
+  res.writeHeader("Access-Control-Allow-Origin", config.get("http.corsOrigin") ?? res.parsedHeaders["origin"] ?? "*")
   res.writeHeader("Access-Control-Allow-Credentials", "true")
   res.writeHeader("Access-Control-Allow-Methods", "POST, PUT, DELETE")
   res.writeHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, API-Key")

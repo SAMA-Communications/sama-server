@@ -4,14 +4,14 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install 
+RUN npm install --omit=dev
 
 COPY . .
 
 FROM node:22-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
+    curl netcat-openbsd \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

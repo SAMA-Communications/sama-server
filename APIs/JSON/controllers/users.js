@@ -56,11 +56,15 @@ class UsersController extends BaseJSONController {
     const { id: requestId } = data
 
     const userLogoutOperation = ServiceLocatorContainer.use("UserLogoutOperation")
-    const { organizationId, userId } = await userLogoutOperation.perform(ws)
+    const { organizationId, userId, isWasLastUserSession } = await userLogoutOperation.perform(ws)
 
-    return new Response()
-      .addBackMessage({ response: { id: requestId, success: true } })
-      .updateLastActivityStatus(new LastActivityStatusResponse(organizationId, userId, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE))
+    const response = new Response().addBackMessage({ response: { id: requestId, success: true } })
+
+    if (isWasLastUserSession) {
+      response.updateLastActivityStatus(new LastActivityStatusResponse(organizationId, userId, MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE))
+    }
+
+    return response
   }
 
   async send_otp(ws, data) {

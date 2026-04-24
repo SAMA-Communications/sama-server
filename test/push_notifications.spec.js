@@ -577,15 +577,21 @@ describe("PushNotification functions", async () => {
 
       const deliverMessage = responseOnMessage.deliverMessages.at(0)
 
-      await packetManager.deliverToUserOrUsers(
-        deliverMessage.orgId,
-        deliverMessage.ws,
-        deliverMessage.packet,
-        deliverMessage.pushQueueMessage,
-        deliverMessage.userIds,
-        deliverMessage.notSaveInOfflineStorage,
-        deliverMessage.ignoreSelf
-      )
+      const sourceOptions = {
+        organizationId: deliverMessage.orgId,
+        socket: deliverMessage.socket,
+      }
+
+      const destinationUserIds = deliverMessage.userIds
+
+      const payloadOptions = {
+        packet: deliverMessage.packet,
+        notSaveInOfflineStorage: deliverMessage.notSaveInOfflineStorage,
+        ignoreSelf: deliverMessage.ignoreSelf,
+        pushQueueMessage: deliverMessage.pushQueueMessage,
+      }
+
+      await packetManager.deliverToUserOrUsers(sourceOptions, destinationUserIds, payloadOptions)
 
       assert.ok(pushQueueItem)
     })
