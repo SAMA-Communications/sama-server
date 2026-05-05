@@ -35,4 +35,10 @@ export default class JsonAPI extends BaseAPI {
     }
     return this.stringifyMessage(message)
   }
+
+  pingPackage() {
+    const ping = { response: { ping: {} } }
+
+    return this.stringifyMessage(ping)
+  }
 }

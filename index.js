@@ -25,7 +25,7 @@ import { startReplServices } from "./app/lib/repl-tools.js"
 import { APIs } from "./app/networking/APIs.js"
 
 import { buildWsEndpoint } from "./app/utils/build_ws_endpoint.js"
-import { socketCloseWatchdog } from "./app/utils/socket-close-watchdog.js"
+import { watchdogPingSocket } from "./app/utils/watchdog-ping-socket.js"
 
 if (config.get("app.env") === CONSTANTS.ENVS.PROD) {
   process.on("unhandledRejection", (reason, promise) => {
@@ -200,16 +200,16 @@ if (config.get("tcp.isEnabled")) {
   await tcpProtocolImp.listen(tcpOptions)
 }
 
-if (config.get("app.socketCloseWatchdogInterval")) {
+if (config.get("app.watchdogPingSocketInterval")) {
   const socketCloseWatchdogLogger = logger.child("[SocketClosedWatchDog]")
   setInterval(() => {
-    socketCloseWatchdog(
+    watchdogPingSocket(
       socketCloseWatchdogLogger,
       sessionService,
       (socket, code) => wsProtocolImp.onClose(socket, code),
       (socket) => tcpProtocolImp.onClose(socket)
     )
-  }, config.get("app.socketCloseWatchdogInterval"))
+  }, config.get("app.watchdogPingSocketInterval"))
 }
 
 await startReplServices(

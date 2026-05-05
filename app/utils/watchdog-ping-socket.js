@@ -1,6 +1,7 @@
 import net from "node:net"
+import { APIs, BASE_API } from "../networking/APIs.js"
 
-export const socketCloseWatchdog = async (logger, sessionService, onWsCloseCb, onTcpCloseCb) => {
+export const watchdogPingSocket = async (logger, sessionService, onWsCloseCb, onTcpCloseCb) => {
   const users = Object.keys(sessionService.activeSessions.DEVICES)
 
   logger.debug("[run] %s", users.length)
@@ -8,12 +9,18 @@ export const socketCloseWatchdog = async (logger, sessionService, onWsCloseCb, o
   for (const userId of users) {
     const connections = sessionService.activeSessions.DEVICES[userId] ?? []
     for (const connection of connections) {
-      const isTCP = connection?.socket instanceof net.Socket
+      if (!connection?.socket) {
+        continue
+      }
+
+      const isTCP = connection.socket instanceof net.Socket
+      const pingPackage = APIs[connection.socket.apiType ?? BASE_API].pingPackage()
+
       try {
         if (isTCP) {
-          connection?.socket?.write(" ")
+          connection?.socket?.write(pingPackage)
         } else {
-          connection?.socket?.send(" ")
+          connection?.socket?.send(pingPackage)
         }
       } catch (error) {
         logger.error(error, "[error socket send] %s", userId)
