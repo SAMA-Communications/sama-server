@@ -7,6 +7,7 @@ const CONFIG = {
     name: process.env.APP_NAME ?? "SAMA",
     hostName: process.env.HOSTNAME,
     isStandAloneNode: process.env.STANDALONE_NODE === CONSTANTS.ENV_TRUE,
+    socketCloseWatchdogInterval: +process.env.SOCKET_CLOSE_WATCHDOG_INTERVAL
   },
   logger: {
     logLevel: process.env.LOG_LEVEL ?? "debug",

@@ -24,6 +24,7 @@ import OTPSender from "./app/lib/otp_sender.js"
 import { APIs } from "./app/networking/APIs.js"
 
 import { buildWsEndpoint } from "./app/utils/build_ws_endpoint.js"
+import { socketCloseWatchdog } from "./app/utils/socket-close-watchdog.js"
 
 if (config.get("app.env") === CONSTANTS.ENVS.PROD) {
   process.on("unhandledRejection", (reason, promise) => {
@@ -190,9 +191,24 @@ await wsProtocolImp.listen(uWSOptions)
 const httpProtocolImp = new HttpProtocol(sessionService, conversationService, wsProtocolImp.uWSocketServer)
 await httpProtocolImp.listen({})
 
+// https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph
+
+let tcpProtocolImp = void 0
 if (config.get("tcp.isEnabled")) {
-  const tcpProtocolImp = new TcpProtocol(sessionService, conversationService)
+  tcpProtocolImp = new TcpProtocol(sessionService, conversationService)
   await tcpProtocolImp.listen(tcpOptions)
+}
+
+if (config.get("app.socketCloseWatchdogInterval")) {
+  const socketCloseWatchdogLogger = logger.child("[SocketClosedWatchDog]")
+  setInterval(() => {
+    socketCloseWatchdog(
+      socketCloseWatchdogLogger,
+      sessionService,
+      (socket, code) => wsProtocolImp.onClose(socket, code),
+      (socket) => tcpProtocolImp.onClose(socket)
+    )
+  }, config.get("app.socketCloseWatchdogInterval"))
 }
 
 process.stdin.setEncoding('utf8')
@@ -223,7 +239,12 @@ process.stdin.on('data', (data) => {
       for (const connection of connections) {
         console.log('[PingWS][start]', connection?.socket)
 
-        const sendResult = connection?.socket?.ping(" ")
+        let sendResult = void 0
+        try {
+          sendResult = connection?.socket?.ping(" ")
+        } catch (err) {
+          console.log('[Cmd][error]', err)
+        }
   
         console.log('[PingWS][result]', connection?.socket, sendResult)
       }
@@ -241,7 +262,12 @@ process.stdin.on('data', (data) => {
       for (const connection of connections) {
         console.log('[SendWS][start]', connection?.socket)
 
-        const sendResult = connection?.socket?.send(sendData)
+        let sendResult = void 0
+        try {
+          sendResult = connection?.socket?.send(sendData)
+        } catch (err) {
+          console.log('[Cmd][error]', err)
+        }
   
         console.log('[SendWS][result]', connection?.socket, sendResult)
       }
@@ -258,7 +284,12 @@ process.stdin.on('data', (data) => {
       for (const connection of connections) {
         console.log('[CloseWS][start]', connection?.socket)
 
-        const sendResult = connection?.socket?.close()
+        let sendResult = void 0
+        try {
+          sendResult = connection?.socket?.close()
+        } catch (err) {
+          console.log('[Cmd][error]', err)
+        }
   
         console.log('[CloseWS][result]', connection?.socket, sendResult)
       }
@@ -267,5 +298,3 @@ process.stdin.on('data', (data) => {
     console.log('[Cmd][error]', error)
   }
 })
-
-// https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph
