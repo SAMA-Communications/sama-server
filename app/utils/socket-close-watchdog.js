@@ -1,6 +1,6 @@
 import net from "node:net"
 
-export const socketCloseWatchdog = (logger, sessionService, onWsCloseCb, onTcpCloseCb) => {
+export const socketCloseWatchdog = async (logger, sessionService, onWsCloseCb, onTcpCloseCb) => {
   const users = Object.keys(sessionService.activeSessions.DEVICES)
 
   logger.debug("[run] %s", users.length)
@@ -18,10 +18,11 @@ export const socketCloseWatchdog = (logger, sessionService, onWsCloseCb, onTcpCl
       } catch (error) {
         logger.error(error, "[error socket send] %s", userId)
         if (isTCP) {
-          onTcpCloseCb(connection?.socket)
+          await onTcpCloseCb(connection?.socket).catch(error => logger.error(error, "[close tcp]"))
         } else {
-          onWsCloseCb(connection?.socket, 10)
+          await onWsCloseCb(connection?.socket, 10).catch(error => logger.error(error, "[close ws]"))
         }
+        await sessionService.removeUserSession(connection?.socket, userId, connection?.deviceId).catch(error => logger.error(error, "[remove]"))
       }
     }
   }
