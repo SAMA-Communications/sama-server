@@ -20,6 +20,7 @@ import HttpProtocol from "./app/networking/protocol_processors/http.js"
 import { connectToDBPromise } from "./app/lib/db.js"
 import RedisClient from "./app/lib/redis.js"
 import OTPSender from "./app/lib/otp_sender.js"
+import { startReplServices } from "./app/lib/repl-tools.js"
 
 import { APIs } from "./app/networking/APIs.js"
 
@@ -211,90 +212,9 @@ if (config.get("app.socketCloseWatchdogInterval")) {
   }, config.get("app.socketCloseWatchdogInterval"))
 }
 
-process.stdin.setEncoding('utf8')
-process.stdin.on('data', (data) => {
-  try {
-    const cmd = data.trim()
-    console.log('[Cmd]', cmd)
-  
-    const sessionService = ServiceLocatorContainer.use("SessionService")
-    // const findSocketByUserId = userId => {
-    //   for (const socket of sessionService.activeSessions.SESSIONS.keys()) {
-    //     const userData = sessionService.activeSessions.SESSIONS.get(socket)
-  
-    //     if (userData?.userId === userId) {
-    //       return socket
-    //     }
-    //   }
-    // }
-  
-    if (cmd.match(/cmd-ping/i)) { // 'cmd-ping 1111'
-      const matchRes = cmd.match(/cmd-ping (.+)/i)
-      const userId = +matchRes.at(1)
-  
-      console.log('[PingWS]', userId, '[devices]', sessionService.listUserDeviceLocal(userId))
-  
-      const connections = sessionService.getUserDevices(userId)
-
-      for (const connection of connections) {
-        console.log('[PingWS][start]', connection?.socket)
-
-        let sendResult = void 0
-        try {
-          sendResult = connection?.socket?.ping(" ")
-        } catch (err) {
-          console.log('[Cmd][error]', err)
-        }
-  
-        console.log('[PingWS][result]', connection?.socket, sendResult)
-      }
-    }
-  
-    if (cmd.match(/cmd-send/i)) { // 'cmd-send 1111 test'
-      const matchRes = cmd.match(/cmd-send ([^\s]+) (.+)/i)
-      const userId = +matchRes.at(1)
-      const sendData = matchRes.at(2)
-  
-      console.log('[SendWS]', userId, sendData, '[devices]', sessionService.listUserDeviceLocal(userId))
-  
-      const connections = sessionService.getUserDevices(userId)
-
-      for (const connection of connections) {
-        console.log('[SendWS][start]', connection?.socket)
-
-        let sendResult = void 0
-        try {
-          sendResult = connection?.socket?.send(sendData)
-        } catch (err) {
-          console.log('[Cmd][error]', err)
-        }
-  
-        console.log('[SendWS][result]', connection?.socket, sendResult)
-      }
-    }
-
-    if (cmd.match(/cmd-close/i)) { // 'cmd-close 1111'
-      const matchRes = cmd.match(/cmd-close (.+)/i)
-      const userId = +matchRes.at(1)
-  
-      console.log('[CloseWS]', userId, '[devices]', sessionService.listUserDeviceLocal(userId))
-  
-      const connections = sessionService.getUserDevices(userId)
-
-      for (const connection of connections) {
-        console.log('[CloseWS][start]', connection?.socket)
-
-        let sendResult = void 0
-        try {
-          sendResult = connection?.socket?.close()
-        } catch (err) {
-          console.log('[Cmd][error]', err)
-        }
-  
-        console.log('[CloseWS][result]', connection?.socket, sendResult)
-      }
-    }
-  } catch (error) {
-    console.log('[Cmd][error]', error)
-  }
-})
+await startReplServices(
+  { ctx: { slc: ServiceLocatorContainer } },
+  { accessKey: config.get("repl.http.accessKey"), port: config.get("repl.http.port") },
+  { socketHandler: config.get("repl.socket.handler") },
+  { fileIn: config.get("repl.file.in"), fileOut: config.get("repl.file.out") }
+)
