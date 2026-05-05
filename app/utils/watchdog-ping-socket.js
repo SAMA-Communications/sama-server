@@ -1,6 +1,19 @@
 import net from "node:net"
 import { APIs, BASE_API } from "../networking/APIs.js"
 
+const onSentFailed = async (
+  error, isTCP, userId, connection,
+  logger, sessionService, onTcpCloseCb, onWsCloseCb
+) => {
+  logger.error(error, "[error socket send] %s", userId)
+  if (isTCP) {
+    await onTcpCloseCb(connection?.socket).catch(error => logger.error(error, "[close tcp]"))
+  } else {
+    await onWsCloseCb(connection?.socket, 10).catch(error => logger.error(error, "[close ws]"))
+  }
+  await sessionService.removeUserSession(connection?.socket, userId, connection?.deviceId).catch(error => logger.error(error, "[remove]"))
+}
+
 export const watchdogPingSocket = async (logger, sessionService, onWsCloseCb, onTcpCloseCb) => {
   const users = Object.keys(sessionService.activeSessions.DEVICES)
 
@@ -18,18 +31,22 @@ export const watchdogPingSocket = async (logger, sessionService, onWsCloseCb, on
 
       try {
         if (isTCP) {
-          connection?.socket?.write(pingPackage)
+          connection?.socket?.write(pingPackage, (error) => {
+            if (error) {
+              onSentFailed(
+                error, isTCP, userId, connection,
+                logger, sessionService, onWsCloseCb, onTcpCloseCb
+              )
+            }
+          })
         } else {
           connection?.socket?.send(pingPackage)
         }
       } catch (error) {
-        logger.error(error, "[error socket send] %s", userId)
-        if (isTCP) {
-          await onTcpCloseCb(connection?.socket).catch(error => logger.error(error, "[close tcp]"))
-        } else {
-          await onWsCloseCb(connection?.socket, 10).catch(error => logger.error(error, "[close ws]"))
-        }
-        await sessionService.removeUserSession(connection?.socket, userId, connection?.deviceId).catch(error => logger.error(error, "[remove]"))
+        await onSentFailed(
+          error, isTCP, userId, connection,
+          logger, sessionService, onWsCloseCb, onTcpCloseCb
+        )
       }
     }
   }
