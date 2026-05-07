@@ -7,6 +7,7 @@ const CONFIG = {
     name: process.env.APP_NAME ?? "SAMA",
     hostName: process.env.HOSTNAME,
     isStandAloneNode: process.env.STANDALONE_NODE === CONSTANTS.ENV_TRUE,
+    watchdogPingSocketInterval: +process.env.WATCHDOG_PING_SOCKET_INTERVAL,
   },
   logger: {
     logLevel: process.env.LOG_LEVEL ?? "debug",
@@ -100,6 +101,19 @@ const CONFIG = {
     corsOrigin: process.env.CORS_ORIGIN,
     admin: {
       apiKey: process.env.HTTP_ADMIN_API_KEY,
+    },
+  },
+  repl: {
+    http: {
+      port: +(process.env.APP_REPL_HTTP_PORT ?? 5010),
+      accessKey: process.env.APP_REPL_HTTP_ACCESS_KEY,
+    },
+    socket: {
+      handler: process.env.APP_REPL_SOCKET_HANDLER,
+    },
+    file: {
+      in: process.env.APP_REPL_FILE_IN,
+      out: process.env.APP_REPL_FILE_OUT,
     },
   },
   conversation: {

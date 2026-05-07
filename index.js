@@ -20,10 +20,12 @@ import HttpProtocol from "./app/networking/protocol_processors/http.js"
 import { connectToDBPromise } from "./app/lib/db.js"
 import RedisClient from "./app/lib/redis.js"
 import OTPSender from "./app/lib/otp_sender.js"
+import { startReplServices } from "./app/lib/repl-tools.js"
 
 import { APIs } from "./app/networking/APIs.js"
 
 import { buildWsEndpoint } from "./app/utils/build_ws_endpoint.js"
+import { watchdogPingSocket } from "./app/utils/watchdog-ping-socket.js"
 
 if (config.get("app.env") === CONSTANTS.ENVS.PROD) {
   process.on("unhandledRejection", (reason, promise) => {
@@ -190,9 +192,29 @@ await wsProtocolImp.listen(uWSOptions)
 const httpProtocolImp = new HttpProtocol(sessionService, conversationService, wsProtocolImp.uWSocketServer)
 await httpProtocolImp.listen({})
 
+// https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph
+
+let tcpProtocolImp = void 0
 if (config.get("tcp.isEnabled")) {
-  const tcpProtocolImp = new TcpProtocol(sessionService, conversationService)
+  tcpProtocolImp = new TcpProtocol(sessionService, conversationService)
   await tcpProtocolImp.listen(tcpOptions)
 }
 
-// https://dev.to/mattkrick/replacing-express-with-uwebsockets-48ph
+if (config.get("app.watchdogPingSocketInterval")) {
+  const socketCloseWatchdogLogger = logger.child("[SocketClosedWatchDog]")
+  setInterval(() => {
+    watchdogPingSocket(
+      socketCloseWatchdogLogger,
+      sessionService,
+      (socket, code) => wsProtocolImp.onClose(socket, code),
+      (socket) => tcpProtocolImp.onClose(socket)
+    )
+  }, config.get("app.watchdogPingSocketInterval"))
+}
+
+await startReplServices(
+  { ctx: { slc: ServiceLocatorContainer } },
+  { accessKey: config.get("repl.http.accessKey"), port: config.get("repl.http.port") },
+  { socketHandler: config.get("repl.socket.handler") },
+  { fileIn: config.get("repl.file.in"), fileOut: config.get("repl.file.out") }
+)
