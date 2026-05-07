@@ -10,9 +10,10 @@ import { CONSTANTS } from "../../../constants/constants.js"
 */
 
 class SessionService {
-  constructor(activeSessions, config, redisConnection) {
+  constructor(activeSessions, config, logger, redisConnection) {
     this.activeSessions = activeSessions
     this.config = config
+    this.logger = logger
     this.redisConnection = redisConnection
   }
 
@@ -316,9 +317,13 @@ class SessionService {
   }
 
   async removeUserSession(socket, userId, deviceId) {
+    this.logger.debug("[removeUserSession][args]: %o", { socket: socket?.isAlive, userId, deviceId })
+
     userId = userId ?? this.getSessionUserId(socket)
     deviceId = deviceId ?? this.getDeviceId(socket, userId)
     const orgId = this.getSession(socket)?.organizationId
+
+    this.logger.debug("[removeUserSession][vars]: %o [session]: %o [device]: %s", { orgId, userId, deviceId }, this.getSession(socket), this.getDeviceId(socket, userId))
 
     const leftActiveConnections = this.getUserDevices(userId).filter(({ deviceId: activeDeviceId }) => activeDeviceId !== deviceId)
 

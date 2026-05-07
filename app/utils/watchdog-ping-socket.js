@@ -4,7 +4,7 @@ import { APIs, BASE_API } from "../networking/APIs.js"
 export const watchdogPingSocket = async (logger, sessionService, onWsCloseCb, onTcpCloseCb) => {
   const users = Object.keys(sessionService.activeSessions.DEVICES)
 
-  logger.debug("[run] %s", users.length)
+  logger.debug("[start] %s", users.length)
 
   for (const userId of users) {
     const connections = sessionService.activeSessions.DEVICES[userId] ?? []
@@ -39,4 +39,6 @@ export const watchdogPingSocket = async (logger, sessionService, onWsCloseCb, on
       }
     }
   }
+
+  logger.debug("[finish]")
 }
