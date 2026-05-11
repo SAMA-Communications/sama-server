@@ -18,29 +18,28 @@ class SessionService {
     return this.activeSessions.SESSIONS.size
   }
 
-  addUserDeviceConnection(socket, organizationId, userId, deviceId) {
-    const activeConnections = this.activeSessions.DEVICES[userId]
-    const socketsToClose = []
+  async addUserDeviceConnection(socket, organizationId, userId, deviceId) {
+    const activeConnections = this.getUserDevices(userId)
+
+    const sameSocketConnection = activeConnections.find(connection => connection.socket === socket)
+    const sameDeviceConnection = activeConnections.find(connection => connection.deviceId === deviceId)
+
+    const otherDeviceConnections = activeConnections.filter(connection => 
+      (connection !== sameSocketConnection) &&
+      (connection !== sameDeviceConnection)
+    )
 
     const connection = { socket: socket, deviceId, organizationId }
 
-    if (activeConnections) {
-      const devices = activeConnections.filter((connection) => {
-        if (connection.deviceId !== deviceId) {
-          return true
-        } else {
-          socketsToClose.push(connection.socket)
-          return false
-        }
-      })
-      this.activeSessions.DEVICES[userId] = [...devices, connection]
-    } else {
-      this.activeSessions.DEVICES[userId] = [connection]
-    }
+    this.activeSessions.DEVICES[userId] = [...otherDeviceConnections, connection]
 
     this.setSessionUserId(socket, organizationId, userId, { [CONSTANTS.SESSION_DEVICE_ID_KEY]: deviceId })
+    
+    if (sameSocketConnection) {
+      await this.removeAllUserDeviceData(organizationId, userId, sameSocketConnection.deviceId)
+    }
 
-    return socketsToClose
+    return sameDeviceConnection
   }
 
   #nodesSetCacheKey(nodeEndpoint) {
@@ -168,6 +167,18 @@ class SessionService {
     await this.deleteUserDevices(organizationId, userId)
   }
 
+  async removeAllUserDeviceData(organizationId, userId, deviceId) {
+    const isLastConnection = await this.removeUserDevice(organizationId, userId, deviceId)
+    const extraParams = await this.retrieveUserExtraParams(userId, deviceId)
+    await this.deleteUserExtraParams(userId, deviceId)
+
+    const nodeEndpoint = extraParams?.[CONSTANTS.SESSION_NODE_KEY] ?? this.config.get("ws.cluster.endpoint")
+
+    await this.removeUserDeviceFromNode(nodeEndpoint, organizationId, userId, deviceId)
+
+    return isLastConnection
+  }
+
   async listUserData(organizationId, userId) {
     const userData = {}
 
@@ -206,11 +217,7 @@ class SessionService {
     const userDeviceIds = await this.listUserDevice(organizationId, userId)
 
     if (userDeviceIds.includes(deviceId)) {
-      const extraParams = await this.retrieveUserExtraParams(userId, deviceId)
-      const oldNodeEndpointKey = extraParams?.[CONSTANTS.SESSION_NODE_KEY] || nodeEndpoint
-
-      await this.removeUserData(organizationId, userId, deviceId)
-      await this.removeUserDeviceFromNode(oldNodeEndpointKey, organizationId, userId, deviceId)
+      await this.removeAllUserDeviceData(organizationId, userId, deviceId)
     }
 
     await this.addUserDevice(organizationId, userId, deviceId)
@@ -348,16 +355,7 @@ class SessionService {
 
     if (this.config.get("app.isStandAloneNode")) return isLastConnection
 
-    isLastConnection = await this.removeUserDevice(organizationId, userId, deviceId)
-    const extraParams = await this.retrieveUserExtraParams(userId, deviceId)
-    await this.deleteUserExtraParams(userId, deviceId)
-
-    const nodeEndpoint = extraParams?.[CONSTANTS.SESSION_NODE_KEY]
-    if (!nodeEndpoint) {
-      return isLastConnection
-    }
-
-    await this.removeUserDeviceFromNode(nodeEndpoint, organizationId, userId, deviceId)
+    isLastConnection = await this.removeAllUserDeviceData(organizationId, userId, deviceId)
 
     return isLastConnection
   }

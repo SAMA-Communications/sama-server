@@ -63,9 +63,9 @@ class ActivityManagerStandaloneService {
   async updateUserActivity(userId, status) {
     const currentTime = Math.round(new Date() / 1000)
 
-    if (status !== MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE) {
-      await this.userService.updateActivity(userId, currentTime)
+    await this.userService.updateActivity(userId, currentTime)
 
+    if (status !== MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.ONLINE) {
       this.unsubscribeObserver(userId)
     }
 
