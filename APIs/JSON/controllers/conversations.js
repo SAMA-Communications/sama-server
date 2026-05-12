@@ -100,7 +100,7 @@ class ConversationsController extends BaseJSONController {
 
       response.addDeliverMessage(deliverMessage)
 
-      const isCurrentUser = event.participantIds.find((pId) => conversationDeleteOperation.helpers.isEqualsNativeIds(pId, currentUserId))
+      const isCurrentUser = event.participantIds?.find((pId) => conversationDeleteOperation.helpers.isEqualsNativeIds(pId, currentUserId))
       if (isCurrentUser) {
         response.addBackMessage(event.message)
       }

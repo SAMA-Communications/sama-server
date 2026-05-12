@@ -106,7 +106,7 @@ class ConversationParticipantRepository extends BaseRepository {
       })
     }
 
-    const conversationParticipants = await this.findAll(query, void 0, limit)
+    const conversationParticipants = await this.findAll(query, void 0, limit, { _id: -1 })
 
     return conversationParticipants.map((conversationParticipant) => conversationParticipant.conversation_id)
   }
