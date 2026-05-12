@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.36.2
+
+### Bug Fixes
+
+- Fixed invalid user online status when client trying connect 2+ times using one socket but different `deviceId`
+
 ## 0.36.1
 
 ### Bug Fixes
