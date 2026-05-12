@@ -46,18 +46,18 @@ class PacketJsonProcessor extends BasePacketProcessor {
     } catch (error) {
       logger.error(error)
       let errorBackMessage = null
-      if (json.request) {
+      if (json?.request) {
         errorBackMessage = {
           response: {
-            id: json.request.id,
+            id: json.request?.id,
             error: error.cause || error.message,
           },
         }
       } else {
-        const topLevelElement = Object.keys(json)[0]
+        const topLevelElement = json ? Object.keys(json)[0] : void 0
         errorBackMessage = {
           [topLevelElement]: {
-            id: json[topLevelElement].id,
+            id: json?.[topLevelElement]?.id,
             error: error.cause || error.message,
           },
         }

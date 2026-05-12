@@ -200,7 +200,7 @@ class BaseProtocolProcessor {
   }
 
   async onClose(socket, code) {
-    logger.trace("[Close] IP: %s CLIENT_ID: %s CODE: %s", this.socketAddress(socket), socket.clientId, code)
+    logger.debug("[Close] IP: %s CLIENT_ID: %s CODE: %s", this.socketAddress(socket), socket.clientId, code)
 
     socket.isAlive = false
 
@@ -214,7 +214,7 @@ class BaseProtocolProcessor {
   async updateLastUserLastActivityOnClose(socket) {
     const { organizationId, userId } = this.sessionService.getSession(socket) ?? {}
 
-    logger.trace("[UPDATE_LAST_ACTIVITY][CLOSE] OrgId: %s UserId: %s", organizationId, userId)
+    logger.debug("[UPDATE_LAST_ACTIVITY][CLOSE] OrgId: %s UserId: %s", organizationId, userId)
 
     if (!userId) {
       return

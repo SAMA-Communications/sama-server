@@ -10,9 +10,10 @@ import { CONSTANTS } from "../../../constants/constants.js"
 */
 
 class SessionService {
-  constructor(activeSessions, config, redisConnection) {
+  constructor(activeSessions, config, logger, redisConnection) {
     this.activeSessions = activeSessions
     this.config = config
+    this.logger = logger
     this.redisConnection = redisConnection
   }
 
@@ -21,13 +22,17 @@ class SessionService {
   }
 
   addUserDeviceConnection(socket, organizationId, userId, deviceId) {
-    const activeConnections = this.activeSessions.DEVICES[userId]
     const socketsToClose = []
+
+    let activeConnections = this.getUserDevices(userId)
+    const filterNotSameSocket = activeConnections.filter(connection => connection.socket !== socket)
+    this.activeSessions.DEVICES[userId] = filterNotSameSocket
+    activeConnections = this.getUserDevices(userId)
 
     const connection = { socket: socket, deviceId, organizationId }
 
     if (activeConnections) {
-      const devices = activeConnections.filter((connection) => {
+      const otherDeviceConnections = activeConnections.filter((connection) => {
         if (connection.deviceId !== deviceId) {
           return true
         } else {
@@ -35,7 +40,7 @@ class SessionService {
           return false
         }
       })
-      this.activeSessions.DEVICES[userId] = [...devices, connection]
+      this.activeSessions.DEVICES[userId] = [...otherDeviceConnections, connection]
     } else {
       this.activeSessions.DEVICES[userId] = [connection]
     }
@@ -102,15 +107,19 @@ class SessionService {
 
   async listUserDevice(organizationId, userId) {
     if (this.config.get("app.isStandAloneNode")) {
-      return this.getUserDevices(userId)
-        .map((connection) => connection?.deviceId)
-        .filter((deviceId) => deviceId !== CONSTANTS.HTTP_DEVICE_ID)
+      return this.listUserDeviceLocal(userId)
     }
 
     const userKey = this.#usersSetCacheKey(organizationId, userId)
 
     const deviceIds = await this.redisConnection.client.sMembers(userKey)
     return deviceIds ?? []
+  }
+
+  listUserDeviceLocal(userId) {
+    return this.getUserDevices(userId)
+      .map((connection) => connection?.deviceId)
+      .filter((deviceId) => deviceId !== CONSTANTS.HTTP_DEVICE_ID)
   }
 
   async deleteUserDevices(organizationId, userId) {
@@ -312,9 +321,20 @@ class SessionService {
   }
 
   async removeUserSession(socket, userId, deviceId) {
+    this.logger.debug("[removeUserSession][args]: %o", { socket: socket?.isAlive, userId, deviceId })
+
     userId = userId ?? this.getSessionUserId(socket)
     deviceId = deviceId ?? this.getDeviceId(socket, userId)
     const orgId = this.getSession(socket)?.organizationId
+
+    this.logger.debug("[removeUserSession][vars]: %o [session]: %o [device]: %s", { orgId, userId, deviceId }, this.getSession(socket), this.getDeviceId(socket, userId))
+
+    const devicesBefore = this.getUserDevices(userId).map((connection) => {
+      const { socket, ...connectionData } = connection
+      return { ...connectionData, socket: socket?.clientId }
+    })
+
+    this.logger.debug("[removeUserSession][devices][before]: %o %s", devicesBefore, devicesBefore?.length)
 
     const leftActiveConnections = this.getUserDevices(userId).filter(({ deviceId: activeDeviceId }) => activeDeviceId !== deviceId)
 
@@ -324,6 +344,14 @@ class SessionService {
       delete this.activeSessions.DEVICES[userId]
     }
     this.activeSessions.SESSIONS.delete(socket)
+
+
+    const devicesAfter = this.getUserDevices(userId).map((connection) => {
+      const { socket, ...connectionData } = connection
+      return { ...connectionData, socket: socket?.clientId }
+    })
+
+    this.logger.debug("[removeUserSession][devices][after]: %o %s", devicesAfter, devicesAfter?.length)
 
     if (!deviceId) {
       return
@@ -393,7 +421,7 @@ class SessionService {
         (session) =>
           session?.organizationId === organizationId &&
           session?.extraParams[CONSTANTS.SESSION_DEVICE_ID_KEY] !== CONSTANTS.HTTP_DEVICE_ID &&
-          session?.userId
+          session?.userId && this.listUserDeviceLocal(session?.userId)?.length
       )
       .map((session) => session.userId)
       .sort((userIdA, userIdB) => userIdA - userIdB)
