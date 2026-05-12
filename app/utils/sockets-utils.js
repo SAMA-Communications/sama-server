@@ -6,7 +6,7 @@ export async function tcpSafeSend(socket, data) {
       socket.write(data, (error) => (error ? reject(error) : resolve()))
     })
   } catch (error) {
-    logger.error(error)
+    logger.error(error, "[tcp write]")
   }
 }
 
@@ -14,7 +14,7 @@ export function wsSafeSend(ws, data) {
   try {
     ws.send(data)
   } catch (error) {
-    logger.error(error)
+    logger.error(error, "[ws send]")
   }
 }
 
