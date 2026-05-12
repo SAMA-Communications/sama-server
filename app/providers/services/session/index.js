@@ -345,7 +345,7 @@ class SessionService {
     deviceId = deviceId ?? this.getDeviceId(socket, userId)
     const organizationId = this.getSession(socket)?.organizationId
 
-    this.logger.debug("[removeUserSession][vars]: %o [session]: %o [device]: %s", { orgId, userId, deviceId }, this.getSession(socket), this.getDeviceId(socket, userId))
+    this.logger.debug("[removeUserSession][vars]: %o [session]: %o [device]: %s", { organizationId, userId, deviceId }, this.getSession(socket), this.getDeviceId(socket, userId))
 
     const devicesBefore = this.getUserDevices(userId).map((connection) => {
       const { socket, ...connectionData } = connection
