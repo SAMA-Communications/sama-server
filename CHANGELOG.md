@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.36.1
+
+### Bug Fixes
+
+- Fixed `conversation_list` so results include the most recently created chats first
+
 ## 0.36.0
 
 ### Features
