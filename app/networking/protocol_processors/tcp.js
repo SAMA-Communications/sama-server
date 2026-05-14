@@ -3,7 +3,7 @@ import tls from "node:tls"
 
 import { CONSTANTS as MAIN_CONSTANTS } from "../../constants/constants.js"
 import logger from "../../logger/index.js"
-import { asyncLoggerContextStore, createStore, updateStoreContext } from "../../logger/async_store.js"
+import { asyncLoggerContextStore, updateStoreContext } from "../../logger/async_store.js"
 
 import BaseProtocolProcessor from "./base.js"
 import { APIs, detectAPIType } from "../APIs.js"
@@ -176,7 +176,10 @@ class TcpProtocol extends BaseProtocolProcessor {
     this.prepareSocketsListeners()
 
     return new Promise((resolve) => {
-      this.tcpSocketServer = net.createServer((socket) => {
+      this.tcpSocketServer = net.createServer({
+        keepAlive: true,
+        keepAliveInitialDelay: 5_000
+      }, (socket) => {
         asyncLoggerContextStore.run(this.requestCreateStoreContext(socket), () => {
           this.onOpen(socket)
         })

@@ -142,7 +142,7 @@ class StatsService {
   }
 
   collectStats(format, date = new Date()) {
-    const stats = {}
+    const stats = { hostname: this.config.get("app.hostName") }
 
     const serverStats = this.collectServerStats(format, date)
     const usersStats = this.collectUsersStats(format, date)

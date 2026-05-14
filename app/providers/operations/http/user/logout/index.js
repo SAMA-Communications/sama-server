@@ -29,13 +29,17 @@ class HttpUserLogoutOperation {
     const { user_id: userId, device_id: deviceId } = refreshTokenRecord
     const socket = this.sessionService.getUserDevices(userId).find((el) => el.deviceId === deviceId)?.socket
 
+    const userDevices = await this.sessionService.listUserDevice(refreshTokenRecord.organization_id, refreshTokenRecord.user_id)
+    let isWasLastUserSession = !userDevices?.length
+
     if (socket) {
-      await this.userLogoutOperation.perform(socket)
+      const logoutResult = await this.userLogoutOperation.perform(socket)
+      isWasLastUserSession = logoutResult.isWasLastUserSession
     } else {
       await this.userTokenRepo.deleteByUserId(userId, deviceId)
     }
 
-    return refreshTokenRecord
+    return { refreshTokenRecord, isWasLastUserSession }
   }
 }
 

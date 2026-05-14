@@ -70,10 +70,14 @@ class RedisManager {
     return matchCount
   }
 
-  async findKeyByPattern(pattern) {
+  async findKeysByPattern(pattern) {
     const keys = await this.client.keys(pattern)
 
-    return keys?.at(0)
+    if (!keys?.length) {
+      return keys
+    }
+
+    return keys
   }
 }
 

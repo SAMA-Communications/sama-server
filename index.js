@@ -11,7 +11,6 @@ import RegisterProvider from "./app/common/RegisterProvider.js"
 import providers from "./app/providers/index.js"
 
 import clusterManager from "./app/cluster/cluster_manager.js"
-import clusterSyncer from "./app/cluster/cluster_syncer.js"
 
 import WsProtocol from "./app/networking/protocol_processors/ws.js"
 import TcpProtocol from "./app/networking/protocol_processors/tcp.js"
@@ -68,12 +67,6 @@ if (config.get("tcp.options.isTls")) {
     cert: fs.readFileSync(config.get("tcp.options.tls.cert")),
   })
 }
-
-if (!config.get("app.isStandAloneNode")) {
-  const clusterPort = await clusterManager.createLocalSocket(uWSOptions)
-  config.set("ws.cluster.port", clusterPort)
-}
-config.set("ws.cluster.endpoint", buildWsEndpoint(config.get("app.ip"), config.get("ws.cluster.port")))
 
 logger.debug("[Config] %s", JSON.stringify(config.toObject(), null, 5))
 
@@ -167,8 +160,6 @@ for (const api of Object.values(APIs)) {
   }
 }
 
-logger.debug("[Config][Merged] %s", JSON.stringify(config.toObject(), null, 5))
-
 // Boot providers
 logger.debug("[Boot]")
 await ServiceLocatorContainer.boot()
@@ -177,10 +168,19 @@ logger.debug("[Create singleton]")
 await ServiceLocatorContainer.createAllSingletonInstances()
 
 if (!config.get("app.isStandAloneNode")) {
+  const clusterPort = await clusterManager.createLocalSocket(uWSOptions)
+
+  config.set("ws.cluster.port", clusterPort)
+  config.set("ws.cluster.endpoint", buildWsEndpoint(config.get("app.ip"), config.get("ws.cluster.port")))
+
   // Start Cluster Sync
   logger.debug("[Start sync]")
-  await clusterSyncer.startSyncingClusterNodes()
+  await clusterManager.startSyncingClusterNodes(true)
+} else {
+  config.set("ws.cluster.endpoint", buildWsEndpoint(config.get("app.ip"), config.get("ws.cluster.port")))
 }
+
+logger.debug("[Config][Merged] %s", JSON.stringify(config.toObject(), null, 5))
 
 // Start public protocols
 const sessionService = ServiceLocatorContainer.use("SessionService")

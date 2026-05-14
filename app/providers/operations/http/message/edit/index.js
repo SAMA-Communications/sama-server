@@ -9,7 +9,7 @@ class HttpMessageEditOperation {
   async perform(fakeWsSessionKey, payload) {
     const { organizationId, senderId, messageEdit: messageEditParams } = payload
 
-    this.sessionService.addUserDeviceConnection(fakeWsSessionKey, organizationId, senderId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
+    await this.sessionService.addUserDeviceConnection(fakeWsSessionKey, organizationId, senderId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
 
     const operationResponse = await this.messageEditOperation.perform(fakeWsSessionKey, messageEditParams)
 
