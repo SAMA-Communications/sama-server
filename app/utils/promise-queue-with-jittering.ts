@@ -6,13 +6,22 @@ const reconnectLogger = mainLogger.child("[Reconnect]")
 
 class CancelQueueError extends Error {}
 
-const promiseQueueWithJittering = (executablePromise, tryCount, delay) => {
+export type PromiseQueueWithJittering<T> = {
+  start: () => Promise<T | undefined>
+  cancel: () => boolean
+}
+
+export const promiseQueueWithJittering = <T>(
+  executablePromise: (checkIsCanceled: () => boolean) => Promise<T>,
+  tryCount: number,
+  delay: number,
+): PromiseQueueWithJittering<T> => {
   let isCanceled = false
 
-  const cancel = () => (isCanceled = true)
-  const checkIsCanceled = () => isCanceled
+  const cancel = (): boolean => (isCanceled = true)
+  const checkIsCanceled = (): boolean => isCanceled
 
-  const start = async () => {
+  const start = async (): Promise<T | undefined> => {
     if (isCanceled) {
       throw new CancelQueueError("Canceled")
     }
@@ -23,7 +32,7 @@ const promiseQueueWithJittering = (executablePromise, tryCount, delay) => {
       return tryDelay
     })
 
-    let lastError = void 0
+    let lastError: unknown = void 0
 
     reconnectLogger.debug("[tryDelays] %j %s", tryDelays, isCanceled)
 
@@ -64,4 +73,4 @@ const promiseQueueWithJittering = (executablePromise, tryCount, delay) => {
   return { start, cancel }
 }
 
-export { promiseQueueWithJittering, CancelQueueError }
+export { CancelQueueError }

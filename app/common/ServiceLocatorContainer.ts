@@ -1,19 +1,23 @@
+import type { ProviderName } from "../types/common.js"
+
 import mainLogger from "../logger/index.js"
+
 import RegisterProvider from "./RegisterProvider.js"
+import type { IServiceLocator } from "./service-locator-types.js"
+import type { ServiceLocatorRegistry } from "./service-locator-registry.js"
 
 const logger = mainLogger.child("[ServiceLocatorContainer]")
 
-class ServiceLocatorContainer {
-  #providersStore = {}
-  #providersInstances = {}
+class ServiceLocatorContainer implements IServiceLocator {
+  #providersStore: Record<ProviderName, RegisterProvider> = {}
+  #providersInstances: Record<ProviderName, unknown> = {}
 
-  use(name) {
-    const provider = this.createProviderInstance(name)
-
-    return provider
+  use<TRegistryKey extends keyof ServiceLocatorRegistry>(name: TRegistryKey): ServiceLocatorRegistry[TRegistryKey]
+  use<TProvider>(name: ProviderName): TProvider {
+    return this.createProviderInstance(name)
   }
 
-  createProviderInstance(name) {
+  createProviderInstance<TProvider>(name: ProviderName): TProvider {
     const registerProvider = this.#providersStore[name]
 
     if (!registerProvider) {
@@ -21,19 +25,19 @@ class ServiceLocatorContainer {
     }
 
     if (registerProvider.scope === RegisterProvider.SCOPE.TRANSIENT) {
-      return registerProvider.register(this)
+      return registerProvider.register<TProvider>(this)
     }
 
     if (!this.#providersInstances[name]) {
-      this.#providersInstances[name] = registerProvider.register(this)
+      this.#providersInstances[name] = registerProvider.register<TProvider>(this)
     }
 
-    return this.#providersInstances[name]
+    return this.#providersInstances[name] as TProvider
   }
 
-  createAllSingletonInstances() {
+  createAllSingletonInstances(): void {
     const registerProviders = Object.values(this.#providersStore).filter(
-      (registerProvider) => registerProvider.scope === RegisterProvider.SCOPE.SINGLETON
+      (registerProvider) => registerProvider.scope === RegisterProvider.SCOPE.SINGLETON,
     )
 
     for (const registerProvider of registerProviders) {
@@ -41,7 +45,7 @@ class ServiceLocatorContainer {
     }
   }
 
-  register(registerProvider) {
+  register(registerProvider: RegisterProvider): void {
     const existed = this.#providersStore[registerProvider.name]
 
     if (existed) {
@@ -49,7 +53,7 @@ class ServiceLocatorContainer {
         "[register] %s [replace implementation] %s -> %s",
         registerProvider.name,
         existed.implementationName,
-        registerProvider.implementationName
+        registerProvider.implementationName,
       )
     } else {
       logger.debug("[register] %s [implementation] %s", registerProvider.name, registerProvider.implementationName)
@@ -58,9 +62,9 @@ class ServiceLocatorContainer {
     this.#providersStore[registerProvider.name] = registerProvider
   }
 
-  async boot(name) {
+  async boot(name?: ProviderName): Promise<void> {
     let registerProviderToBoot = name ? [this.#providersStore[name]] : Object.values(this.#providersStore)
-    registerProviderToBoot = registerProviderToBoot.filter((registerProvider) => !registerProvider.booted)
+    registerProviderToBoot = registerProviderToBoot.filter((registerProvider) => registerProvider && !registerProvider.booted)
 
     for (const registerProvider of registerProviderToBoot) {
       await registerProvider.boot(this)

@@ -2,14 +2,19 @@ import crypto from "node:crypto"
 
 const STRETCHES = 20
 
-export function generateSalt(length = 20) {
+export type HashedPassword = {
+  salt: string
+  encryptedPassword: string
+}
+
+export function generateSalt(length: number = 20): string {
   const rlength = (length * 3) / 4
   let result = crypto.randomBytes(rlength).toString("base64")
   result = result.replace("l", "s").replace("I", "x").replace("O", "y").replace("0", "z")
   return result
 }
 
-export async function hashPassword(plainPassword, salt = generateSalt()) {
+export async function hashPassword(plainPassword: string, salt: string = generateSalt()): Promise<HashedPassword> {
   // https://codereview.stackexchange.com/a/15635/227555
 
   let encryptedPassword = plainPassword + salt
@@ -25,7 +30,7 @@ export async function hashPassword(plainPassword, salt = generateSalt()) {
   }
 }
 
-export async function verifyPassword(plainPassword, encryptedPassword, salt) {
+export async function verifyPassword(plainPassword: string, encryptedPassword: string, salt: string): Promise<boolean> {
   const res = await hashPassword(plainPassword, salt)
   return encryptedPassword === res.encryptedPassword
 }

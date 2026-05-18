@@ -1,9 +1,13 @@
-export function slice(obj, keys, setEmptyStringToNull) {
+export function slice(
+  obj: Record<string, unknown>,
+  keys: string[],
+  setEmptyStringToNull?: boolean,
+): Record<string, unknown> {
   return Object.keys(obj)
     .filter((key) => {
       return keys.indexOf(key) >= 0
     })
-    .reduce((acc, key) => {
+    .reduce<Record<string, unknown>>((acc, key) => {
       let val = obj[key]
       if (setEmptyStringToNull && val === "") {
         val = null
@@ -13,12 +17,12 @@ export function slice(obj, keys, setEmptyStringToNull) {
     }, {})
 }
 
-export function sliceExcept(obj, keys) {
+export function sliceExcept(obj: Record<string, unknown>, keys: string[]): Record<string, unknown> {
   return Object.keys(obj)
     .filter((key) => {
       return keys.indexOf(key) === -1
     })
-    .reduce((acc, key) => {
+    .reduce<Record<string, unknown>>((acc, key) => {
       acc[key] = obj[key]
       return acc
     }, {})
