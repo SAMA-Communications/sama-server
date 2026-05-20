@@ -76,8 +76,8 @@ class PacketManager {
     }
 
     const offlineUsersIds = []
-    let currentNodesUserIds = {}
-    let otherNodes = {}
+    const currentNodesUserIds = new Set()
+    const otherNodes = new Map()
 
     for (const userId of destinationUserIds) {
       const userConnections = await sessionService.listUserData(sourceOptions.organizationId, userId)
@@ -99,14 +99,14 @@ class PacketManager {
       this.reduceUserNodeConnections(senderInfo.node, userId, userConnections, currentNodesUserIds, otherNodes)
     }
 
-    Object.keys(currentNodesUserIds).forEach(async (userId) => {
+    for (const userId of currentNodesUserIds) {
       const exceptDeviceId = payloadOptions.ignoreSelf ? senderInfo.deviceId : void 0
 
       await this.deliverToUserOnThisNode(userId, exceptDeviceId, payloadOptions.packet, senderInfo)
-    })
+    }
 
-    Object.entries(otherNodes).forEach(([nodeEndpoint, userIds]) => {
-      Object.keys(userIds).forEach(async (userId) => {
+    for (const [nodeEndpoint, userIds] of otherNodes) {
+      for (const userId of userIds) {
         try {
           const clusterPacket = { userId, packet: payloadOptions.packet, senderInfo }
           logger.trace("[Cluster][%s][deliver] %j", nodeEndpoint, clusterPacket)
@@ -114,8 +114,8 @@ class PacketManager {
         } catch (error) {
           logger.error(error, "[%s][deliver to other node]", nodeEndpoint)
         }
-      })
-    })
+      }
+    }
 
     if (payloadOptions.pushQueueMessage && offlineUsersIds.length) {
       payloadOptions.pushQueueMessage.setRecipientIds(offlineUsersIds)
@@ -131,15 +131,15 @@ class PacketManager {
       }
 
       if (connectionEndpoint === targetNodeEndpoint || config.get("app.isStandAloneNode")) {
-        currentNodesAcc[userId] = connectionEndpoint
+        currentNodesAcc.add(userId)
         continue
       }
 
-      if (!otherNodesAcc[connectionEndpoint]) {
-        otherNodesAcc[connectionEndpoint] = {}
+      if (!otherNodesAcc.has(connectionEndpoint)) {
+        otherNodesAcc.set(connectionEndpoint, new Set())
       }
 
-      otherNodesAcc[connectionEndpoint][userId] = connectionEndpoint
+      otherNodesAcc.get(connectionEndpoint).add(userId)
     }
   }
 

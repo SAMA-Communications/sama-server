@@ -17,7 +17,7 @@ describe("Carbons", async () => {
 
     await createUserArray(orgId, 2)
 
-    sessionService.activeSessions.DEVICES = {}
+    sessionService.activeSessions.DEVICES = new Map()
   })
 
   describe("Carbon login", async () => {
@@ -32,7 +32,7 @@ describe("Carbons", async () => {
       await sendLogin("ws6", orgId, "user_1", "laptop2")
 
       assert.strictEqual(sessionService.getUserDevices(currentUserToken).length, 4)
-      assert.notEqual(Object.keys(sessionService.activeSessions.DEVICES).length, 0)
+      assert.notEqual(sessionService.activeSessions.DEVICES.size, 0)
 
       await sendLogout("ws4", currentUserToken, "laptop1")
 
@@ -47,7 +47,7 @@ describe("Carbons", async () => {
 
       await packetJsonProcessor.processMessageOrError("ws6", JSON.stringify(requestData))
 
-      assert.strictEqual(Object.keys(sessionService.activeSessions.DEVICES).length, 0)
+      assert.strictEqual(sessionService.activeSessions.DEVICES.size, 0)
     })
   })
 

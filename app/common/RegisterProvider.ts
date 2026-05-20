@@ -13,7 +13,7 @@ export type RegisterProviderOptions = {
   implementationName: string
 }
 
-export default abstract class RegisterProvider {
+export default abstract class RegisterProvider<TProvider = unknown> {
   static readonly SCOPE = REGISTER_PROVIDER_SCOPE
 
   readonly name: ProviderName
@@ -30,7 +30,7 @@ export default abstract class RegisterProvider {
     this.booted = false
   }
 
-  abstract register<TProvider>(slc: IServiceLocator): TProvider
+  abstract register(slc: IServiceLocator): TProvider
 
-  async boot(slc: IServiceLocator): Promise<void> {}
+  async boot(_slc: IServiceLocator): Promise<void> {}
 }

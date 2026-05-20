@@ -1,20 +1,22 @@
 import net from "node:net"
+import type { Logger } from "../logger/index.js"
 
 import { APIs, BASE_API } from "../networking/APIs.js"
+import type SessionService from "../providers/services/session/index.js"
 import type { SamaTcpSocket, SamaWsSocket } from "../types/socket-types.js"
 
 export const watchdogPingSocket = async (
-  logger: any,
-  sessionService: any,
-  onWsCloseCb: (socket: SamaWsSocket | undefined, code: number) => Promise<void>,
-  onTcpCloseCb: (socket: SamaTcpSocket | undefined) => Promise<void>,
+  logger: Logger,
+  sessionService: SessionService,
+  onWsCloseCb: (socket: SamaWsSocket | undefined, code: number) => Promise<unknown>,
+  onTcpCloseCb: (socket: SamaTcpSocket | undefined) => Promise<unknown>,
 ): Promise<void> => {
-  const users = Object.keys(sessionService.activeSessions.DEVICES)
+  const users = Array.from(sessionService.activeSessions.DEVICES.keys())
 
   logger.debug("[start] %s", users.length)
 
   for (const userId of users) {
-    const connections = sessionService.activeSessions.DEVICES[userId] ?? []
+    const connections = sessionService.activeSessions.DEVICES.get(userId) ?? []
     for (const connection of connections) {
       if (!connection?.socket) {
         continue
@@ -43,7 +45,9 @@ export const watchdogPingSocket = async (
             .then(() => logger.debug("[close ws done] %s", userId))
             .catch((error) => logger.error(error, "[close ws error]"))
         }
-        await sessionService.removeUserSession(socket, userId, connection.deviceId).catch((error) => logger.error(error, "[remove]"))
+        await sessionService
+          .removeUserSession(socket, userId, connection.deviceId)
+          .catch((error) => logger.error(error, "[remove]"))
       }
     }
   }

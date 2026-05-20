@@ -25,11 +25,11 @@ class ServiceLocatorContainer implements IServiceLocator {
     }
 
     if (registerProvider.scope === RegisterProvider.SCOPE.TRANSIENT) {
-      return registerProvider.register<TProvider>(this)
+      return registerProvider.register(this) as TProvider
     }
 
     if (!this.#providersInstances[name]) {
-      this.#providersInstances[name] = registerProvider.register<TProvider>(this)
+      this.#providersInstances[name] = registerProvider.register(this)
     }
 
     return this.#providersInstances[name] as TProvider

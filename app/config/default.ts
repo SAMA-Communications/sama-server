@@ -1,6 +1,8 @@
 import { CONSTANTS } from "../constants/constants.js"
 
-const CONFIG = {
+import type { ConfigValues } from "./config-values.js"
+
+const CONFIG: ConfigValues = {
   app: {
     env: process.env.NODE_ENV ?? CONSTANTS.ENVS.DEV,
     ip: void 0,

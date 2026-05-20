@@ -1,4 +1,4 @@
-import pino from "pino"
+import { pino, type Logger as PinoBaseLogger } from "pino"
 import pinoPretty from "pino-pretty"
 
 import config from "../config/index.js"
@@ -24,43 +24,47 @@ const pinoLogger = pino(
     level: config.get("logger.logLevel"),
     base: null,
   },
-  pino.multistream(streams)
+  pino.multistream(streams),
 )
 
+type LogContext = Record<string, unknown>
+
 class PinoLogger {
-  static START_REQUEST_TIME_PROP = "rStartTime"
+  static readonly START_REQUEST_TIME_PROP = "rStartTime"
 
-  ignoreContextProps = [PinoLogger.START_REQUEST_TIME_PROP]
+  ignoreContextProps: string[] = [PinoLogger.START_REQUEST_TIME_PROP]
 
-  constructor(pinoLogger) {
+  pinoLogger: PinoBaseLogger
+
+  constructor(pinoLogger: PinoBaseLogger) {
     this.pinoLogger = pinoLogger
   }
 
-  trace(stringPattern, ...args) {
+  trace(stringPattern: string, ...args: unknown[]): void {
     const logContext = this.#logContext()
 
     this.pinoLogger.trace(logContext, stringPattern, ...args)
   }
 
-  debug(stringPattern, ...args) {
+  debug(stringPattern: string, ...args: unknown[]): void {
     const logContext = this.#logContext()
 
     this.pinoLogger.debug(logContext, stringPattern, ...args)
   }
 
-  log(stringPattern, ...args) {
+  log(stringPattern: string, ...args: unknown[]): void {
     const logContext = this.#logContext()
 
     this.pinoLogger.trace(logContext, stringPattern, ...args)
   }
 
-  warn(stringPattern, ...args) {
+  warn(stringPattern: string, ...args: unknown[]): void {
     const logContext = this.#logContext()
 
     this.pinoLogger.warn(logContext, stringPattern, ...args)
   }
 
-  error(error, stringPattern, ...args) {
+  error(error: unknown, stringPattern: string, ...args: unknown[]): void {
     const logContext = this.#logContext()
 
     const childLogger = this.pinoLogger.child(logContext)
@@ -68,7 +72,7 @@ class PinoLogger {
     childLogger.error(error, stringPattern, ...args)
   }
 
-  fatal(error, stringPattern, ...args) {
+  fatal(error: unknown, stringPattern: string, ...args: unknown[]): void {
     const logContext = this.#logContext()
 
     const childLogger = this.pinoLogger.child(logContext)
@@ -76,14 +80,14 @@ class PinoLogger {
     childLogger.fatal(error, stringPattern, ...args)
   }
 
-  child(msgPrefix, contextBindings = {}) {
+  child(msgPrefix: string, contextBindings: Record<string, unknown> = {}): PinoLogger {
     const childPinoLogger = this.pinoLogger.child(contextBindings, { msgPrefix: msgPrefix })
 
     return new PinoLogger(childPinoLogger)
   }
 
-  #logContext(context = {}) {
-    const logContext = {}
+  #logContext(context: LogContext = {}): LogContext {
+    const logContext: LogContext = {}
 
     const asyncContext = asyncLoggerContextStore.getStore()
 
@@ -98,16 +102,20 @@ class PinoLogger {
     return logContext
   }
 
-  #addContextRequestTime(logContext) {
+  #addContextRequestTime(logContext: LogContext): LogContext {
     const rStartTime = logContext[PinoLogger.START_REQUEST_TIME_PROP]
 
     if (!rStartTime) {
       return {}
     }
 
-    const requestTime = new Date() - rStartTime
+    const requestTime = Number(new Date()) - Number(rStartTime)
     return { rTime: `${requestTime}ms` }
   }
 }
 
-export default new PinoLogger(pinoLogger)
+export type Logger = PinoLogger
+
+const logger = new PinoLogger(pinoLogger)
+
+export default logger

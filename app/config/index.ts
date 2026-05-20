@@ -1,4 +1,5 @@
 import os from "node:os"
+
 import ip from "ip"
 
 import CONFIG_VALUES from "./default.js"
@@ -20,3 +21,5 @@ if (config.get("app.isStandAloneNode")) {
 }
 
 export default config
+export type { ConfigValues } from "./config-values.js"
+export { Config }

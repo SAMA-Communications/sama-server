@@ -1,24 +1,28 @@
-import { createClient } from "redis"
+import { createClient, type RedisClientType } from "redis"
 
 import config from "../config/index.js"
 import mainLogger from "../logger/index.js"
 
 const logger = mainLogger.child("[Redis]")
 
+type RedisScanKeyType = "string" | "hash" | "set" | "zset" | "list"
+
 class RedisManager {
+  client: RedisClientType
+
   constructor() {
     this.client = createClient({
-      url: config.get("redis.main.url"),
+      url: config.get<string>("redis.main.url"),
       pingInterval: 3_000,
       socket: {
-        reconnectStrategy: (retries) => {
+        reconnectStrategy: (retries: number): number => {
           logger.warn("[reconnect] %s", retries)
           return 300
         },
       },
     })
 
-    this.client.on("error", (err) => {
+    this.client.on("error", (err: Error) => {
       logger.error(err, "[connection][error]")
     })
 
@@ -27,13 +31,18 @@ class RedisManager {
     })
   }
 
-  async connect() {
+  async connect(): Promise<RedisClientType> {
     return await this.client.connect()
   }
 
-  async scanWithPagination(type = "string", matchPattern = "*", offset = 0, limit = 10) {
+  async scanWithPagination(
+    type: RedisScanKeyType = "string",
+    matchPattern: string = "*",
+    offset: number = 0,
+    limit: number = 10,
+  ): Promise<string[]> {
     let cursor = 0
-    let results = []
+    const results: string[] = []
     let scanned = 0
 
     do {
@@ -56,7 +65,7 @@ class RedisManager {
     return results
   }
 
-  async countWithMatch(type = "string", matchPattern = "*") {
+  async countWithMatch(type: RedisScanKeyType = "string", matchPattern: string = "*"): Promise<number> {
     let cursor = 0
     let matchCount = 0
 
@@ -70,7 +79,7 @@ class RedisManager {
     return matchCount
   }
 
-  async findKeysByPattern(pattern) {
+  async findKeysByPattern(pattern: string): Promise<string[]> {
     const keys = await this.client.keys(pattern)
 
     if (!keys?.length) {
@@ -84,3 +93,4 @@ class RedisManager {
 const RedisClient = new RedisManager()
 
 export default RedisClient
+export { RedisManager }
