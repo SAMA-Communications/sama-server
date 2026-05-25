@@ -6,12 +6,12 @@ class HttpActivityOnlineListOperation {
     this.onlineListOperation = onlineListOperation
   }
 
-  async perform(fakeWsSessionKey, payload) {
+  async perform(res, payload) {
     const { organizationId, userId, ...requestData } = payload
 
-    await this.sessionService.addUserDeviceConnection(fakeWsSessionKey, organizationId, userId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
+    await this.sessionService.addUserDeviceConnection(res, organizationId, userId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
 
-    const operationResponse = await this.onlineListOperation.perform(fakeWsSessionKey, requestData)
+    const operationResponse = await this.onlineListOperation.perform(res, requestData)
 
     return operationResponse
   }

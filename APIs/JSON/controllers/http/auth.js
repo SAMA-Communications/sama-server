@@ -16,7 +16,7 @@ class HttpAuthController extends BaseHttpController {
     const httpAuthOperation = ServiceLocatorContainer.use("HttpUserAuthOperation")
 
     const { user, newAccessToken, accessTokenExpiredAt, newRefreshToken } = await httpAuthOperation.perform(
-      res.fakeWsSessionKey,
+      res,
       res.parsedHeaders,
       res.parsedSignedCookies,
       payload
@@ -44,7 +44,7 @@ class HttpAuthController extends BaseHttpController {
     const httpLogoutOperation = ServiceLocatorContainer.use("HttpUserLogoutOperation")
 
     const { refreshTokenRecord, isWasLastUserSession } = await httpLogoutOperation.perform(
-      res.fakeWsSessionKey,
+      res,
       res.parsedHeaders,
       res.parsedSignedCookies
     )

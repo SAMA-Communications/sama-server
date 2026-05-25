@@ -21,8 +21,6 @@ import { asyncLoggerContextStore, createStore, updateStoreContext } from "@sama/
 const logger = mainLogger.child("[Http]")
 
 const parseBaseParamsMiddleware = async (res, req) => {
-  res.fakeWsSessionKey = Symbol("Http ws fake session")
-
   res.parsedHeaders = {}
 
   req.forEach((headerName, value) => {
@@ -131,13 +129,13 @@ class HttpProtocol extends BaseProtocolProcessor {
     }
   }
 
-  async unbindSession(wsKey) {
-    const session = this.sessionService.getSession(wsKey)
+  async unbindSession(res) {
+    const session = this.sessionService.getSession(res)
     if (!session?.userId) {
       return
     }
 
-    await this.sessionService.removeUserSession(wsKey, session.userId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
+    await this.sessionService.removeUserSession(res, session.userId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
   }
 
   async processHttpResponseMiddleware(res, req, handlerResponse) {
@@ -176,7 +174,7 @@ class HttpProtocol extends BaseProtocolProcessor {
       emptyBody ? res.endWithoutBody() : res.end(bodyStr)
     })
 
-    this.processAPIResponse(res.fakeWsSessionKey, handlerResponse, true)
+    this.processAPIResponse(res, handlerResponse, true)
       .then(() => logger.trace("[processAPIResponse][success]"))
       .catch((error) => logger.error(error, "[processAPIResponse][Error]"))
   }
@@ -219,13 +217,13 @@ class HttpProtocol extends BaseProtocolProcessor {
         res.end(error.message ?? ERROR_STATUES.INTERNAL_SERVER.message)
       })
     } finally {
-      await this.unbindSession(res.fakeWsSessionKey)
+      await this.unbindSession(res)
     }
   }
 
   onHttpRequestHandler(preMiddleware = [], handler) {
     return (res, req) => {
-      asyncLoggerContextStore.run(this.requestCreateStoreContext(res), () => {
+      asyncLoggerContextStore.run(this.requestCreateStoreContext(this.extendSocket(res)), () => {
         return this.requestHandler(req, res, preMiddleware, handler)
       })
     }

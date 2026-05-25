@@ -12,7 +12,7 @@ class HttpOrganizationController extends BaseHttpController {
     const response = new Response()
 
     const httpOrganizationCreateOperation = ServiceLocatorContainer.use("HttpOrganizationCreateOperation")
-    const organization = await httpOrganizationCreateOperation.perform(res.fakeWsSessionKey, payload)
+    const organization = await httpOrganizationCreateOperation.perform(res, payload)
 
     return response.setHttpResponse(new HttpResponse(200, {}, { organization: organization.visibleParams() }))
   }

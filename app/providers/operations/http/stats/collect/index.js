@@ -3,7 +3,7 @@ class HttpStatsCollectOperation {
     this.statsService = statsService
   }
 
-  async perform(fakeWsSessionKey, payload) {
+  async perform(res, payload) {
     const needFormat = payload?.get("format")
 
     const stats = await this.statsService.collectStats(needFormat)

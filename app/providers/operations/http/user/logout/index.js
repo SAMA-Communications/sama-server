@@ -8,7 +8,7 @@ class HttpUserLogoutOperation {
     this.userLogoutOperation = userLogoutOperation
   }
 
-  async perform(fakeWsSessionKey, headers, cookies) {
+  async perform(res, headers, cookies) {
     const refreshToken = cookies["refresh_token"]
     const accessToken = this.helpers.extractAccessTokenFromAuthHeader(headers["authorization"])
 

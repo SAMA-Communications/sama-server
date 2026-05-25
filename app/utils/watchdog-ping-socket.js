@@ -1,5 +1,6 @@
 import net from "node:net"
 import { APIs, BASE_API } from "../networking/APIs.js"
+import { CONSTANTS } from "../constants/constants.js"
 
 export const watchdogPingSocket = async (logger, sessionService, onWsCloseCb, onTcpCloseCb) => {
   const users = Object.keys(sessionService.activeSessions.DEVICES)
@@ -9,7 +10,7 @@ export const watchdogPingSocket = async (logger, sessionService, onWsCloseCb, on
   for (const userId of users) {
     const connections = sessionService.activeSessions.DEVICES[userId] ?? []
     for (const connection of connections) {
-      if (!connection?.socket) {
+      if (!connection?.socket /*|| connection?.deviceId !== CONSTANTS.HTTP_DEVICE_ID*/) {
         continue
       }
 
