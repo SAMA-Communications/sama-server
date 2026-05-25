@@ -10,7 +10,7 @@ export const watchdogPingSocket = async (logger, sessionService, onWsCloseCb, on
   for (const userId of users) {
     const connections = sessionService.activeSessions.DEVICES[userId] ?? []
     for (const connection of connections) {
-      if (!connection?.socket /*|| connection?.deviceId !== CONSTANTS.HTTP_DEVICE_ID*/) {
+      if (!connection?.socket || (connection?.deviceId === CONSTANTS.HTTP_DEVICE_ID)) {
         continue
       }
 
