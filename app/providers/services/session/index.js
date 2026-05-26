@@ -415,9 +415,7 @@ class SessionService {
   onlineUsersListLocal(organizationId, offset, limit) {
     const userIds = this.retrieveLocalActiveSessionUserIds(organizationId)
 
-    userIds.slice(offset, offset + limit)
-
-    return userIds
+    return userIds.slice(offset, offset + limit)
   }
 
   onlineUsersCountLocal(organizationId) {
@@ -430,7 +428,7 @@ class SessionService {
     const userIds = Array.from(this.activeSessions.SESSIONS.values())
       .filter(
         (session) =>
-          session?.organizationId === organizationId &&
+          session?.organizationId?.toString() === organizationId?.toString() &&
           session?.extraParams[CONSTANTS.SESSION_DEVICE_ID_KEY] !== CONSTANTS.HTTP_DEVICE_ID &&
           session?.userId && this.listUserDeviceLocal(session?.userId)?.length
       )
