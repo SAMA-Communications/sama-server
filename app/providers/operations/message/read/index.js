@@ -30,7 +30,7 @@ class MessageReadOperation {
 
     const unreadMessagesGroupedByFrom = groupBy(unreadMessages, "from")
 
-    const readMessagesGroups = Object.entries(unreadMessagesGroupedByFrom).map(([userId, messages]) => {
+    const readMessagesGroups = Array.from(unreadMessagesGroupedByFrom.entries()).map(([userId, messages]) => {
       const firstMessage = messages.at(0)
       const cId = firstMessage.cid
       const messageIds = messages.map((message) => message._id)

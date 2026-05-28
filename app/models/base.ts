@@ -1,36 +1,50 @@
 import { slice } from "../utils/req_res_utils.js"
 
+export type BaseModelProps = {
+  params: { [key: string]: any },
+  mappedParams: { [key: string]: any },
+  visibleParams(): Record<string, unknown>
+}
+
 class BaseModel {
-  constructor(params, mappedParams) {
+  params: any
+  mappedParams: any
+
+  constructor(params?: any, mappedParams?: any) {
     this.params = params ?? {}
     this.mappedParams = mappedParams ?? {}
   }
 
-  static get collection() {
+  static get collection(): string {
     throw new Error("Not implemented")
   }
 
-  static get visibleFields() {
+  static get visibleFields(): string[] {
     throw new Error("Not implemented")
   }
 
-  static get originalFields() {
+  static get originalFields(): string[] {
     throw new Error("Not implemented")
   }
 
-  visibleParams() {
-    return slice(this, this.constructor.visibleFields)
+  visibleParams(): Record<string, unknown> {
+    const Model = this.constructor as typeof BaseModel
+    return slice(this as Record<string, unknown>, Model.visibleFields)
   }
 
-  set(propName, value) {
+  set(propName: string, value: any): any {
     return (this.mappedParams[propName] = value)
   }
 
-  static createInstance(...params) {
-    const origModel = new this(...params)
+  static createInstance<TModel>(params: any, mappedParams: any): TModel {
+    const origModel = new this(params, mappedParams)
 
     const proxyModel = new Proxy(origModel, {
-      get(model, propName) {
+      get(model, propName: string | symbol) {
+        if (typeof propName === "symbol") {
+          return Reflect.get(model, propName)
+        }
+
         const origVal = model[propName]
         if (origVal !== void 0) {
           return origVal
@@ -52,7 +66,7 @@ class BaseModel {
         return [...new Set(keys)]
       },
 
-      getOwnPropertyDescriptor(model) {
+      getOwnPropertyDescriptor() {
         return {
           enumerable: true,
           configurable: true,
@@ -60,7 +74,7 @@ class BaseModel {
       },
     })
 
-    return proxyModel
+    return proxyModel as unknown as TModel
   }
 }
 

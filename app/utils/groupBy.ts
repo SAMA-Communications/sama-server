@@ -1,11 +1,15 @@
-export default function groupBy<T extends Record<string, unknown>>(data: T[], filed: string): Record<string, T[]> {
-  const groupObj: Record<string, T[]> = {}
-  for (const obj of data) {
-    const key = obj[filed] as string
-    if (!groupObj[key]) {
-      groupObj[key] = []
+export default function groupBy<TItem extends Record<string, unknown>, TGroupFiled>(data: TItem[], filed: string): Map<TGroupFiled, TItem[]> {
+  const groupResult = new Map<TGroupFiled, TItem[]>()
+
+  for (const item of data) {
+    const groupKey = item[filed] as TGroupFiled
+    
+    if (!groupResult.has(groupKey)) {
+      groupResult.set(groupKey, [])
     }
-    groupObj[key].push(obj)
+
+    groupResult.get(groupKey).push(item)
   }
-  return groupObj
+
+  return groupResult
 }

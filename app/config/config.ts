@@ -9,11 +9,11 @@ export default class Config {
     this.config = config
   }
 
-  get<T = unknown>(varPath: string): T {
+  get<T = string>(varPath: string): T {
     return _.get(this.config, varPath) as T
   }
 
-  set(varPath: string, val: unknown, setOnlyIfEmpty?: boolean): unknown {
+  set(varPath: string, val: any, setOnlyIfEmpty?: boolean): any {
     const currentVal = this.get(varPath)
 
     if (currentVal && setOnlyIfEmpty) {
@@ -25,7 +25,7 @@ export default class Config {
     return val
   }
 
-  merge(subConfig: Record<string, unknown>): ConfigValues {
+  merge(subConfig: Record<string, any>): ConfigValues {
     _.merge(this.config, subConfig)
 
     return this.config

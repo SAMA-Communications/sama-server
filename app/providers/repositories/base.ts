@@ -1,57 +1,85 @@
-import { ObjectId } from "mongodb"
+import {
+  ObjectId,
+  type BulkWriteResult,
+  type Collection,
+  type Db,
+  type DeleteResult,
+  type Document,
+  type Filter,
+  type Sort,
+  type UpdateFilter,
+  type UpdateOptions,
+  type UpdateResult,
+  type WithId,
+} from "mongodb"
+
+import type BaseModel from "../../models/base.js"
+
+type MongoDbConnection = Db
+type RepositoryQuery = {
+  // _id: ObjectIdNotCasted | any,
+  // $in: ObjectIdNotCasted[],
+  // $nin: ObjectIdNotCasted[],
+  [key: string]: any
+}
+type Model = typeof BaseModel
+type ObjectIdNotCasted = ObjectId | string
+
 
 export default class BaseRepository {
-  constructor(dbConnection, Model, mapper) {
+  dbConnection: MongoDbConnection
+  Model: Model
+  mapper: any
+
+  constructor(dbConnection: MongoDbConnection, Model: Model, mapper: any) {
     this.dbConnection = dbConnection
     this.Model = Model
     this.mapper = mapper
   }
 
-  get collectionName() {
+  get collectionName(): string {
     return this.Model.collection
   }
 
-  get collectionCursor() {
+  get collectionCursor(): Collection<Document> {
     return this.dbConnection.collection(this.collectionName)
   }
 
-  castObjectId(id) {
+  castObjectId(id: ObjectIdNotCasted): ObjectId {
     try {
       return new ObjectId(id)
-    } catch (error) {
-      return id
+    } catch {
+      return id as unknown as ObjectId
     }
   }
 
-  castObjectIds(ids) {
+  castObjectIds(ids: ObjectIdNotCasted[]): ObjectId[] {
     return ids.map((id) => this.castObjectId(id))
   }
 
-  castOrganizationId(id) {
+  castOrganizationId(id: ObjectIdNotCasted): ObjectId {
     return this.castObjectId(id)
   }
 
-  castUserId(id) {
+  castUserId(id: ObjectIdNotCasted): ObjectId {
     return this.castObjectId(id)
   }
 
-  castUserIds(ids) {
+  castUserIds(ids: ObjectIdNotCasted[]): ObjectId[] {
     return ids.map((id) => this.castUserId(id))
   }
 
-  async prepareParams(params) {
+  async prepareParams(params: Record<string, any>): Promise<Record<string, any>> {
     const currentDate = new Date()
 
-    const insertParams = {
+    return {
       ...params,
       created_at: currentDate,
       updated_at: currentDate,
     }
-
-    return insertParams
   }
 
-  async create(createParams) {
+  async create<TModel>(createParams: Record<string, any>): Promise<TModel> {
     if (createParams._id) {
       createParams._id = this.castObjectId(createParams._id)
     }
@@ -66,13 +94,11 @@ export default class BaseRepository {
 
     const modelParams = { _id: result.insertedId, ...insertParams }
 
-    const model = this.wrapRawRecordInModel(modelParams)
-
-    return model
+    return this.wrapRawRecordInModel(modelParams)
   }
 
-  async createMany(bulkCreateParams) {
-    const insertParams = []
+  async createMany<TModel>(bulkCreateParams: Record<string, any>[]): Promise<TModel[]> {
+    const insertParams: Record<string, any>[] = []
     for (const createParams of bulkCreateParams) {
       const insertOneParams = await this.prepareParams(createParams)
       insertParams.push(insertOneParams)
@@ -80,36 +106,36 @@ export default class BaseRepository {
 
     const result = await this.collectionCursor.insertMany(insertParams)
 
-    const modelParams = insertParams.map((params, index) => ({ _id: result.insertedIds[index], ...params }))
+    const modelParams = insertParams.map((params, index) => ({
+      _id: result.insertedIds[index],
+      ...params,
+    }))
 
-    const models = modelParams.map((params) => this.wrapRawRecordInModel(params))
-
-    return models
+    return modelParams.map((params) => this.wrapRawRecordInModel<TModel>(params))
   }
 
-  async bulkUpsert(operations) {
+  async bulkUpsert(operations: [RepositoryQuery, UpdateFilter<Document>][]): Promise<BulkWriteResult> {
     const updateOneOperations = operations.map(([filter, update]) => ({
       updateOne: { filter, update, upsert: true },
     }))
 
-    const result = await this.collectionCursor.bulkWrite(updateOneOperations)
-
-    return result
+    return await this.collectionCursor.bulkWrite(updateOneOperations)
   }
 
-  async findById(id) {
-    const model = await this.findOne({ _id: id })
-
-    return model
+  async findById<TModel>(id: ObjectIdNotCasted): Promise<TModel | null> {
+    return await this.findOne({ _id: id })
   }
 
-  async findAllByIds(ids, limit = 100) {
-    const models = await this.findAll({ _id: { $in: ids } }, null, limit)
-
-    return models
+  async findAllByIds<TModel>(ids: ObjectIdNotCasted[], limit = 100): Promise<TModel[]> {
+    return await this.findAll({ _id: { $in: ids } } as RepositoryQuery, null, limit)
   }
 
-  async findAll(query, projectionParams, limit = 100, sortParams) {
+  async findAll<TModel>(
+    query: RepositoryQuery,
+    projectionParams: string[] | null,
+    limit = 100,
+    sortParams?: Sort,
+  ): Promise<TModel[]> {
     if (query.cid) {
       query.cid = this.castObjectId(query.cid)
     }
@@ -131,7 +157,6 @@ export default class BaseRepository {
     if (query.from?.$ne) {
       query.from.$ne = this.castObjectId(query.from.$ne)
     }
-
     const projection = projectionParams?.reduce((acc, p) => {
       return { ...acc, [p]: 1 }
     }, {})
@@ -143,12 +168,10 @@ export default class BaseRepository {
       .limit(limit)
       .toArray()
 
-    const models = records.map((record) => this.wrapRawRecordInModel(record))
-
-    return models
+    return records.map((record) => this.wrapRawRecordInModel(record))
   }
 
-  async findOne(query) {
+  async findOne<TModel>(query: RepositoryQuery): Promise<TModel | null> {
     if (query._id) {
       query._id = this.castObjectId(query._id)
     }
@@ -164,12 +187,10 @@ export default class BaseRepository {
 
     const record = await this.collectionCursor.findOne(query)
 
-    const model = record ? this.wrapRawRecordInModel(record) : null
-
-    return model
+    return record ? this.wrapRawRecordInModel(record) : null
   }
 
-  async count(query) {
+  async count(query: RepositoryQuery): Promise<number> {
     if (query.organization_id) {
       query.organization_id = this.castOrganizationId(query.organization_id)
     }
@@ -186,12 +207,12 @@ export default class BaseRepository {
       query.from.$ne = this.castUserId(query.from.$ne)
     }
 
-    const count = await this.collectionCursor.count(query)
+    const count = await this.collectionCursor.countDocuments(query)
 
     return count ?? 0
   }
 
-  async updateOne(query, update, options) {
+  async updateOne(query: RepositoryQuery, update: UpdateFilter<Document>, options?: UpdateOptions): Promise<UpdateResult> {
     if (query._id) {
       query._id = this.castObjectId(query._id)
     }
@@ -202,12 +223,10 @@ export default class BaseRepository {
       query.conversation_id = this.castObjectId(query.conversation_id)
     }
 
-    const result = await this.collectionCursor.updateOne(query, update, options)
-
-    return result
+    return await this.collectionCursor.updateOne(query, update, options)
   }
 
-  async findOneAndUpdate(query, update) {
+  async findOneAndUpdate<TModel>(query: RepositoryQuery, update: UpdateFilter<Document>): Promise<TModel | null> {
     if (query._id) {
       query._id = this.castObjectId(query._id)
     }
@@ -218,14 +237,14 @@ export default class BaseRepository {
       query.user_id = this.castUserId(query.user_id)
     }
 
-    const record = await this.collectionCursor.findOneAndUpdate(query, update, { returnDocument: "after" }).catch((error) => null)
+    const record = await this.collectionCursor
+      .findOneAndUpdate(query, update, { returnDocument: "after" })
+      .catch(() => null)
 
-    const model = record ? this.wrapRawRecordInModel(record) : null
-
-    return model
+    return record ? this.wrapRawRecordInModel(record) : null
   }
 
-  async updateMany(query, update) {
+  async updateMany(query: RepositoryQuery, update: UpdateFilter<Document>): Promise<void> {
     if (query.user_id) {
       if (query.user_id.$in) {
         query.user_id.$in = this.castUserIds(query.user_id.$in)
@@ -236,36 +255,36 @@ export default class BaseRepository {
     await this.collectionCursor.updateMany(query, update)
   }
 
-  async getAllIdsBy(query) {
+  async getAllIdsBy(query: RepositoryQuery): Promise<ObjectId[]> {
     if (query) {
       query._id.$in = this.castObjectIds(query._id.$in)
     }
 
     const records = await this.collectionCursor.find(query).project({ _id: 1 }).toArray()
 
-    return records.map((record) => record._id)
+    return records.map((record) => record._id as ObjectId)
   }
 
-  async aggregate(query) {
-    const result = await this.collectionCursor.aggregate(query).toArray()
-
-    return result
+  async aggregate(query: Document[]): Promise<Document[]> {
+    return await this.collectionCursor.aggregate(query).toArray()
   }
 
-  async deleteById(_id) {
+  async deleteById(_id: ObjectIdNotCasted): Promise<DeleteResult> {
     return await this.collectionCursor.deleteOne({ _id: this.castObjectId(_id) })
   }
 
-  async deleteByIds(ids) {
-    ids = this.castObjectIds(ids)
+  async deleteByIds(ids: ObjectIdNotCasted[]): Promise<DeleteResult> {
+    const castedIds = this.castObjectIds(ids)
 
-    return await this.deleteMany({ _id: { $in: ids } })
+    const query = { _id: { $in: castedIds } }
+
+    return await this.deleteMany(query)
   }
 
-  async deleteMany(query) {
+  async deleteMany(query: RepositoryQuery): Promise<DeleteResult> {
     if (query._id) {
-      if (query._id.$in) {
-        query._id.$in = this.castObjectIds(query._id.$in)
+      if (query.$in) {
+        query.$in = this.castObjectIds(query.$in)
       }
       query._id = this.castObjectId(query._id)
     }
@@ -276,18 +295,16 @@ export default class BaseRepository {
       query.user_id = this.castUserId(query.user_id)
     }
 
-    const result = await this.collectionCursor.deleteMany(query)
-
-    return result
+    return await this.collectionCursor.deleteMany(query as Filter<Document>)
   }
 
-  wrapRawRecordInModel(rawRecord) {
+  wrapRawRecordInModel<TModel>(rawRecord: WithId<Document> | Record<string, any>): TModel {
     const { params, mappedParams } = this.mapper.createModelParams(rawRecord)
 
-    return this.Model.createInstance(params, mappedParams)
+    return this.Model.createInstance<TModel>(params, mappedParams)
   }
 
-  mergeOperators(existedOperators = {}, operatorsToAdd) {
+  mergeOperators(existedOperators: Record<string, any> = {}, operatorsToAdd: Record<string, any>): Record<string, any> {
     return Object.assign(existedOperators, operatorsToAdd)
   }
 }

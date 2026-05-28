@@ -20,7 +20,7 @@ class ActivityManagerClusterService {
   }
 
   deserializeUserId(userId) {
-    return userId && `${userId}`
+    return userId && this.userService.userRepo.castUserId(userId)
   }
 
   // observer - targets relations
