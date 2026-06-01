@@ -121,6 +121,7 @@ class SessionService {
       if (!deviceHash[CONSTANTS.SESSION_NODE_KEY]) {
         this.logger.debug("[listUserDevice][not existed deviceId]: %s %o", deviceId, deviceIds)
         deviceIds.splice(deviceIds.indexOf(deviceId), 1)
+        await this.removeUserDevice(organizationId, userId, deviceId)
       }
     }
 
