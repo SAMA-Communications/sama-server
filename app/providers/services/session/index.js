@@ -113,8 +113,18 @@ class SessionService {
 
     const userKey = this.#usersSetCacheKey(organizationId, userId)
 
-    const deviceIds = await this.redisConnection.client.sMembers(userKey)
-    return deviceIds ?? []
+    let deviceIds = await this.redisConnection.client.sMembers(userKey)
+    deviceIds = deviceIds ?? []
+
+    for (const deviceId of deviceIds) {
+      const deviceHash = await this.retrieveUserExtraParams(userId, deviceId)
+      if (!deviceHash[CONSTANTS.SESSION_NODE_KEY]) {
+        this.logger.debug("[listUserDevice][not existed deviceId]: %s %o", deviceId, deviceIds)
+        deviceIds.splice(deviceIds.indexOf(deviceId), 1)
+      }
+    }
+
+    return deviceIds
   }
 
   listUserDeviceLocal(userId) {
@@ -365,7 +375,6 @@ class SessionService {
 
     this.activeSessions.SESSIONS.delete(socket)
 
-
     const devicesAfter = this.getUserDevices(userId).map((connection) => {
       const { socket, ...connectionData } = connection
       return { ...connectionData, socket: socket?.clientId }
@@ -380,6 +389,8 @@ class SessionService {
     if (this.config.get("app.isStandAloneNode")) return isLastConnection
 
     isLastConnection = await this.removeAllUserDeviceData(organizationId, userId, deviceId)
+
+    this.logger.debug("[removeUserSession][devices][donne]: %s %s", deviceId, isLastConnection)
 
     return isLastConnection
   }
