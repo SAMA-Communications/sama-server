@@ -90,12 +90,18 @@ class SessionService {
   async addUserDevice(organizationId, userId, deviceId) {
     const userKey = this.#usersSetCacheKey(organizationId, userId)
     await this.redisConnection.client.sAdd(userKey, deviceId)
+    this.logger.debug("[addUserDevice]: %o %s", { organizationId, userId, deviceId }, userKey)
   }
 
-  async removeUserDevice(organizationId, userId, deviceId) {
+  async removeUserDevice(organizationId, userId, deviceId, returnIsLast) {
     const userKey = this.#usersSetCacheKey(organizationId, userId)
 
-    await this.redisConnection.client.sRem(userKey, deviceId)
+    this.logger.debug("[removeUserDevice][keys]: %s %s", userKey, deviceId)
+    await this.redisConnection.client.sRem(userKey, deviceId).then(result => this.logger.debug("[removeUserDevice][keys][removed]: %s %s %s", userKey, deviceId, result))
+
+    if (!returnIsLast) {
+      return
+    }
 
     const leftUserDevices = await this.listUserDevice(organizationId, userId)
 
@@ -106,7 +112,7 @@ class SessionService {
     }
   }
 
-  async listUserDevice(organizationId, userId) {
+  async listUserDevice(organizationId, userId, needFilter) {
     if (this.config.get("app.isStandAloneNode")) {
       return this.listUserDeviceLocal(userId)
     }
@@ -116,12 +122,14 @@ class SessionService {
     let deviceIds = await this.redisConnection.client.sMembers(userKey)
     deviceIds = deviceIds ?? []
 
-    for (const deviceId of deviceIds) {
-      const deviceHash = await this.retrieveUserExtraParams(userId, deviceId)
-      if (!deviceHash[CONSTANTS.SESSION_NODE_KEY]) {
-        this.logger.debug("[listUserDevice][not existed deviceId]: %s %o", deviceId, deviceIds)
-        deviceIds.splice(deviceIds.indexOf(deviceId), 1)
-        await this.removeUserDevice(organizationId, userId, deviceId)
+    if (needFilter) {
+      for (const deviceId of deviceIds) {
+        const deviceHash = await this.retrieveUserExtraParams(userId, deviceId)
+        if (!deviceHash[CONSTANTS.SESSION_NODE_KEY]) {
+          this.logger.debug("[listUserDevice][not existed deviceId]: %s %o %s %s", deviceId, deviceIds, organizationId, userId)
+          deviceIds.splice(deviceIds.indexOf(deviceId), 1)
+          await this.removeUserDevice(organizationId, userId, deviceId)
+        }
       }
     }
 
@@ -166,7 +174,7 @@ class SessionService {
   }
 
   async removeUserData(organizationId, userId, deviceId) {
-    const isWasLastUserSession = await this.removeUserDevice(organizationId, userId, deviceId)
+    const isWasLastUserSession = await this.removeUserDevice(organizationId, userId, deviceId, true)
 
     await this.deleteUserExtraParams(userId, deviceId)
 
@@ -184,7 +192,9 @@ class SessionService {
   }
 
   async removeAllUserDeviceData(organizationId, userId, deviceId) {
-    const isLastConnection = await this.removeUserDevice(organizationId, userId, deviceId)
+    this.logger.debug("[removeUserSession][devices][remove redis][before]: %o", { organizationId, userId, deviceId })
+    const isLastConnection = await this.removeUserDevice(organizationId, userId, deviceId, true)
+    this.logger.debug("[removeUserSession][devices][remove redis][after]: %s %o", isLastConnection, await this.listUserDevice(organizationId, userId))
     const extraParams = await this.retrieveUserExtraParams(userId, deviceId)
     await this.deleteUserExtraParams(userId, deviceId)
 
@@ -210,7 +220,7 @@ class SessionService {
       return userData
     }
 
-    const userDevices = await this.listUserDevice(organizationId, userId)
+    const userDevices = await this.listUserDevice(organizationId, userId, true)
 
     for (const deviceId of userDevices) {
       const extraParams = await this.retrieveUserExtraParams(userId, deviceId)
@@ -230,14 +240,14 @@ class SessionService {
 
     if (this.config.get("app.isStandAloneNode")) return
 
-    const userDeviceIds = await this.listUserDevice(organizationId, userId)
+    const userDeviceIds = await this.listUserDevice(organizationId, userId, true)
 
     if (userDeviceIds.includes(deviceId)) {
       await this.removeAllUserDeviceData(organizationId, userId, deviceId)
     }
 
-    await this.addUserDevice(organizationId, userId, deviceId)
     await this.addUserExtraParams(userId, deviceId, { [CONSTANTS.SESSION_NODE_KEY]: nodeEndpoint })
+    await this.addUserDevice(organizationId, userId, deviceId)
     await this.addUserDeviceToNode(nodeEndpoint, organizationId, userId, deviceId)
   }
 
@@ -391,7 +401,7 @@ class SessionService {
 
     isLastConnection = await this.removeAllUserDeviceData(organizationId, userId, deviceId)
 
-    this.logger.debug("[removeUserSession][devices][donne]: %s %s", deviceId, isLastConnection)
+    this.logger.debug("[removeUserSession][devices][done]: %s %s", deviceId, isLastConnection)
 
     return isLastConnection
   }
