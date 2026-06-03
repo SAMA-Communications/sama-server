@@ -90,14 +90,12 @@ class SessionService {
   async addUserDevice(organizationId, userId, deviceId) {
     const userKey = this.#usersSetCacheKey(organizationId, userId)
     await this.redisConnection.client.sAdd(userKey, deviceId)
-    this.logger.debug("[addUserDevice]: %o %s", { organizationId, userId, deviceId }, userKey)
   }
 
   async removeUserDevice(organizationId, userId, deviceId, returnIsLast) {
     const userKey = this.#usersSetCacheKey(organizationId, userId)
 
-    this.logger.debug("[removeUserDevice][keys]: %s %s", userKey, deviceId)
-    await this.redisConnection.client.sRem(userKey, deviceId).then(result => this.logger.debug("[removeUserDevice][keys][removed]: %s %s %s", userKey, deviceId, result))
+    await this.redisConnection.client.sRem(userKey, deviceId)
 
     if (!returnIsLast) {
       return
@@ -105,14 +103,10 @@ class SessionService {
 
     const leftUserDevices = await this.listUserDevice(organizationId, userId)
 
-    if (!leftUserDevices?.length) {
-      await this.deleteUserDevices(organizationId, userId)
-
-      return true
-    }
+    return !leftUserDevices?.length
   }
 
-  async listUserDevice(organizationId, userId, needFilter) {
+  async listUserDevice(organizationId, userId, filterActualDevices) {
     if (this.config.get("app.isStandAloneNode")) {
       return this.listUserDeviceLocal(userId)
     }
@@ -121,19 +115,20 @@ class SessionService {
 
     let deviceIds = await this.redisConnection.client.sMembers(userKey)
     deviceIds = deviceIds ?? []
+    const actualDevices = new Set(deviceIds)
 
-    if (needFilter) {
+    if (filterActualDevices) {
       for (const deviceId of deviceIds) {
         const deviceHash = await this.retrieveUserExtraParams(userId, deviceId)
         if (!deviceHash[CONSTANTS.SESSION_NODE_KEY]) {
-          this.logger.debug("[listUserDevice][not existed deviceId]: %s %o %s %s", deviceId, deviceIds, organizationId, userId)
-          deviceIds.splice(deviceIds.indexOf(deviceId), 1)
+          actualDevices.delete(deviceId)
           await this.removeUserDevice(organizationId, userId, deviceId)
+          this.logger.debug("[listUserDevice][not actual deviceId]: %s %s %s", deviceId, userId, organizationId)
         }
       }
     }
 
-    return deviceIds
+    return Array.from(actualDevices)
   }
 
   listUserDeviceLocal(userId) {
@@ -192,9 +187,7 @@ class SessionService {
   }
 
   async removeAllUserDeviceData(organizationId, userId, deviceId) {
-    this.logger.debug("[removeUserSession][devices][remove redis][before]: %o", { organizationId, userId, deviceId })
-    const isLastConnection = await this.removeUserDevice(organizationId, userId, deviceId, true)
-    this.logger.debug("[removeUserSession][devices][remove redis][after]: %s %o", isLastConnection, await this.listUserDevice(organizationId, userId))
+    await this.removeUserDevice(organizationId, userId, deviceId)
     const extraParams = await this.retrieveUserExtraParams(userId, deviceId)
     await this.deleteUserExtraParams(userId, deviceId)
 
@@ -202,7 +195,9 @@ class SessionService {
 
     await this.removeUserDeviceFromNode(nodeEndpoint, organizationId, userId, deviceId)
 
-    return isLastConnection
+    const leftDevices = await this.listUserDevice(organizationId, userId, true)
+
+    return !leftDevices?.length
   }
 
   async listUserData(organizationId, userId) {
@@ -220,7 +215,7 @@ class SessionService {
       return userData
     }
 
-    const userDevices = await this.listUserDevice(organizationId, userId, true)
+    const userDevices = await this.listUserDevice(organizationId, userId)
 
     for (const deviceId of userDevices) {
       const extraParams = await this.retrieveUserExtraParams(userId, deviceId)
@@ -240,7 +235,7 @@ class SessionService {
 
     if (this.config.get("app.isStandAloneNode")) return
 
-    const userDeviceIds = await this.listUserDevice(organizationId, userId, true)
+    const userDeviceIds = await this.listUserDevice(organizationId, userId)
 
     if (userDeviceIds.includes(deviceId)) {
       await this.removeAllUserDeviceData(organizationId, userId, deviceId)
@@ -360,20 +355,9 @@ class SessionService {
   }
 
   async removeUserSession(socket, userId, deviceId) {
-    this.logger.debug("[removeUserSession][args]: %o", { socket: socket?.isAlive, userId, deviceId })
-
     userId = userId ?? this.getSessionUserId(socket)
     deviceId = deviceId ?? this.getDeviceId(socket, userId)
     const organizationId = this.getSession(socket)?.organizationId
-
-    this.logger.debug("[removeUserSession][vars]: %o [session]: %o [device]: %s", { organizationId, userId, deviceId }, this.getSession(socket), this.getDeviceId(socket, userId))
-
-    const devicesBefore = this.getUserDevices(userId).map((connection) => {
-      const { socket, ...connectionData } = connection
-      return { ...connectionData, socket: socket?.clientId }
-    })
-
-    this.logger.debug("[removeUserSession][devices][before]: %o %s", devicesBefore, devicesBefore?.length)
 
     const leftActiveConnections = this.getUserDevices(userId).filter(({ deviceId: activeDeviceId }) => activeDeviceId !== deviceId)
     let isLastConnection = !leftActiveConnections?.length
@@ -386,13 +370,6 @@ class SessionService {
 
     this.activeSessions.SESSIONS.delete(socket)
 
-    const devicesAfter = this.getUserDevices(userId).map((connection) => {
-      const { socket, ...connectionData } = connection
-      return { ...connectionData, socket: socket?.clientId }
-    })
-
-    this.logger.debug("[removeUserSession][devices][after]: %o %s", devicesAfter, devicesAfter?.length)
-
     if (!deviceId) {
       return isLastConnection
     }
@@ -400,8 +377,6 @@ class SessionService {
     if (this.config.get("app.isStandAloneNode")) return isLastConnection
 
     isLastConnection = await this.removeAllUserDeviceData(organizationId, userId, deviceId)
-
-    this.logger.debug("[removeUserSession][devices][done]: %s %s", deviceId, isLastConnection)
 
     return isLastConnection
   }
@@ -423,7 +398,17 @@ class SessionService {
 
     const userKeys = await this.redisConnection.scanWithPagination("set", matchPattern, offset, limit)
 
-    return userKeys.map((userKey) => userKey.split(":").at(-1))
+    const userIds = userKeys.map((userKey) => userKey.split(":").at(-1))
+    const actualUserIds = new Set(userIds)
+
+    for (const userId of userIds) {
+      const actualDevices = await this.listUserDevice(organizationId, userId, true)
+      if (!actualDevices?.length) {
+        actualUserIds.delete(userId)
+      }
+    }
+
+    return Array.from(actualUserIds)
   }
 
   async onlineUsersCountWithNodes(organizationId) {
