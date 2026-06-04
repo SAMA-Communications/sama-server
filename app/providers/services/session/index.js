@@ -19,7 +19,7 @@ class SessionService {
     return this.activeSessions.SESSIONS.size
   }
 
-  async addUserDeviceConnection(socket, organizationId, userId, deviceId) {
+  addUserDeviceConnection(socket, organizationId, userId, deviceId) {
     const activeConnections = this.getUserDevices(userId)
 
     const sameSocketConnection = activeConnections.find(connection => connection.socket === socket)
@@ -35,12 +35,8 @@ class SessionService {
     this.activeSessions.DEVICES[userId] = [...otherDeviceConnections, connection]
 
     this.setSessionUserId(socket, organizationId, userId, { [CONSTANTS.SESSION_DEVICE_ID_KEY]: deviceId })
-    
-    if (sameSocketConnection) {
-      await this.removeAllUserDeviceData(organizationId, userId, sameSocketConnection.deviceId)
-    }
 
-    return sameDeviceConnection
+    return { sameDeviceConnection, sameSocketConnection }
   }
 
   #nodesSetCacheKey(nodeEndpoint) {
@@ -115,16 +111,29 @@ class SessionService {
 
     let deviceIds = await this.redisConnection.client.sMembers(userKey)
     deviceIds = deviceIds ?? []
-    const actualDevices = new Set(deviceIds)
 
     if (filterActualDevices) {
-      for (const deviceId of deviceIds) {
-        const deviceHash = await this.retrieveUserExtraParams(userId, deviceId)
-        if (!deviceHash[CONSTANTS.SESSION_NODE_KEY]) {
-          actualDevices.delete(deviceId)
-          await this.removeUserDevice(organizationId, userId, deviceId)
-          this.logger.debug("[listUserDevice][not actual deviceId]: %s %s %s", deviceId, userId, organizationId)
-        }
+      deviceIds = await this.filterActualDeviceIds(organizationId, userId, deviceIds)
+    }
+
+    return deviceIds
+  }
+
+  async filterActualDeviceIds(organizationId, userId, deviceIds) {
+    const actualDevices = new Set(deviceIds)
+
+    for (const deviceId of deviceIds) {
+      const deviceExt = await this.retrieveUserExtraParams(userId, deviceId)
+
+      const noEndpointKey = !deviceExt[CONSTANTS.SESSION_NODE_KEY]
+      const isSameEndpoint = (deviceExt[CONSTANTS.SESSION_NODE_KEY] === this.config.get("ws.cluster.endpoint"))
+      const hasDeviceConnection = this.getUserDevices(userId).find(connection => connection.deviceId === deviceId)
+      const isHasExtButNoConnection = isSameEndpoint && !hasDeviceConnection
+
+      if (noEndpointKey || isHasExtButNoConnection) {
+        actualDevices.delete(deviceId)
+        await this.removeAllUserDeviceDataTransaction(this.config.get("ws.cluster.endpoint"), organizationId, userId, deviceId)
+        this.logger.debug("[listUserDevice][not actual deviceId]: %s %s %s", deviceId, userId, organizationId)
       }
     }
 
@@ -186,6 +195,25 @@ class SessionService {
     await this.deleteUserDevices(organizationId, userId)
   }
 
+  async removeAllUserDeviceDataTransaction(nodeEndpoint, organizationId, userId, deviceId) {
+    const userKey = this.#usersSetCacheKey(organizationId, userId)
+    const userHashKey = this.#usersHashCacheKey(userId, deviceId)
+    const nodeKey = this.#nodesSetCacheKey(nodeEndpoint ?? this.config.get("ws.cluster.endpoint"))
+    const userConnectionMember = `${organizationId}:${userId}:${deviceId}`
+
+    const tx = this.redisConnection.client.multi()
+
+    tx.sRem(userKey, deviceId)
+    tx.del(userHashKey)
+    tx.sRem(nodeKey, userConnectionMember)
+
+    const multiResult = await tx.exec()
+
+    this.logger.debug("[removeAllUserDeviceDataTransaction][result]: %o %o", { organizationId, userId, deviceId }, multiResult)
+
+    return multiResult
+  }
+
   async removeAllUserDeviceData(organizationId, userId, deviceId) {
     await this.removeUserDevice(organizationId, userId, deviceId)
     const extraParams = await this.retrieveUserExtraParams(userId, deviceId)
@@ -225,6 +253,26 @@ class SessionService {
     return userData
   }
 
+  async addUserDeviceDataTransaction(nodeEndpoint, organizationId, userId, deviceId, extParams) {
+    const userKey = this.#usersSetCacheKey(organizationId, userId)
+    const userHashKey = this.#usersHashCacheKey(userId, deviceId)
+    const keyValuePairs = Object.entries(extParams).flat().map((val) => `${val}`)
+    const nodeKey = this.#nodesSetCacheKey(nodeEndpoint ?? this.config.get("ws.cluster.endpoint"))
+    const userConnectionMember = `${organizationId}:${userId}:${deviceId}`
+
+    const tx = this.redisConnection.client.multi()
+
+    tx.sAdd(userKey, deviceId)
+    tx.hSet(userHashKey, keyValuePairs)
+    tx.sAdd(nodeKey, userConnectionMember)
+
+    const multiResult = await tx.exec()
+
+    this.logger.debug("[addUserDeviceDataTransaction][result]: %o %o", { organizationId, userId, deviceId }, multiResult)
+
+    return multiResult
+  }
+
   async storeUserNodeData(socket, organizationId, userId, deviceId) {
     const nodeEndpoint = this.config.get("ws.cluster.endpoint")
 
@@ -241,9 +289,7 @@ class SessionService {
       await this.removeAllUserDeviceData(organizationId, userId, deviceId)
     }
 
-    await this.addUserExtraParams(userId, deviceId, { [CONSTANTS.SESSION_NODE_KEY]: nodeEndpoint })
-    await this.addUserDevice(organizationId, userId, deviceId)
-    await this.addUserDeviceToNode(nodeEndpoint, organizationId, userId, deviceId)
+    await this.addUserDeviceDataTransaction(nodeEndpoint, organizationId, userId, deviceId, { [CONSTANTS.SESSION_NODE_KEY]: nodeEndpoint })
   }
 
   async clearNodeUsersSession(nodeEndpoint) {

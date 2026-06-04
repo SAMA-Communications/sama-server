@@ -9,7 +9,7 @@ class HttpMessageEditOperation {
   async perform(res, payload) {
     const { organizationId, senderId, messageEdit: messageEditParams } = payload
 
-    await this.sessionService.addUserDeviceConnection(res, organizationId, senderId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
+    this.sessionService.addUserDeviceConnection(res, organizationId, senderId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
 
     const operationResponse = await this.messageEditOperation.perform(res, messageEditParams)
 

@@ -20,7 +20,11 @@ class UserAuthOperation {
 
     // TODO: close connections
     if (!omitDeviceConnection) {
-      await this.sessionService.addUserDeviceConnection(ws, user.organization_id, user.native_id, deviceId)
+      const { sameDeviceConnection, sameSocketConnection } = this.sessionService.addUserDeviceConnection(ws, user.organization_id, user.native_id, deviceId)
+      await this.sessionService.storeUserNodeData(ws, user.organization_id, user.native_id, deviceId)
+      if (sameSocketConnection) {
+        await this.sessionService.removeAllUserDeviceData(user.organization_id, user.native_id, sameSocketConnection.deviceId)
+      }
     }
 
     const jwtAccessToken = this.#generateToken(
@@ -31,8 +35,6 @@ class UserAuthOperation {
     )
 
     const updatedToken = await this.userTokenRepo.updateToken(token, organizationId, user.native_id, deviceId, jwtAccessToken, "access")
-
-    await this.sessionService.storeUserNodeData(ws, user.organization_id, user.native_id, deviceId)
 
     const userWithAvatarUrl = (await this.userService.addAvatarUrl([user])).at(0)
 

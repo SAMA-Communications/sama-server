@@ -9,7 +9,7 @@ class HttpActivityOnlineListOperation {
   async perform(res, payload) {
     const { organizationId, userId, ...requestData } = payload
 
-    await this.sessionService.addUserDeviceConnection(res, organizationId, userId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
+    this.sessionService.addUserDeviceConnection(res, organizationId, userId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
 
     const operationResponse = await this.onlineListOperation.perform(res, requestData)
 
