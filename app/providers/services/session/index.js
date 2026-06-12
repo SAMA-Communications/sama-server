@@ -223,6 +223,8 @@ class SessionService {
 
     await this.removeUserDeviceFromNode(nodeEndpoint, organizationId, userId, deviceId)
 
+    this.logger.debug("[removeAllUserDeviceData][removed] %o", { organizationId, userId, deviceId })
+
     const leftDevices = await this.listUserDevice(organizationId, userId, true)
 
     return !leftDevices?.length
