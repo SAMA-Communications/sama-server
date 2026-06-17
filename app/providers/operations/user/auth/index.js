@@ -3,11 +3,12 @@ import jwt from "jsonwebtoken"
 import { ERROR_STATUES } from "../../../../constants/errors.js"
 
 class UserAuthOperation {
-  constructor(config, sessionService, userService, userTokenRepo) {
+  constructor(config, sessionService, userService, userTokenRepo, organizationService) {
     this.config = config
     this.sessionService = sessionService
     this.userService = userService
     this.userTokenRepo = userTokenRepo
+    this.organizationService = organizationService
   }
 
   async perform(ws, userInfo, omitDeviceConnection) {
@@ -17,6 +18,8 @@ class UserAuthOperation {
     const { user, token } = userInfo.token
       ? await this.#authByToken(userInfo.token, deviceId)
       : await this.#authByUserInfo(organizationId, userInfo, deviceId)
+    
+    await this.#validateOrganization(user)
 
     // TODO: close connections
     if (!omitDeviceConnection) {
@@ -81,6 +84,16 @@ class UserAuthOperation {
     const token = await this.userTokenRepo.findTokenByUserId(user.native_id, deviceId, "access")
 
     return { user, token }
+  }
+
+  async #validateOrganization(user) {
+    const blockStatus = await this.organizationService.isUserFromBlocked(user)
+
+    if (blockStatus.isBlocked) {
+      throw new Error(ERROR_STATUES.ORGANIZATION_BLOCKED.message, {
+        cause: Object.assign({}, blockStatus, ERROR_STATUES.ORGANIZATION_BLOCKED),
+      })
+    }
   }
 
   async createRefreshToken(user, deviceId) {

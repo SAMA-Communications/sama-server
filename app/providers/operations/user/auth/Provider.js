@@ -9,8 +9,9 @@ class UserAuthOperationRegisterProvider extends RegisterProvider {
     const sessionService = slc.use("SessionService")
     const userService = slc.use("UserService")
     const userTokenRepo = slc.use("UserTokenRepository")
+    const organizationService = slc.use("OrganizationService")
 
-    return new UserAuthOperation(config, sessionService, userService, userTokenRepo)
+    return new UserAuthOperation(config, sessionService, userService, userTokenRepo, organizationService)
   }
 }
 
