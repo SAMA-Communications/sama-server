@@ -3,7 +3,7 @@ import { CONSTANTS } from "../constants/constants.js"
 const CONFIG = {
   app: {
     env: process.env.NODE_ENV ?? CONSTANTS.ENVS.DEV,
-    ip: void 0,
+    ip: process.env.CLUSTER_ADVERTISE_IP,
     name: process.env.APP_NAME ?? "SAMA",
     hostName: process.env.HOSTNAME,
     isStandAloneNode: process.env.STANDALONE_NODE === CONSTANTS.ENV_TRUE,
