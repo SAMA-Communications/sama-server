@@ -11,13 +11,18 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build the SAMA resources
+        env:
+          NODE_ENV: testing
         run: docker compose -f docker-compose-full.yml up -d --build
 
       - name: Run migrations
         run: docker compose exec sama-server sh -c "MONGODB_URL=mongodb://172.25.0.4/samatests npm run migrate-mongo-up"
 
-      - name: Run tests
+      - name: Run tests single node
         run: docker compose exec sama-server sh -c "MONGODB_URL=mongodb://172.25.0.4/samatests npm run test"
+
+      - name: Run tests cluster nodes
+        run: docker compose exec sama-server sh -c "MONGODB_URL=mongodb://172.25.0.4/samatests npm run test:cluster"
 
       - name: Stop the SAMA resources
         if: always()

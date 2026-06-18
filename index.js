@@ -212,13 +212,11 @@ if (config.get("app.watchdogPingSocketInterval")) {
   }, config.get("app.watchdogPingSocketInterval"))
 }
 
-if (config.get("app.env") !== CONSTANTS.ENVS.TESTING) {
-  await startReplServices(
-    { ctx: { slc: ServiceLocatorContainer } },
-    { accessKey: config.get("repl.http.accessKey"), port: config.get("repl.http.port") },
-    { socketHandler: config.get("repl.socket.handler") },
-    { fileIn: config.get("repl.file.in"), fileOut: config.get("repl.file.out") }
-  )
-}
+await startReplServices(
+  { ctx: { slc: ServiceLocatorContainer } },
+  { accessKey: config.get("repl.http.accessKey"), port: config.get("repl.http.port") },
+  { socketHandler: config.get("repl.socket.handler") },
+  { fileIn: config.get("repl.file.in"), fileOut: config.get("repl.file.out") }
+)
 
 logger.debug("[Ready] cluster-ws: %s", config.get("ws.cluster.endpoint"))
