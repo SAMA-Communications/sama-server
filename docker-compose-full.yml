@@ -51,7 +51,7 @@ services:
       mongo:
         condition: service_healthy
     entrypoint: >
-      sh -c '[ "$NODE_ENV" = "testing" ] && sleep 1200 || npm run start'
+      sh -c 'if [ "$NODE_ENV" = "testing" ]; then tail -f /dev/null; else npm run start; fi'
     networks:
       sama_network:
         ipv4_address: 172.25.0.7
