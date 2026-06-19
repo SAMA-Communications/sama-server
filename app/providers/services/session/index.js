@@ -22,12 +22,11 @@ class SessionService {
   addUserDeviceConnection(socket, organizationId, userId, deviceId) {
     const activeConnections = this.getUserDevices(userId)
 
-    const sameSocketConnection = activeConnections.find(connection => connection.socket === socket)
-    const sameDeviceConnection = activeConnections.find(connection => connection.deviceId === deviceId)
+    const sameSocketConnection = activeConnections.find((connection) => connection.socket === socket)
+    const sameDeviceConnection = activeConnections.find((connection) => connection.deviceId === deviceId)
 
-    const otherDeviceConnections = activeConnections.filter(connection => 
-      (connection !== sameSocketConnection) &&
-      (connection !== sameDeviceConnection)
+    const otherDeviceConnections = activeConnections.filter(
+      (connection) => connection !== sameSocketConnection && connection !== sameDeviceConnection
     )
 
     const connection = { socket: socket, deviceId, organizationId }
@@ -126,14 +125,18 @@ class SessionService {
       const deviceExt = await this.retrieveUserExtraParams(userId, deviceId)
 
       const noEndpointKey = !deviceExt[CONSTANTS.SESSION_NODE_KEY]
-      const isSameEndpoint = (deviceExt[CONSTANTS.SESSION_NODE_KEY] === this.config.get("ws.cluster.endpoint"))
-      const hasDeviceConnection = this.getUserDevices(userId).find(connection => connection.deviceId === deviceId)
+      const isSameEndpoint = deviceExt[CONSTANTS.SESSION_NODE_KEY] === this.config.get("ws.cluster.endpoint")
+      const hasDeviceConnection = this.getUserDevices(userId).find((connection) => connection.deviceId === deviceId)
       const isHasExtButNoConnection = isSameEndpoint && !hasDeviceConnection
 
       if (noEndpointKey || isHasExtButNoConnection) {
         actualDevices.delete(deviceId)
         await this.removeAllUserDeviceDataTransaction(this.config.get("ws.cluster.endpoint"), organizationId, userId, deviceId)
-        this.logger.debug("[listUserDevice][not actual deviceId]: %o %o", { organizationId, userId, deviceId }, { noEndpointKey, isSameEndpoint, hasDeviceConnection })
+        this.logger.debug(
+          "[listUserDevice][not actual deviceId]: %o %o",
+          { organizationId, userId, deviceId },
+          { noEndpointKey, isSameEndpoint, hasDeviceConnection }
+        )
       }
     }
 
@@ -258,7 +261,9 @@ class SessionService {
   async addUserDeviceDataTransaction(nodeEndpoint, organizationId, userId, deviceId, extParams) {
     const userKey = this.#usersSetCacheKey(organizationId, userId)
     const userHashKey = this.#usersHashCacheKey(userId, deviceId)
-    const keyValuePairs = Object.entries(extParams).flat().map((val) => `${val}`)
+    const keyValuePairs = Object.entries(extParams)
+      .flat()
+      .map((val) => `${val}`)
     const nodeKey = this.#nodesSetCacheKey(nodeEndpoint ?? this.config.get("ws.cluster.endpoint"))
     const userConnectionMember = `${organizationId}:${userId}:${deviceId}`
 
@@ -426,7 +431,10 @@ class SessionService {
 
     if (this.config.get("app.isStandAloneNode")) return isLastConnection
 
-    this.logger.debug("[removeUserSession][left connections] %o", leftActiveConnections?.map(con => con.deviceId))
+    this.logger.debug(
+      "[removeUserSession][left connections] %o",
+      leftActiveConnections?.map((con) => con.deviceId)
+    )
 
     isLastConnection = await this.removeAllUserDeviceData(organizationId, userId, deviceId)
 
@@ -491,7 +499,8 @@ class SessionService {
         (session) =>
           session?.organizationId?.toString() === organizationId?.toString() &&
           session?.extraParams[CONSTANTS.SESSION_DEVICE_ID_KEY] !== CONSTANTS.HTTP_DEVICE_ID &&
-          session?.userId && this.listUserDeviceLocal(session?.userId)?.length
+          session?.userId &&
+          this.listUserDeviceLocal(session?.userId)?.length
       )
       .map((session) => session.userId)
       .sort((userIdA, userIdB) => userIdA - userIdB)

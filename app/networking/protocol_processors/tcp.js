@@ -176,14 +176,17 @@ class TcpProtocol extends BaseProtocolProcessor {
     this.prepareSocketsListeners()
 
     return new Promise((resolve) => {
-      this.tcpSocketServer = net.createServer({
-        keepAlive: true,
-        keepAliveInitialDelay: 5_000
-      }, (socket) => {
-        asyncLoggerContextStore.run(this.requestCreateStoreContext(socket), () => {
-          this.onOpen(socket)
-        })
-      })
+      this.tcpSocketServer = net.createServer(
+        {
+          keepAlive: true,
+          keepAliveInitialDelay: 5_000,
+        },
+        (socket) => {
+          asyncLoggerContextStore.run(this.requestCreateStoreContext(socket), () => {
+            this.onOpen(socket)
+          })
+        }
+      )
 
       this.tcpSocketServer.listen(tcpOptions.port, () => {
         logger.debug("[TCP] listening on port %s", tcpOptions.port)

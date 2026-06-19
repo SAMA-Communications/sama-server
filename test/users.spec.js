@@ -272,7 +272,7 @@ describe("User cycle", async () => {
       await orgRepo.updateOne({ _id: orgId }, { $set: { is_blocked: true, block_reason: "Out of limits" } })
     })
 
-    it("create in blocked organization" , async () => {
+    it("create in blocked organization", async () => {
       const requestData = {
         request: {
           user_create: {
@@ -300,7 +300,7 @@ describe("User cycle", async () => {
       assert.equal(responseData.response.user, void 0)
     })
 
-    it("login in blocked organization" , async () => {
+    it("login in blocked organization", async () => {
       const requestData = {
         request: {
           user_login: {
@@ -328,7 +328,7 @@ describe("User cycle", async () => {
     })
 
     after(async () => {
-      await orgRepo.updateOne({ _id: orgId }, { $unset: { is_blocked: 1, blocked_reason: 1} })
+      await orgRepo.updateOne({ _id: orgId }, { $unset: { is_blocked: 1, blocked_reason: 1 } })
     })
   })
 

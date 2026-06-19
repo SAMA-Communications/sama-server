@@ -18,12 +18,17 @@ class UserAuthOperation {
     const { user, token } = userInfo.token
       ? await this.#authByToken(userInfo.token, deviceId)
       : await this.#authByUserInfo(organizationId, userInfo, deviceId)
-    
+
     await this.#validateOrganization(user)
 
     // TODO: close connections
     if (!omitDeviceConnection) {
-      const { sameDeviceConnection, sameSocketConnection } = this.sessionService.addUserDeviceConnection(ws, user.organization_id, user.native_id, deviceId)
+      const { sameDeviceConnection, sameSocketConnection } = this.sessionService.addUserDeviceConnection(
+        ws,
+        user.organization_id,
+        user.native_id,
+        deviceId
+      )
       await this.sessionService.storeUserNodeData(ws, user.organization_id, user.native_id, deviceId)
       if (sameSocketConnection) {
         await this.sessionService.removeAllUserDeviceData(user.organization_id, user.native_id, sameSocketConnection.deviceId)
