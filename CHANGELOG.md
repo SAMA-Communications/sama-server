@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.37.0
+
+### Features
+
+- add cluster support
+
 ## 0.36.2
 
 ### Bug Fixes

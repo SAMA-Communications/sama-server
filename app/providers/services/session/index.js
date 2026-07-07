@@ -19,7 +19,7 @@ class SessionService {
     return this.activeSessions.SESSIONS.size
   }
 
-  addUserDeviceConnection(socket, organizationId, userId, deviceId) {
+addUserDeviceConnection(socket, organizationId, userId, deviceId) {
     const activeConnections = this.getUserDevices(userId)
 
     const sameSocketConnection = activeConnections.find((connection) => connection.socket === socket)
@@ -141,6 +141,12 @@ class SessionService {
     }
 
     return Array.from(actualDevices)
+  }
+
+  listUserDeviceLocal(userId) {
+    return this.getUserDevices(userId)
+      .map((connection) => connection?.deviceId)
+      .filter((deviceId) => deviceId !== CONSTANTS.HTTP_DEVICE_ID)
   }
 
   listUserDeviceLocal(userId) {
@@ -408,11 +414,22 @@ class SessionService {
   }
 
   async removeUserSession(socket, userId, deviceId) {
+    this.logger.debug("[removeUserSession][args]: %o", { socket: socket?.isAlive, userId, deviceId })
+
     userId = userId ?? this.getSessionUserId(socket)
     deviceId = deviceId ?? this.getDeviceId(socket, userId)
     const organizationId = this.getSession(socket)?.organizationId
 
     this.logger.debug("[removeUserSession][vars] %o", { organizationId, userId, deviceId })
+
+    this.logger.debug("[removeUserSession][vars]: %o [session]: %o [device]: %s", { organizationId, userId, deviceId }, this.getSession(socket), this.getDeviceId(socket, userId))
+
+    const devicesBefore = this.getUserDevices(userId).map((connection) => {
+      const { socket, ...connectionData } = connection
+      return { ...connectionData, socket: socket?.clientId }
+    })
+
+    this.logger.debug("[removeUserSession][devices][before]: %o %s", devicesBefore, devicesBefore?.length)
 
     const leftActiveConnections = this.getUserDevices(userId).filter(({ deviceId: activeDeviceId }) => activeDeviceId !== deviceId)
     let isLastConnection = !leftActiveConnections?.length
@@ -424,6 +441,14 @@ class SessionService {
     }
 
     this.activeSessions.SESSIONS.delete(socket)
+
+
+    const devicesAfter = this.getUserDevices(userId).map((connection) => {
+      const { socket, ...connectionData } = connection
+      return { ...connectionData, socket: socket?.clientId }
+    })
+
+    this.logger.debug("[removeUserSession][devices][after]: %o %s", devicesAfter, devicesAfter?.length)
 
     if (!deviceId) {
       return isLastConnection
