@@ -1,5 +1,6 @@
 import net from "node:net"
 import { APIs, BASE_API } from "../networking/APIs.js"
+import { CONSTANTS } from "../constants/constants.js"
 
 export const watchdogPingSocket = async (logger, sessionService, onWsCloseCb, onTcpCloseCb) => {
   const users = Object.keys(sessionService.activeSessions.DEVICES)
@@ -9,7 +10,7 @@ export const watchdogPingSocket = async (logger, sessionService, onWsCloseCb, on
   for (const userId of users) {
     const connections = sessionService.activeSessions.DEVICES[userId] ?? []
     for (const connection of connections) {
-      if (!connection?.socket) {
+      if (!connection?.socket || connection?.deviceId === CONSTANTS.HTTP_DEVICE_ID) {
         continue
       }
 
@@ -19,7 +20,7 @@ export const watchdogPingSocket = async (logger, sessionService, onWsCloseCb, on
       try {
         if (isTCP) {
           await new Promise((resolve, reject) => {
-            connection.socket?.write(pingPackage, (error) => error ? reject(error) : resolve())
+            connection.socket?.write(pingPackage, (error) => (error ? reject(error) : resolve()))
           })
         } else {
           connection.socket?.send(pingPackage)
@@ -29,13 +30,15 @@ export const watchdogPingSocket = async (logger, sessionService, onWsCloseCb, on
         if (isTCP) {
           await onTcpCloseCb(connection?.socket)
             .then(() => logger.debug("[close tcp done] %s", userId))
-            .catch(error => logger.error(error, "[close tcp error]"))
+            .catch((error) => logger.error(error, "[close tcp error]"))
         } else {
           await onWsCloseCb(connection?.socket, 10)
             .then(() => logger.debug("[close ws done] %s", userId))
-            .catch(error => logger.error(error, "[close ws error]"))
+            .catch((error) => logger.error(error, "[close ws error]"))
         }
-        await sessionService.removeUserSession(connection?.socket, userId, connection?.deviceId).catch(error => logger.error(error, "[remove]"))
+        await sessionService
+          .removeUserSession(connection?.socket, userId, connection?.deviceId)
+          .catch((error) => logger.error(error, "[remove]"))
       }
     }
   }

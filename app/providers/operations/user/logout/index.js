@@ -20,11 +20,11 @@ class UserLogoutOperation {
 
     await this.encryptionRepo.removeByDeviceId(userId, deviceId)
 
-    await this.sessionService.removeUserSession(ws, userId, deviceId)
+    const isWasLastUserSession = await this.sessionService.removeUserSession(ws, userId, deviceId)
 
     await this.userTokenRepo.deleteByUserId(userId, deviceId)
 
-    return { organizationId, userId }
+    return { organizationId, userId, isWasLastUserSession }
   }
 }
 

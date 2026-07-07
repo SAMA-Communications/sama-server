@@ -21,9 +21,16 @@ class UserConnectSocketOperation {
     const user = await this.userService.userRepo.findById(token.user_id)
 
     // TODO: close connections
-    this.sessionService.addUserDeviceConnection(ws, user.organization_id, user.native_id, deviceId)
-
+    const { sameDeviceConnection, sameSocketConnection } = this.sessionService.addUserDeviceConnection(
+      ws,
+      user.organization_id,
+      user.native_id,
+      deviceId
+    )
     await this.sessionService.storeUserNodeData(ws, user.organization_id, user.native_id, deviceId)
+    if (sameSocketConnection) {
+      await this.sessionService.removeAllUserDeviceData(user.organization_id, user.native_id, sameSocketConnection.deviceId)
+    }
 
     return { user }
   }

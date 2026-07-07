@@ -1,18 +1,26 @@
 import { ERROR_STATUES } from "../../../../constants/errors.js"
 
 class UserCreateOperation {
-  constructor(orgService, userService, contactsMatchRepository) {
-    this.orgService = orgService
+  constructor(organizationService, userService, contactsMatchRepository) {
+    this.organizationService = organizationService
     this.userService = userService
     this.contactsMatchRepository = contactsMatchRepository
   }
 
   async perform(createUserParams) {
-    const isOrgExist = await this.orgService.isExist(createUserParams.organization_id)
+    const isOrgExist = await this.organizationService.isExist(createUserParams.organization_id)
 
     if (!isOrgExist) {
       throw new Error(ERROR_STATUES.ORG_NOT_FOUND.message, {
         cause: ERROR_STATUES.ORG_NOT_FOUND,
+      })
+    }
+
+    const blockStatus = await this.organizationService.isUserFromBlocked(createUserParams)
+
+    if (blockStatus.isBlocked) {
+      throw new Error(ERROR_STATUES.ORGANIZATION_BLOCKED.message, {
+        cause: Object.assign({}, blockStatus, ERROR_STATUES.ORGANIZATION_BLOCKED),
       })
     }
 

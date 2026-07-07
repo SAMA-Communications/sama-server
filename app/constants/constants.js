@@ -18,6 +18,7 @@ export const CONSTANTS = {
   SESSION_DEVICE_ID_KEY: "DEVICE_ID",
   HTTP_DEVICE_ID: "SAMA_HTTP_CLIENT_DEVICE_ID",
   HTTP_ADMIN_API_KEY_HEADER: "admin-api-key",
+  HTTP_REPL_ACCESS_KEY_HEADER: "repl-access-key",
   CHAT_SUMMARY_FILTERS: {
     LAST_7_DAYS: "last-7-days",
     LAST_DAY: "last-day",
@@ -39,4 +40,10 @@ export const CONSTANTS = {
     TESTING: "testing",
   },
   ENV_TRUE: "true",
+  REDIS_PREFIXES: {
+    NODE_DATA: "sama-node-data",
+    NODE_USERS: "sama-node-users",
+    USER_DEVICES: "sama-user-devices",
+    USER_DATA: "sama-user-data",
+  },
 }

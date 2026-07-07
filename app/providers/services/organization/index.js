@@ -14,6 +14,12 @@ class OrganizationService {
 
     return !!organization
   }
+
+  async isUserFromBlocked(user) {
+    const organization = await this.organizationRepo.findById(user.organization_id)
+
+    return { isBlocked: organization?.is_blocked, reason: organization?.block_reason }
+  }
 }
 
 export default OrganizationService

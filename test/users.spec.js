@@ -7,6 +7,7 @@ import { generateNewOrganizationId } from "./tools/utils.js"
 import packetJsonProcessor from "../APIs/JSON/routes/packet_processor.js"
 
 const userRepo = ServiceLocatorContainer.use("UserRepository")
+const orgRepo = ServiceLocatorContainer.use("OrganizationRepository")
 
 let orgId = void 0
 let userLogin = [...Array(30)].map(() => Math.random().toString(36)[2]).join("")
@@ -263,6 +264,71 @@ describe("User cycle", async () => {
       assert.strictEqual(requestData.request.id, responseData.response.id)
       assert.notEqual(responseData.response.user, undefined)
       assert.equal(responseData.response.error, undefined)
+    })
+  })
+
+  describe("Create/Login in blocked organization", () => {
+    before(async () => {
+      await orgRepo.updateOne({ _id: orgId }, { $set: { is_blocked: true, block_reason: "Out of limits" } })
+    })
+
+    it("create in blocked organization", async () => {
+      const requestData = {
+        request: {
+          user_create: {
+            organization_id: orgId,
+            login: userLogin,
+            email: "email_1_1",
+            phone: "phone_1_1",
+            password: "user_paswword_1_1",
+            device_id: "deveice11",
+          },
+          id: "1_1_blocked",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.deepEqual(responseData.response.error, {
+        isBlocked: true,
+        reason: "Out of limits",
+        status: 403,
+        message: "Organization was blocked.",
+      })
+      assert.equal(responseData.response.user, void 0)
+    })
+
+    it("login in blocked organization", async () => {
+      const requestData = {
+        request: {
+          user_login: {
+            organization_id: orgId,
+            device_id: "PC_Home",
+            login: userLogin,
+            password: "user_paswword_1",
+          },
+          id: "2_3_blocked",
+        },
+      }
+
+      let responseData = await packetJsonProcessor.processMessageOrError("test", JSON.stringify(requestData))
+
+      responseData = responseData.backMessages.at(0)
+
+      assert.strictEqual(requestData.request.id, responseData.response.id)
+      assert.deepEqual(responseData.response.error, {
+        isBlocked: true,
+        reason: "Out of limits",
+        status: 403,
+        message: "Organization was blocked.",
+      })
+      assert.equal(responseData.response.user, void 0)
+    })
+
+    after(async () => {
+      await orgRepo.updateOne({ _id: orgId }, { $unset: { is_blocked: 1, blocked_reason: 1 } })
     })
   })
 

@@ -12,7 +12,7 @@ class HttpServerStatsController extends BaseHttpController {
     const response = new Response()
 
     const httpOrganizationCreateOperation = ServiceLocatorContainer.use("HttpStatsCollectOperation")
-    const stats = await httpOrganizationCreateOperation.perform(res.fakeWsSessionKey, payload)
+    const stats = await httpOrganizationCreateOperation.perform(res, payload)
 
     return response.setHttpResponse(new HttpResponse(200, {}, stats))
   }

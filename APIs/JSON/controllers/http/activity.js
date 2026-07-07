@@ -13,7 +13,7 @@ class HttpActivityController extends BaseHttpController {
     const response = new Response()
 
     const HttpActivityOnlineListOperation = ServiceLocatorContainer.use("HttpActivityOnlineListOperation")
-    const onlineListResponse = await HttpActivityOnlineListOperation.perform(res.fakeWsSessionKey, payload)
+    const onlineListResponse = await HttpActivityOnlineListOperation.perform(res, payload)
 
     const responsePayload = isCountRequest ? { count: onlineListResponse } : { users: onlineListResponse }
 
