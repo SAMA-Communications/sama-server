@@ -1,8 +1,7 @@
 import uWS from "uWebSockets.js"
 
-import { CONSTANTS as MAIN_CONSTANTS } from "../../constants/constants.js"
 import logger from "../../logger/index.js"
-import { asyncLoggerContextStore, createStore } from "../../logger/async_store.js"
+import { asyncLoggerContextStore } from "../../logger/async_store.js"
 import BaseProtocolProcessor from "./base.js"
 import { wsSafeSend } from "../../utils/sockets-utils.js"
 

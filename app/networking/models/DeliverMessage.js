@@ -1,5 +1,5 @@
 class DeliverMessage {
-  ws = null
+  socket = null
 
   orgId = null
 
@@ -13,11 +13,11 @@ class DeliverMessage {
   notSaveInOfflineStorage = false
   pushQueueMessage = null
 
-  constructor(orgId, packet, notSaveInOfflineStorage, ws) {
+  constructor(orgId, packet, notSaveInOfflineStorage, socket) {
     this.orgId = orgId
     this.packet = packet
     this.notSaveInOfflineStorage = !!notSaveInOfflineStorage
-    this.ws = ws
+    this.socket = socket
   }
 
   setOrgId(orgId) {

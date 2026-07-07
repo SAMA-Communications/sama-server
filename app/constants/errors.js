@@ -52,6 +52,10 @@ export const ERROR_STATUES = {
     status: 401,
     message: "Incorrect username or password.",
   },
+  ORGANIZATION_BLOCKED: {
+    status: 403,
+    message: "Organization was blocked.",
+  },
   INCORRECT_OTP_TOKEN: { status: 403, message: "Incorrect token for password recovery." },
   DEVICE_ID_MISSED: { status: 422, message: `'device_id' is required.` },
   // Contacts -->

@@ -22,7 +22,7 @@ class ActivityUserSubscribeOperation {
     await this.activityManagerService.subscribeObserverToTarget(currentUserId, targetUserId)
 
     let targetUserActivityStatus = null
-    const devicesList = await this.sessionService.listUserDevice(organizationId, targetUserId)
+    const devicesList = await this.sessionService.listUserDevice(organizationId, targetUserId, true)
     const isUserOnline = !!devicesList?.length
 
     if (isUserOnline) {

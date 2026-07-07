@@ -3,11 +3,12 @@ import jwt from "jsonwebtoken"
 import { ERROR_STATUES } from "../../../../constants/errors.js"
 
 class UserAuthOperation {
-  constructor(config, sessionService, userService, userTokenRepo) {
+  constructor(config, sessionService, userService, userTokenRepo, organizationService) {
     this.config = config
     this.sessionService = sessionService
     this.userService = userService
     this.userTokenRepo = userTokenRepo
+    this.organizationService = organizationService
   }
 
   async perform(ws, userInfo, omitDeviceConnection) {
@@ -18,9 +19,20 @@ class UserAuthOperation {
       ? await this.#authByToken(userInfo.token, deviceId)
       : await this.#authByUserInfo(organizationId, userInfo, deviceId)
 
+    await this.#validateOrganization(user)
+
     // TODO: close connections
     if (!omitDeviceConnection) {
-      const wsToClose = this.sessionService.addUserDeviceConnection(ws, user.organization_id, user.native_id, deviceId)
+      const { sameDeviceConnection, sameSocketConnection } = this.sessionService.addUserDeviceConnection(
+        ws,
+        user.organization_id,
+        user.native_id,
+        deviceId
+      )
+      await this.sessionService.storeUserNodeData(ws, user.organization_id, user.native_id, deviceId)
+      if (sameSocketConnection) {
+        await this.sessionService.removeAllUserDeviceData(user.organization_id, user.native_id, sameSocketConnection.deviceId)
+      }
     }
 
     const jwtAccessToken = this.#generateToken(
@@ -31,8 +43,6 @@ class UserAuthOperation {
     )
 
     const updatedToken = await this.userTokenRepo.updateToken(token, organizationId, user.native_id, deviceId, jwtAccessToken, "access")
-
-    await this.sessionService.storeUserNodeData(ws, user.organization_id, user.native_id, deviceId)
 
     const userWithAvatarUrl = (await this.userService.addAvatarUrl([user])).at(0)
 
@@ -79,6 +89,16 @@ class UserAuthOperation {
     const token = await this.userTokenRepo.findTokenByUserId(user.native_id, deviceId, "access")
 
     return { user, token }
+  }
+
+  async #validateOrganization(user) {
+    const blockStatus = await this.organizationService.isUserFromBlocked(user)
+
+    if (blockStatus.isBlocked) {
+      throw new Error(ERROR_STATUES.ORGANIZATION_BLOCKED.message, {
+        cause: Object.assign({}, blockStatus, ERROR_STATUES.ORGANIZATION_BLOCKED),
+      })
+    }
   }
 
   async createRefreshToken(user, deviceId) {

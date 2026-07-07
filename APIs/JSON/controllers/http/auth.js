@@ -16,7 +16,7 @@ class HttpAuthController extends BaseHttpController {
     const httpAuthOperation = ServiceLocatorContainer.use("HttpUserAuthOperation")
 
     const { user, newAccessToken, accessTokenExpiredAt, newRefreshToken } = await httpAuthOperation.perform(
-      res.fakeWsSessionKey,
+      res,
       res.parsedHeaders,
       res.parsedSignedCookies,
       payload
@@ -43,7 +43,7 @@ class HttpAuthController extends BaseHttpController {
   async logout(res, req) {
     const httpLogoutOperation = ServiceLocatorContainer.use("HttpUserLogoutOperation")
 
-    const refreshTokenRecord = await httpLogoutOperation.perform(res.fakeWsSessionKey, res.parsedHeaders, res.parsedSignedCookies)
+    const { refreshTokenRecord, isWasLastUserSession } = await httpLogoutOperation.perform(res, res.parsedHeaders, res.parsedSignedCookies)
 
     const httpResponse = new HttpResponse(200, {}, { success: true }).addCookie("refresh_token", refreshTokenRecord.token, {
       maxAge: 0,
@@ -52,15 +52,19 @@ class HttpAuthController extends BaseHttpController {
       sameSite: "lax",
     })
 
-    return new Response()
-      .setHttpResponse(httpResponse)
-      .updateLastActivityStatus(
+    const response = new Response().setHttpResponse(httpResponse)
+
+    if (isWasLastUserSession) {
+      response.updateLastActivityStatus(
         new LastActivityStatusResponse(
           refreshTokenRecord.organization_id,
           refreshTokenRecord.user_id,
           MAIN_CONSTANTS.LAST_ACTIVITY_STATUS.OFFLINE
         )
       )
+    }
+
+    return response
   }
 }
 

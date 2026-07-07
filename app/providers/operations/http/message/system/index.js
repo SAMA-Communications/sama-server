@@ -6,12 +6,12 @@ class HttpMessageSendSystemOperation {
     this.messageSendSystemOperation = messageSendSystemOperation
   }
 
-  async perform(fakeWsSessionKey, payload) {
+  async perform(res, payload) {
     const { organizationId, senderId, messageSystem: systemMessageParams } = payload
 
-    this.sessionService.addUserDeviceConnection(fakeWsSessionKey, organizationId, senderId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
+    this.sessionService.addUserDeviceConnection(res, organizationId, senderId, MAIN_CONSTANTS.HTTP_DEVICE_ID)
 
-    const operationResponse = await this.messageSendSystemOperation.perform(fakeWsSessionKey, systemMessageParams)
+    const operationResponse = await this.messageSendSystemOperation.perform(res, systemMessageParams)
 
     return operationResponse
   }

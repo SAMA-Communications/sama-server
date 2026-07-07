@@ -33,11 +33,13 @@ class PacketJsonProcessor extends BasePacketProcessor {
   async processMessageOrError(ws, message) {
     let responseData
     let json
+    let requestTrackId
     try {
       json = this.#parseMessage(message)
+      requestTrackId = json?.request?.id ?? json?.message?.id ?? json?.system_message?.id ?? json?.id
       updateStoreContext(
         MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.REQUEST_ID,
-        json?.request?.id ?? json?.message?.id ?? json?.system_message?.id ?? json?.id ?? MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.NO_REQUEST_ID
+        requestTrackId ?? MAIN_CONSTANTS.LOGGER_BINDINGS_NAMES.NO_REQUEST_ID
       )
       responseData = await this.#processMessage(ws, json)
       if (!responseData) {
@@ -49,7 +51,7 @@ class PacketJsonProcessor extends BasePacketProcessor {
       if (json?.request) {
         errorBackMessage = {
           response: {
-            id: json.request?.id,
+            id: json.request?.id ?? requestTrackId,
             error: error.cause || error.message,
           },
         }
@@ -57,7 +59,7 @@ class PacketJsonProcessor extends BasePacketProcessor {
         const topLevelElement = json ? Object.keys(json)[0] : void 0
         errorBackMessage = {
           [topLevelElement]: {
-            id: json?.[topLevelElement]?.id,
+            id: json?.[topLevelElement]?.id ?? requestTrackId,
             error: error.cause || error.message,
           },
         }

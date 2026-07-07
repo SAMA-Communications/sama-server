@@ -15,7 +15,7 @@ class ActivityUserRetrieveOperation {
 
     for (const targetUser of targetUsers) {
       const userId = targetUser.native_id
-      const devicesList = await this.sessionService.listUserDevice(organizationId, userId)
+      const devicesList = await this.sessionService.listUserDevice(organizationId, userId, true)
 
       const isUserOnline = !!devicesList?.length
 

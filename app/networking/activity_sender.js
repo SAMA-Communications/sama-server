@@ -11,7 +11,7 @@ import LastActivityStatusResponse from "@sama/networking/models/LastActivityStat
 
 class ActivitySender {
   detectSocketAPI(socket) {
-    const api = APIs[socket.apiType ?? BASE_API]
+    const api = APIs[socket?.apiType ?? BASE_API]
     return api
   }
 

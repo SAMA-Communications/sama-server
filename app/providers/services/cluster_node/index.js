@@ -1,32 +1,52 @@
+import { CONSTANTS as MAIN_CONSTANTS } from "../../../constants/constants.js"
+import { buildWsEndpoint } from "../../../utils/build_ws_endpoint.js"
+
 class ClusterNodeService {
-  constructor(clusterNodeRepo) {
-    this.clusterNodeRepo = clusterNodeRepo
+  constructor(config, redisClient) {
+    this.config = config
+    this.redisClient = redisClient
   }
 
-  async retrieveAll() {
-    const clusterNodes = await this.clusterNodeRepo.findAll({})
-
-    return clusterNodes
+  #nodeInfoKey(endpoint) {
+    return `${MAIN_CONSTANTS.REDIS_PREFIXES.NODE_DATA}:${endpoint}`
   }
 
-  async create(addressParams, optionalParams) {
-    const clusterNodeParams = Object.assign({}, addressParams, optionalParams)
+  async retrieveActive() {
+    const nodeKeys = await this.redisClient.findKeysByPattern(this.#nodeInfoKey("*"))
 
-    const clusterNode = await this.clusterNodeRepo.create(clusterNodeParams)
+    const nodesInfo = []
 
-    return clusterNode
+    for (const nodeKey of nodeKeys) {
+      const nodeInfo = await this.redisClient.client.hGetAll(nodeKey)
+      nodesInfo.push(nodeInfo)
+    }
+
+    const nodeEndpoints = nodesInfo.map((node) => buildWsEndpoint(node.ip_address, node.port))
+
+    const activeNodeEndpoints = new Set(nodeEndpoints)
+
+    return activeNodeEndpoints
+  }
+
+  async retrieveStored() {
+    const nodeKeys = await this.redisClient.findKeysByPattern(`${MAIN_CONSTANTS.REDIS_PREFIXES.NODE_USERS}:*`)
+
+    const nodeEndpoints = nodeKeys.map((nodeKey) => nodeKey.replace(`${MAIN_CONSTANTS.REDIS_PREFIXES.NODE_USERS}:`, ""))
+
+    return new Set(nodeEndpoints)
   }
 
   async upsert(addressParams, optionalParams) {
-    const existedNode = await this.clusterNodeRepo.findOne(addressParams)
+    const currentNodeKey = this.#nodeInfoKey(this.config.get("ws.cluster.endpoint"))
 
-    if (existedNode) {
-      await this.clusterNodeRepo.updateStats(existedNode._id, optionalParams)
+    const keyValuePairs = Object.entries(Object.assign({}, addressParams, optionalParams))
+      .flat()
+      .map((val) => `${val}`)
 
-      return
-    }
+    await this.redisClient.client.hSet(currentNodeKey, keyValuePairs)
 
-    await this.create(addressParams, optionalParams)
+    const expireSeconds = Math.round(this.config.get("ws.cluster.nodeExpiresIn") / 1_000) + 5
+    await this.redisClient.client.expire(currentNodeKey, expireSeconds)
   }
 }
 

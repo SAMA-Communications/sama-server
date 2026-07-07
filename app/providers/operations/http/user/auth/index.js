@@ -7,7 +7,7 @@ class HttpUserAuthOperation {
     this.userAuthOperation = userAuthOperation
   }
 
-  async perform(fakeWsSessionKey, headers, cookies, payload) {
+  async perform(res, headers, cookies, payload) {
     const refreshToken = cookies["refresh_token"]
     const accessToken = this.helpers.extractAccessTokenFromAuthHeader(headers["authorization"])
 
@@ -30,7 +30,7 @@ class HttpUserAuthOperation {
       })
     }
 
-    const { user, token: newAccessToken } = await this.userAuthOperation.perform(fakeWsSessionKey, userInfo, true)
+    const { user, token: newAccessToken } = await this.userAuthOperation.perform(res, userInfo, true)
     const newRefreshToken = await this.userAuthOperation.createRefreshToken(user, device_id)
 
     const accessTokenExpiredAt = new Date(newAccessToken.updated_at).getTime() + this.config.get("jwt.access.expiresIn") * 1000

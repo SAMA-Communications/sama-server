@@ -6,6 +6,6 @@ export default class Organization extends BaseModel {
   }
 
   static get visibleFields() {
-    return ["_id", "name", "created_at", "updated_at"]
+    return ["_id", "name", "is_blocked", "block_reason", "created_at", "updated_at"]
   }
 }
