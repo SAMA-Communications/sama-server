@@ -39,11 +39,14 @@ describe("Http Stats", async () => {
     const stats = httpResponse.body
 
     assert.ok(stats)
-    assert.ok(stats.uptime >= 0)
+    assert.ok(stats.uptime_seconds >= 0)
     assert.ok(stats.online_users === 0)
     assert.ok(stats.messages_per_minute === void 0)
     assert.ok(stats.messages_per_hour === void 0)
     assert.ok(stats.messages_per_day === void 0)
+    assert.ok(stats.status === "ok")
+    assert.ok(stats.dependencies.find((d) => d.name === "mongodb").status === "ok")
+    assert.ok(stats.dependencies.find((d) => d.name === "redis").status === "ok")
 
     lastStats = stats
   })
@@ -64,7 +67,7 @@ describe("Http Stats", async () => {
     const stats = httpResponse.body
 
     assert.ok(stats)
-    assert.ok(stats.uptime >= lastStats.uptime)
+    assert.ok(stats.uptime_seconds >= lastStats.uptime_seconds)
     assert.ok(stats.online_users === 1)
     // assert.ok(stats.messages_per_minute === 0)
     // assert.ok(stats.messages_per_hour === 0)
@@ -100,7 +103,7 @@ describe("Http Stats", async () => {
     const stats = httpResponse.body
 
     assert.ok(stats)
-    assert.ok(stats.uptime >= lastStats.uptime)
+    assert.ok(stats.uptime_seconds >= lastStats.uptime_seconds)
     assert.ok(stats.online_users === 1)
     // assert.ok(stats.messages_per_minute === 1)
     // assert.ok(stats.messages_per_hour === 1)
@@ -125,7 +128,7 @@ describe("Http Stats", async () => {
     const stats = httpResponse.body
 
     assert.ok(stats)
-    assert.ok(stats.uptime >= lastStats.uptime)
+    assert.ok(stats.uptime_seconds >= lastStats.uptime_seconds)
     assert.ok(stats.online_users === 2)
     // assert.ok(stats.messages_per_minute === 1)
     // assert.ok(stats.messages_per_hour === 1)
@@ -161,7 +164,7 @@ describe("Http Stats", async () => {
     const stats = httpResponse.body
 
     assert.ok(stats)
-    assert.ok(stats.uptime >= lastStats.uptime)
+    assert.ok(stats.uptime_seconds >= lastStats.uptime_seconds)
     assert.ok(stats.online_users === 2)
     // assert.ok(stats.messages_per_minute === 2)
     // assert.ok(stats.messages_per_hour === 2)
@@ -187,7 +190,7 @@ describe("Http Stats", async () => {
     const stats = httpResponse.body
 
     assert.ok(stats)
-    assert.ok(stats.uptime >= lastStats.uptime)
+    assert.ok(stats.uptime_seconds >= lastStats.uptime_seconds)
     assert.ok(stats.online_users === 0)
     // assert.ok(stats.messages_per_minute === 2)
     // assert.ok(stats.messages_per_hour === 2)
@@ -210,7 +213,7 @@ describe("Http Stats", async () => {
     const stats = httpResponse.body
 
     assert.ok(stats)
-    assert.ok(stats.uptime >= lastStats.uptime)
+    assert.ok(stats.uptime_seconds >= lastStats.uptime_seconds)
     assert.ok(stats.online_users === 0)
     assert.ok(stats.messages_per_minute === void 0)
     assert.ok(stats.messages_per_hour === void 0)

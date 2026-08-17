@@ -2,6 +2,8 @@ import process from "node:process"
 import prettyMs from "pretty-ms"
 import moment from "moment"
 
+import { CONSTANTS } from "../../../constants/constants.js"
+
 export class IncPairDateVal {
   static DATE_TYPES = {
     MIN: "minutes",
@@ -98,9 +100,11 @@ class StatsService {
   messagesPerHour = new IncPairDateVal(IncPairDateVal.DATE_TYPES.HOUR)
   messagesPerDay = new IncPairDateVal(IncPairDateVal.DATE_TYPES.DAY)
 
-  constructor(config, sessionService) {
+  constructor(config, sessionService, mongoConnection, redisClient) {
     this.config = config
     this.sessionService = sessionService
+    this.mongoConnection = mongoConnection
+    this.redisClient = redisClient
   }
 
   incMessagesCount(inc = 1, date = new Date()) {
@@ -117,13 +121,20 @@ class StatsService {
     return isNaN(parsed) ? 0 : parsed
   }
 
-  collectServerStats(format, date) {
+  async collectServerStats(format, date) {
     const uptime = Math.floor(process.uptime())
 
     const formattedUptime = format ? prettyMs(uptime * 1000) : uptime
 
+    const dependencies = await this.collectHealthStats()
+
+    const isOk = dependencies.every((d) => d.status === "ok")
+
     return {
-      uptime: formattedUptime,
+      status: isOk ? "ok" : "fail",
+      hostname: this.config.get("app.hostName"),
+      uptime_seconds: formattedUptime,
+      dependencies
     }
   }
 
@@ -141,10 +152,48 @@ class StatsService {
     }
   }
 
-  collectStats(format, date = new Date()) {
+  async collectHealthStats() {
+    const [mongodb, redis] = await Promise.all([this.pingMongo(), this.pingRedis()])
+
+    return [ mongodb, redis ]
+  }
+
+  async pingMongo() {
+    try {
+      await this.withTimeout(this.mongoConnection.command({ ping: 1 }), CONSTANTS.STATS_PING_TIMEOUT_MS)
+      return { name: 'mongodb', status: 'ok' }
+    } catch (error) {
+      return { name: 'mongodb', status: 'fail', error: error.message }
+    }
+  }
+
+  async pingRedis() {
+    try {
+      await this.withTimeout(this.redisClient.client.ping(), CONSTANTS.STATS_PING_TIMEOUT_MS)
+      return { name: 'redis', status: 'ok' }
+    } catch (error) {
+      return { name: 'redis', status: 'fail', error: error.message }
+    }
+  }
+
+  async withTimeout(promise, ms) {
+    let timer
+
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error("ping timeout")), ms)
+    })
+
+    try {
+      return await Promise.race([promise, timeout])
+    } finally {
+      clearTimeout(timer)
+    }
+  }
+
+  async collectStats(format, date = new Date()) {
     const stats = { hostname: this.config.get("app.hostName") }
 
-    const serverStats = this.collectServerStats(format, date)
+    const serverStats = await this.collectServerStats(format, date)
     const usersStats = this.collectUsersStats(format, date)
     const chatStats = this.collectChatStats(format, date)
 

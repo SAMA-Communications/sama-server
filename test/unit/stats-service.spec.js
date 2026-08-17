@@ -15,7 +15,7 @@ describe("Unit Stats Service", async () => {
   })
 
   it("check empty", async () => {
-    const stats = statsService.collectStats(false, date)
+    const stats = await statsService.collectStats(false, date)
 
     assert.ok(stats.messages_per_minute === void 0)
     assert.ok(stats.messages_per_hour === void 0)
@@ -27,7 +27,7 @@ describe("Unit Stats Service", async () => {
   })
 
   it("check", async () => {
-    const stats = statsService.collectStats(false, date)
+    const stats = await statsService.collectStats(false, date)
 
     assert.ok(stats.messages_per_minute === void 0)
     assert.ok(stats.messages_per_hour === void 0)
@@ -41,7 +41,7 @@ describe("Unit Stats Service", async () => {
   })
 
   it("check with new minute", async () => {
-    const stats = statsService.collectStats(false, date)
+    const stats = await statsService.collectStats(false, date)
 
     assert.ok(stats.messages_per_minute === 1)
     assert.ok(stats.messages_per_hour === void 0)
@@ -59,7 +59,7 @@ describe("Unit Stats Service", async () => {
   })
 
   it("check with same minute", async () => {
-    const stats = statsService.collectStats(false, date)
+    const stats = await statsService.collectStats(false, date)
 
     assert.ok(stats.messages_per_minute === 1)
     assert.ok(stats.messages_per_hour === void 0)
@@ -69,7 +69,7 @@ describe("Unit Stats Service", async () => {
   it("check with new minute", async () => {
     date = moment(date).add(1, "minute").toDate()
 
-    const stats = statsService.collectStats(false, date)
+    const stats = await statsService.collectStats(false, date)
 
     assert.ok(stats.messages_per_minute === 3)
     assert.ok(stats.messages_per_hour === void 0)
@@ -79,7 +79,7 @@ describe("Unit Stats Service", async () => {
   it("check with new hour", async () => {
     date = moment(date).add(1, "hour").toDate()
 
-    const stats = statsService.collectStats(false, date)
+    const stats = await statsService.collectStats(false, date)
 
     assert.ok(stats.messages_per_minute === 0)
     assert.ok(stats.messages_per_hour === 4)
@@ -97,7 +97,7 @@ describe("Unit Stats Service", async () => {
   })
 
   it("ckeck with same day", async () => {
-    const stats = statsService.collectStats(false, date)
+    const stats = await statsService.collectStats(false, date)
 
     assert.ok(stats.messages_per_minute === 0)
     assert.ok(stats.messages_per_hour === 0)
@@ -107,7 +107,7 @@ describe("Unit Stats Service", async () => {
   it("check with same day new minute", async () => {
     date = moment(date).add(1, "minute").toDate()
 
-    const stats = statsService.collectStats(false, date)
+    const stats = await statsService.collectStats(false, date)
 
     assert.ok(stats.messages_per_minute === 2)
     assert.ok(stats.messages_per_hour === 0)
@@ -117,7 +117,7 @@ describe("Unit Stats Service", async () => {
   it("check with new hour", async () => {
     date = moment(date).add(1, "hour").toDate()
 
-    const stats = statsService.collectStats(false, date)
+    const stats = await statsService.collectStats(false, date)
 
     assert.ok(stats.messages_per_minute === 0)
     assert.ok(stats.messages_per_hour === 2)
@@ -129,7 +129,7 @@ describe("Unit Stats Service", async () => {
   })
 
   it("check with same hour", async () => {
-    const stats = statsService.collectStats(false, date)
+    const stats = await statsService.collectStats(false, date)
 
     assert.ok(stats.messages_per_minute === 0)
     assert.ok(stats.messages_per_hour === 2)
@@ -139,7 +139,7 @@ describe("Unit Stats Service", async () => {
   it("check with new hour", async () => {
     date = moment(date).add(1, "hour").toDate()
 
-    const stats = statsService.collectStats(false, date)
+    const stats = await statsService.collectStats(false, date)
 
     assert.ok(stats.messages_per_minute === 0)
     assert.ok(stats.messages_per_hour === 1)
