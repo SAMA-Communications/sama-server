@@ -1,6 +1,6 @@
 {
   "name": "sama",
-  "version": "0.37.0",
+  "version": "0.37.1",
   "description": "Simple but Advanced Messaging Alternative",
   "main": "index.js",
   "type": "module",
@@ -45,7 +45,6 @@
     "mongodb": "^6.13.0",
     "pino": "9.7.0",
     "pino-pretty": "13.0.0",
-    "pretty-ms": "9.3.0",
     "redis": "^4.5.1",
     "resend": "^6.0.3",
     "uuid": "11.1.0",

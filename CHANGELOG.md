@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.37.1
+
+### Features
+
+- add `GET /admin/server-stats` route for get server stats
+
 ## 0.37.0
 
 ### Features

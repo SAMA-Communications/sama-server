@@ -4,9 +4,7 @@ class HttpStatsCollectOperation {
   }
 
   async perform(res, payload) {
-    const needFormat = payload?.get("format")
-
-    const stats = await this.statsService.collectStats(needFormat)
+    const stats = await this.statsService.collectStats()
 
     return stats
   }

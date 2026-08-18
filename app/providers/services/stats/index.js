@@ -1,5 +1,4 @@
 import process from "node:process"
-import prettyMs from "pretty-ms"
 import moment from "moment"
 
 import { CONSTANTS } from "../../../constants/constants.js"
@@ -121,10 +120,8 @@ class StatsService {
     return isNaN(parsed) ? 0 : parsed
   }
 
-  async collectServerStats(format, date) {
+  async collectServerStats(date) {
     const uptime = Math.floor(process.uptime())
-
-    const formattedUptime = format ? prettyMs(uptime * 1000) : uptime
 
     const dependencies = await this.collectHealthStats()
 
@@ -133,18 +130,18 @@ class StatsService {
     return {
       status: isOk ? "ok" : "fail",
       hostname: this.config.get("app.hostName"),
-      uptime_seconds: formattedUptime,
+      uptime_seconds: uptime,
       dependencies
     }
   }
 
-  collectUsersStats(format, date) {
+  collectUsersStats(date) {
     return {
       online_users: this.sessionService.totalSessions(),
     }
   }
 
-  collectChatStats(format, date) {
+  collectChatStats(date) {
     return {
       messages_per_minute: this.messagesPerMinute.retrieve(date),
       messages_per_hour: this.messagesPerHour.retrieve(date),
@@ -190,12 +187,12 @@ class StatsService {
     }
   }
 
-  async collectStats(format, date = new Date()) {
+  async collectStats(date = new Date()) {
     const stats = { hostname: this.config.get("app.hostName") }
 
-    const serverStats = await this.collectServerStats(format, date)
-    const usersStats = this.collectUsersStats(format, date)
-    const chatStats = this.collectChatStats(format, date)
+    const serverStats = await this.collectServerStats(date)
+    const usersStats = this.collectUsersStats(date)
+    const chatStats = this.collectChatStats(date)
 
     return Object.assign(stats, serverStats, usersStats, chatStats)
   }
