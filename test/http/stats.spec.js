@@ -34,7 +34,7 @@ describe("Http Stats", async () => {
       parsedBody: {},
     }
 
-    const responseData = await HttpStatsController.collect(res, req)
+    const responseData = await HttpStatsController.collectStats(res, req)
     const httpResponse = responseData.httpResponse
     const stats = httpResponse.body
 
@@ -62,7 +62,7 @@ describe("Http Stats", async () => {
       parsedBody: {},
     }
 
-    const responseData = await HttpStatsController.collect(res, req)
+    const responseData = await HttpStatsController.collectStats(res, req)
     const httpResponse = responseData.httpResponse
     const stats = httpResponse.body
 
@@ -98,7 +98,7 @@ describe("Http Stats", async () => {
       parsedBody: {},
     }
 
-    const responseData = await HttpStatsController.collect(res, req)
+    const responseData = await HttpStatsController.collectStats(res, req)
     const httpResponse = responseData.httpResponse
     const stats = httpResponse.body
 
@@ -123,7 +123,7 @@ describe("Http Stats", async () => {
       parsedBody: {},
     }
 
-    const responseData = await HttpStatsController.collect(res, req)
+    const responseData = await HttpStatsController.collectStats(res, req)
     const httpResponse = responseData.httpResponse
     const stats = httpResponse.body
 
@@ -159,7 +159,7 @@ describe("Http Stats", async () => {
       parsedBody: {},
     }
 
-    const responseData = await HttpStatsController.collect(res, req)
+    const responseData = await HttpStatsController.collectStats(res, req)
     const httpResponse = responseData.httpResponse
     const stats = httpResponse.body
 
@@ -185,7 +185,7 @@ describe("Http Stats", async () => {
       parsedBody: {},
     }
 
-    const responseData = await HttpStatsController.collect(res, req)
+    const responseData = await HttpStatsController.collectStats(res, req)
     const httpResponse = responseData.httpResponse
     const stats = httpResponse.body
 
@@ -208,7 +208,7 @@ describe("Http Stats", async () => {
       parsedBody: {},
     }
 
-    const responseData = await HttpStatsController.collect(res, req)
+    const responseData = await HttpStatsController.collectStats(res, req)
     const httpResponse = responseData.httpResponse
     const stats = httpResponse.body
 
@@ -218,6 +218,40 @@ describe("Http Stats", async () => {
     assert.ok(stats.messages_per_minute === void 0)
     assert.ok(stats.messages_per_hour === void 0)
     assert.ok(stats.messages_per_day === void 0)
+  })
+
+  it("collect health stats", async () => {
+    const req = {}
+    const res = {
+      fakeWsSessionKey: Symbol("Test http ws fake session"),
+      parsedBody: {},
+    }
+
+    const responseData = await HttpStatsController.collectServerStats(res, req)
+    const httpResponse = responseData.httpResponse
+    const stats = httpResponse.body
+
+    assert.ok(stats)
+    assert.ok(stats.status === "ok")
+    assert.ok(stats.uptime_seconds >= 0)
+    assert.ok(stats.dependencies.find((d) => d.name === "mongodb").status === "ok")
+    assert.ok(stats.dependencies.find((d) => d.name === "redis").status === "ok")
+  })
+
+  it("health stats reuses cached dependencies status within ttl", async () => {
+    const req = {}
+    const res = {
+      fakeWsSessionKey: Symbol("Test http ws fake session"),
+      parsedBody: {},
+    }
+
+    const firstResponseData = await HttpStatsController.collectServerStats(res, req)
+    const firstStats = firstResponseData.httpResponse.body
+
+    const secondResponseData = await HttpStatsController.collectServerStats(res, req)
+    const secondStats = secondResponseData.httpResponse.body
+
+    assert.ok(secondStats.lastUpdateDependencies === firstStats.lastUpdateDependencies)
   })
 
   after(async () => {

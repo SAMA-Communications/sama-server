@@ -104,6 +104,8 @@ class StatsService {
     this.sessionService = sessionService
     this.mongoConnection = mongoConnection
     this.redisClient = redisClient
+
+    this.cacheServerDependenciesStatus = void 0
   }
 
   incMessagesCount(inc = 1, date = new Date()) {
@@ -120,10 +122,19 @@ class StatsService {
     return isNaN(parsed) ? 0 : parsed
   }
 
-  async collectServerStats(date) {
+  async collectServerStats(date, force) {
     const uptime = Math.floor(process.uptime())
 
-    const dependencies = await this.collectHealthStats()
+    const isOld = (this.cacheServerDependenciesStatus && !force) ? ((Date.now() - this.cacheServerDependenciesStatus.lastUpdate) > CONSTANTS.STATS_DEPENDENCIES_CACHE_TTL_MS) : true
+
+    let dependencies = this.cacheServerDependenciesStatus?.dependencies
+    if (isOld) {
+      dependencies = await this.collectHealthStats()
+      this.cacheServerDependenciesStatus = {
+        dependencies,
+        lastUpdate: Date.now()
+      }
+    }
 
     const isOk = dependencies.every((d) => d.status === "ok")
 
@@ -131,7 +142,8 @@ class StatsService {
       status: isOk ? "ok" : "fail",
       hostname: this.config.get("app.hostName"),
       uptime_seconds: uptime,
-      dependencies
+      dependencies,
+      lastUpdateDependencies: this.cacheServerDependenciesStatus?.lastUpdate,
     }
   }
 
@@ -190,7 +202,7 @@ class StatsService {
   async collectStats(date = new Date()) {
     const stats = { hostname: this.config.get("app.hostName") }
 
-    const serverStats = await this.collectServerStats(date)
+    const serverStats = await this.collectServerStats(date, true)
     const usersStats = this.collectUsersStats(date)
     const chatStats = this.collectChatStats(date)
 

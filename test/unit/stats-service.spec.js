@@ -96,7 +96,7 @@ describe("Unit Stats Service", async () => {
     statsService.incMessagesCount(1, date)
   })
 
-  it("ckeck with same day", async () => {
+  it("check with same day", async () => {
     const stats = await statsService.collectStats(date)
 
     assert.ok(stats.messages_per_minute === 0)

@@ -235,8 +235,13 @@ class HttpProtocol extends BaseProtocolProcessor {
     this.uWSocketServer.get("/health", this.onHttpRequestHandler([], healthCheckHandler))
 
     this.uWSocketServer.get(
+      "/health-stats",
+      this.onHttpRequestHandler([], HttpStatsController.collectServerStats)
+    )
+
+    this.uWSocketServer.get(
       "/admin/server-stats",
-      this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpStatsController.collect)
+      this.onHttpRequestHandler([adminApiKeyValidationMiddleware], HttpStatsController.collectStats)
     )
 
     this.uWSocketServer.post("/login", this.onHttpRequestHandler([], HttpAuthController.login))
