@@ -211,12 +211,34 @@ class MessageService {
     return updated
   }
 
-  async deleteMessages(userId, mIds, deleteAll) {
-    if (deleteAll) {
-      await this.messageRepo.deleteByIds(mIds)
-    } else {
-      await this.messageRepo.updateDeleteForUser(mIds, userId)
+  async findMessagesByIds(messageIds) {
+    if (!messageIds?.length) {
+      return []
     }
+
+    return await this.messageRepo.findAllByIds(messageIds, messageIds.length)
+  }
+
+  validateMessagesForDelete(messages, cid, organizationId, userId, { requireAuthorship = false } = {}) {
+    for (const message of messages) {
+      if (
+        !this.helpers.isEqualsNativeIds(message.cid, cid) ||
+        !this.helpers.isEqualsNativeIds(message.organization_id, organizationId) ||
+        (requireAuthorship && !this.helpers.isEqualsNativeIds(message.from, userId))
+      ) {
+        throw new Error(ERROR_STATUES.FORBIDDEN.message, {
+          cause: ERROR_STATUES.FORBIDDEN,
+        })
+      }
+    }
+  }
+
+  async deleteMessagesForEveryone(messageIds, cid, organizationId, authorId = null) {
+    await this.messageRepo.deleteByIdsInConversation(messageIds, cid, organizationId, authorId)
+  }
+
+  async hideMessagesForUser(messageIds, userId, cid, organizationId) {
+    await this.messageRepo.updateDeleteForUser(messageIds, userId, cid, organizationId)
   }
 }
 
