@@ -1,10 +1,20 @@
 # Changelog
 
+## 0.37.2
+
+### Features
+
+- add `GET /health-stats` route for get server stats
+
+### Updated
+
+- update messages deletion logic
+
 ## 0.37.1
 
 ### Features
 
-- add `GET /admin/server-stats` route for get server stats
+- add `GET /admin/server-stats` route for get server messages/activity stats
 
 ## 0.37.0
 
