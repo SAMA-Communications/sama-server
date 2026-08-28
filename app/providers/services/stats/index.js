@@ -1,6 +1,7 @@
 import process from "node:process"
-import prettyMs from "pretty-ms"
 import moment from "moment"
+
+import { CONSTANTS } from "../../../constants/constants.js"
 
 export class IncPairDateVal {
   static DATE_TYPES = {
@@ -98,9 +99,13 @@ class StatsService {
   messagesPerHour = new IncPairDateVal(IncPairDateVal.DATE_TYPES.HOUR)
   messagesPerDay = new IncPairDateVal(IncPairDateVal.DATE_TYPES.DAY)
 
-  constructor(config, sessionService) {
+  constructor(config, sessionService, mongoConnection, redisClient) {
     this.config = config
     this.sessionService = sessionService
+    this.mongoConnection = mongoConnection
+    this.redisClient = redisClient
+
+    this.cacheServerDependenciesStatus = void 0
   }
 
   incMessagesCount(inc = 1, date = new Date()) {
@@ -117,23 +122,38 @@ class StatsService {
     return isNaN(parsed) ? 0 : parsed
   }
 
-  collectServerStats(format, date) {
+  async collectServerStats(date, force) {
     const uptime = Math.floor(process.uptime())
 
-    const formattedUptime = format ? prettyMs(uptime * 1000) : uptime
+    const isOld = (this.cacheServerDependenciesStatus && !force) ? ((Date.now() - this.cacheServerDependenciesStatus.lastUpdate) > CONSTANTS.STATS_DEPENDENCIES_CACHE_TTL_MS) : true
+
+    let dependencies = this.cacheServerDependenciesStatus?.dependencies
+    if (isOld) {
+      dependencies = await this.collectHealthStats()
+      this.cacheServerDependenciesStatus = {
+        dependencies,
+        lastUpdate: Date.now()
+      }
+    }
+
+    const isOk = dependencies.every((d) => d.status === "ok")
 
     return {
-      uptime: formattedUptime,
+      status: isOk ? "ok" : "fail",
+      hostname: this.config.get("app.hostName"),
+      uptime_seconds: uptime,
+      dependencies,
+      lastUpdateDependencies: this.cacheServerDependenciesStatus?.lastUpdate,
     }
   }
 
-  collectUsersStats(format, date) {
+  collectUsersStats(date) {
     return {
       online_users: this.sessionService.totalSessions(),
     }
   }
 
-  collectChatStats(format, date) {
+  collectChatStats(date) {
     return {
       messages_per_minute: this.messagesPerMinute.retrieve(date),
       messages_per_hour: this.messagesPerHour.retrieve(date),
@@ -141,12 +161,50 @@ class StatsService {
     }
   }
 
-  collectStats(format, date = new Date()) {
+  async collectHealthStats() {
+    const [mongodb, redis] = await Promise.all([this.pingMongo(), this.pingRedis()])
+
+    return [ mongodb, redis ]
+  }
+
+  async pingMongo() {
+    try {
+      await this.withTimeout(this.mongoConnection.command({ ping: 1 }), CONSTANTS.STATS_PING_TIMEOUT_MS)
+      return { name: 'mongodb', status: 'ok' }
+    } catch (error) {
+      return { name: 'mongodb', status: 'fail', error: error.message }
+    }
+  }
+
+  async pingRedis() {
+    try {
+      await this.withTimeout(this.redisClient.client.ping(), CONSTANTS.STATS_PING_TIMEOUT_MS)
+      return { name: 'redis', status: 'ok' }
+    } catch (error) {
+      return { name: 'redis', status: 'fail', error: error.message }
+    }
+  }
+
+  async withTimeout(promise, ms) {
+    let timer
+
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error("ping timeout")), ms)
+    })
+
+    try {
+      return await Promise.race([promise, timeout])
+    } finally {
+      clearTimeout(timer)
+    }
+  }
+
+  async collectStats(date = new Date()) {
     const stats = { hostname: this.config.get("app.hostName") }
 
-    const serverStats = this.collectServerStats(format, date)
-    const usersStats = this.collectUsersStats(format, date)
-    const chatStats = this.collectChatStats(format, date)
+    const serverStats = await this.collectServerStats(date, true)
+    const usersStats = this.collectUsersStats(date)
+    const chatStats = this.collectChatStats(date)
 
     return Object.assign(stats, serverStats, usersStats, chatStats)
   }
