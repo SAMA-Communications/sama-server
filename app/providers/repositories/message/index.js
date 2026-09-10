@@ -149,11 +149,28 @@ class MessageRepository extends BaseRepository {
     await this.updateOne({ _id: messageId }, { $set: { body: newBody, updated_at: new Date() } })
   }
 
-  async updateDeleteForUser(messageIds, userId) {
-    messageIds = this.castObjectIds(messageIds)
-    userId = this.castUserId(userId)
+  async deleteByIdsInConversation(messageIds, cid, organizationId, authorId = null) {
+    const query = {
+      _id: { $in: this.castObjectIds(messageIds) },
+      cid: this.castObjectId(cid),
+      organization_id: this.castOrganizationId(organizationId),
+    }
 
-    await this.updateMany({ _id: { $in: messageIds } }, { $addToSet: { deleted_for: userId } })
+    if (authorId) {
+      query.from = this.castUserId(authorId)
+    }
+
+    return await this.deleteMany(query)
+  }
+
+  async updateDeleteForUser(messageIds, userId, cid, organizationId) {
+    const query = {
+      _id: { $in: this.castObjectIds(messageIds) },
+      cid: this.castObjectId(cid),
+      organization_id: this.castOrganizationId(organizationId),
+    }
+
+    await this.updateMany(query, { $addToSet: { deleted_for: this.castUserId(userId) } })
   }
 
   async deleteMessageByMids(mids) {

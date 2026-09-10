@@ -46,4 +46,6 @@ export const CONSTANTS = {
     USER_DEVICES: "sama-user-devices",
     USER_DATA: "sama-user-data",
   },
+  STATS_PING_TIMEOUT_MS: 3_000,
+  STATS_DEPENDENCIES_CACHE_TTL_MS: 10_000,
 }

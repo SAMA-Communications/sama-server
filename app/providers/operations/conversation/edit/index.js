@@ -43,7 +43,7 @@ class ConversationEditOperation {
       updateParticipantsResult = await this.#updateParticipants(updatedConversation, updateParticipants)
     }
 
-    const { isEmptyAndDeleted, addedIds, removedIds } = updateParticipantsResult
+    const { isEmptyAndDeleted, addedIds = [], removedIds = [] } = updateParticipantsResult
 
     if (isEmptyAndDeleted) {
       return null
@@ -57,8 +57,8 @@ class ConversationEditOperation {
       return result
     }
 
-    const isUpdateConversationFields = !!Object.keys(updateFields).length
     const isUpdateConversationImage = !!updateFields.image_object
+    const isUpdateConversationFields = Object.keys(updateFields).some((field) => field !== "image_object")
     const updatedConversationWithImageUrl = await this.conversationService.addImageUrl([updatedConversation])
 
     const createdEvents = await this.#createActionEvents(
@@ -165,7 +165,7 @@ class ConversationEditOperation {
 
     if (addedParticipantIds.length) {
       await this.#addMessagesInfo(conversation, currentUser)
-      const updateEvent = await this.#actionEvent(conversation, currentUser, false)
+      const updateEvent = await this.#actionEvent(conversation, currentUser, CONVERSATION_EVENTS.CONVERSATION_EVENT.UPDATE)
       updateEvent.participantIds = addedParticipantIds
 
       conversationEvent.push(updateEvent)
@@ -184,14 +184,14 @@ class ConversationEditOperation {
         conversationEvent.push(removedParticipantEvent)
       }
 
-      const deleteEvent = await this.#actionEvent(conversation, currentUser, true)
+      const deleteEvent = await this.#actionEvent(conversation, currentUser, CONVERSATION_EVENTS.CONVERSATION_EVENT.DELETE)
       deleteEvent.participantIds = removedParticipantIds
 
       conversationEvent.push(deleteEvent)
     }
 
     if (isUpdateConversation) {
-      const updatedEvent = await this.#actionEvent(conversation, currentUser, false)
+      const updatedEvent = await this.#actionEvent(conversation, currentUser, CONVERSATION_EVENTS.CONVERSATION_EVENT.UPDATE_DETAILS)
 
       conversationEvent.push({ ...updatedEvent, exceptUserIds: addedParticipantIds, ignoreSelf: true })
     }
@@ -205,9 +205,7 @@ class ConversationEditOperation {
     return conversationEvent
   }
 
-  async #actionEvent(conversation, currentUser, isDelete) {
-    const eventType = isDelete ? CONVERSATION_EVENTS.CONVERSATION_EVENT.DELETE : CONVERSATION_EVENTS.CONVERSATION_EVENT.UPDATE
-
+  async #actionEvent(conversation, currentUser, eventType) {
     const actionMessageNotification = await this.conversationNotificationService.actionEvent(eventType, conversation, currentUser)
 
     return actionMessageNotification

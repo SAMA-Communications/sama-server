@@ -172,7 +172,7 @@ describe("Http Messages", async () => {
   it("delete", async () => {
     const requestData = {
       organizationId: orgId,
-      senderId: usersIds.at(1),
+      senderId: usersIds.at(0),
       messageDelete: {
         cid: conversationId,
         ids: [createdMessageId],

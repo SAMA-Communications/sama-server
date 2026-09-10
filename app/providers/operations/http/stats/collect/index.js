@@ -3,10 +3,8 @@ class HttpStatsCollectOperation {
     this.statsService = statsService
   }
 
-  async perform(res, payload) {
-    const needFormat = payload?.get("format")
-
-    const stats = await this.statsService.collectStats(needFormat)
+  async perform(res, payload, onlyServer = false) {
+    const stats = onlyServer ? await this.statsService.collectServerStats() : await this.statsService.collectStats()
 
     return stats
   }

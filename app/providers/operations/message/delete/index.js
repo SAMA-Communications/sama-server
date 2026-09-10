@@ -12,10 +12,25 @@ class MessageDeleteOperation {
     const { cid: cId, ids: mIds, type } = deleteMessageParams
 
     const { userId: currentUserId, organizationId } = this.sessionService.getSession(ws)
-    const { conversation } = await this.#hasAccess(organizationId, cId, currentUserId)
+    const { conversation, asOwner, asAdmin } = await this.#hasAccess(organizationId, cId, currentUserId)
 
     const isDeleteAll = type === "all"
-    await this.messageService.deleteMessages(currentUserId, mIds, isDeleteAll)
+    const canModerate = this.#canModerate(conversation, asOwner, asAdmin)
+    const messages = await this.messageService.findMessagesByIds(mIds)
+
+    if (messages.length) {
+      const messageIds = messages.map((message) => message._id)
+
+      this.messageService.validateMessagesForDelete(messages, conversation._id, organizationId, currentUserId, {
+        requireAuthorship: isDeleteAll && !canModerate,
+      })
+
+      if (isDeleteAll) {
+        await this.messageService.deleteMessagesForEveryone(messageIds, conversation._id, organizationId, canModerate ? null : currentUserId)
+      } else {
+        await this.messageService.hideMessagesForUser(messageIds, currentUserId, conversation._id, organizationId)
+      }
+    }
 
     const deleteMessageFields = {
       messageIds: mIds,
@@ -32,7 +47,7 @@ class MessageDeleteOperation {
   }
 
   async #hasAccess(organizationId, conversationId, currentUserId) {
-    const { conversation, asParticipant } = await this.conversationService.hasAccessToConversation(
+    const { conversation, asParticipant, asOwner, asAdmin } = await this.conversationService.hasAccessToConversation(
       organizationId,
       conversationId,
       currentUserId
@@ -50,7 +65,11 @@ class MessageDeleteOperation {
       })
     }
 
-    return { conversation }
+    return { conversation, asOwner, asAdmin }
+  }
+
+  #canModerate(conversation, asOwner, asAdmin) {
+    return conversation.type !== "u" && (asOwner || asAdmin)
   }
 }
 
