@@ -81,9 +81,21 @@ const createPipeStream = (tag, nodeSubprocess) =>
 export const spawnNode = async (cmd, env, tag, notWaitReady) => {
   const nodeSubprocess = spawn(cmd, [], {
     shell: true,
+    detached: true, // own process group: sh -> npm -> node
     env: env ? { ...process.env, ...env } : void 0,
     stdio: ["ignore", "pipe", "pipe"],
   })
+
+  // pid is /bin/sh; dash (Docker/Debian) doesn't forward signals, so kill the whole group
+  nodeSubprocess.kill = (signal = "SIGTERM") => {
+    try {
+      process.kill(-nodeSubprocess.pid, signal)
+    } catch {
+      return false // group already gone, same as ChildProcess.kill
+    }
+    nodeSubprocess.killed = true
+    return true
+  }
 
   const nodeSubprocessReadyPromise = notWaitReady
     ? true
