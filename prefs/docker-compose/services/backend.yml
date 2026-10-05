@@ -10,8 +10,7 @@ services:
       mongo:
         condition: service_healthy
     environment:
-      - MINIO_ENDPOINT=${MINIO_ENDPOINT:-172.25.0.2}
-      - MINIO_PORT=${MINIO_PORT:-9000}
+      - S3_ENDPOINT=${S3_ENDPOINT:-http://172.25.0.2:9000}
     networks:
       sama_network:
         ipv4_address: 172.25.0.7

@@ -2,26 +2,26 @@ version: "3.8"
 
 services:
   s3:
-    image: minio/minio
+    image: dxflrs/garage:v2.4.1
     networks:
       sama_network:
         ipv4_address: 172.25.0.2
     ports:
-      - "9011:9001"
+      - "9011:3903"
       - "9010:9000"
     volumes:
-      - data:/data
+      - data:/var/lib/garage
+      - ../../garage/garage.toml:/etc/garage.toml:ro
     env_file:
       - ../../../.env.docker
-    command: server --address 0.0.0.0:9000 --console-address :9001 /data
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: ["CMD", "/garage", "status"]
       interval: 30s
       timeout: 20s
       retries: 3
 
   s3-service:
-    image: minio/mc
+    image: curlimages/curl
     networks:
       sama_network:
         ipv4_address: 172.25.0.3
@@ -30,10 +30,6 @@ services:
         condition: service_healthy
     env_file:
       - ../../../.env.docker
-    entrypoint: >
-      /bin/sh -c "
-      /usr/bin/mc alias set sama http://s3:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD};
-      /usr/bin/mc mb sama/samabucket;
-      /usr/bin/mc policy set public sama/samabucket;
-      /usr/bin/mc admin user svcacct add --access-key $${MINIO_ACCESS_KEY} --secret-key $${MINIO_SECRET_KEY} sama $${MINIO_ROOT_USER}
-      "
+    volumes:
+      - ../../garage/init.sh:/init.sh:ro
+    entrypoint: ["/bin/sh", "/init.sh"]

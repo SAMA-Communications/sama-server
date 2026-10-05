@@ -14,6 +14,7 @@ class S3StorageClient extends BaseStorageClient {
       },
       endpoint: this.config.get("storage.s3.endpoint"),
       region: this.config.get("storage.s3.region"),
+      forcePathStyle: this.config.get("storage.s3.forcePathStyle"),
     })
 
     this.bucketName = this.config.get("storage.s3.bucket")
