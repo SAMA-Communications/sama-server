@@ -97,7 +97,7 @@ describe("Attachments", async () => {
     assert.equal(Object.keys(responseData.response.file_urls).length, 2)
   })
 
-  it("should fail file limit exceded", async () => {
+  it("should fail file limit exceeded", async () => {
     const requestData = {
       request: {
         create_files: [
