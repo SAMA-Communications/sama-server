@@ -61,20 +61,13 @@ const CONFIG = {
     driver: process.env.STORAGE_DRIVER ?? "s3",
     uploadUrlExpiresIn: process.env.FILE_UPLOAD_URL_EXPIRES_IN,
     downloadUrlExpiresIn: process.env.FILE_DOWNLOAD_URL_EXPIRES_IN,
-    minio: {
-      key: process.env.MINIO_ACCESS_KEY,
-      secret: process.env.MINIO_SECRET_KEY,
-      endpoint: process.env.MINIO_ENDPOINT || null,
-      bucket: process.env.MINIO_BUCKET_NAME,
-      port: process.env.MINIO_PORT ?? 9010,
-      useSSL: process.env.MINIO_USE_SSL === CONSTANTS.ENV_TRUE,
-    },
     s3: {
       key: process.env.S3_ACCESS_KEY,
       secret: process.env.S3_SECRET_KEY,
       endpoint: process.env.S3_ENDPOINT || null,
       bucket: process.env.S3_BUCKET_NAME,
       region: process.env.S3_REGION ?? "us-east-1",
+      forcePathStyle: process.env.S3_FORCE_PATH_STYLE === CONSTANTS.ENV_TRUE,
     },
     spaces: {
       key: process.env.SPACES_ACCESS_KEY,

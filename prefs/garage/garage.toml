@@ -1,0 +1,18 @@
+# Single-node Garage for local/docker setup.
+# rpc_secret and admin_token come from GARAGE_RPC_SECRET / GARAGE_ADMIN_TOKEN in .env.docker
+metadata_dir = "/var/lib/garage/meta"
+data_dir = "/var/lib/garage/data"
+db_engine = "sqlite"
+
+replication_factor = 1
+
+rpc_bind_addr = "[::]:3901"
+rpc_public_addr = "127.0.0.1:3901"
+
+[s3_api]
+# must match S3_REGION in .env.docker
+s3_region = "garage"
+api_bind_addr = "[::]:9000"
+
+[admin]
+api_bind_addr = "[::]:3903"

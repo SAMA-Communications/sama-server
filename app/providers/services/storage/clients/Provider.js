@@ -1,6 +1,5 @@
 import config from "../../../../config/index.js"
 
-import MinioStorageClient from "./minio.js"
 import S3StorageClient from "./s3.js"
 import SpacerStorageClient from "./spaces.js"
 
@@ -9,8 +8,7 @@ import RegisterProvider from "../../../../common/RegisterProvider.js"
 const name = "StorageDriverClient"
 const storageDriverName = config.get("storage.driver")
 
-const StorageDriverClient =
-  storageDriverName === "minio" ? MinioStorageClient : storageDriverName === "spaces" ? SpacerStorageClient : S3StorageClient
+const StorageDriverClient = storageDriverName === "spaces" ? SpacerStorageClient : S3StorageClient
 
 class StorageDriverClientRegisterProvider extends RegisterProvider {
   register(slc) {
