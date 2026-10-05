@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.37.3
+
+### Updated
+
+- use `garage` instead of `minio` for file storage
+
 ## 0.37.2
 
 ### Features
